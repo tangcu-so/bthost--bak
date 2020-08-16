@@ -362,3 +362,163 @@ if (!function_exists('hsv2rgb')) {
         ];
     }
 }
+
+
+/**
+ * 字符加密，一次一密,可定时解密有效
+ * @param string $string 原文
+ * @param string $key 密钥
+ * @param int $expiry 密文有效期,单位s,0 为永久有效
+ * @return string 加密后的内容
+ */
+function encode($string, $key = '', $expiry = 0)
+{
+    $ckeyLength   = 4;
+    $key          = md5($key ? $key : '2pIL1XlNXnOPgZTA');
+    $keya         = md5(substr($key, 0, 16));
+    $keyb         = md5(substr($key, 16, 16));
+    $keyc         = substr(md5(microtime()), -$ckeyLength);
+    $cryptkey     = $keya . md5($keya . $keyc);
+    $keyLength    = strlen($cryptkey);
+    $string       = sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $keyb), 0, 16) . $string;
+    $stringLength = strlen($string);
+
+    $rndkey = array();
+    for ($i = 0; $i <= 255; $i++) {
+        $rndkey[$i] = ord($cryptkey[$i % $keyLength]);
+    }
+
+    $box = range(0, 255);
+    // 打乱密匙簿，增加随机性
+    for ($j = $i = 0; $i < 256; $i++) {
+        $j       = ($j + $box[$i] + $rndkey[$i]) % 256;
+        $tmp     = $box[$i];
+        $box[$i] = $box[$j];
+        $box[$j] = $tmp;
+    }
+    // 加解密，从密匙簿得出密匙进行异或，再转成字符
+    $result = '';
+    for ($a = $j = $i = 0; $i < $stringLength; $i++) {
+        $a       = ($a + 1) % 256;
+        $j       = ($j + $box[$a]) % 256;
+        $tmp     = $box[$a];
+        $box[$a] = $box[$j];
+        $box[$j] = $tmp;
+        $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
+    }
+    $result = $keyc . str_replace('=', '', base64_encode($result));
+    $result = str_replace(array('+', '/', '='), array('-', '_', '.'), $result);
+    return $result;
+}
+
+/**
+ * 字符解密，一次一密,可定时解密有效
+ * @param string $string 密文
+ * @param string $key 解密密钥
+ * @return string 解密后的内容
+ */
+function decode($string, $key = '')
+{
+    if (strpos($string, '$') !== false) {
+        return '';
+    }
+    $string       = str_replace(array('-', '_', '.'), array('+', '/', '='), $string);
+    $ckeyLength   = 4;
+    $key          = md5($key ? $key : '2pIL1XlNXnOPgZTA');
+    $keya         = md5(substr($key, 0, 16));
+    $keyb         = md5(substr($key, 16, 16));
+    $keyc         = substr($string, 0, $ckeyLength);
+    $cryptkey     = $keya . md5($keya . $keyc);
+    $keyLength    = strlen($cryptkey);
+    $string       = base64_decode(substr($string, $ckeyLength));
+    $stringLength = strlen($string);
+
+    $rndkey = array();
+    for ($i = 0; $i <= 255; $i++) {
+        $rndkey[$i] = ord($cryptkey[$i % $keyLength]);
+    }
+
+    $box = range(0, 255);
+    // 打乱密匙簿，增加随机性
+    for ($j = $i = 0; $i < 256; $i++) {
+        $j       = ($j + $box[$i] + $rndkey[$i]) % 256;
+        $tmp     = $box[$i];
+        $box[$i] = $box[$j];
+        $box[$j] = $tmp;
+    }
+    // 加解密，从密匙簿得出密匙进行异或，再转成字符
+    $result = '';
+    for ($a = $j = $i = 0; $i < $stringLength; $i++) {
+        $a       = ($a + 1) % 256;
+        $j       = ($j + $box[$a]) % 256;
+        $tmp     = $box[$a];
+        $box[$a] = $box[$j];
+        $box[$j] = $tmp;
+        $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
+    }
+    if (strpos($result, '0000000000') !== false) {
+    } else {
+        return '';
+    }
+    if ((substr($result, 0, 10) == 0 || substr($result, 0, 10) - time() > 0)
+        && substr($result, 10, 16) == substr(md5(substr($result, 26) . $keyb), 0, 16)
+    ) {
+        return substr($result, 26);
+    } else {
+        return '';
+    }
+}
+
+/**
+ * 获取password_hash加密后的字符串
+ * @Author   Youngxj
+ * @DateTime 2019-10-28
+ * @param    [type]     $password 密码
+ * @return   [type]               [description]
+ */
+function getPasswordHash($password)
+{
+    return password_hash($password, PASSWORD_DEFAULT);
+}
+
+/**
+ * 验证密码
+ * @Author   Youngxj
+ * @DateTime 2019-11-01
+ * @param    [type]     $password    用户输入的密码
+ * @param    [type]     $oldpassword 数据库中的hash字符串
+ * @return   [type]                  [description]
+ */
+function verifyPassword($password, $oldpassword)
+{
+    return password_verify($password, $oldpassword);
+}
+
+/**
+ * 修改config的函数
+ * @param $arr1 配置前缀
+ * @param $arr2 数据变量
+ * @return bool 返回状态
+ */
+function setconfig($file, $pat, $rep)
+{
+    /**
+     * 原理就是 打开config配置文件 然后使用正则查找替换 然后在保存文件.
+     * 传递的参数为2个数组 前面的为配置 后面的为数值.  正则的匹配为单引号  如果你的是分号 请自行修改为分号
+     * $pat[0] = 参数前缀;  例:   default_return_type
+    $rep[0] = 要替换的内容;    例:  json
+     */
+    if (is_array($pat) and is_array($rep)) {
+        for ($i = 0; $i < count($pat); $i++) {
+            $pats[$i] = '/\'' . $pat[$i] . '\'(.*?),/';
+            $reps[$i] = "'" . $pat[$i] . "'" . "=>" . "'" . $rep[$i] . "',";
+        }
+        $fileurl = $file;
+        $string  = file_get_contents($fileurl); //加载配置文件
+        $string  = preg_replace($pats, $reps, $string); // 正则查找然后替换
+        file_put_contents($fileurl, $string); // 写入配置文件
+        return true;
+    } else {
+        return false;
+    }
+}

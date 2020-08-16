@@ -12,6 +12,7 @@ use think\Config;
 use think\Db;
 use think\Lang;
 use think\Validate;
+use app\common\library\Btaction;
 
 /**
  * Ajax异步请求接口
@@ -272,4 +273,83 @@ class Ajax extends Backend
         exit;
     }
 
+    public function check_username_available(){
+        $params = $this->request->post('row/a');
+        $event = $this->request->post('event');
+        if(isset($params['username'])&&$params['username']){
+            $find = model('User')::get(['username'=>$params['username']]);
+            if($find){
+                $this->error('用户名已存在');
+            }
+        }
+        $this->success();
+    }
+
+    // 宝塔新版一键部署列表
+    public function deployment(){
+        // 获取服务器一键部署内容
+        $bt = new Btaction();
+        $name = $this->request->post('name');
+        $new_data['list'] = $bt->getdeploymentlist($name);
+        $new_data['total'] = count($new_data['list']);
+        return json($new_data);
+    }
+
+    // 宝塔已安装php列表
+    public function phplist(){
+
+        // 获取服务器安装的php版本列表(由于官方的存在很大的数据变动)
+        $bt = new Btaction();
+        $list = $bt->getphplist();
+        if($list){
+            // 处理一下数据
+            $new_data['list'] = $list;
+        }else{
+            $new_data['list'] = [];
+        }
+        
+        // 写死数据
+        // $new_data['list'] = [
+        //     ['id'=>'00','name'=>'纯静态',],
+        //     ['id'=>'52','name'=>'52',],
+        //     ['id'=>'53','name'=>'53',],
+        //     ['id'=>'54','name'=>'54',],
+        //     ['id'=>'55','name'=>'55',],
+        //     ['id'=>'56','name'=>'56',],
+        //     ['id'=>'70','name'=>'70',],
+        //     ['id'=>'71','name'=>'71',],
+        //     ['id'=>'72','name'=>'72',],
+        //     ['id'=>'73','name'=>'73',],
+        //     ['id'=>'74','name'=>'74',],
+        // ];
+
+        $new_data['total'] = count($new_data['list']);
+        return json($new_data);
+    }
+
+    // 宝塔分类列表
+    public function sortlist(){
+        $keyValue = $this->request->post('keyValue');
+        // 获取服务器中的分类列表
+        $bt = new Btaction();
+        $list = $bt->getsitetype();
+        if($list){
+            if($keyValue){
+                foreach ($list as $key => $value) {
+                    if($keyValue==$value['id']){
+                        $new_data['list'] = $list[$key];
+                        break;
+                    }
+                }
+            }else{
+                $new_data['list'] = $list;
+            }
+            
+        }else{
+            $new_data['list'] = [];
+        }
+        
+        $new_data['total'] = count($new_data['list']);
+        return json($new_data);
+    }
 }

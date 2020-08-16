@@ -1,7 +1,7 @@
 <?php
 
 return array (
-  'name' => '我的网站',
+  'name' => 'btHost',
   'beian' => '',
   'cdnurl' => '',
   'version' => '1.0.1',
@@ -26,7 +26,8 @@ return array (
     'email' => 'Email',
     'dictionary' => 'Dictionary',
     'user' => 'User',
-    'example' => 'Example',
+    'config' => 'Config',
+    'secret' => 'Secret',
   ),
   'mail_type' => '1',
   'mail_smtp_host' => 'smtp.qq.com',
@@ -35,4 +36,11 @@ return array (
   'mail_smtp_pass' => 'password',
   'mail_verify_type' => '2',
   'mail_from' => '10000@qq.com',
+  'email' => '',
+  'ftqq_sckey' => '',
+  'api_token' => '0VWx31Gd2kc5',
+  'api_returnip' => '',
+  'que_key' => 'dA0IwO',
+  'expire_action' => 'recycle',
+  'recycle_delete' => '7',
 );

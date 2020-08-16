@@ -1,0 +1,4086 @@
+<?php
+// +----------------------------------------------------------------------
+// | 宝塔接口类库 By Bty5
+// +----------------------------------------------------------------------
+// | Copyright (c) 2019-2020 rights reserved.
+// +----------------------------------------------------------------------
+// | Author: Youngxj
+// +----------------------------------------------------------------------
+// | Date: 2019/9/21 15:18
+// +----------------------------------------------------------------------
+namespace btpanel;
+
+class Btpanel
+{
+    private $BT_KEY   = ""; //接口密钥
+    private $BT_PANEL = ""; //面板地址
+
+    public function __construct($bt_panel = null, $bt_key = null)
+    {
+        if ($bt_panel) {
+            $this->BT_PANEL = $bt_panel;
+        } else {
+            return false;
+        }
+
+        if ($bt_key) {
+            $this->BT_KEY = $bt_key;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 获取服务器配置
+     */
+    public function GetConfig()
+    {
+        $url = $this->BT_PANEL . config("bt.GetConfig");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取系统基础统计
+     */
+    public function GetSystemTotal()
+    {
+        $url = $this->BT_PANEL . config("bt.GetSystemTotal");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取指定目录大小
+     * @param [type] $path 目录名
+     */
+    public function GetWebSize($path)
+    {
+        $url = $this->BT_PANEL . config("bt.GetWebSize");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取指定数据库大小
+     * @param [type] $db_name [description]
+     */
+    public function GetSqlSize($db_name)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSqlSize");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['db_name'] = $db_name;
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取磁盘分区信息
+     */
+    public function GetDiskInfo()
+    {
+        $url = $this->BT_PANEL . config("bt.GetDiskInfo");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取实时状态信息
+     * (CPU、内存、网络、负载)
+     */
+    public function GetNetWork()
+    {
+        $url = $this->BT_PANEL . config("bt.GetNetWork");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 检查是否有安装任务
+     */
+    public function GetTaskCount()
+    {
+        $url = $this->BT_PANEL . config("bt.GetTaskCount");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = $result;
+        return $data;
+    }
+
+    /**
+     * 检查面板更新
+     */
+    public function UpdatePanel($check = false, $force = false)
+    {
+        $url = $this->BT_PANEL . config("bt.UpdatePanel");
+
+        $p_data          = $this->GetKeyData();
+        $p_data['check'] = $check;
+        $p_data['force'] = $force;
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 面板更新
+     */
+    public function UpdatePanels($toUpdate = true)
+    {
+        $url = $this->BT_PANEL . config("bt.UpdatePanel");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['toUpdate'] = $toUpdate;
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 检查专业版
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     */
+    public function IsPro()
+    {
+        $url    = $this->BT_PANEL . config("bt.IsPro");
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+        $data   = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 面板修复
+     * @Author   Youngxj
+     * @DateTime 2019-04-30
+     * @param    [type]     $action RepPanel
+     */
+    public function RepPanel($action = 'RepPanel')
+    {
+        $url              = $this->BT_PANEL . config("bt.RepPanel");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 面板重启
+     * @Author   Youngxj
+     * @DateTime 2019-04-30
+     * @param string $action ReWeb
+     */
+    public function ReWeb($action = 'ReWeb')
+    {
+        $url              = $this->BT_PANEL . config("bt.ReWeb");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 系统服务
+     * @Author   Youngxj
+     * @DateTime 2019-04-30
+     * @param    [type]     $name 服务名
+     * @param    [type]     $type 状态
+     */
+    public function ServiceAdmin($name, $type = 'stop')
+    {
+        $url            = $this->BT_PANEL . config("bt.ServiceAdmin");
+        $p_data         = $this->GetKeyData();
+        $p_data['name'] = $name;
+        $p_data['type'] = $type;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 系统重启
+     * @Author   Youngxj
+     * @DateTime 2019-04-30
+     * @param    [type]     $action RestartServer
+     */
+    public function RestartServer($action = 'RestartServer')
+    {
+        $url              = $this->BT_PANEL . config("bt.RestartServer");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站列表
+     * @param string $page 当前分页
+     * @param string $limit 取出的数据行数
+     * @param string $type 分类标识 -1: 分部分类 0: 默认分类
+     * @param string $order 排序规则 使用 id 降序：id desc 使用名称升序：name desc
+     * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
+     * @param string $search 搜索内容
+     */
+    public function Websites($search = '', $page = '1', $limit = '15', $type = '-1', $order = 'id desc', $tojs = '')
+    {
+        $url = $this->BT_PANEL . config("bt.Websites");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['p']      = $page;
+        $p_data['limit']  = $limit;
+        $p_data['type']   = $type;
+        $p_data['order']  = $order;
+        $p_data['tojs']   = $tojs;
+        $p_data['search'] = $search;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站下的域名列表
+     * @Author   Youngxj
+     * @DateTime 2019-04-27
+     * @param    [type]     $search [description]
+     * @param    [type]     $table  [description]
+     * @param string $list [description]
+     */
+    public function Websitess($search, $table, $list = 'True')
+    {
+        $url = $this->BT_PANEL . config("bt.Websitess");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['table']  = $table;
+        $p_data['list']   = $list;
+        $p_data['search'] = $search;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取重定向内测版列表
+     * @Author   Youngxj
+     * @DateTime 2019-04-02
+     * @param    [type]     $sitename [description]
+     */
+    public function GetRedirectList($sitename)
+    {
+        $url = $this->BT_PANEL . config("bt.GetRedirectList");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['sitename'] = $sitename;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加重定向
+     * @Author   Youngxj
+     * @DateTime 2019-04-02
+     * @param    [type]     $sitename       站点名
+     * @param    [type]     $redirecttype   301 or 302
+     * @param    [type]     $domainorpath   重定向类型
+     * @param    [type]     $redirectdomain 重定向域名
+     * @param    [type]     $redirectpath   重定向路径
+     * @param    [type]     $tourl          目标url
+     * @param integer $type 开启重定向
+     * @param    [type]     $holdpath       保留url参数
+     */
+    public function CreateRedirect($sitename, $redirecttype, $domainorpath, $redirectdomain, $redirectpath, $tourl, $type = 1, $holdpath)
+    {
+        $url = $this->BT_PANEL . config("bt.CreateRedirect");
+
+        $p_data                   = $this->GetKeyData();
+        $p_data['sitename']       = $sitename;
+        $p_data['redirecttype']   = $redirecttype;
+        $p_data['domainorpath']   = $domainorpath;
+        $p_data['redirectdomain'] = (string) $redirectdomain;
+        $p_data['redirectpath']   = $redirectpath;
+        $p_data['tourl']          = $tourl;
+        $p_data['type']           = $type;
+        $p_data['holdpath']       = $holdpath;
+        $p_data['redirectname']   = time();
+        $result                   = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 重定向删除
+     * @Author   Youngxj
+     * @DateTime 2019-04-02
+     * @param    [type]     $sitename     站点名
+     * @param    [type]     $redirectname 重定向名称
+     */
+    public function DeleteRedirect($sitename, $redirectname)
+    {
+        $url = $this->BT_PANEL . config("bt.DeleteRedirect");
+
+        $p_data                 = $this->GetKeyData();
+        $p_data['sitename']     = $sitename;
+        $p_data['redirectname'] = $redirectname;
+        $result                 = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改重定向
+     * @Author   Youngxj
+     * @DateTime 2019-04-02
+     * @param    [type]     $sitename       站点名
+     * @param    [type]     $redirectname   重定向名
+     * @param    [type]     $redirecttype   301 or 302
+     * @param    [type]     $domainorpath   重定向类型
+     * @param    [type]     $redirectdomain 重定向域名
+     * @param    [type]     $redirectpath   重定向路径
+     * @param    [type]     $tourl          目标url
+     * @param integer $type 开启重定向
+     * @param    [type]     $holdpath       保留url参数
+     */
+    public function ModifyRedirect($sitename, $redirectname, $redirecttype, $domainorpath, $redirectdomain, $redirectpath, $tourl, $type = 1, $holdpath)
+    {
+        $url = $this->BT_PANEL . config("bt.ModifyRedirect");
+
+        $p_data                   = $this->GetKeyData();
+        $p_data['sitename']       = $sitename;
+        $p_data['redirecttype']   = $redirecttype;
+        $p_data['domainorpath']   = $domainorpath;
+        $p_data['redirectdomain'] = (string) $redirectdomain;
+        $p_data['redirectpath']   = $redirectpath;
+        $p_data['tourl']          = $tourl;
+        $p_data['type']           = $type;
+        $p_data['holdpath']       = $holdpath;
+        $p_data['redirectname']   = $redirectname;
+        $result                   = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站FTP列表
+     * @param string $page 当前分页
+     * @param string $limit 取出的数据行数
+     * @param string $type 分类标识 -1: 分部分类 0: 默认分类
+     * @param string $order 排序规则 使用 id 降序：id desc 使用名称升序：name desc
+     * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
+     * @param string $search 搜索内容
+     */
+    public function WebFtpList($search = '', $page = '1', $limit = '15', $type = '-1', $order = 'id desc', $tojs = '')
+    {
+        $url = $this->BT_PANEL . config("bt.WebFtpList");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['p']      = $page;
+        $p_data['limit']  = $limit;
+        $p_data['type']   = $type;
+        $p_data['order']  = $order;
+        $p_data['tojs']   = $tojs;
+        $p_data['search'] = $search;
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站数据库列表
+     * @param string $page 当前分页
+     * @param string $limit 取出的数据行数
+     * @param string $type 分类标识 -1: 分部分类 0: 默认分类
+     * @param string $order 排序规则 使用 id 降序：id desc 使用名称升序：name desc
+     * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
+     * @param string $search 搜索内容
+     */
+    public function WebSqlList($search = '', $page = '1', $limit = '15', $type = '-1', $order = 'id desc', $tojs = '')
+    {
+        $url = $this->BT_PANEL . config("bt.WebSqlList");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['p']      = $page;
+        $p_data['limit']  = $limit;
+        $p_data['type']   = $type;
+        $p_data['order']  = $order;
+        $p_data['tojs']   = $tojs;
+        $p_data['search'] = $search;
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取所有网站分类
+     */
+    public function Webtypes()
+    {
+        $url = $this->BT_PANEL . config("bt.Webtypes");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取已安装的 PHP 版本列表
+     */
+    public function GetPHPVersion()
+    {
+        //拼接URL地址
+        $url = $this->BT_PANEL . config("bt.GetPHPVersion");
+
+        //准备POST数据
+        $p_data = $this->GetKeyData(); //取签名
+
+        //请求面板接口
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        //解析JSON数据
+        $data = json_decode($result, true);
+
+        return $data;
+    }
+
+    /**
+     * 修改指定网站的PHP版本
+     * @param [type] $site 网站名
+     * @param [type] $php  PHP版本
+     */
+    public function SetPHPVersion($site, $php)
+    {
+
+        $url = $this->BT_PANEL . config("bt.SetPHPVersion");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $site;
+        $p_data['version']  = $php;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取指定网站运行的PHP版本
+     * @param [type] $site 网站名
+     */
+    public function GetSitePHPVersion($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSitePHPVersion");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 新增网站
+     * @param [type] $webname      网站域名 json格式
+     * @param [type] $path         网站路径
+     * @param [type] $type_id      网站分类ID
+     * @param string $type 网站类型
+     * @param [type] $version      PHP版本
+     * @param [type] $port         网站端口
+     * @param [type] $ps           网站备注
+     * @param [type] $ftp          网站是否开通FTP
+     * @param [type] $ftp_username FTP用户名
+     * @param [type] $ftp_password FTP密码
+     * @param [type] $sql          网站是否开通数据库 windows：MySQL、SQLServer
+     * @param [type] $codeing      数据库编码类型 utf8|utf8mb4|gbk|big5
+     * @param [type] $datauser     数据库账号
+     * @param [type] $datapassword 数据库密码
+     */
+    public function AddSite($infoArr = [])
+    {
+        $url = $this->BT_PANEL . config("bt.WebAddSite");
+
+        //准备POST数据
+        $p_data                 = $this->GetKeyData(); //取签名
+        $p_data['webname']      = $infoArr['webname'];
+        $p_data['path']         = $infoArr['path'];
+        $p_data['type_id']      = $infoArr['type_id'];
+        $p_data['type']         = $infoArr['type'];
+        $p_data['version']      = $infoArr['version'];
+        $p_data['port']         = $infoArr['port'];
+        $p_data['ps']           = $infoArr['ps'];
+        $p_data['ftp']          = $infoArr['ftp'];
+        $p_data['ftp_username'] = $infoArr['ftp_username'];
+        $p_data['ftp_password'] = $infoArr['ftp_password'];
+        $p_data['sql']          = $infoArr['sql'];
+        $p_data['codeing']      = $infoArr['codeing'];
+        $p_data['datauser']     = $infoArr['datauser'];
+        $p_data['datapassword'] = $infoArr['datapassword'];
+        $p_data['check_dir']    = $infoArr['check_dir'];
+
+        // var_dump($url, $p_data);
+        //请求面板接口
+        $result = $this->HttpPostCookie($url, $p_data);
+        //解析JSON数据
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除网站
+     * @param [type] $id       网站ID
+     * @param [type] $webname  网站名称
+     * @param [type] $ftp      是否删除关联FTP
+     * @param [type] $database 是否删除关联数据库
+     * @param [type] $path     是否删除关联网站根目录
+     *
+     */
+    public function WebDeleteSite($id, $webname, $ftp = 1, $database = 1, $path = 1)
+    {
+        $url = $this->BT_PANEL . config("bt.WebDeleteSite");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id']       = $id;
+        $p_data['webname']  = $webname;
+        $p_data['ftp']      = $ftp;
+        $p_data['database'] = $database;
+        $p_data['path']     = $path;
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 停用站点
+     * @param [type] $id   网站ID
+     * @param [type] $name 网站域名
+     */
+    public function WebSiteStop($id, $name)
+    {
+        $url = $this->BT_PANEL . config("bt.WebSiteStop");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id']   = $id;
+        $p_data['name'] = $name;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 启用网站
+     * @param [type] $id   网站ID
+     * @param [type] $name 网站域名
+     */
+    public function WebSiteStart($id, $name)
+    {
+        $url = $this->BT_PANEL . config("bt.WebSiteStart");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id']   = $id;
+        $p_data['name'] = $name;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站到期时间
+     * @param [type] $id    网站ID
+     * @param [type] $edate 网站到期时间 格式：2019-01-01，永久：0000-00-00
+     */
+    public function WebSetEdate($id, $edate)
+    {
+        $url = $this->BT_PANEL . config("bt.WebSetEdate");
+
+        $p_data          = $this->GetKeyData();
+        $p_data['id']    = $id;
+        $p_data['edate'] = $edate;
+        $result          = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改网站备注
+     * @param [type] $id 网站ID
+     * @param [type] $ps 网站备注
+     */
+    public function WebSetPs($id, $ps)
+    {
+        $url = $this->BT_PANEL . config("bt.WebSetPs");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $p_data['ps'] = $ps;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站备份列表
+     * @param [type] $id    网站ID
+     * @param string $page 当前分页
+     * @param string $limit 每页取出的数据行数
+     * @param string $type 备份类型 目前固定为0
+     * @param string $tojs 分页js回调若不传则构造 URI 分页连接 get_site_backup
+     */
+    public function WebBackupList($id, $page = '1', $limit = '5', $type = '0', $tojs = '')
+    {
+        $url = $this->BT_PANEL . config("bt.WebBackupList");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['p']      = $page;
+        $p_data['limit']  = $limit;
+        $p_data['type']   = $type;
+        $p_data['tojs']   = $tojs;
+        $p_data['search'] = $id;
+        $result           = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 创建网站备份
+     * @param [type] $id 网站ID
+     */
+    public function WebToBackup($id)
+    {
+        $url = $this->BT_PANEL . config("bt.WebToBackup");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除网站备份
+     * @param [type] $id 网站备份ID
+     */
+    public function WebDelBackup($id)
+    {
+        $url = $this->BT_PANEL . config("bt.WebDelBackup");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除数据库备份
+     * @param [type] $id 数据库备份ID
+     */
+    public function SQLDelBackup($id)
+    {
+        $url = $this->BT_PANEL . config("bt.SQLDelBackup");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 备份数据库
+     * @param [type] $id 数据库列表ID
+     */
+    public function SQLToBackup($id)
+    {
+        $url = $this->BT_PANEL . config("bt.SQLToBackup");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 数据库备份还原
+     * @param [type] $file [description]
+     * @param [type] $name [description]
+     */
+    public function SQLInputSql($file, $name)
+    {
+        $url = $this->BT_PANEL . config("bt.InputSql");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['file'] = '/www/backup/database/' . $file;
+        $p_data['name'] = $name;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 数据库导入
+     * @param [type] $file [description]
+     * @param [type] $name [description]
+     */
+    public function SQLInputSqlFile($file, $name)
+    {
+        $url = $this->BT_PANEL . config("bt.InputSql");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['file'] = $file;
+        $p_data['name'] = $name;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站域名列表
+     * @param [type]  $id   网站ID
+     * @param boolean $list 固定传true
+     */
+    public function WebDoaminList($id, $list = true)
+    {
+        $url = $this->BT_PANEL . config("bt.WebDoaminList");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['table']  = 'domain';
+        $p_data['search'] = $id;
+        $p_data['list']   = $list;
+        $result           = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加域名
+     * @param [type] $id      网站ID
+     * @param [type] $webname 网站名称
+     * @param [type] $domain  要添加的域名:端口 80 端品不必构造端口,多个域名用换行符隔开
+     */
+    public function WebAddDomain($id, $webname, $domain)
+    {
+        $url = $this->BT_PANEL . config("bt.WebAddDomain");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['id']      = $id;
+        $p_data['webname'] = $webname;
+        $p_data['domain']  = $domain;
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除网站域名
+     * @param [type] $id      网站ID
+     * @param [type] $webname 网站名
+     * @param [type] $domain  网站域名
+     * @param [type] $port    网站域名端口
+     */
+    public function WebDelDomain($id, $webname, $domain, $port = '80')
+    {
+        $url = $this->BT_PANEL . config("bt.WebDelDomain");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['id']      = $id;
+        $p_data['webname'] = $webname;
+        $p_data['domain']  = $domain;
+        $p_data['port']    = $port;
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取可选的预定义伪静态列表
+     * @param [type] $siteName 网站名
+     */
+    public function GetRewriteList($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.GetRewriteList");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取预置伪静态规则内容（文件内容）
+     * @param [type] $path 规则名
+     * @param [type] $type 0->获取内置伪静态规则；1->获取当前站点伪静态规则
+     */
+    public function GetFileBody($path, $type = 0)
+    {
+        $url      = $this->BT_PANEL . config("bt.GetFileBody");
+        $p_data   = $this->GetKeyData();
+        $path_dir = $type ? 'vhost/rewrite' : 'rewrite/nginx';
+
+        //获取当前站点伪静态规则
+        ///www/server/panel/vhost/rewrite/user_hvVBT_1.test.com.conf
+        //获取内置伪静态规则
+        ///www/server/panel/rewrite/nginx/EmpireCMS.conf
+        //保存伪静态规则到站点
+        ///www/server/panel/vhost/rewrite/user_hvVBT_1.test.com.conf
+        ///www/server/panel/rewrite/nginx/typecho.conf
+        $p_data['path'] = '/www/server/panel/' . $path_dir . '/' . $path . '.conf';
+        //var_dump($p_data['path']);
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取预置伪静态规则内容（文件内容）
+     * @param [type] $path 规则名
+     * @param [type] $type nginx;iis;apache
+     */
+    public function GetFileBody_win($path, $type = 'nginx')
+    {
+        $url    = $this->BT_PANEL . config("bt.GetFileBody");
+        $p_data = $this->GetKeyData();
+
+        $path_dir = 'rewrite/' . $type;
+
+        //获取当前站点伪静态规则
+        ///www/server/panel/vhost/rewrite/user_hvVBT_1.test.com.conf
+        //获取内置伪静态规则
+        ///www/server/panel/rewrite/nginx/EmpireCMS.conf
+        //保存伪静态规则到站点
+        ///www/server/panel/vhost/rewrite/user_hvVBT_1.test.com.conf
+        ///www/server/panel/rewrite/nginx/typecho.conf
+        // C:/BtSoft/panel/rewrite/iis/discuz2.conf
+        $p_data['path'] = 'C:/BtSoft/panel/' . $path_dir . '/' . $path . '.conf';
+        // var_dump($p_data);exit;
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 保存伪静态规则内容(保存文件内容)
+     * @param [type] $path     规则名
+     * @param [type] $data     规则内容
+     * @param string $encoding 规则编码强转utf-8
+     * @param number $type 0->系统默认路径；1->自定义全路径
+     */
+    public function SaveFileBody($path, $data, $encoding = 'utf-8', $type = 0)
+    {
+        $url = $this->BT_PANEL . config("bt.SaveFileBody");
+        if ($type) {
+            $path_dir = $path;
+        } else {
+            $path_dir = '/www/server/panel/vhost/rewrite/' . $path . '.conf';
+        }
+        $p_data             = $this->GetKeyData();
+        $p_data['path']     = $path_dir;
+        $p_data['data']     = $data;
+        $p_data['encoding'] = $encoding;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 保存文件内容
+     * @Author   Youngxj
+     * @DateTime 2019-05-05
+     * @param    [type]     $data     内容
+     * @param    [type]     $path     文件路径
+     * @param string $encoding 编码
+     */
+    public function SaveFileBodys($data, $path, $encoding = 'utf-8')
+    {
+        $url = $this->BT_PANEL . config("bt.SaveFileBody");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['path']     = $path;
+        $p_data['data']     = $data;
+        $p_data['encoding'] = $encoding;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置密码访问网站
+     * @param [type] $id       网站ID
+     * @param [type] $username 用户名
+     * @param [type] $password 密码
+     */
+    public function SetHasPwd($id, $username, $password)
+    {
+        $url = $this->BT_PANEL . config("bt.SetHasPwd");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id']       = $id;
+        $p_data['username'] = $username;
+        $p_data['password'] = $password;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 关闭密码访问网站
+     * @param [type] $id 网站ID
+     */
+    public function CloseHasPwd($id)
+    {
+        $url = $this->BT_PANEL . config("bt.CloseHasPwd");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站日志
+     * @param [type] $site 网站名
+     */
+    public function GetSiteLogs($site)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSiteLogs");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站盗链状态及规则信息
+     * @param [type] $id   网站ID
+     * @param [type] $site 网站名
+     */
+    public function GetSecurity($id, $site)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSecurity");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id']   = $id;
+        $p_data['name'] = $site;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站盗链状态及规则信息
+     * @param [type] $id      网站ID
+     * @param [type] $site    网站名
+     * @param [type] $fix     URL后缀
+     * @param [type] $domains 许可域名
+     * @param [type] $status  状态 true为启动 false为禁用
+     */
+    public function SetSecurity($id, $site, $fix, $domains, $status = true)
+    {
+        $url = $this->BT_PANEL . config("bt.SetSecurity");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['id']      = $id;
+        $p_data['name']    = $site;
+        $p_data['fix']     = $fix;
+        $p_data['domains'] = $domains;
+        $p_data['status']  = $status ? 'true' : 'false'; // 必须传字符型
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站三项配置开关（防跨站、日志、密码访问）
+     * @param [type] $id   网站ID
+     * @param [type] $path 网站运行目录
+     */
+    public function GetDirUserINI($id, $path)
+    {
+        $url = $this->BT_PANEL . config("bt.GetDirUserINI");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id']   = $id;
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 开启强制HTTPS
+     * @param [type] $site 网站域名（纯域名）
+     */
+    public function HttpToHttps($site)
+    {
+        $url = $this->BT_PANEL . config("bt.HttpToHttps");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 关闭强制HTTPS
+     * @param [type] $site 域名(纯域名)
+     */
+    public function CloseToHttps($site)
+    {
+        $url = $this->BT_PANEL . config("bt.CloseToHttps");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置SSL域名证书
+     * @param [type] $type 类型
+     * @param [type] $site 网站名
+     * @param [type] $key  证书key
+     * @param [type] $csr  证书PEM
+     */
+    public function SetSSL($type, $site, $key, $csr)
+    {
+        $url = $this->BT_PANEL . config("bt.SetSSL");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['type']     = $type;
+        $p_data['siteName'] = $site;
+        $p_data['key']      = $key;
+        $p_data['csr']      = $csr;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 关闭SSL
+     * @param [type] $updateOf 修改状态码
+     * @param [type] $site     域名(纯域名)
+     */
+    public function CloseSSLConf($updateOf, $site)
+    {
+        $url = $this->BT_PANEL . config("bt.CloseSSLConf");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['updateOf'] = $updateOf;
+        $p_data['siteName'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取SSL状态及证书信息
+     * @param [type] $site 域名（纯域名）
+     */
+    public function GetSSL($site)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSSL");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 申请ssl证书 TrustAsia 域名型SSL证书(D3)
+     * @Author   Youngxj
+     * @DateTime 2019-04-28
+     * @param    [type]     $domain 域名
+     * @param    [type]     $path   站点目录
+     */
+    public function GetDVSSL($domain, $path)
+    {
+        $url = $this->BT_PANEL . config("bt.GetDVSSL");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['domain'] = $domain;
+        $p_data['path']   = $path;
+        $result           = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 部署前效验ssl证书
+     * @Author   Youngxj
+     * @DateTime 2019-04-28
+     * @param    [type]     $siteName       站点名
+     * @param    [type]     $partnerOrderId 订单返回的partnerOrderId
+     */
+    public function Completed($siteName, $partnerOrderId)
+    {
+        $url = $this->BT_PANEL . config("bt.Completed");
+
+        $p_data                   = $this->GetKeyData();
+        $p_data['siteName']       = $siteName;
+        $p_data['partnerOrderId'] = $partnerOrderId;
+        $result                   = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取申请的证书信息/状态
+     * @Author   Youngxj
+     * @DateTime 2019-04-28
+     * @param    [type]     $siteName       [description]
+     * @param    [type]     $partnerOrderId [description]
+     */
+    public function GetSSLInfo($siteName, $partnerOrderId)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSSLInfo");
+
+        $p_data                   = $this->GetKeyData();
+        $p_data['siteName']       = $siteName;
+        $p_data['partnerOrderId'] = $partnerOrderId;
+        $result                   = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站默认文件
+     * @param [type] $id 网站ID
+     */
+    public function WebGetIndex($id)
+    {
+        $url = $this->BT_PANEL . config("bt.WebGetIndex");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站默认文件
+     * @param [type] $id    网站ID
+     * @param [type] $index 内容
+     */
+    public function WebSetIndex($id, $index)
+    {
+        $url = $this->BT_PANEL . config("bt.WebSetIndex");
+
+        $p_data          = $this->GetKeyData();
+        $p_data['id']    = $id;
+        $p_data['Index'] = $index;
+        $result          = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站流量限制信息
+     * @param [type] $id [description]
+     */
+    public function GetLimitNet($id)
+    {
+        $url = $this->BT_PANEL . config("bt.GetLimitNet");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站流量限制信息
+     * @param [type] $id         网站ID
+     * @param [type] $perserver  并发限制 300
+     * @param [type] $perip      单IP限制 25
+     * @param [type] $limit_rate 流量限制 512
+     */
+    public function SetLimitNet($id, $perserver, $perip, $limit_rate)
+    {
+        $url = $this->BT_PANEL . config("bt.SetLimitNet");
+
+        $p_data               = $this->GetKeyData();
+        $p_data['id']         = $id;
+        $p_data['perserver']  = $perserver;
+        $p_data['perip']      = $perip;
+        $p_data['limit_rate'] = $limit_rate;
+        $result               = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站流量限制信息
+     * @param [type] $id         网站ID
+     * @param [type] $perserver  并发限制 300
+     * @param [type] $perip      单IP限制 120
+     * @param [type] $limit_rate 流量限制 512
+     */
+    public function SetLimitNet_win($id, $perserver, $timeout, $limit_rate)
+    {
+        $url = $this->BT_PANEL . config("bt.SetLimitNet");
+
+        $p_data               = $this->GetKeyData();
+        $p_data['id']         = $id;
+        $p_data['perserver']  = $perserver;
+        $p_data['timeout']    = $timeout;
+        $p_data['limit_rate'] = $limit_rate;
+        $result               = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 关闭网站流量限制
+     * @param [type] $id 网站ID
+     */
+    public function CloseLimitNet($id)
+    {
+        $url = $this->BT_PANEL . config("bt.CloseLimitNet");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站301重定向信息
+     * @param [type] $site 网站名
+     */
+    public function Get301Status($site)
+    {
+        $url = $this->BT_PANEL . config("bt.Get301Status");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站301重定向信息
+     * @param [type] $site      网站名
+     * @param [type] $toDomain  目标Url
+     * @param [type] $srcDomain 来自Url
+     * @param [type] $type      类型
+     */
+    public function Set301Status($site, $toDomain, $srcDomain, $type)
+    {
+        $url = $this->BT_PANEL . config("bt.Set301Status");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['siteName']  = $site;
+        $p_data['toDomain']  = $toDomain;
+        $p_data['srcDomain'] = $srcDomain;
+        $p_data['type']      = $type;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站反代信息及状态
+     * @param [type] $site [description]
+     */
+    public function GetProxyList($site)
+    {
+        $url = $this->BT_PANEL . config("bt.GetProxyList");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['sitename'] = $site;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加网站反代信息
+     * @param [type] $cache     是否缓存
+     * @param [type] $proxyname 代理名称
+     * @param [type] $cachetime 缓存时长 /小时
+     * @param [type] $proxydir  代理目录
+     * @param [type] $proxysite 反代URL
+     * @param [type] $todomain  目标域名
+     * @param [type] $advanced  高级功能：开启代理目录
+     * @param [type] $sitename  网站名
+     * @param [type] $subfilter 文本替换json格式[{"sub1":"百度","sub2":"白底"},{"sub1":"","sub2":""}]
+     * @param [type] $type      开启或关闭 0关;1开
+     */
+    public function CreateProxy($cache, $proxyname, $cachetime, $proxydir, $proxysite, $todomain, $advanced, $sitename, $subfilter, $type)
+    {
+        $url = $this->BT_PANEL . config("bt.CreateProxy");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['cache']     = $cache;
+        $p_data['proxyname'] = $proxyname;
+        $p_data['cachetime'] = $cachetime;
+        $p_data['proxydir']  = $proxydir;
+        $p_data['proxysite'] = $proxysite;
+        $p_data['todomain']  = $todomain;
+        $p_data['advanced']  = $advanced;
+        $p_data['sitename']  = $sitename;
+        $p_data['subfilter'] = $subfilter;
+        $p_data['type']      = $type;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加网站反代信息Windows版
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $data [description]
+     */
+    public function CreateProxy_win($data)
+    {
+        $url = $this->BT_PANEL . config("bt.CreateProxy");
+
+        $p_data                 = $this->GetKeyData();
+        $p_data['cache_open']   = $data['cache_open'];
+        $p_data['path_open']    = $data['path_open'];
+        $p_data['proxyname']    = $data['proxyname'];
+        $p_data['root_path']    = $data['root_path'];
+        $p_data['proxydomains'] = $data['proxydomains'];
+        $p_data['tourl']        = $data['tourl'];
+        $p_data['to_domian']    = $data['to_domian'];
+        $p_data['sitename']     = $data['sitename'];
+        $p_data['sub1']         = $data['sub1'];
+        $p_data['sub2']         = $data['sub2'];
+        $p_data['open']         = $data['open'];
+        $result                 = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加网站反代信息
+     * @param [type] $cache     是否缓存
+     * @param [type] $proxyname 代理名称
+     * @param [type] $cachetime 缓存时长 /小时
+     * @param [type] $proxydir  代理目录
+     * @param [type] $proxysite 反代URL
+     * @param [type] $todomain  目标域名
+     * @param [type] $advanced  高级功能：开启代理目录
+     * @param [type] $sitename  网站名
+     * @param [type] $subfilter 文本替换json格式[{"sub1":"百度","sub2":"白底"},{"sub1":"","sub2":""}]
+     * @param [type] $type      开启或关闭 0关;1开
+     */
+    public function ModifyProxy($cache, $proxyname, $cachetime, $proxydir, $proxysite, $todomain, $advanced, $sitename, $subfilter, $type)
+    {
+        $url = $this->BT_PANEL . config("bt.ModifyProxy");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['cache']     = $cache;
+        $p_data['proxyname'] = $proxyname;
+        $p_data['cachetime'] = $cachetime;
+        $p_data['proxydir']  = $proxydir;
+        $p_data['proxysite'] = $proxysite;
+        $p_data['todomain']  = $todomain;
+        $p_data['advanced']  = $advanced;
+        $p_data['sitename']  = $sitename;
+        $p_data['subfilter'] = $subfilter;
+        $p_data['type']      = $type;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除反代
+     * @Author   Youngxj
+     * @DateTime 2019-04-27
+     * @param    [type]     $sitename  网站名
+     * @param    [type]     $proxyname 反代名称
+     */
+    public function RemoveProxy($sitename, $proxyname)
+    {
+        $url = $this->BT_PANEL . config("bt.RemoveProxy");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['sitename']  = $sitename;
+        $p_data['proxyname'] = $proxyname;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站域名绑定二级目录信息
+     * @param [type] $id 网站ID
+     */
+    public function GetDirBinding($id)
+    {
+        $url = $this->BT_PANEL . config("bt.GetDirBinding");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站域名绑定二级目录
+     * @param [type] $id      网站ID
+     * @param [type] $domain  域名
+     * @param [type] $dirName 目录
+     */
+    public function AddDirBinding($id, $domain, $dirName)
+    {
+        $url = $this->BT_PANEL . config("bt.AddDirBinding");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['id']      = $id;
+        $p_data['domain']  = $domain;
+        $p_data['dirName'] = $dirName;
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除网站域名绑定二级目录
+     * @param [type] $dirid 子目录ID
+     */
+    public function DelDirBinding($dirid)
+    {
+        $url = $this->BT_PANEL . config("bt.DelDirBinding");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $dirid;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站子目录绑定伪静态信息
+     * @param [type] $dirid 子目录绑定ID
+     */
+    public function GetDirRewrite($dirid, $type = 0)
+    {
+        $url = $this->BT_PANEL . config("bt.GetDirRewrite");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $dirid;
+        if ($type) {
+            $p_data['add'] = 1;
+        }
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改FTP账号密码
+     * @param [type] $id           FTPID
+     * @param [type] $ftp_username 用户名
+     * @param [type] $new_password 密码
+     */
+    public function SetUserPassword($id, $ftp_username, $new_password)
+    {
+        $url = $this->BT_PANEL . config("bt.SetUserPassword");
+
+        $p_data                 = $this->GetKeyData();
+        $p_data['id']           = $id;
+        $p_data['ftp_username'] = $ftp_username;
+        $p_data['new_password'] = $new_password;
+        $result                 = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改SQL账号密码
+     * @param [type] $id           SQLID
+     * @param [type] $ftp_username 用户名
+     * @param [type] $new_password 密码
+     */
+    public function ResDatabasePass($id, $name, $password)
+    {
+        $url = $this->BT_PANEL . config("bt.ResDatabasePass");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id']       = $id;
+        $p_data['name']     = $name;
+        $p_data['password'] = $password;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 启用/禁用FTP
+     * @param [type] $id       FTPID
+     * @param [type] $username 用户名
+     * @param [type] $status   状态 0->关闭;1->开启
+     */
+    public function SetStatus($id, $username, $status)
+    {
+        $url = $this->BT_PANEL . config("bt.SetStatus");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id']       = $id;
+        $p_data['username'] = $username;
+        $p_data['status']   = $status;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 宝塔一键部署列表
+     * @param string $search 搜索关键词
+     * @return [type]         [description]
+     */
+    public function deployment($search = '')
+    {
+        if ($search) {
+            $url = $this->BT_PANEL . config("bt.deployment") . '&search=' . $search;
+        } else {
+            $url = $this->BT_PANEL . config("bt.deployment");
+        }
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 宝塔一键部署执行
+     * @param [type] $dname       部署程序名
+     * @param [type] $site_name   部署到网站名
+     * @param [type] $php_version PHP版本
+     */
+    public function SetupPackage($dname, $site_name, $php_version)
+    {
+        $url = $this->BT_PANEL . config("bt.SetupPackage");
+
+        $p_data                = $this->GetKeyData();
+        $p_data['dname']       = $dname;
+        $p_data['site_name']   = $site_name;
+        $p_data['php_version'] = $php_version;
+        $result                = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取软件管理列表
+     * @param [type]  $query 查找
+     * @param integer $p 页面
+     * @param integer $type 类别
+     * @param string  $tojs soft.get_list
+     * @param integer $force 未知
+     */
+    public function GetSoftList($query = '', $p = 1, $type = 0, $tojs = 'soft.get_list', $force = 0)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSoftList");
+
+        $p_data          = $this->GetKeyData();
+        $p_data['query'] = $query;
+        $p_data['p']     = $p;
+        $p_data['type']  = $type;
+        $p_data['tojs']  = $tojs;
+        $p_data['force'] = $force;
+        $p_data['type']  = $type;
+        $result          = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改信息
+     * 付费插件
+     */
+    public function GetProof()
+    {
+        $url = $this->BT_PANEL . config("bt.GetProof");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改站点设置开关
+     * @param [type] $siteName 站点名
+     */
+    public function SiteProof($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.SiteProof");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改功能总开、关
+     * @param [type] $serviceStatus stop、start
+     */
+    public function ServiceProof($serviceStatus)
+    {
+        $url = $this->BT_PANEL . config("bt.ServiceProof");
+
+        $p_data                  = $this->GetKeyData();
+        $p_data['serviceStatus'] = $serviceStatus;
+        $result                  = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改站点日志
+     * @param [type] $siteName 站点名
+     */
+    public function LogProof($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.LogProof");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改规则查看
+     * @param [type] $siteName 站点名
+     */
+    public function GetgzProof($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.GetgzProof");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改添加保护
+     * @param [type] $siteName   站点名
+     * @param [type] $protectExt 保护目录
+     */
+    public function AddprotectProof($siteName, $protectExt)
+    {
+        $url = $this->BT_PANEL . config("bt.AddprotectProof");
+
+        $p_data               = $this->GetKeyData();
+        $p_data['siteName']   = $siteName;
+        $p_data['protectExt'] = $protectExt;
+        $result               = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改添加排除
+     * @param [type] $siteName    站点名
+     * @param [type] $excludePath 排除目录
+     */
+    public function AddexcloudProof($siteName, $excludePath)
+    {
+        $url = $this->BT_PANEL . config("bt.AddexcloudProof");
+
+        $p_data                = $this->GetKeyData();
+        $p_data['siteName']    = $siteName;
+        $p_data['excludePath'] = $excludePath;
+        $result                = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改保护删除
+     * @param [type] $siteName   站点名
+     * @param [type] $protectExt 保护删除的目录名
+     */
+    public function DelprotectProof($siteName, $protectExt)
+    {
+        $url = $this->BT_PANEL . config("bt.DelprotectProof");
+
+        $p_data               = $this->GetKeyData();
+        $p_data['siteName']   = $siteName;
+        $p_data['protectExt'] = $protectExt;
+        $result               = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改排除删除
+     * @param [type] $siteName    站点名
+     * @param [type] $excludePath 排除删除的目录名
+     */
+    public function DelexcloudProof($siteName, $excludePath)
+    {
+        $url = $this->BT_PANEL . config("bt.DelexcloudProof");
+
+        $p_data                = $this->GetKeyData();
+        $p_data['siteName']    = $siteName;
+        $p_data['excludePath'] = $excludePath;
+        $result                = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表列表
+     */
+    public function GetTotal()
+    {
+        $url = $this->BT_PANEL . config("bt.GetTotal");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表总开、关
+     */
+    public function StatusTotal()
+    {
+        $url = $this->BT_PANEL . config("bt.StatusTotal");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点开、关
+     * @param [type] $siteName 站点名
+     * @param [type] $s_key    open
+     * @param [type] $s_value  false
+     */
+    public function SetTotal($siteName, $s_key, $s_value)
+    {
+        $url = $this->BT_PANEL . config("bt.SetTotal");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['s_key']    = $s_key;
+        $p_data['s_value']  = $s_value;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点详情
+     * @param [type] $siteName 站点名
+     * @param [type] $today    日期 2019-03-08
+     */
+    public function SiteTotal($siteName, $today)
+    {
+        $url = $this->BT_PANEL . config("bt.SiteTotal");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['today']    = $today;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点流量统计
+     * @param [type] $siteName 站点名
+     */
+    public function SiteNetworkTotal($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.SiteNetworkTotal");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点蜘蛛统计
+     * @param [type] $siteName 站点名
+     */
+    public function SiteSpiderTotal($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.SiteSpiderTotal");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点错误日志
+     * @param [type] $siteName 站点名
+     */
+    public function SiteErrorLogTotal($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.SiteErrorLogTotal");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点错误统计
+     * @param [type]  $siteName  站点名
+     * @param [type]  $s_status  状态码
+     * @param [type]  $error_log ture
+     * @param integer $p 页码
+     */
+    public function SiteLogTotal($siteName, $s_status, $error_log, $p = 1)
+    {
+        $url = $this->BT_PANEL . config("bt.SiteLogTotal");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['siteName']  = $siteName;
+        $p_data['s_status']  = $s_status;
+        $p_data['error_log'] = $error_log;
+        $p_data['p']         = $p;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站监控报表站点客户端统计
+     * @param [type] $siteName 站点名
+     */
+    public function Siteclient($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.Siteclient");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙首页数据
+     * @Author   Youngxj
+     * @DateTime 2019-04-18
+     * @param    [type]     $wafType waf类型连接字符串
+     */
+    public function Getwaf($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.Getwaf") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx防火墙总开关
+     */
+    public function Setwaf($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.Setwaf") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙站点信息
+     * @param [type] $siteName 站点名
+     */
+    public function Sitewaf($wafType, $siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.Sitewaf") . $wafType;
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙站点配置、开关
+     * @param [type] $siteName 站点名
+     * @param string $obj open
+     */
+    public function SitewafStatus($wafType, $siteName, $obj = 'open')
+    {
+        $url = $this->BT_PANEL . config("bt.SitewafStatus") . $wafType;
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['obj']      = $obj;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙站点cc配置
+     * @param [type] $siteName 站点名
+     * @param [type] $cycle    周期/秒
+     * @param [type] $limit    频率/次
+     * @param [type] $endtime  封锁时间/秒
+     * @param [type] $increase 增强模式/全局 0->关;1->开
+     * @param [type] $cc_mode  模式：1->小白模式，2->一般模式，3->自动模式，4->增强模式
+     * @param [type] $increase_wu_heng      浏览器验证
+     * @param [type] $is_open_global        未知
+     * @param [type] $cc_increase_type      增强模式下 验证方式js、code
+     * 
+     */
+    public function Setwafcc($wafType, $siteName, $cycle, $limit, $endtime, $increase = 0,$cc_mode = 1 ,$cc_increase_type='js',$increase_wu_heng = 0,$is_open_global = 0)
+    {
+        $url = $this->BT_PANEL . config("bt.Setwafcc") . $wafType;
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['cycle']    = $cycle;
+        $p_data['limit']    = $limit;
+        $p_data['endtime']  = $endtime;
+        $p_data['increase'] = $increase;
+        $p_data['cc_mode']  = $cc_mode;
+        $p_data['is_open_global']   = $is_open_global;
+        $p_data['increase_wu_heng'] = $increase_wu_heng;
+        $p_data['cc_increase_type'] = $cc_increase_type;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙恶意容忍规则设置
+     * @param [type] $siteName    站点名
+     * @param [type] $retry       周期/秒
+     * @param [type] $retry_time  频率/次
+     * @param [type] $retry_cycle 封锁时间/秒
+     */
+    public function SetwafRetry($wafType, $siteName, $retry, $retry_time, $retry_cycle)
+    {
+        $url = $this->BT_PANEL . config("bt.SetwafRetry") . $wafType;
+
+        $p_data                = $this->GetKeyData();
+        $p_data['siteName']    = $siteName;
+        $p_data['retry']       = $retry;
+        $p_data['retry_time']  = $retry_time;
+        $p_data['retry_cycle'] = $retry_cycle;
+        $result                = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙添加国内IP段
+     * @param [type] $start_ip 开始段
+     * @param [type] $end_ip   结束段
+     */
+    public function Addwafcnip($wafType, $start_ip, $end_ip)
+    {
+        $url = $this->BT_PANEL . config("bt.Addwafcnip") . $wafType;
+
+        $p_data             = $this->GetKeyData();
+        $p_data['start_ip'] = $start_ip;
+        $p_data['end_ip']   = $end_ip;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙获取国内ip段
+     * @param [type] $ruleName cn
+     */
+    public function Getwafcnip($wafType, $ruleName = 'cn')
+    {
+        $url = $this->BT_PANEL . config("bt.Getwafcnip") . $wafType;
+
+        $p_data             = $this->GetKeyData();
+        $p_data['ruleName'] = $ruleName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Cms防护列表
+     */
+    public function GetwafCms($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.GetwafCms") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙站点日志
+     * @param [type] $siteName 站点名
+     * @param [type] $toDate   日期2019-03-05
+     * @param string $p 翻页
+     */
+    public function GetwafLog($wafType, $siteName, $toDate, $p = '1')
+    {
+        $url = $this->BT_PANEL . config("bt.GetwafLog") . $wafType;
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['toDate']   = $toDate;
+        $p_data['p']        = $p;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙总列表拦截数据
+     */
+    public function SitewafConfig($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.SitewafConfig") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取网站运行目录
+     * @Author   Youngxj
+     * @DateTime 2019-04-24
+     * @param    [type]     $btid  站点ID
+     * @param string $key path
+     * @param string $table sites
+     */
+    public function WebGetKey($btid, $key = 'path', $table = 'sites')
+    {
+        $url = $this->BT_PANEL . config("bt.WebGetKey");
+
+        $p_data          = $this->GetKeyData();
+        $p_data['id']    = $btid;
+        $p_data['key']   = $key;
+        $p_data['table'] = $table;
+        $result          = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置网站运行目录
+     * @Author   Youngxj
+     * @DateTime 2019-07-04
+     * @param    [type]     $id   [description]
+     * @param    [type]     $path [description]
+     */
+    public function SetSiteRunPath($id, $path)
+    {
+        $url = $this->BT_PANEL . config("bt.SetSiteRunPath");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['id']      = $id;
+        $p_data['runPath'] = $path;
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取文件列表
+     * @Author   Youngxj
+     * @DateTime 2019-04-24
+     * @param    [type]     $path    网站根目录
+     * @param string $p 翻页
+     * @param string $tojs GetFiles
+     * @param string $showRow 一页条数
+     */
+    public function GetDir($path, $p = '1', $tojs = 'GetFiles', $showRow = '200')
+    {
+        $url = $this->BT_PANEL . config("bt.GetDir") . '&tojs=' . $tojs . '&p=' . $p . '&showRow=' . $showRow;
+
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 上传文件
+     * @Author   Youngxj
+     * @DateTime 2019-05-13
+     * @param    [type]     $path    目录
+     * @param    [type]     $data    数据
+     * @param    [type]     $codeing 编码
+     */
+    public function UploadFile($path, $data, $codeing = 'byte')
+    {
+        $p_data          = $this->GetKeyData();
+        $url             = $this->BT_PANEL . config("bt.UploadFile");
+        $data            = array_merge($data, $this->GetKeyData());
+        $data['path']    = $path;
+        $data['codeing'] = $codeing;
+        $result          = $this->HttpPostCookie($url, $data);
+        $data            = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 文件上传（分片上传）
+     * @Author   Youngxj
+     * @DateTime 2019-06-01
+     * @param    [type]     $path    上传路径
+     * @param    [type]     $name    上传文件名
+     * @param    [type]     $f_size  文件大小
+     * @param    [type]     $f_start 分片开始位置
+     * @param    [type]     $blob    文件数据包
+     * @param string $m coll_upload
+     * @param string $f upload
+     */
+    public function UploadFiles($path, $name, $f_size, $f_start, $blob, $m = 'coll_upload', $f = 'upload')
+    {
+        $p_data          = $this->GetKeyData();
+        $url             = $this->BT_PANEL . config("bt.UploadFiles");
+        $data            = $this->GetKeyData();
+        $data['f_path']  = $path;
+        $data['f_name']  = $name;
+        $data['f_size']  = $f_size;
+        $data['f_start'] = $f_start;
+        $data['blob']    = $blob;
+        $data['m']       = $m;
+        $data['f']       = $f;
+        $result          = $this->HttpPostCookie($url, $data);
+        $data            = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除文件夹
+     * @Author   Youngxj
+     * @DateTime 2019-04-24
+     * @param    [type]     $path 文件夹路径
+     */
+    public function DeleteDir($path)
+    {
+        $url            = $this->BT_PANEL . config("bt.DeleteDir");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除文件
+     * @Author   Youngxj
+     * @DateTime 2019-04-24
+     * @param    [type]     $path [description]
+     */
+    public function DeleteFile($path)
+    {
+        $url            = $this->BT_PANEL . config("bt.DeleteFile");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 文件重命名/移动
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     * @param    [type]     $sfile  文件路径
+     * @param    [type]     $dfile  文件路径+重命名
+     * @param string $rename 重命名需要带这个参数
+     */
+    public function MvFile($sfile, $dfile, $rename = 'true')
+    {
+        $url              = $this->BT_PANEL . config("bt.MvFile");
+        $p_data           = $this->GetKeyData();
+        $p_data['sfile']  = $sfile;
+        $p_data['dfile']  = $dfile;
+        $p_data['rename'] = $rename;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 文件解压
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     * @param    [type]     $sfile    文件绝对地址
+     * @param    [type]     $dfile    解压路径
+     * @param    [type]     $password 密码
+     * @param    [type]     $type     压缩包类型
+     * @param string $coding 编码
+     */
+    public function UnZip($sfile, $dfile, $password = 'undefined', $type, $coding = 'UTF-8')
+    {
+        $url                = $this->BT_PANEL . config("bt.UnZip");
+        $p_data             = $this->GetKeyData();
+        $p_data['sfile']    = $sfile;
+        $p_data['dfile']    = $dfile;
+        $p_data['password'] = $password;
+        $p_data['type']     = $type;
+        $p_data['coding']   = $coding;
+        $result             = $this->HttpPostCookie($url, $p_data);
+        $data               = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 压缩
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     * @param    [type]     $sfile  文件名/目录名
+     * @param    [type]     $dfile  压缩到路径并命名
+     * @param    [type]     $z_type 压缩类型
+     * @param    [type]     $path   压缩文件路径
+     * @return   [type]             [description]
+     */
+    public function fileZip($sfile, $dfile, $z_type, $path)
+    {
+        $url              = $this->BT_PANEL . config("bt.fileZip");
+        $p_data           = $this->GetKeyData();
+        $p_data['sfile']  = $sfile;
+        $p_data['dfile']  = $dfile;
+        $p_data['z_type'] = $z_type;
+        $p_data['path']   = $path;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取文件权限组及权限
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     * @param    [type]     $filename 文件绝对地址
+     */
+    public function GetFileAccess($filename)
+    {
+        $url                = $this->BT_PANEL . config("bt.GetFileAccess");
+        $p_data             = $this->GetKeyData();
+        $p_data['filename'] = $filename;
+        $result             = $this->HttpPostCookie($url, $p_data);
+        $data               = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改权限及权限组
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     * @param    [type]     $filename 文件绝对地址
+     * @param    [type]     $user     用户组
+     * @param    [type]     $access   权限码
+     */
+    public function SetFileAccess($filename, $user, $access)
+    {
+        $url                = $this->BT_PANEL . config("bt.SetFileAccess");
+        $p_data             = $this->GetKeyData();
+        $p_data['filename'] = $filename;
+        $p_data['user']     = $user;
+        $p_data['access']   = $access;
+        $result             = $this->HttpPostCookie($url, $p_data);
+        $data               = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取文件内容
+     * @Author   Youngxj
+     * @DateTime 2019-04-25
+     * @param    [type]     $path 文件绝对地址
+     */
+    public function GetFileBodys($path)
+    {
+        $url            = $this->BT_PANEL . config("bt.GetFileBody");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 文件拷贝
+     * @Author   Youngxj
+     * @DateTime 2019-04-27
+     * @param    [type]     $sfile 文件所在位置绝对地址
+     * @param    [type]     $dfile 拷贝绝对地址
+     */
+    public function CopyFile($sfile, $dfile)
+    {
+        $url             = $this->BT_PANEL . config("bt.CopyFile");
+        $p_data          = $this->GetKeyData();
+        $p_data['sfile'] = $sfile;
+        $p_data['dfile'] = $dfile;
+        $result          = $this->HttpPostCookie($url, $p_data);
+        $data            = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 批量剪切(兼删除)
+     * @Author   Youngxj
+     * @DateTime 2019-05-12
+     * @param    [type]     $path 路径
+     * @param    [type]     $type 类型：剪切->2
+     * @param    [type]     $data 数据["admin","install.php"]
+     */
+    public function SetBatchData($path, $type, $data)
+    {
+        $url            = $this->BT_PANEL . config("bt.SetBatchData");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $p_data['type'] = $type;
+        $p_data['data'] = $data;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 批量粘贴
+     * @Author   Youngxj
+     * @DateTime 2019-05-12
+     * @param    [type]     $path 路径
+     * @param    [type]     $type 类型：剪切->2;复制->1
+     */
+    public function BatchPaste($path, $type)
+    {
+        $url            = $this->BT_PANEL . config("bt.BatchPaste");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $p_data['type'] = $type;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 宝塔内置下载
+     * @Author   Youngxj
+     * @DateTime 2019-06-04
+     * @param    [type]     $filename 文件路径及文件名
+     * @return   [type]               [description]
+     */
+    public function download($file, $filename)
+    {
+        error_reporting(0);
+        $p_data = $this->GetKeyData();
+        $url    = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
+        $result = $this->HttpPostCookie($url);
+        if ($result && isset($result['status']) && $result['status'] == 'false') {
+            $data = json_decode($result, true);
+            return $data;
+        }
+        $downUrl = $url;
+        $file    = @fopen($downUrl, "r");
+        if (!$file) {
+            exit('文件找不到');
+        } else {
+            Header("Content-type: application/octet-stream");
+            Header("Content-Disposition: attachment; filename=" . $filename);
+            while (!feof($file)) {
+                echo fread($file, 50000);
+            }
+            fclose($file);
+        }
+        // header('Content-type: application/save-as');
+        // header('Content-Disposition: attachment; filename="' . $filename . '"');
+        // @readfile($url);
+    }
+
+    /**
+     * 远程下载文件
+     * @Author   Youngxj
+     * @DateTime 2019-06-04
+     * @param    [type]     $path     存放路径
+     * @param    [type]     $urls      远程文件地址
+     * @param    [type]     $filename 文件名
+     */
+    public function DownloadFile($path, $urls, $filename)
+    {
+        $url                = $this->BT_PANEL . config("bt.DownloadFile");
+        $p_data             = $this->GetKeyData();
+        $p_data['path']     = $path;
+        $p_data['url']      = $urls;
+        $p_data['filename'] = $filename;
+        $result             = $this->HttpPostCookie($url, $p_data);
+        $data               = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 新建文件夹
+     * @Author   Youngxj
+     * @DateTime 2019-06-01
+     * @param    [type]     $path 全路径
+     */
+    public function CreateDir($path)
+    {
+        $url            = $this->BT_PANEL . config("bt.CreateDir");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 新建文件
+     * @Author   Youngxj
+     * @DateTime 2019-06-01
+     * @param    [type]     $path 全路径
+     */
+    public function CreateFile($path)
+    {
+        $url            = $this->BT_PANEL . config("bt.CreateFile");
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取宝塔软件详细介绍
+     * @Author   Youngxj
+     * @DateTime 2019-07-14
+     * @param    [type]     $sName 软件名
+     */
+    public function GetSoftFind($sName)
+    {
+        $url             = $this->BT_PANEL . config("bt.GetSoftFind");
+        $p_data          = $this->GetKeyData();
+        $p_data['sName'] = $sName;
+        $result          = $this->HttpPostCookie($url, $p_data);
+        $data            = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 安装宝塔软件
+     * @Author   Youngxj
+     * @DateTime 2019-07-14
+     * @param    [type]     $sName   软件名
+     * @param    [type]     $version 版本号
+     * @param integer $type 类型
+     * @param integer $upgrade 升级时填1
+     */
+    public function InstallPlugin($sName, $version = 1, $type = 0, $upgrade = '')
+    {
+        $url               = $this->BT_PANEL . config("bt.InstallPlugin");
+        $p_data            = $this->GetKeyData();
+        $p_data['sName']   = $sName;
+        $p_data['version'] = $version;
+        $p_data['type']    = $type;
+        if ($upgrade) {
+            $p_data['upgrade'] = $upgrade;
+        }
+        $result = $this->HttpPostCookie($url, $p_data);
+        $data   = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 卸载宝塔软件
+     * @Author   Youngxj
+     * @DateTime 2019-07-14
+     * @param    [type]     $sName   软件名
+     * @param    [type]     $version 版本号
+     */
+    public function UnInstallPlugin($sName, $version)
+    {
+        $url               = $this->BT_PANEL . config("bt.UnInstallPlugin");
+        $p_data            = $this->GetKeyData();
+        $p_data['sName']   = $sName;
+        $p_data['version'] = $version;
+        $result            = $this->HttpPostCookie($url, $p_data);
+        $data              = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 清理Web日志
+     * @Author   Youngxj
+     * @DateTime 2019-07-14
+     * @param string $action CloseLogs
+     */
+    public function CloseLogs($action = 'CloseLogs')
+    {
+        $url              = $this->BT_PANEL . config("bt.CloseLogs");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 回收站信息
+     * @Author   Youngxj
+     * @DateTime 2019-07-18
+     * @param string $action [description]
+     */
+    public function GetRecyclebin($action = 'Get_Recycle_bin')
+    {
+        $url              = $this->BT_PANEL . config("bt.GetRecyclebin");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 清除回收站文件
+     * @Author   Youngxj
+     * @DateTime 2019-08-12
+     * @param string $action [description]
+     */
+    public function Close_Recycle_bin($action = 'Close_Recycle_bin')
+    {
+        $url              = $this->BT_PANEL . config("bt.Close_Recycle_bin");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取站点绑定的所有域名
+     * @Author   Youngxj
+     * @DateTime 2019-09-05
+     * @param    [type]     $id [description]
+     */
+    public function GetSiteDomains($id)
+    {
+        $url          = $this->BT_PANEL . config("bt.GetSiteDomains");
+        $p_data       = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result       = $this->HttpPostCookie($url, $p_data);
+        $data         = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 申请Let’s证书
+     * @Author   Youngxj
+     * @DateTime 2019-09-05
+     * @param    [type]     $siteName 站点名
+     * @param    [type]     $domains  域名["test.yum7.cn","tests.yum7.cn"]
+     * @param    [type]     $email    管理员邮箱
+     * @param integer $updateOf 1
+     * @param string  $force 'true'
+     */
+    public function CreateLet($siteName, $domains, $email, $updateOf = 1, $force = 'true')
+    {
+        $url                = $this->BT_PANEL . config("bt.CreateLet");
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['domains']  = $domains;
+        $p_data['email']    = $email;
+        $p_data['updateOf'] = $updateOf;
+        $p_data['force']    = $force;
+        $result             = $this->HttpPostCookie($url, $p_data);
+        $data               = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Lets证书续签
+     * @Author   Youngxj
+     * @DateTime 2019-09-05
+     * @param string $action [description]
+     */
+    public function RenewLets($action = 'renew_lets_ssl')
+    {
+        $url              = $this->BT_PANEL . config("bt.RenewLets");
+        $p_data           = $this->GetKeyData();
+        $p_data['action'] = $action;
+        $result           = $this->HttpPostCookie($url, $p_data);
+        $data             = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取指定文件行数内容
+     * @Author   Youngxj
+     * @DateTime 2019-12-07
+     * @param    [type]     $filename 文件全路径
+     * @param    integer    $num      行数
+     * @return   [type]               [description]
+     */
+    public function getFileLog($filename, $num = 10)
+    {
+        $url                = $this->BT_PANEL . config("bt.getFileLog");
+        $p_data             = $this->GetKeyData();
+        $p_data['filename'] = $filename;
+        $p_data['num']      = $num;
+        $result             = $this->HttpPostCookie($url, $p_data);
+        $data               = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 一键部署（新版）
+     * @Author   Youngxj
+     * @DateTime 2019-12-07
+     * @param    string     $search 搜索
+     * @param    integer    $type 分类id
+     */
+    public function GetList($search='',$type = 0)
+    {
+        $url            = $this->BT_PANEL . config("bt.GetList");
+        $p_data         = $this->GetKeyData();
+        $p_data['type'] = $type;
+        if($search){
+            $p_data['search'] = $search;
+        }
+        
+        $result         = $this->HttpPostCookie($url, $p_data);
+        $data           = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 宝塔一键部署执行(新版)
+     * @param [type] $dname       部署程序名
+     * @param [type] $site_name   部署到网站名
+     * @param [type] $php_version PHP版本
+     */
+    public function SetupPackageNew($dname, $site_name, $php_version)
+    {
+        $url = $this->BT_PANEL . config("bt.SetupPackageNew");
+
+        $p_data                = $this->GetKeyData();
+        $p_data['dname']       = $dname;
+        $p_data['site_name']   = $site_name;
+        $p_data['php_version'] = $php_version;
+        $result                = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 一键部署（新版）导入项目包
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $name             英文名
+     * @param    [type]     $title            中文吗
+     * @param    [type]     $php              php版本：70,71,72
+     * @param    [type]     $enable_functions 解禁的函数
+     * @param    [type]     $version          项目版本
+     * @param    [type]     $ps               简介
+     * @param    [type]     $dep_zip          项目包上传name=dep_zip
+     */
+    public function AddPackage($name, $title, $php, $enable_functions, $version, $ps, $dep_zip)
+    {
+        $url = $this->BT_PANEL . config("bt.AddPackage");
+
+        $p_data                     = $this->GetKeyData();
+        $p_data['name']             = $name;
+        $p_data['title']            = $title;
+        $p_data['php']              = $php;
+        $p_data['enable_functions'] = $enable_functions;
+        $p_data['version']          = $version;
+        $p_data['ps']               = $ps;
+        $p_data['dep_zip']          = $dep_zip;
+        $result                     = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取站点伪静态规则
+     * @Author   Youngxj
+     * @DateTime 2019-12-12
+     * @param    [type]     $siteName 站点名
+     */
+    public function GetSiteRewrite($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.GetSiteRewrite");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置站点伪静态规则
+     * @Author   Youngxj
+     * @DateTime 2019-12-12
+     * @param    [type]     $siteName 站点名
+     * @param    [type]     $data     伪静态内容
+     */
+    public function SetSiteRewrite($siteName, $data)
+    {
+        $url = $this->BT_PANEL . config("bt.SetSiteRewrite");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['data']     = $data;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置防跨域
+     * @Author   Youngxj
+     * @DateTime 2019-12-12
+     * @param    [type]     $path 网站目录
+     */
+    public function SetDirUserINI($path)
+    {
+        $url = $this->BT_PANEL . config("bt.SetDirUserINI");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * IIS锁定站点配置文件
+     * @Author   Youngxj
+     * @DateTime 2019-12-12
+     * @param    [type]     $siteName 站点名
+     */
+    public function SetConfigLocking($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.SetConfigLocking");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取CVE漏洞补丁列表
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function GetPatch()
+    {
+        $url = $this->BT_PANEL . config("bt.GetPatch");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 安装CVE漏洞补丁
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $url   补丁HTTP地址
+     * @param    [type]     $patch 补丁编号
+     */
+    public function SetPatch($url, $patch)
+    {
+        $url = $this->BT_PANEL . config("bt.SetPatch");
+
+        $p_data          = $this->GetKeyData();
+        $p_data['url']   = $url;
+        $p_data['patch'] = $patch;
+        $result          = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 安装IIS反向代理
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function SetupIisProxy()
+    {
+        $url = $this->BT_PANEL . config("bt.SetupIisProxy");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取IIS反向代理配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function GetIisProxyConfig()
+    {
+        $url = $this->BT_PANEL . config("bt.GetIisProxyConfig");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 更改IIS反向代理配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $data [description]
+     */
+    public function SetIisProxyConfig($data)
+    {
+        $url = $this->BT_PANEL . config("bt.SetIisProxyConfig");
+
+        $p_data = $this->GetKeyData();
+
+        // 反向代理启用状态
+        $p_data['enabled'] = $data['enabled'];
+        // HTTP协议版本。
+        $p_data['httpVersion'] = $data['httpVersion'];
+        // 使用HTTP keep-alive
+        $p_data['keepAlive'] = $data['keepAlive'];
+        // 超时时间(以秒为单位)
+        $p_data['timeout'] = $data['timeout'];
+        // 重写主机头
+        $p_data['reverseRewriteHostInResponseHeaders'] = $data['reverseRewriteHostInResponseHeaders'];
+        // 保留客户端IP地址
+        $p_data['xForwardedForHeaderName'] = $data['xForwardedForHeaderName'];
+        // 保留IP地址中的TCP端口。
+        $p_data['includePortInXForwardedFor'] = $data['includePortInXForwardedFor'];
+        // 可以缓存内容最小阈值(KB)
+        $p_data['minResponseBuffer'] = $data['minResponseBuffer'];
+        // 可以缓存内容最大阈值(KB)
+        $p_data['maxResponseHeaderSize'] = $data['maxResponseHeaderSize'];
+        // 代理服务器，不懂留空
+        $p_data['proxy'] = $data['proxy'];
+        //  代理服务器密码，不懂留空
+        $p_data['proxyBypass'] = $data['proxyBypass'];
+        // 开启缓存
+        $p_data['cache_enabled'] = $data['cache_enabled'];
+        // 缓存时间(以秒为单位，最大86400)
+        $p_data['cache_validationInterval'] = $data['cache_validationInterval'];
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取IIS网站防火墙首页数据及状态
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function WafIis()
+    {
+        $url = $this->BT_PANEL . config("bt.WafIis");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 打开/关闭IIS防火墙
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function WafIisSetOpen()
+    {
+        $url = $this->BT_PANEL . config("bt.WafIisSetOpen");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取Waf配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function WafIisGetConfig()
+    {
+        $url = $this->BT_PANEL . config("bt.WafIisGetConfig");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 站点配置列表
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     */
+    public function WafIisSiteConfig()
+    {
+        $url = $this->BT_PANEL . config("bt.WafIisSiteConfig");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取站点防火墙日志
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $siteName 站点名
+     */
+    public function WafIisGetLog($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.WafIisGetLog");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 设置站点防火墙几项开/关
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $obj      开关类型,总开关=open
+     * @param    [type]     $siteName 站点名
+     */
+    public function WafIisSetSiteOpen($obj, $siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.WafIisSetSiteOpen");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['obj']      = $obj;
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取站点防火墙独立配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $siteName 站点名
+     */
+    public function WafIisSetSiteConfig($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.WafIisSetSiteConfig");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 编辑网站规则
+     * @Author   Youngxj
+     * @DateTime 2019-12-13
+     * @param    [type]     $ruleName 规则类型
+     * @param    [type]     $siteName 站点名
+     * @return   [type]               [description]
+     */
+    public function get_site_disable_rule($ruleName, $siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.get_site_disable_rule");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['ruleName'] = $ruleName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取一键迁移状态
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]     [description]
+     */
+    public function get_speed()
+    {
+        $url = $this->BT_PANEL . config("bt.get_speed");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]     [description]
+     */
+    public function get_panel_api()
+    {
+        $url = $this->BT_PANEL . config("bt.get_panel_api");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 保存接口信息
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $api_info json格式的配置信息
+     * {"panel":"http://127.0.0.1:8888","token":"xxxxxxxxxxxxxxxxxxxxxxxxxxxx"}
+     */
+    public function set_panel_api($api_info)
+    {
+        $url = $this->BT_PANEL . config("bt.set_panel_api");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['api_info'] = $api_info;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 对比配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $panel     API地址
+     * @param    [type]     $api_token 密钥
+     * @return   [type]                [description]
+     */
+    public function chekc_surroundings($panel, $api_token)
+    {
+        $url = $this->BT_PANEL . config("bt.chekc_surroundings");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['panel']     = $panel;
+        $p_data['api_token'] = $api_token;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 对比配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $panel     API地址
+     * @param    [type]     $api_token 密钥
+     * @return   [type]                [description]
+     */
+    public function get_site_info($panel, $api_token)
+    {
+        $url = $this->BT_PANEL . config("bt.get_site_info");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['panel']     = $panel;
+        $p_data['api_token'] = $api_token;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 配置需要同步的数据
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $sync_info json格式
+     */
+    public function set_sync_info($sync_info)
+    {
+        $url = $this->BT_PANEL . config("bt.set_sync_info");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['sync_info'] = $sync_info;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取迁移记录
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]                [description]
+     */
+    public function get_sync_info()
+    {
+        $url = $this->BT_PANEL . config("bt.get_sync_info");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取日志信息
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]     [description]
+     */
+    public function return_log()
+    {
+        $url = $this->BT_PANEL . config("bt.return_log");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 清除日志
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $data json格式
+     * @return   [type]           [description]
+     */
+    public function log_remove_file($data)
+    {
+        $url = $this->BT_PANEL . config("bt.log_remove_file");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['data'] = $data;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 清除完成度
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]     [description]
+     */
+    public function log_status()
+    {
+        $url = $this->BT_PANEL . config("bt.log_status");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取配置备份
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]     [description]
+     */
+    public function get_config_back()
+    {
+        $url = $this->BT_PANEL . config("bt.get_config_back");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 创建配置备份
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     */
+    public function set_config_back()
+    {
+        $url = $this->BT_PANEL . config("bt.set_config_back");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 还原配置备份
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $path 配置文件名
+     * @param    [type]     $type 类型默认local
+     * @return   [type]           [description]
+     */
+    public function import_config_back($path, $type = 'local')
+    {
+        $url = $this->BT_PANEL . config("bt.import_config_back");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $p_data['type'] = $type;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 本地配置备份调用
+     * 需要提前上传备份文件到/www/server/panel/backup/Disposable目录才能调用
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    string     $type [description]
+     */
+    public function Decompression($type = 'decompress')
+    {
+        $url = $this->BT_PANEL . config("bt.Decompression");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['type'] = $type;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除备份的配置文件
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $filename [description]
+     * @return   [type]               [description]
+     */
+    public function del_config_back($filename)
+    {
+        $url = $this->BT_PANEL . config("bt.del_config_back");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['filename'] = $filename;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 端口扫描
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $dk 端口
+     * @param    string     $ip IP（IPv4）
+     * @return   [type]         [description]
+     */
+    public function port_blast($dk, $ip = '127.0.0.1')
+    {
+        $url = $this->BT_PANEL . config("bt.port_blast");
+
+        $p_data       = $this->GetKeyData();
+        $p_data['dk'] = $dk;
+        $p_data['ip'] = $ip;
+        $result       = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取host配置列表
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @return   [type]     [description]
+     */
+    public function get_host_config()
+    {
+        $url = $this->BT_PANEL . config("bt.get_host_config");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 新增host
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $domain 域名
+     * @param    [type]     $ip     IP
+     */
+    public function add_host_config($domain, $ip)
+    {
+        $url = $this->BT_PANEL . config("bt.add_host_config");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['domain'] = $domain;
+        $p_data['ip']     = $ip;
+        $result           = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除host配置
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $domain 域名
+     * @return   [type]             [description]
+     */
+    public function del_host_config($domain)
+    {
+        $url = $this->BT_PANEL . config("bt.del_host_config");
+
+        $p_data           = $this->GetKeyData();
+        $p_data['domain'] = $domain;
+        $result           = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改host
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $olddomain 老域名
+     * @param    [type]     $newdomain 新域名
+     * @param    [type]     $ip        IP
+     * @return   [type]                [description]
+     */
+    public function edit_host_config($olddomain, $newdomain, $ip)
+    {
+        $url = $this->BT_PANEL . config("bt.edit_host_config");
+
+        $p_data              = $this->GetKeyData();
+        $p_data['olddomain'] = $olddomain;
+        $p_data['newdomain'] = $newdomain;
+        $p_data['ip']        = $ip;
+        $result              = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 404公益
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $site [description]
+     * @return   [type]           [description]
+     */
+    public function pw404_site_list()
+    {
+        $url = $this->BT_PANEL . config("bt.pw404_site_list");
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取当前域名的公益情况
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $site all等于全部，传递域名
+     * @return   [type]           [description]
+     */
+    public function pw404_site_info($site = 'all')
+    {
+        $url = $this->BT_PANEL . config("bt.pw404_site_info");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['site'] = $site;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 安装公益
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $site    站点名
+     * @param    [type]     $demourl 公益demo地址
+     * @param    [type]     $demoid  公益ID（需要从指定api中获取）
+     * @return   [type]              [description]
+     */
+    public function pw404_site_install($site, $demourl, $demoid)
+    {
+        $url = $this->BT_PANEL . config("bt.pw404_site_install");
+
+        $p_data            = $this->GetKeyData();
+        $p_data['site']    = $site;
+        $p_data['demourl'] = $demourl;
+        $p_data['demoid']  = $demoid;
+        $result            = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 卸载公益
+     * @Author   Youngxj
+     * @DateTime 2019-12-14
+     * @param    [type]     $site 站点名
+     * @return   [type]           [description]
+     */
+    public function pw404_site_uninstall($site)
+    {
+        $url = $this->BT_PANEL . config("bt.pw404_site_uninstall");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['site'] = $site;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 目录保护
+     *
+     * @param [type] $id 宝塔ID
+     * @return void
+     */
+    public function get_dir_auth($id)
+    {
+        $url = $this->BT_PANEL . config("bt.get_dir_auth");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加目录保护
+     *
+     * @param [type] $id    宝塔ID
+     * @param [type] $name  名称
+     * @param [type] $site_dir  目录
+     * @param [type] $username  账号
+     * @param [type] $password  密码
+     * @return void
+     */
+    public function set_dir_auth($id, $name, $site_dir, $username, $password)
+    {
+        $url = $this->BT_PANEL . config("bt.set_dir_auth");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $p_data['name'] = $name;
+        $p_data['site_dir'] = $site_dir;
+        $p_data['username'] = $username;
+        $p_data['password'] = $password;
+
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 修改目录保护
+     *
+     * @param [type] $id    宝塔ID
+     * @param [type] $name  名称
+     * @param [type] $username  账号
+     * @param [type] $password  密码
+     * @return void
+     */
+    public function modify_dir_auth_pass($id, $name, $username, $password)
+    {
+        $url = $this->BT_PANEL . config("bt.modify_dir_auth_pass");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $p_data['name'] = $name;
+        $p_data['username'] = $username;
+        $p_data['password'] = $password;
+
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除目录保护
+     *
+     * @param [type] $id    宝塔ID
+     * @param [type] $name  名称
+     * @return void
+     */
+    public function delete_dir_auth($id, $name)
+    {
+        $url = $this->BT_PANEL . config("bt.delete_dir_auth");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $p_data['name'] = $name;
+
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 添加vsftpd用户
+     * {"status": "Success", "msg": "\u521b\u5efa\u7528\u6237\u6210\u529f...", "userid": "f903655", "diskstatus": "virtual-disk"}
+     * @param [type] $username  用户名
+     * @param [type] $password  密码
+     * @param [type] $homepath  路径
+     * @param [type] $powerlevel    download_upload_mkdir_other
+     * @param [type] $speed     限速KB/S 0不限制
+     * @param [type] $disksize  容量 mb 0不限制
+     * @return void
+     */
+    public function AddVsftpdUser($username, $password, $homepath, $disksize = 0, $speed = 0, $powerlevel = 'download_upload_mkdir_other')
+    {
+        $url = $this->BT_PANEL . config("bt.AddVsftpdUser");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['username'] = $username;
+        $p_data['password'] = $password;
+        $p_data['homepath'] = $homepath;
+        $p_data['powerlevel'] = $powerlevel;
+        $p_data['speed'] = $speed;
+        $p_data['disksize'] = $disksize;
+
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取vsftpd全局运行状态
+     * {"status": "Success", "portport": "20", "usernum": 2, "pavsport": "39000-40000", "CoreVersion": "3.0.2-25.el7", "SystemOS": "CentOS  7.2.1511(Py2.7.5)", "ServerStatus": "live", "loginmes_status": "on", "speed": 0, "controlport": "21", "loginmes_content": "Welcome To Login BT-FTP SERVER,This Server is Build in vsftpd 3.0.3 with bt-vsftpd plugin", "logsize": "0.00 b", "LocalIp": "139.9.222.32", "PluginVersion": "1.1.3-BETA"}
+     *
+     * @return void
+     */
+    public function GetTotalData()
+    {
+        $url = $this->BT_PANEL . config("bt.GetTotalData");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 配置信息
+     * {"status": "Success", "loginmes": "on", "controlport": "21", "pavsport": "39000-40000", "loginmes_content": "Welcome To Login BT-FTP SERVER,This Server is Build in vsftpd 3.0.3 with bt-vsftpd plugin", "listenmode": "ipv4", "speed": 0}
+     *
+     * @return void
+     */
+    public function GetGlobalData()
+    {
+        $url = $this->BT_PANEL . config("bt.GetGlobalData");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取vsftpd用户列表
+     * {"status": "Success", "list": {"621d373": {"username": "test", "diskuse": "0.0 MB", "userid": "621d373", "powerlevel": "download_upload_mkdir_other", "disksize": 0, "diskstatus": "local-disk", "homepath": "/www/wwwroot/test", "password": "kolLDhzxAAQFKoyU", "speed": 0}, "f903655": {"username": "tests", "diskuse": "0.0 MB / 100.0 MB (0.0%)", "userid": "f903655", "powerlevel": "download_upload", "disksize": 100, "diskstatus": "virtual-disk", "homepath": "/www/wwwroot/tests", "password": "lSZch4G2RlY6a69n", "speed": 100}}, "RequestId": "e040aec0a555c508e5e2a1e8a213b354"}
+     *
+     * @return void
+     */
+    public function GetVsftpdUserList()
+    {
+        $url = $this->BT_PANEL . config("bt.GetVsftpdUserList");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取运行日志
+     * {"status": "Success", "LogText": "\u65e5\u5fd7\u6587\u4ef6\u4e0d\u5b58\u5728"}
+     *
+     * @return void
+     */
+    public function GetLogText()
+    {
+        $url = $this->BT_PANEL . config("bt.GetLogText");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 清空vsftpd日志
+     *
+     * @return void
+     */
+    public function DelVsftpdLog()
+    {
+        $url = $this->BT_PANEL . config("bt.DelVsftpdLog");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx免费防火墙 - webshell查杀
+     *
+     * @param [type] $path  路径
+     * @return void
+     */
+    public function free_waf_san_dir($path)
+    {
+        $url = $this->BT_PANEL . config("bt.free_waf_san_dir");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = $path;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx免费防火墙 - 指定功能开关
+     * {"status": true, "msg": "\u8bbe\u7f6e\u6210\u529f!"}
+     * @param [type] $siteName  站点名
+     * @param string $obj   open/get/post/user-agent/cc/cdn/drop_abroad（禁国外）
+     * @return void
+     */
+    public function free_waf_set_site_obj_open($siteName, $obj = 'open')
+    {
+        $url = $this->BT_PANEL . config("bt.free_waf_san_dir");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['obj'] = $obj;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx免费防火墙 - 查看日志
+     *
+     * @param [type] $siteName  站点名
+     * @return void
+     */
+    public function free_waf_get_logs_list($siteName)
+    {
+        $url = $this->BT_PANEL . config("bt.free_waf_get_logs_list");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx免费防火墙 - cc设置
+     * {"status": true, "msg": "\u8bbe\u7f6e\u6210\u529f!"}
+     * @param [type] $siteName  站点名
+     * @param [type] $cycle     周期/秒
+     * @param [type] $limit     频率/次
+     * @param [type] $endtime   封锁时间/秒
+     * @param [type] $is_open_global
+     * @param [type] $increase
+     * @return void
+     */
+    public function free_waf_set_site_cc_conf($siteName, $cycle, $limit, $endtime, $is_open_global = 0, $increase = 0)
+    {
+        $url = $this->BT_PANEL . config("bt.free_waf_set_site_cc_conf");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['siteName'] = $siteName;
+        $p_data['cycle'] = $cycle;
+        $p_data['limit'] = $limit;
+        $p_data['endtime'] = $endtime;
+        $p_data['is_open_global'] = $is_open_global;
+        $p_data['increase'] = $increase;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx免费防火墙 - 数据统计
+     * {"safe_day": 0, "drop_ip": [], "total": {"rules": [{"value": 0, "name": "POST\u6e17\u900f", "key": "post"}, {"value": 0, "name": "GET\u6e17\u900f", "key": "get"}, {"value": 0, "name": "CC\u653b\u51fb", "key": "cc"}, {"value": 0, "name": "\u6076\u610fUser-Agent", "key": "user_agent"}, {"value": 0, "name": "Cookie\u6e17\u900f", "key": "cookie"}, {"value": 0, "name": "\u6076\u610f\u626b\u63cf", "key": "scan"}, {"value": 0, "name": "\u6076\u610fHEAD\u8bf7\u6c42", "key": "head"}, {"value": 0, "name": "URI\u81ea\u5b9a\u4e49\u62e6\u622a", "key": "url_rule"}, {"value": 0, "name": "URI\u4fdd\u62a4", "key": "url_tell"}, {"value": 0, "name": "\u6076\u610f\u6587\u4ef6\u4e0a\u4f20", "key": "disable_upload_ext"}, {"value": 0, "name": "\u7981\u6b62\u7684\u6269\u5c55\u540d", "key": "disable_ext"}, {"value": 0, "name": "\u7981\u6b62PHP\u811a\u672c", "key": "disable_php_path"}], "total": 0}, "open": true}
+     * @return void
+     */
+    public function free_waf_total()
+    {
+        $url = $this->BT_PANEL . config("bt.free_waf_total");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Nginx免费防火墙 - 总开关
+     *
+     * @return void
+     */
+    public function free_waf_set_open()
+    {
+        $url = $this->BT_PANEL . config("bt.free_waf_set_open");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 文件查杀
+     *
+     * @param [type] $filename  文件全路径
+     * @return void
+     */
+    public function webshellCheck($filename)
+    {
+        $url = $this->BT_PANEL . config("bt.webshellCheck");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['filename'] = $filename;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 面板操作日志
+     *
+     * @param integer $limit
+     * @param integer $p
+     * @return void
+     */
+    public function getPanelLogs($limit=10,$p = 1){
+        $url = $this->BT_PANEL . config("bt.getData");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['tojs'] = 'firewall.get_log_list';
+        $p_data['table'] = 'logs';
+        $p_data['limit'] = $limit;
+        $p_data['p'] = $p;
+        $p_data['search'] = '';
+        $p_data['order'] = 'id desc';
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 获取web日志大小
+     *
+     * @return void
+     */
+    public function GetDirSize(){
+        $url = $this->BT_PANEL . config("bt.GetDirSize");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['path'] = '/www/wwwlogs';
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+
+
+    /**
+     * 构造带有签名的关联数组
+     * @return array
+     * Author: Youngxj
+     * Date: 2019/9/21 15:19
+     */
+    public function GetKeyData()
+    {
+        $now_time = time();
+        $p_data   = array(
+            'request_token' => md5($now_time . '' . md5($this->BT_KEY)),
+            'request_time'  => $now_time,
+        );
+        return $p_data;
+    }
+
+    /**
+     * 发起POST请求
+     * @param String       $url 目标网填，带http://
+     * @param Array|String $data 欲提交的数据
+     * @return string
+     */
+    private function HttpPostCookie($url, $data = '', $timeout = 120)
+    {
+        $path = ROOT_PATH . 'logs/';
+        if(!is_dir($path)){
+            mkdir($path,0777,true);
+        } 
+        //定义cookie保存位置
+        $cookie_file =  $path. md5($this->BT_PANEL) . '.cookie';
+        if (!file_exists($cookie_file)) {
+            $fp = fopen($cookie_file, 'w+');
+            fclose($fp);
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
+        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $output = curl_exec($ch);
+        curl_close($ch);
+        return $output;
+    }
+}

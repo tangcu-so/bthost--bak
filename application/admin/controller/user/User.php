@@ -3,7 +3,6 @@
 namespace app\admin\controller\user;
 
 use app\common\controller\Backend;
-use app\common\library\Auth;
 
 /**
  * 会员管理
@@ -12,95 +11,30 @@ use app\common\library\Auth;
  */
 class User extends Backend
 {
-
-    protected $relationSearch = true;
-    protected $searchFields = 'id,username,nickname';
-
+    
     /**
-     * @var \app\admin\model\User
+     * User模型对象
+     * @var \app\admin\model\user\User
      */
     protected $model = null;
 
     public function _initialize()
     {
         parent::_initialize();
-        $this->model = model('User');
+        $this->model = new \app\admin\model\user\User;
+        $this->view->assign("statusList", $this->model->getStatusList());
+    }
+
+    public function import()
+    {
+        parent::import();
     }
 
     /**
-     * 查看
+     * 默认生成的控制器所继承的父类中有index/add/edit/del/multi五个基础方法、destroy/restore/recyclebin三个回收站方法
+     * 因此在当前控制器中可不用编写增删改查的代码,除非需要自己控制这部分逻辑
+     * 需要将application/admin/library/traits/Backend.php中对应的方法复制到当前控制器,然后进行修改
      */
-    public function index()
-    {
-        //设置过滤方法
-        $this->request->filter(['strip_tags']);
-        if ($this->request->isAjax()) {
-            //如果发送的来源是Selectpage，则转发到Selectpage
-            if ($this->request->request('keyField')) {
-                return $this->selectpage();
-            }
-            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model
-                ->with('group')
-                ->where($where)
-                ->order($sort, $order)
-                ->count();
-            $list = $this->model
-                ->with('group')
-                ->where($where)
-                ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
-            foreach ($list as $k => $v) {
-                $v->hidden(['password', 'salt']);
-            }
-            $result = array("total" => $total, "rows" => $list);
-
-            return json($result);
-        }
-        return $this->view->fetch();
-    }
-
-    /**
-     * 添加
-     */
-    public function add()
-    {
-        if ($this->request->isPost()) {
-            $this->token();
-        }
-        return parent::add();
-    }
-
-    /**
-     * 编辑
-     */
-    public function edit($ids = null)
-    {
-        if ($this->request->isPost()) {
-            $this->token();
-        }
-        $row = $this->model->get($ids);
-        $this->modelValidate = true;
-        if (!$row) {
-            $this->error(__('No Results were found'));
-        }
-        $this->view->assign('groupList', build_select('row[group_id]', \app\admin\model\UserGroup::column('id,name'), $row['group_id'], ['class' => 'form-control selectpicker']));
-        return parent::edit($ids);
-    }
-
-    /**
-     * 删除
-     */
-    public function del($ids = "")
-    {
-        $row = $this->model->get($ids);
-        $this->modelValidate = true;
-        if (!$row) {
-            $this->error(__('No Results were found'));
-        }
-        Auth::instance()->delete($row['id']);
-        $this->success();
-    }
+    
 
 }

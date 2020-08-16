@@ -1,0 +1,82 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Domain')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-domain" data-rule="required" class="form-control" name="row[domain]" type="text" value="{$row.domain|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Host_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-host_id" data-rule="required" data-source="host/index" class="form-control selectpage" name="row[host_id]" type="text" value="{$row.host_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('User_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-user_id" data-rule="required" data-source="user/user/index" data-field="nickname" class="form-control selectpage" name="row[user_id]" type="text" value="{$row.user_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Domainlist_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-domainlist_id" data-rule="required" data-source="domainlist/index" class="form-control selectpage" name="row[domainlist_id]" type="text" value="{$row.domainlist_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod_record')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-dnspod_record" class="form-control" name="row[dnspod_record]" type="text" value="{$row.dnspod_record|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod_record_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-dnspod_record_id" data-rule="required" data-source="dnspod/record/index" class="form-control selectpage" name="row[dnspod_record_id]" type="text" value="{$row.dnspod_record_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod_domain_id')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-dnspod_domain_id" data-rule="required" data-source="dnspod/domain/index" class="form-control selectpage" name="row[dnspod_domain_id]" type="text" value="{$row.dnspod_domain_id|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Dir')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-dir" class="form-control" name="row[dir]" type="text" value="{$row.dir|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Audit')}:</label>
+        <div class="col-xs-12 col-sm-8">
+                        
+            <select  id="c-audit" data-rule="required" class="form-control selectpicker" name="row[audit]">
+                {foreach name="auditList" item="vo"}
+                    <option value="{$key}" {in name="key" value="$row.audit"}selected{/in}>{$vo}</option>
+                {/foreach}
+            </select>
+
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Status')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            
+            <div class="radio">
+            {foreach name="statusList" item="vo"}
+            <label for="row[status]-{$key}"><input id="row[status]-{$key}" name="row[status]" type="radio" value="{$key}" {in name="key" value="$row.status"}checked{/in} /> {$vo}</label> 
+            {/foreach}
+            </div>
+
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-success btn-embossed disabled">{:__('OK')}</button>
+            <button type="reset" class="btn btn-default btn-embossed">{:__('Reset')}</button>
+        </div>
+    </div>
+</form>

@@ -5,11 +5,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: 'user/user/index',
+                    index_url: 'user/user/index' + location.search,
                     add_url: 'user/user/add',
                     edit_url: 'user/user/edit',
                     del_url: 'user/user/del',
                     multi_url: 'user/user/multi',
+                    import_url: 'user/user/import',
                     table: 'user',
                 }
             });
@@ -20,28 +21,80 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             table.bootstrapTable({
                 url: $.fn.bootstrapTable.defaults.extend.index_url,
                 pk: 'id',
-                sortName: 'user.id',
+                sortName: 'id',
                 columns: [
                     [
                         {checkbox: true},
-                        {field: 'id', title: __('Id'), sortable: true},
-                        {field: 'group.name', title: __('Group')},
-                        {field: 'username', title: __('Username'), operate: 'LIKE'},
-                        {field: 'nickname', title: __('Nickname'), operate: 'LIKE'},
-                        {field: 'email', title: __('Email'), operate: 'LIKE'},
-                        {field: 'mobile', title: __('Mobile'), operate: 'LIKE'},
-                        {field: 'avatar', title: __('Avatar'), events: Table.api.events.image, formatter: Table.api.formatter.image, operate: false},
-                        {field: 'level', title: __('Level'), operate: 'BETWEEN', sortable: true},
-                        {field: 'gender', title: __('Gender'), visible: false, searchList: {1: __('Male'), 0: __('Female')}},
-                        {field: 'score', title: __('Score'), operate: 'BETWEEN', sortable: true},
-                        {field: 'successions', title: __('Successions'), visible: false, operate: 'BETWEEN', sortable: true},
-                        {field: 'maxsuccessions', title: __('Maxsuccessions'), visible: false, operate: 'BETWEEN', sortable: true},
-                        {field: 'logintime', title: __('Logintime'), formatter: Table.api.formatter.datetime, operate: 'RANGE', addclass: 'datetimerange', sortable: true},
-                        {field: 'loginip', title: __('Loginip'), formatter: Table.api.formatter.search},
-                        {field: 'jointime', title: __('Jointime'), formatter: Table.api.formatter.datetime, operate: 'RANGE', addclass: 'datetimerange', sortable: true},
-                        {field: 'joinip', title: __('Joinip'), formatter: Table.api.formatter.search},
-                        {field: 'status', title: __('Status'), formatter: Table.api.formatter.status, searchList: {normal: __('Normal'), hidden: __('Hidden')}},
+                        {field: 'id', title: __('Id')},
+                        {field: 'group_id', title: __('Group_id')},
+                        {field: 'username', title: __('Username')},
+                        {field: 'prevtime', title: __('Prevtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
+                        {field: 'logintime', title: __('Logintime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
+                        {field: 'loginip', title: __('Loginip')},
+                        {field: 'loginfailure', title: __('Loginfailure')},
+                        {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
+                        {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
+                        {field: 'status', title: __('Status'), searchList: {"normal":__('Status normal'),"hidden":__('Status hidden'),"locked":__('Status locked')}, formatter: Table.api.formatter.status},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                    ]
+                ]
+            });
+
+            // 为表格绑定事件
+            Table.api.bindevent(table);
+        },
+        recyclebin: function () {
+            // 初始化表格参数配置
+            Table.api.init({
+                extend: {
+                    'dragsort_url': ''
+                }
+            });
+
+            var table = $("#table");
+
+            // 初始化表格
+            table.bootstrapTable({
+                url: 'user/user/recyclebin' + location.search,
+                pk: 'id',
+                sortName: 'id',
+                columns: [
+                    [
+                        {checkbox: true},
+                        {field: 'id', title: __('Id')},
+                        {
+                            field: 'deletetime',
+                            title: __('Deletetime'),
+                            operate: 'RANGE',
+                            addclass: 'datetimerange',
+                            formatter: Table.api.formatter.datetime
+                        },
+                        {
+                            field: 'operate',
+                            width: '130px',
+                            title: __('Operate'),
+                            table: table,
+                            events: Table.api.events.operate,
+                            buttons: [
+                                {
+                                    name: 'Restore',
+                                    text: __('Restore'),
+                                    classname: 'btn btn-xs btn-info btn-ajax btn-restoreit',
+                                    icon: 'fa fa-rotate-left',
+                                    url: 'user/user/restore',
+                                    refresh: true
+                                },
+                                {
+                                    name: 'Destroy',
+                                    text: __('Destroy'),
+                                    classname: 'btn btn-xs btn-danger btn-ajax btn-destroyit',
+                                    icon: 'fa fa-times',
+                                    url: 'user/user/destroy',
+                                    refresh: true
+                                }
+                            ],
+                            formatter: Table.api.formatter.operate
+                        }
                     ]
                 ]
             });

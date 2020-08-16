@@ -2,41 +2,45 @@
 
 namespace app\admin\model;
 
-use app\common\model\MoneyLog;
-use app\common\model\ScoreLog;
 use think\Model;
+use traits\model\SoftDelete;
 
 class User extends Model
 {
 
+    use SoftDelete;
+
+    
+
     // 表名
     protected $name = 'user';
+    
     // 自动写入时间戳字段
     protected $autoWriteTimestamp = 'int';
+
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = 'updatetime';
+    protected $deleteTime = 'deletetime';
+
     // 追加属性
     protected $append = [
         'prevtime_text',
         'logintime_text',
-        'jointime_text'
+        'status_text'
     ];
-
-    public function getOriginData()
-    {
-        return $this->origin;
-    }
-
+    
+    
     protected static function init()
     {
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
-            //如果有修改密码
+            // 如果有修改密码
             if (isset($changed['password'])) {
                 if ($changed['password']) {
                     $salt = \fast\Random::alnum();
-                    $row->password = \app\common\library\Auth::instance()->getEncryptPassword($changed['password'], $salt);
+                    // $row->password = \app\common\library\Auth::instance()->getEncryptPassword($changed['password'], $salt);
+                    $row->password = encode($changed['password'], $salt);
                     $row->salt = $salt;
                 } else {
                     unset($row->password);
@@ -44,71 +48,59 @@ class User extends Model
             }
         });
 
-
-        self::beforeUpdate(function ($row) {
-            $changedata = $row->getChangedData();
-            if (isset($changedata['money'])) {
-                $origin = $row->getOriginData();
-                MoneyLog::create(['user_id' => $row['id'], 'money' => $changedata['money'] - $origin['money'], 'before' => $origin['money'], 'after' => $changedata['money'], 'memo' => '管理员变更金额']);
-            }
-            if (isset($changedata['score'])) {
-                $origin = $row->getOriginData();
-                ScoreLog::create(['user_id' => $row['id'], 'score' => $changedata['score'] - $origin['score'], 'before' => $origin['score'], 'after' => $changedata['score'], 'memo' => '管理员变更积分']);
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // 新建账号时加密密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $salt = \fast\Random::alnum();
+                    // $row->password = \app\common\library\Auth::instance()->getEncryptPassword($changed['password'], $salt);
+                    $row->password = encode($changed['password'], $salt);
+                    $row->salt = $salt;
+                } else {
+                    unset($row->password);
+                }
             }
         });
     }
 
-    public function getGenderList()
-    {
-        return ['1' => __('Male'), '0' => __('Female')];
-    }
-
+    
     public function getStatusList()
     {
-        return ['normal' => __('Normal'), 'hidden' => __('Hidden')];
+        return ['normal' => __('Status normal'), 'hidden' => __('Status hidden'), 'locked' => __('Status locked')];
     }
+
 
     public function getPrevtimeTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['prevtime'];
+        $value = $value ? $value : (isset($data['prevtime']) ? $data['prevtime'] : '');
         return is_numeric($value) ? date("Y-m-d H:i:s", $value) : $value;
     }
+
 
     public function getLogintimeTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['logintime'];
+        $value = $value ? $value : (isset($data['logintime']) ? $data['logintime'] : '');
         return is_numeric($value) ? date("Y-m-d H:i:s", $value) : $value;
     }
 
-    public function getJointimeTextAttr($value, $data)
+
+    public function getStatusTextAttr($value, $data)
     {
-        $value = $value ? $value : $data['jointime'];
-        return is_numeric($value) ? date("Y-m-d H:i:s", $value) : $value;
+        $value = $value ? $value : (isset($data['status']) ? $data['status'] : '');
+        $list = $this->getStatusList();
+        return isset($list[$value]) ? $list[$value] : '';
     }
 
     protected function setPrevtimeAttr($value)
     {
-        return $value && !is_numeric($value) ? strtotime($value) : $value;
+        return $value === '' ? null : ($value && !is_numeric($value) ? strtotime($value) : $value);
     }
 
     protected function setLogintimeAttr($value)
     {
-        return $value && !is_numeric($value) ? strtotime($value) : $value;
+        return $value === '' ? null : ($value && !is_numeric($value) ? strtotime($value) : $value);
     }
 
-    protected function setJointimeAttr($value)
-    {
-        return $value && !is_numeric($value) ? strtotime($value) : $value;
-    }
-
-    protected function setBirthdayAttr($value)
-    {
-        return $value ? $value : null;
-    }
-
-    public function group()
-    {
-        return $this->belongsTo('UserGroup', 'group_id', 'id', [], 'LEFT')->setEagerlyType(0);
-    }
 
 }

@@ -63,4 +63,14 @@ return [
     'This is a test mail'         => '这是一封来自FastAdmin的邮件',
     'Please input your email'     => '请输入测试接收者邮箱',
     'Please input correct email'  => '请输入正确的邮箱地址',
+    // -----------------------------------------------------------
+    'AdminEmail'                  => '站长邮箱',
+    'ftqq_sckey'                  => '方糖SCKEY',
+    'Secret'                      => '密钥',
+    'bt_token'                    => '被控密钥',
+    'api_token'                   => '财务密钥',
+    'que_key'                     => '监控密钥',
+    'api_returnip'                => '财务接口允许IP',
+    'expire_action'               => '到期动作',
+    'recycle_delete'              => '删除天数',
 ];

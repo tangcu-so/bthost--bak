@@ -1,7 +1,7 @@
 <?php
 return [
     // 项目名
-    'APP_NAME'              => 'bthost',
+    'APP_NAME'              => 'btHost',
     // 版本号
     'version'               => '1.0.0.20200813_beta',
     // API接口地址
