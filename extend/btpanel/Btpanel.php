@@ -77,7 +77,7 @@ class Btpanel
     }
 
     /**
-     * 获取指定数据库大小
+     * 获取数据库信息
      * @param [type] $db_name [description]
      */
     public function GetSqlSize($db_name)
@@ -2216,6 +2216,45 @@ class Btpanel
     }
 
     /**
+     * 防火墙停用四层防御
+     */
+    public function SetIPStopStop($wafType){
+        $url = $this->BT_PANEL . config("bt.SetIPStopStop") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙开启四层防御
+     */
+    public function SetIPStop($wafType){
+        $url = $this->BT_PANEL . config("bt.SetIPStop") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 防火墙获取四层防御状态
+     */
+    public function GetIPStop($wafType){
+        $url = $this->BT_PANEL . config("bt.GetIPStop") . $wafType;
+
+        $p_data = $this->GetKeyData();
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
      * 获取网站运行目录
      * @Author   Youngxj
      * @DateTime 2019-04-24
@@ -2259,18 +2298,35 @@ class Btpanel
 
     /**
      * 获取文件列表
-     * @Author   Youngxj
-     * @DateTime 2019-04-24
-     * @param    [type]     $path    网站根目录
-     * @param string $p 翻页
-     * @param string $tojs GetFiles
-     * @param string $showRow 一页条数
+     *
+     * @param [type] $path          网站根目录
+     * @param string $p             翻页
+     * @param string $search        搜索
+     * @param string $sort          排序
+     * @param string $reverse       正序，倒叙
+     * @param string $all           包含子目录
+     * @param string $tojs          默认
+     * @param string $showRow       显示文件条数
+     * @return void
      */
-    public function GetDir($path, $p = '1', $tojs = 'GetFiles', $showRow = '200')
+    public function GetDir($path, $p = '1',$search = '',$all = '',$sort = '',$reverse = '', $tojs = 'GetFiles', $showRow = '200')
     {
         $url = $this->BT_PANEL . config("bt.GetDir") . '&tojs=' . $tojs . '&p=' . $p . '&showRow=' . $showRow;
 
         $p_data         = $this->GetKeyData();
+        if($search){
+            $p_data['search'] = $search;
+        }
+        if($sort){
+            $p_data['sort'] = $sort;
+        }
+        if($reverse){
+            $p_data['reverse'] = $reverse;
+        }
+        if($all){
+            $p_data['all'] = $all;
+        }
+        
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -2322,6 +2378,7 @@ class Btpanel
         $data['blob']    = $blob;
         $data['m']       = $m;
         $data['f']       = $f;
+        // var_dump($data);exit;
         $result          = $this->HttpPostCookie($url, $data);
         $data            = json_decode($result, true);
         return $data;
@@ -2566,6 +2623,29 @@ class Btpanel
         // header('Content-type: application/save-as');
         // header('Content-Disposition: attachment; filename="' . $filename . '"');
         // @readfile($url);
+    }
+
+    /**
+     * 获取图片文件base64
+     *
+     * @param [type] $file
+     * @param [type] $filename
+     * @return void
+     */
+    public function images_view($file, $filename)
+    {
+        error_reporting(0);
+        $p_data = $this->GetKeyData();
+        $url    = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
+        $result = $this->HttpPostCookie($url);
+        if ($result && isset($result['status']) && $result['status'] == 'false') {
+            $data = json_decode($result, true);
+            return $data;
+        }
+        $downUrl = $url;
+        $imageInfo = getimagesize($downUrl);
+        $base64 = "" . chunk_split(base64_encode(file_get_contents($downUrl)));
+        return 'data:' . $imageInfo['mime'] . ';base64,' . chunk_split(base64_encode(file_get_contents($downUrl)));
     }
 
     /**
@@ -4025,6 +4105,65 @@ class Btpanel
 
         $p_data         = $this->GetKeyData();
         $p_data['path'] = '/www/wwwlogs';
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Mysql工具箱 - 修复
+     *
+     * @param [type] $db_name       数据库名
+     * @param array $tables         表：["admin"]
+     * @return void
+     */
+    public function ReTable($db_name,$tables=[]){
+        $url = $this->BT_PANEL . config("bt.ReTable");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['db_name'] = $db_name;
+        $p_data['tables'] = $tables;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Mysql工具箱 - 优化
+     *
+     * @param [type] $db_name       数据库名
+     * @param array $tables         表：["admin"]
+     * @return void
+     */
+    public function OpTable($db_name,$tables=[]){
+        $url = $this->BT_PANEL . config("bt.OpTable");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['db_name'] = $db_name;
+        $p_data['tables'] = $tables;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * Mysql工具箱 - 类型转换
+     *
+     * @param [type] $db_name       数据库名
+     * @param array $tables         表：["admin"]
+     * @param string $table_type    InnoDB/MyISAM
+     * @return void
+     */
+    public function AlTable($db_name,$tables=[],$table_type){
+        $url = $this->BT_PANEL . config("bt.AlTable");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['db_name'] = $db_name;
+        $p_data['tables'] = $tables;
+        $p_data['table_type'] = $table_type;
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);

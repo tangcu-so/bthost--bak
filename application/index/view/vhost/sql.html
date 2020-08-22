@@ -1,0 +1,50 @@
+{extend name="common/base" /}
+{block name="title"}网站Sql{/block}
+{block name="content"}
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-body">
+				<form action="" method="post">
+					<table class="table">
+						<thead>
+							<tr>
+								<th style="border:0" colspan="2">SQL设置</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td style="border:0">
+									用户名：<input name="username" class="span3" value="{$sql.name}" disabled="">
+									密码：<input name="password" id="password" class="span3" value="">
+									<input type="button" value="保存" class="btn btn-warning" onclick="sqlUp()">
+								</td>
+
+							</tr>
+						</tbody>
+					</table>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	function sqlUp() {
+		password = $('#password').val();
+		if (!password) {
+			EchoMsg('不能为空');
+			return false;
+		}
+		$.post('{:url("index/vhost/sqlUp")}', {
+				password: password
+			}, function (res) {
+				EchoMsg(res.msg, 1);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+	}
+</script>
+{/block}

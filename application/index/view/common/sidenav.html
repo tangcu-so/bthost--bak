@@ -1,11 +1,50 @@
-<div class="sidenav">
-    {:hook('user_sidenav_before')}
-    <ul class="list-group">
-        <li class="list-group-heading">{:__('Member center')}</li>
-        <li class="list-group-item {:$config['actionname']=='index'?'active':''}"> <a href="{:url('user/index')}"><i class="fa fa-user-circle fa-fw"></i> {:__('User center')}</a> </li>
-        <li class="list-group-item {:$config['actionname']=='profile'?'active':''}"> <a href="{:url('user/profile')}"><i class="fa fa-user-o fa-fw"></i> {:__('Profile')}</a> </li>
-        <li class="list-group-item {:$config['actionname']=='changepwd'?'active':''}"> <a href="{:url('user/changepwd')}"><i class="fa fa-key fa-fw"></i> {:__('Change password')}</a> </li>
-        <li class="list-group-item {:$config['actionname']=='logout'?'active':''}"> <a href="{:url('user/logout')}"><i class="fa fa-sign-out fa-fw"></i> {:__('Sign out')}</a> </li>
+<nav class="sidebar-main">
+    <ul class="nav-drawer">
+        <li class="nav-item active"> <a class="multitabs" href="main""><i class="mdi mdi-home"></i> <span>控制台</span></a> </li>
+        <li class="nav-item nav-item-has-subnav">
+        <a href="javascript:void(0)"><i class="mdi mdi-palette"></i> <span>基础功能</span></a>
+        <ul class="nav nav-subnav">
+            <li> <a class="multitabs" href="{:url('index/vhost/domain')}">域名绑定</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/pass')}">密码设置</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/speed')}">带宽限制</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/Rewrite301')}">域名跳转</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/redir')}">重定向</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/defaultfile')}">默认文件</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/rewrite')}">伪静态规则</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/ssl')}">SSL设置</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/runPath')}">运行目录</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/file')}">数据库管理</a> </li>
+        </ul>
+        </li>
+        <li class="nav-item nav-item-has-subnav">
+        <a href="javascript:void(0)"><i class="mdi mdi-format-align-justify"></i> <span>FTP/文件管理</span></a>
+        <ul class="nav nav-subnav">
+            <li> <a class="multitabs" href="{:url('index/vhost/file')}">在线文件管理</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/file_ftp')}">在线文件管理(FTP)</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/siteback')}">网站备份</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/sqlback')}">数据备份</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/ftp')}">FTP设置</a> </li>
+        </ul>
+        </li>
+        <li class="nav-item nav-item-has-subnav">
+        <a href="javascript:void(0)"><i class="mdi mdi-tools"></i> <span>安全设置</span></a>
+        <ul class="nav nav-subnav">
+            <li> <a class="multitabs" href="{:url('index/vhost/protection')}">防盗链</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/waf')}">防火墙</a> </li>
+        </ul>
+        </li>
+        <li class="nav-item nav-item-has-subnav">
+        <a href="javascript:void(0)"><i class="mdi mdi-file-outline"></i> <span>高级功能</span></a>
+        <ul class="nav nav-subnav">
+            <li> <a class="multitabs" href="{:url('index/vhost/sitelog')}">网站日志</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/sqltools')}">Mysql工具箱</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/httpauth')}">HTTP认证</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/deployment')}">一键部署</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/deployment_new')}">一键部署(新)</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/proof')}">防篡改</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/total')}">流量报表</a> </li>
+            <li> <a class="multitabs" href="{:url('index/vhost/proxy')}">反向代理</a> </li>
+        </ul>
+        </li>
     </ul>
-    {:hook('user_sidenav_after')}
-</div>
+    </nav>

@@ -2,10 +2,7 @@
 
 namespace app\index\controller;
 
-use addons\wechat\model\WechatCaptcha;
 use app\common\controller\Frontend;
-use app\common\library\Ems;
-use app\common\library\Sms;
 use think\Config;
 use think\Cookie;
 use think\Hook;
@@ -13,12 +10,12 @@ use think\Session;
 use think\Validate;
 
 /**
- * 会员中心
+ * 控制中心
  */
 class User extends Frontend
 {
     protected $layout = 'default';
-    protected $noNeedLogin = ['login', 'register', 'third'];
+    protected $noNeedLogin = ['login', 'register'];
     protected $noNeedRight = ['*'];
 
     public function _initialize()
@@ -64,93 +61,17 @@ class User extends Frontend
         return $this->view->fetch('user/' . $name);
     }
 
-    /**
-     * 会员中心
-     */
-    public function index()
-    {
-        $this->view->assign('title', __('User center'));
-        return $this->view->fetch();
+    public function index(){
+        if(Cookie::get('host_id')){
+            // 跳转到vhost控制中心
+            return $this->redirect('Vhost/index');
+        }else{
+            // 站点选择页
+            $this->view->assign('title', __('站点选择'));
+            return $this->view->fetch();
+        }        
     }
 
-    /**
-     * 注册会员
-     */
-    public function register()
-    {
-        $url = $this->request->request('url', '');
-        if ($this->auth->id) {
-            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('user/index'));
-        }
-        if ($this->request->isPost()) {
-            $username = $this->request->post('username');
-            $password = $this->request->post('password');
-            $email = $this->request->post('email');
-            $mobile = $this->request->post('mobile', '');
-            $captcha = $this->request->post('captcha');
-            $token = $this->request->post('__token__');
-            $rule = [
-                'username'  => 'require|length:3,30',
-                'password'  => 'require|length:6,30',
-                'email'     => 'require|email',
-                'mobile'    => 'regex:/^1\d{10}$/',
-                '__token__' => 'require|token',
-            ];
-
-            $msg = [
-                'username.require' => 'Username can not be empty',
-                'username.length'  => 'Username must be 3 to 30 characters',
-                'password.require' => 'Password can not be empty',
-                'password.length'  => 'Password must be 6 to 30 characters',
-                'email'            => 'Email is incorrect',
-                'mobile'           => 'Mobile is incorrect',
-            ];
-            $data = [
-                'username'  => $username,
-                'password'  => $password,
-                'email'     => $email,
-                'mobile'    => $mobile,
-                '__token__' => $token,
-            ];
-            //验证码
-            $captchaResult = true;
-            $captchaType = config("fastadmin.user_register_captcha");
-            if ($captchaType) {
-                if ($captchaType == 'mobile') {
-                    $captchaResult = Sms::check($mobile, $captcha, 'register');
-                } elseif ($captchaType == 'email') {
-                    $captchaResult = Ems::check($email, $captcha, 'register');
-                } elseif ($captchaType == 'wechat') {
-                    $captchaResult = WechatCaptcha::check($captcha, 'register');
-                } elseif ($captchaType == 'text') {
-                    $captchaResult = \think\Validate::is($captcha, 'captcha');
-                }
-            }
-            if (!$captchaResult) {
-                $this->error(__('Captcha is incorrect'));
-            }
-            $validate = new Validate($rule, $msg);
-            $result = $validate->check($data);
-            if (!$result) {
-                $this->error(__($validate->getError()), null, ['token' => $this->request->token()]);
-            }
-            if ($this->auth->register($username, $password, $email, $mobile)) {
-                $this->success(__('Sign up successful'), $url ? $url : url('user/index'));
-            } else {
-                $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
-            }
-        }
-        //判断来源
-        $referer = $this->request->server('HTTP_REFERER');
-        if (!$url && (strtolower(parse_url($referer, PHP_URL_HOST)) == strtolower($this->request->host()))
-            && !preg_match("/(user\/login|user\/register|user\/logout)/i", $referer)) {
-            $url = $referer;
-        }
-        $this->view->assign('captchaType', config('fastadmin.user_register_captcha'));
-        $this->view->assign('url', $url);
-        $this->view->assign('title', __('Register'));
-        return $this->view->fetch();
-    }
 
     /**
      * 会员登录
@@ -159,7 +80,7 @@ class User extends Frontend
     {
         $url = $this->request->request('url', '');
         if ($this->auth->id) {
-            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('user/index'));
+            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('Vhost/index'));
         }
         if ($this->request->isPost()) {
             $account = $this->request->post('account');
@@ -190,7 +111,7 @@ class User extends Frontend
                 return false;
             }
             if ($this->auth->login($account, $password)) {
-                $this->success(__('Logged in successful'), $url ? $url : url('user/index'));
+                $this->success(__('Logged in successful'), $url ? $url : url('vhost/index'));
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
             }
@@ -213,7 +134,7 @@ class User extends Frontend
     {
         //注销本站
         $this->auth->logout();
-        $this->success(__('Logout successful'), url('user/index'));
+        $this->success(__('Logout successful'), url('Vhost/index'));
     }
 
     /**

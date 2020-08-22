@@ -522,3 +522,266 @@ function setconfig($file, $pat, $rep)
         return false;
     }
 }
+
+/**
+ * 生成IP地址|ipv4
+ *
+ * @param [type] $start     起始IP
+ * @param [type] $end       结束IP
+ * @return void
+ */
+function ip_range($start,$end){
+    $start = ip2long($start); 
+    $end = ip2long($end); 
+    return array_map('long2ip',range($start,$end));
+}
+
+/**
+ * 提示模版
+ * @Author   Youngxj
+ * @DateTime 2019-05-26
+ * @param    string     $msg 自定义消息
+ * @param    boolean    $die 是否终止
+ * @return   [type]          [description]
+ */
+function sysmsg($msg = '未知的异常', $die = true)
+{
+    echo '
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>站点提示信息</title>
+    <style type="text/css">
+    html{background:#eee}body{background:#fff;color:#333;font-family:"微软雅黑","Microsoft YaHei",sans-serif;margin:2em auto;padding:1em 2em;max-width:700px;-webkit-box-shadow:10px 10px 10px rgba(0,0,0,.13);box-shadow:10px 10px 10px rgba(0,0,0,.13);opacity:.8}h1{border-bottom:1px solid #dadada;clear:both;color:#666;font:24px "微软雅黑","Microsoft YaHei",,sans-serif;margin:30px 0 0 0;padding:0;padding-bottom:7px}#error-page{margin-top:50px}h3{text-align:center}#error-page p{font-size:9px;line-height:1.5;margin:25px 0 20px}#error-page code{font-family:Consolas,Monaco,monospace}ul li{margin-bottom:10px;font-size:9px}a{color:#21759B;text-decoration:none;margin-top:-10px}a:hover{color:#D54E21}.button{background:#f7f7f7;border:1px solid #ccc;color:#555;display:inline-block;text-decoration:none;font-size:9px;line-height:26px;height:28px;margin:0;padding:0 10px 1px;cursor:pointer;-webkit-border-radius:3px;-webkit-appearance:none;border-radius:3px;white-space:nowrap;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;-webkit-box-shadow:inset 0 1px 0 #fff,0 1px 0 rgba(0,0,0,.08);box-shadow:inset 0 1px 0 #fff,0 1px 0 rgba(0,0,0,.08);vertical-align:top}.button.button-large{height:29px;line-height:28px;padding:0 12px}.button:focus,.button:hover{background:#fafafa;border-color:#999;color:#222}.button:focus{-webkit-box-shadow:1px 1px 1px rgba(0,0,0,.2);box-shadow:1px 1px 1px rgba(0,0,0,.2)}.button:active{background:#eee;border-color:#999;color:#333;-webkit-box-shadow:inset 0 2px 5px -3px rgba(0,0,0,.5);box-shadow:inset 0 2px 5px -3px rgba(0,0,0,.5)}table{table-layout:auto;border:1px solid #333;empty-cells:show;border-collapse:collapse}th{padding:4px;border:1px solid #333;overflow:hidden;color:#333;background:#eee}td{padding:4px;border:1px solid #333;overflow:hidden;color:#333}
+    </style>
+    </head>
+    <body id="error-page">
+    <div class="panel-heading">
+    <h3>站点提示信息</h3>
+    ' . $msg . '
+    </div>
+    <div class="panel-body">
+    </div>
+    </body>
+    </html>
+    ';
+    if ($die == true) {
+        exit;
+    }
+}
+
+/**
+ * byte(字节)根据长度转成mb(兆字节)
+ */
+function bytes2mb($bytes)
+{
+    return is_numeric($bytes) ? round($bytes / 1024 / 1024, 2) : 0;
+}
+
+/**
+ * 单位转换
+ * @param  [type] $size [description]
+ * @return [type]       [description]
+ */
+function formatBytes($size)
+{
+    $units = array(' B', ' KB', ' MB', ' GB', ' TB');
+    for ($i = 0; $size >= 1024 && $i < 4; $i++) {
+        $size /= 1024;
+    }
+
+    return round($size, 2) . $units[$i];
+}
+
+/**
+ * 转字节
+ * @Author   Youngxj
+ * @DateTime 2019-05-17
+ * @param    [type]     $input [description]
+ * @return   [type]            [description]
+ */
+function byteconvert($input)
+{
+    preg_match('/(\d+)(\w+)/', $input, $matches);
+    $type = strtolower($matches[2]);
+    switch ($type) {
+        case "b":
+            $output = $matches[1];
+            break;
+        case "kb":
+            $output = $matches[1] * 1024;
+            break;
+        case "m":
+        case "mb":
+            $output = $matches[1] * 1024 * 1024;
+            break;
+        case "gb":
+            $output = $matches[1] * 1024 * 1024 * 1024;
+            break;
+        case "tb":
+            $output = $matches[1] * 1024 * 1024 * 1024;
+            break;
+        default:
+            $output = 0;
+    }
+    return $output;
+}
+
+/**
+ * 单位转换到字节
+ * @param  [type] $size 值
+ * @return [type]       字节
+ */
+function toBytes($size)
+{
+    $size = strtolower($size);
+    if (strstr($size, 'tb')) {
+        $str = str_replace('tb', '', $size);
+        $s   = $str * 1024 * 1024 * 1024 * 1024;
+    } elseif (strstr($size, 'gb')) {
+        $str = str_replace('gb', '', $size);
+        $s   = $str * 1024 * 1024 * 1024;
+    } elseif (strstr($size, 'mb')) {
+        $str = str_replace('mb', '', $size);
+        $s   = $str * 1024 * 1024;
+    } elseif (strstr($size, 'kb')) {
+        $str = str_replace('kb', '', $size);
+        $s   = $str * 1024;
+    } elseif (strstr($size, 'b')) {
+        $str = str_replace('b', '', $size);
+        $s   = $str;
+    } else {
+        $s = $size;
+    }
+    return (string) $s;
+}
+
+/**
+ * 判断是否包含字符串
+ * @param  [type]  $key 长内容
+ * @param  [type]  $con 关键字
+ * @return boolean      [description]
+ */
+function isHave($key, $con)
+{
+    if (strpos($key, $con) !== false) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+/**
+ * 查找二维数组中是否包含
+ * @Author   Youngxj
+ * @DateTime 2019-05-10
+ * @param    [type]     $value 值
+ * @param    [type]     $array 数组
+ * @return   [type]            bool
+ */
+function deep_in_array($value, $array)
+{
+    foreach ($array as $item) {
+        if (!is_array($item)) {
+            if ($item == $value) {
+                return true;
+            } else {
+                continue;
+            }
+        }
+
+        if (in_array($value, $item)) {
+            return true;
+        } else if (deep_in_array($value, $item)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * 下载本地文件
+ *
+ * @param [type] $file_sub_path
+ * @param [type] $file_name
+ * @return void
+ */
+function downloadTemplate($file_sub_path, $file_name)
+{
+    set_time_limit(0);
+    header("Content-type:text/html;charset=utf-8");
+
+    $file_name = iconv("utf-8", "gb2312", $file_name);
+    $file_path = $file_sub_path . $file_name;
+    if (!file_exists($file_path)) {
+        echo "下载文件不存在！";
+        exit;         //如果提示这个错误，很可能你的路径不对，可以打印$file_sub_path查看
+    }
+
+    $fp = fopen($file_path, "r");
+    $file_size = filesize($file_path);
+
+    //下载文件需要用到的头
+    Header("Content-type: application/octet-stream");
+    Header("Accept-Ranges: bytes");
+    Header("Accept-Length:" . $file_size);
+    Header("Content-Disposition: attachment; filename=" . $file_name);
+    $buffer = 1024;
+    $file_count = 0;
+    while (!feof($fp) && $file_count < $file_size) {
+        $file_con = fread($fp, $buffer);
+        $file_count += $buffer;
+        echo $file_con;
+    }
+    fclose($fp);
+}
+
+/**
+ * 替换get参数
+ * @Author   Youngxj
+ * @DateTime 2019-08-05
+ * @param    [type]     $url   地址
+ * @param    [type]     $key   key
+ * @param    [type]     $value val
+ * @return   [type]            [description]
+ */
+function url_set_value($url, $key, $value)
+{
+    $a     = explode('?', $url);
+    $url_f = $a[0];
+    $query = $a[1];
+    parse_str($query, $arr);
+    $arr[$key] = $value;
+    return $url_f . '?' . http_build_query($arr);
+}
+
+/**
+ * 获取扩展名
+ * @Author   Youngxj
+ * @DateTime 2019-04-25
+ * @param    [type]     $name 文本
+ * @return   [type]           [description]
+ */
+function fileExtension($name)
+{
+    $file = pathinfo($name);
+    if ($file) {
+        return @$file['extension'];
+    } else {
+        return false;
+    }
+}
+
+/**
+ * 取百分比
+ *
+ * @param [type] $sum
+ * @param [type] $row
+ * @return void
+ */
+function getround($sum, $row)
+{
+    return @round($row / $sum * 100);
+}

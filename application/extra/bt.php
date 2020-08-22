@@ -110,6 +110,11 @@ return [
     'SQLDelBackup'          => '/database?action=DelBackup', //删除sql备份
     'InputSql'              => '/database?action=InputSql', //备份恢复 数据库导入
 
+    # Mysql工具箱
+    'ReTable'               => '/database?action=ReTable', //修复
+    'OpTable'               => '/database?action=OpTable', //优化
+    'AlTable'               => '/database?action=AlTable', //转换数据库类型
+
     # 文件操作
     'UploadFile'            => '/files?action=UploadFile', //上传文件
     'UploadFiles'           => '/files?action=upload', //上传文件（分片上传）
@@ -174,6 +179,10 @@ return [
     'GetwafCms'             => '/plugin?action=a&s=get_site_cms', //Cms防护列表
     'GetwafLog'             => '/plugin?action=a&s=get_safe_logs', //获取日志
     'SitewafConfig'         => '/plugin?action=a&s=get_site_config', //总列表拦截数据
+    'SetIPStopStop'         => '/plugin?action=a&s=set_stop_ip_stop', //关闭四层防御
+    'SetIPStop'             => '/plugin?action=a&s=set_stop_ip', //开启四层防御
+    'GetIPStop'             => '/plugin?action=a&s=get_stop_ip', //获取四层防御状态
+
 
     // Vsftpd
     'GetTotalData'          => '/plugin?action=a&s=PageLoad&name=bt_vsftpd', // 获取全局运行状态

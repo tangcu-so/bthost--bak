@@ -67,8 +67,11 @@ class Plans extends Model
         // var_dump($domainArr,$domain_key,$domain);exit;
 
         // IP池，随机抽选一个IP
+        $ip = '';
         if($plansArr['ippools_id']){
             $ipArr = model('Ipaddress')->where(['ippools_id'=>$plansArr['ippools_id'],'status'=>'normal'])->column('ip');
+            $ip_key = array_rand($ipArr);
+            $ip = $ipArr[$ip_key];
         }else{
             $ipArr = false;
         }
@@ -76,8 +79,7 @@ class Plans extends Model
             $this->msg = 'IP池中无可用IP';
             return false;
         }
-        $ip_key = array_rand($ipArr);
-        $ip = $ipArr[$ip_key];
+        
 
         $plansArr['domain'] = $domain;
         $plansArr['ip'] = $ip;

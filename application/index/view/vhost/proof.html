@@ -1,0 +1,212 @@
+{extend name="common/base" /}
+{block name="title"}防篡改{/block}
+{block name="content"}
+<div class="row">
+	<div class="col-md-12">
+		<div class="card" id="loading_box">
+			<div class="card-header">
+				<header class="card-title">
+					防篡改汇总
+				</header>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan="2">状态：{$proofInfo.bak_open ? '<span style="color:green">已开启</span><a
+										href="javascript:proofStatus(0);">[关闭]</a>' : '<span
+										style="color:#2288cc">未开启</span><a href="javascript:proofStatus(1)">[开启]</a>'}
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>/</td>
+								<td>全部统计</td>
+								<td>创建次数</td>
+								<td>删除次数</td>
+								<td>修改次数</td>
+								<td>移动次数</td>
+							</tr>
+							<tr>
+								<td>站点总计</td>
+								<td>{$proofInfo.total.site.total}</td>
+								<td>{$proofInfo.total.site.create}</td>
+								<td>{$proofInfo.total.site.delete}</td>
+								<td>{$proofInfo.total.site.move}</td>
+								<td>{$proofInfo.total.site.move}</td>
+							</tr>
+							<tr>
+								<td>今日统计</td>
+								<td>{$proofInfo.total.day.total}</td>
+								<td>{$proofInfo.total.day.create}</td>
+								<td>{$proofInfo.total.day.delete}</td>
+								<td>{$proofInfo.total.day.move}</td>
+								<td>{$proofInfo.total.day.move}</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+
+
+
+				<p style="clear: both;"></p>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-6 col-lg-6" id="loading_box1">
+		<div class="card card-hover-shadow">
+			<header class="card-header">
+				<div class="card-title">保护文件名 <a href="javascript:inc('protect')" class="btn btn-xs btn-warning">添加</a>
+				</div>
+			</header>
+			<div class="card-body">
+				<table class="table table-striped table-borderless">
+					<tbody>
+						{volist name="proofInfo.protectExt" id="protectExt"}
+						<tr>
+							<td>{$protectExt}</td>
+							<td><a href="javascript:delProof('{$protectExt}','protect')">删除</a></td>
+						</tr>
+						{/volist}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6 col-lg-6" id="loading_box2">
+		<div class="card card-hover-shadow">
+			<header class="card-header">
+				<div class="card-title">排除文件夹 <a href="javascript:inc('excloud')" class="btn btn-xs btn-warning">添加</a>
+				</div>
+			</header>
+			<div class="card-body">
+				<table class="table table-striped table-borderless">
+					<tbody>
+						{volist name="proofInfo.excludePath" id="excludePath"}
+						<tr>
+							<td>{$excludePath}</td>
+							<td><a href="javascript:delProof('{$excludePath}','excloud')">删除</a></td>
+						</tr>
+						{/volist}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	function proofStatus(type) {
+		var l = $('#loading_box').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
+		$.post('{:url("index/vhost/proofStatus")}', {
+				type: type
+			}, function (res) {
+				EchoMsg(res.msg, 1);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+			.always(function () {
+				l.destroy();
+			})
+	}
+
+	function delProof(name, type) {
+		id_text = type == 'protect' ? 'loading_box1' : 'loading_box2';
+		$.confirm({
+			title: '温馨提示',
+			content: '确定要删除？',
+			icon: 'mdi mdi-alert',
+			animation: 'scale',
+			closeAnimation: 'zoom',
+			buttons: {
+				confirm: {
+					text: '确定',
+					btnClass: 'btn-orange',
+					action: function () {
+						var l = $('#'+id_text).lyearloading({
+							opacity: 0.125,
+							spinnerSize: 'lg'
+						});
+						$.post('{:url("index/vhost/delProof")}', {
+								name: name,
+								type: type
+							}, function (res) {
+								EchoMsg(res.msg, 1);
+							})
+							.fail(function () {
+								EchoMsg('请求错误，请稍候重试');
+							})
+							.always(function () {
+								l.destroy();
+							})
+					}
+				},
+				'取消': function () {}
+			}
+		});
+	}
+
+	function incProof(name, type) {
+		id_text = type == 'protect' ? 'loading_box1' : 'loading_box2';
+		var l = $('#' + id_text).lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
+		$.post('{:url("index/vhost/incProof")}', {
+				name: name,
+				type: type
+			}, function (res) {
+				EchoMsg(res.msg, 1);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+			.always(function () {
+				l.destroy();
+			})
+	}
+
+	function inc(type) {
+		str = type == 'protect' ? '保护' : '排除';
+		str2 = type == 'protect' ? '文件名' : '文件夹';
+		$.confirm({
+			title: '添加' + str,
+			content: '<div class="form-group p-1 mb-0">' +
+				'  <label class="control-label">输入要添加' + str + '的内容</label>' +
+				'  <input autofocus="" type="text" id="input-value" placeholder="请输入' + str2 +
+				'" class="form-control">' +
+				'</div>',
+			buttons: {
+				sayMyName: {
+					text: '提交',
+					btnClass: 'btn-orange',
+					action: function () {
+						var input = this.$content.find('input#input-value');
+						var errorText = this.$content.find('.text-danger');
+						if (!$.trim(input.val())) {
+							$.alert({
+								content: "不能为空。",
+								type: 'red'
+							});
+							return false;
+						} else {
+							incProof(input.val(), type);
+						}
+					}
+				},
+				'关闭': function () {}
+			}
+		});
+	}
+</script>
+{/block}

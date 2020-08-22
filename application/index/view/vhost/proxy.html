@@ -1,0 +1,203 @@
+{extend name="common/base" /}
+{block name="title"}反向代理{/block}
+{block name="content"}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card" id="loading_list">
+            <div class="card-header">
+                <header class="card-title">
+                    反向代理
+                </header>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <form action="" method="post">
+                        <table class="table table-hover" id="proxy_list">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        名称
+                                    </th>
+                                    <th>
+                                        代理目录
+                                    </th>
+                                    <th>
+                                        目标Url
+                                    </th>
+                                    <th>
+                                        缓存
+                                    </th>
+                                    <th>
+                                        状态
+                                    </th>
+                                    <th style="text-align:right;">
+                                        操作
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {volist name="proxyList" id="proxy"}
+                                <tr>
+                                    <td>
+                                        {$proxy.proxyname}
+                                    </td>
+                                    <td>
+                                        {$proxy.proxydir}
+                                    </td>
+                                    <td>
+                                        {$proxy.proxysite}
+                                    </td>
+                                    <td>
+                                        {$proxy.cache?'已开启':'已关闭'}
+                                    </td>
+                                    <td>
+                                        {$proxy.advanced?'运行中':'已暂停'}
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <a href="javascript:del('{$proxy.proxyname}')"
+                                            class="btn btn-label btn-danger btn-xs">
+                                            <label><i class="mdi mdi-close"></i></label> 删除
+                                        </a>
+                                    </td>
+                                </tr>
+                                {/volist}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card" id="loading_box">
+            <div class="card-header">
+                <header class="card-title">
+                    新增反代
+                </header>
+            </div>
+            <div class="card-body">
+                <form id="incPorxy" style="padding: 20px;">
+                    <div class="custom-control custom-checkbox custom-control-inline">
+                        <input name="type" id="type" type="checkbox" class="custom-control-input" />
+                        <label class="custom-control-label" for="type">开启代理</label>
+                    </div>
+                    <div class="custom-control custom-checkbox custom-control-inline">
+                        <input name="cache" id="cache" type="checkbox" class="custom-control-input" />
+                        <label class="custom-control-label" for="cache">开启缓存</label>
+                    </div>
+                    <div class="custom-control custom-checkbox custom-control-inline">
+                        <input name="advanced" id="advanced" type="checkbox" class="custom-control-input" />
+                        <label class="custom-control-label" for="advanced">开启代理目录</label>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label for="proxyname">代理名称：</label>
+                        <input class="form-control" name="proxyname" id="proxyname" type="text" />
+                    </div>
+                    <label for="cachetime">缓存时间：</label>
+                    <div class="form-group input-group">
+                        <input class="form-control" name="cachetime" id="cachetime" type="number" value="0" />
+                        <div class="input-group-append">
+                            <span class="input-group-text" id="basic-addon2">分钟</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="proxydir">代理目录：</label>
+                        <input class="form-control" name="proxydir" id="proxydir" type="text" value="/" />
+                    </div>
+                    <div class="form-group">
+                        <label for="todomain">目标Url：</label>
+                        <input class="form-control" name="proxysite" id="todomain" type="text"
+                            placeholder="https://www.baidu.com" />
+                    </div>
+                    <div class="form-group">
+                        <label for="todomain">发送域名：</label>
+                        <input class="form-control" name="todomain" id="todomain" type="text"
+                            placeholder="www.baidu.com" />
+                    </div>
+                    <div class="form-group">
+                        <label for="">内容替换：</label>
+                        <input class="form-control" name="subfiltera" placeholder="被替换文本，可留空" type="text" />
+                        <input class="form-control" name="subfilterb" placeholder="替换为，可留空" type="text" />
+                    </div>
+                    <div class="form-group">
+                        <input onclick="inc()" type="button" value="提交" class="btn btn-warning">
+                    </div>
+
+                    </input>
+                </form>
+                <hr>
+                <small class="text-muted">
+                    <span style="color:red">！</span> 代理目录：访问这个目录时将会把目标URL的内容返回并显示(需要开启高级功能) <br>
+                    <span style="color:red">！</span> 目标URL：可以填写你需要代理的站点，目标URL必须为可正常访问的URL，否则将返回错误 <br>
+                    <span style="color:red">！</span> 发送域名：将域名添加到请求头传递到代理服务器，默认为目标URL域名，若设置不当可能导致代理无法正常运行 <br>
+                    <span style="color:red">！</span> 内容替换：只能在使用nginx时提供，最多可以添加3条替换内容,如果不需要替换请留空 <br>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{/block}
+{block name="script"}
+<script type="text/javascript">
+    function inc() {
+        data = $('#incPorxy').serialize();
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
+        $.post('{:url("index/vhost/proxy")}', data, function (data, textStatus, xhr) {
+                if (data.code == 1) {
+                    EchoMsg(data.msg, 1);
+                } else {
+                    EchoMsg(data.msg);
+                }
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+            .always(function () {
+                l.destroy();
+            })
+    }
+
+    function del(name) {
+        $.confirm({
+            title: '温馨提醒',
+            content: '确定要删除？',
+            icon: 'mdi mdi-alert',
+            animation: 'scale',
+            closeAnimation: 'zoom',
+            buttons: {
+                confirm: {
+                    text: '确定',
+                    btnClass: 'btn-orange',
+                    action: function () {
+                        var l = $('#loading_list').lyearloading({
+                            opacity: 0.125,
+                            spinnerSize: 'lg'
+                        });
+                        $.post('{:url("index/vhost/proxyDel")}', {
+                                proxyname: name
+                            }, function (data, textStatus, xhr) {
+                                EchoMsg(data.msg, 1);
+                            })
+                            .fail(function () {
+                                EchoMsg('请求错误，请稍候重试');
+                            })
+                            .always(function () {
+                                l.destroy();
+                            })
+                    }
+                },
+                '取消': function () {
+
+                }
+            }
+        });
+    }
+</script>
+{/block}

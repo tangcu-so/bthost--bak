@@ -1,0 +1,38 @@
+{extend name="common/base" /}
+{block name="title"}网站日志列表{/block}
+{block name="content"}
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-body">
+				{if $logList}
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr >
+								<th>IP</th>
+								<th>时间</th>
+								<th>请求方式</th>
+								<th>请求地址</th>
+								<th>返回状态</th>
+								<th>来路</th>
+								<th>UA</th>
+							</tr>
+						</thead>
+						<tbody>
+							{volist name="logList" id="log"}
+							<tr >
+								<th colspan="7">{$log}</th>
+							</tr>
+							{/volist}
+						</tbody>
+					</table>
+				</div>
+				{else /}
+				<h1>当前网站没有日志</h1>
+				{/if}
+			</div>
+		</div>
+	</div>
+</div>
+{/block}

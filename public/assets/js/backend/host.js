@@ -29,8 +29,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'user.username', title: __('User_id')},
                         {field: 'sort_id', title: __('Sort_id')},
                         {field: 'bt_id', title: __('Bt_id')},
-                        {field: 'ftp_id', title: __('Ftp_id')},
-                        {field: 'sql_id', title: __('Sql_id')},
                         {field: 'bt_name', title: __('Bt_name')},
                         {field: 'site_size', title: __('Site'), formatter: function (value, row, index) { 
                             return row.site_max==0?'无限制':'<progress value="'+row.site_size+'" max="'+row.site_max+'" title="'+row.site_size+'/'+row.site_max+'"></progress>';

@@ -34,14 +34,8 @@
             </div>
             <div class="col-xs-12 col-md-">
                 <div class="form-group">
-                    <label for="c-username">用户名</label>
-                    <input type="text" name="row[username]" class="form-control" data-rule="remote({:url('ajax/check_username_available')}, event=buildHost, id=0)" data-rule="required" id="c-username" placeholder="">
-                </div>
-            </div>
-            <div class="col-xs-12 col-md-3">
-                <div class="form-group">
-                    <label for="c-password">管理密码</label>
-                    <input type="text" name="row[password]" class="form-control" data-rule="required" id="c-password" placeholder="">
+                    <label for="c-user_id">用户</label>
+                    <input type="text" name="row[user_id]" data-source="user/user/index" class="form-control selectpage" data-field="username" data-rule="required" id="c-user_id" placeholder="">
                 </div>
             </div>
             <div class="col-xs-12 col-md-3">

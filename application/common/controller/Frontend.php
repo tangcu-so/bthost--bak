@@ -9,6 +9,7 @@ use think\Hook;
 use think\Lang;
 use think\Loader;
 use think\Validate;
+use think\Debug;
 
 /**
  * 前台控制器基类
@@ -42,6 +43,7 @@ class Frontend extends Controller
 
     public function _initialize()
     {
+        Debug::remark('begin');
         //移除HTML标签
         $this->request->filter('trim,strip_tags,htmlspecialchars');
         $modulename = $this->request->module();
@@ -82,6 +84,18 @@ class Frontend extends Controller
             }
         }
 
+        // 网站维护
+        // if (Config::get("site.status") != 1) {
+        //     $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
+        // }
+
+        // 已登录用户信息
+        $this->view->assign('vhost', $this->auth->getUser());
+
+        if ($this->auth->isLogin())
+            // 用户组
+            $this->view->assign('vhostGroup', $this->auth->getGroup());
+
         $this->view->assign('user', $this->auth->getUser());
 
         // 语言检测
@@ -113,6 +127,7 @@ class Frontend extends Controller
         Hook::listen("config_init", $config);
         // 加载当前控制器语言包
         $this->loadlang($controllername);
+        $this->assign('auth', $this->auth);
         $this->assign('site', $site);
         $this->assign('config', $config);
     }

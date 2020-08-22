@@ -1,0 +1,70 @@
+{extend name="common/base" /}
+{block name="title"}网站目录{/block}
+{block name="content"}
+<div class="row">
+	<div class="col-md-12">
+		<div class="card" id="loading_box">
+			<div class="card-header">
+				<header class="card-title">
+					运行目录
+				</header>
+			</div>
+			<div class="card-body">
+				<form action="" method="post">
+					<div class="form-group">
+						<label for="path">当前运行目录：</label>
+						<input name="path" id="path" class="span3 form-control" value="{$runPath.runPath}" disabled="">
+					</div>
+					<div class="form-group">
+						<label for="dirs">选择运行目录：</label>
+						<select name="dirs" id="dirs" class="form-control">
+							{volist name="$runPath.dirs" id="dirs"}
+							<option value="{$dirs}">{$dirs}</option>
+							{/volist}
+						</select>
+					</div>
+					<div class="form-group">
+						<input type="button" value="修 改" class="btn btn-warning" onclick="set_path()">
+					</div>
+				</form>
+				<hr>
+				<small class="text-muted">
+					<li>部分程序需要指定二级目录作为运行目录，如ThinkPHP5，Laravel</li>
+					<li>选择您的运行目录，点保存即可</li>
+				</small>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	function set_path() {
+		dirs = $('#dirs').val();
+		if (!dirs) {
+			EchoMg('目录不能为空');
+			return false;
+		}
+		var l = $('#loading_box').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
+		$.post('{:url("index/vhost/setSiteRunPath")}', {
+				dirs: dirs
+			}, function (data, textStatus, xhr) {
+				if (data.code == 1) {
+					EchoMsg(data.msg, 1);
+				} else {
+					EchoMsg('error：' + data.msg, 1);
+				}
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+			.always(function () {
+				l.destroy();
+			})
+	}
+</script>
+{/block}

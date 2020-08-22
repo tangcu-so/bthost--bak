@@ -276,8 +276,15 @@ class Ajax extends Backend
     public function check_username_available(){
         $params = $this->request->post('row/a');
         $event = $this->request->post('event');
+        $id = $this->request->post('id/d');
         if(isset($params['username'])&&$params['username']){
-            $find = model('User')::get(['username'=>$params['username']]);
+            
+            $where = ['username'=>$params['username']];
+            if($id){
+                $where['id'] = ['<>',$id];
+            }
+            // var_dump($where);exit;
+            $find = model('User')->where($where)->find();
             if($find){
                 $this->error('用户名已存在');
             }

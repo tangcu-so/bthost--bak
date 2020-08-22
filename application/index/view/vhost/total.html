@@ -1,0 +1,213 @@
+{extend name="common/base" /}
+{block name="title"}网站监控报表{/block}
+{block name="content"}
+<link href="__STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker3.min.css" rel="stylesheet">
+<link href="__STATIC__/Light-Year/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<link href="__STATIC__/Light-Year/js/bootstrap-clockpicker/bootstrap-clockpicker.min.css" rel="stylesheet">
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<header class="card-title">
+					流量统计汇总
+				</header>
+			</div>
+			<div class="card-body">
+				<table class="table table-bordered">
+					<thead>
+						<tr>
+							<th colspan="2">状态：{$siteTotal.open ? '<span style="color:green">已开启</span>' : '<span
+									style="color:#2288cc">未开启</span>'}</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td style="text-align: center;">总流量</td>
+							<td style="text-align: center;">总请求</td>
+						</tr>
+						<tr>
+							<td style="text-align: center;">{$Network.total_size|default="0"}</td>
+							<td style="text-align: center;">{$Network.total_request|default="0"}</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="card" id="loading_box">
+			<div class="card-header">
+					<nav class="navbar justify-content-between" style="width:100%;">
+						<a class="navbar-brand">流量统计报表</a>
+						<form class="form-inline">
+							<input type="text" name="time" class="form-control" data-date-end-date="0d" data-provide="datepicker" data-autoclose="true" value="{$day}" data-date-highlight="true"/>
+						  <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">查看</button>
+						</form>
+					  </nav>
+					<!-- <div class="form-group form-inline">
+						流量统计报表
+					</div> -->
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan='11'>流量统计</th>
+							</tr>
+							<tr>
+								<th>日期</th>
+								<th>流量</th>
+								<th>请求</th>
+								<th>PV</th>
+								<th>UV</th>
+								<th>IP</th>
+								<th>POST</th>
+								<th>GET</th>
+								<th>500</th>
+								<th>502</th>
+								<th>503</th>
+							</tr>
+						</thead>
+						<tbody>
+							{if $Network.days}
+							{volist name="Network.days" id="net" empty="没有数据"}
+							<tr>
+								<td>{$net.date|default="--"}</td>
+								<td>{$net.size|default="0"}</td>
+								<td>{$net.request|default="0"}</td>
+								<td>{$net.pv|default="0"}</td>
+								<td>{$net.uv|default="0"}</td>
+								<td>{$net.ip|default="0"}</td>
+								<td>{$net.post|default="0"}</td>
+								<td>{$net.get|default="0"}</td>
+								<td>{$net.500|default="0"}</td>
+								<td>{$net.502|default="0"}</td>
+								<td>{$net.503|default="0"}</td>
+							</tr>
+							{/volist}
+							{else /}
+							<tr>
+								<td colspan='11'>当前没有网络统计数据</td>
+							</tr>
+							{/if}
+						</tbody>
+					</table>
+				</div>
+
+
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan='11'>蜘蛛统计</th>
+							</tr>
+							<tr>
+								<th>日期</th>
+								<th>百度</th>
+								<th>360</th>
+								<th>google</th>
+								<th>搜狗</th>
+								<th>必应</th>
+								<th>Soso</th>
+								<th>神马</th>
+								<th>雅虎</th>
+								<th>总次数</th>
+							</tr>
+						</thead>
+						<tbody>
+							{if $Spider.days}
+							{volist name="Spider.days" id="Spider" empty="没有数据"}
+							<tr>
+								<td>{$Spider.date|default="0"}</td>
+								<td>{$Spider.baidu|default="0"}</td>
+								<td>{$Spider.360|default="0"}</td>
+								<td>{$Spider.google|default="0"}</td>
+								<td>{$Spider.sogou|default="0"}</td>
+								<td>{$Spider.bing|default="0"}</td>
+								<td>{$Spider.soso|default="0"}</td>
+								<td>{$Spider.yisou|default="0"}</td>
+								<td>{$Spider.yahoo|default="0"}</td>
+								<td>{$Spider.total|default="0"}</td>
+							</tr>
+							{/volist}
+							{else /}
+							<tr>
+								<td colspan='11'>当前没有蜘蛛统计数据</td>
+							</tr>
+							{/if}
+						</tbody>
+					</table>
+				</div>
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan='11'>客户端统计</th>
+							</tr>
+							<tr>
+								<th>日期</th>
+								<th>Windows</th>
+								<th>Android</th>
+								<th>iPhone</th>
+								<th>Mac</th>
+								<th>微信</th>
+								<th>Chrome</th>
+								<th>火狐</th>
+								<th>QQ</th>
+								<th>其它</th>
+							</tr>
+						</thead>
+						<tbody>
+							{if $Client}
+							{volist name="Client" id="Client" empty="没有数据"}
+							<tr>
+								<td>{$Client.date|default="--"}</td>
+								<td>{$Client.Windows|default="0"}</td>
+								<td>{$Client.Android|default="0"}</td>
+								<td>{$Client.iphone|default="0"}</td>
+								<td>{$Client['Mac OS X']|default="0"}</td>
+								<td>{$Client.weixin|default="0"}</td>
+								<td>{$Client.Chrome|default="0"}</td>
+								<td>{$Client.Firefox|default="0"}</td>
+								<td>{$Client.QQBrowser|default="0"}</td>
+								<td>{$Client.other|default="0"}</td>
+							</tr>
+							{/volist}
+							{else /}
+							<tr>
+								<td colspan='11'>当前没有客户端统计数据</td>
+							</tr>
+							{/if}
+						</tbody>
+					</table>
+				</div>
+				<hr>
+				<small class="text-muted">
+					<span style="color:red">！</span> PV(PageView值)：用户每次打开网站页面被记录1次。用户多次打开同一页面，访问量值累计多次。此指标衡量网站访问量情况。<br>
+					<span style="color:red">！</span> UV(独立访客)：访问您网站的上网电脑数量（以cookie为依据），此指标衡量独立访客数量情况。<br>
+				</small>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<!--日期选择器-->
+<script type="text/javascript" src="__STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="__STATIC__/Light-Year/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+<script type="text/javascript">
+	$(function(){
+		$('.dayTime').on('change',function(){
+			var l = $('#loading_box').lyearloading({
+				opacity: 0.125,
+				spinnerSize: 'lg'
+			});
+			time = $(this).val();
+			window.location.href="?time="+time;
+		});
+	})
+</script>
+{/block}

@@ -1,0 +1,290 @@
+{extend name="common/base" /}
+{block name="title"}SSL{/block}
+{block name="content"}
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<header class="card-title">
+					SSL设置
+				</header>
+			</div>
+			<div class="card-body">
+				<table class="table table-bordered">
+					<thead>
+						<tr>
+							<th colspan="2">SSL状态：{$GetSSL.status ? '<span style="color:green">已开启SSL</span><a
+									href="javascript:sslOff()">[关闭]</a>' : '<span style="color:#2288cc">未开启</span>'}
+							</th>
+							<th colspan="2">强制HTTPS：<input type="checkbox" id="toHttps" {$GetSSL.httpTohttps ? 'checked'
+									:''}></th>
+						</tr>
+					</thead>
+					<tbody>
+					</tbody>
+				</table>
+
+
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="card" id="ssl_loading">
+			<div class="card-header">
+				<header class="card-title">
+					一键申请证书
+				</header>
+			</div>
+			<div class="card-body">
+				<ul class="nav nav-tabs">
+					<li class="nav-item">
+						<a class="nav-link active" data-toggle="tab" href="#home" aria-selected="true">宝塔SSL</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" data-toggle="tab" href="#profile" aria-selected="false">Let's Encrypt</a>
+					</li>
+				</ul>
+				<div id="myTabContent" class="tab-content">
+					<div class="tab-pane fade active show in" id="home">
+						<div class="input-group">
+							<select class="form-control" id="domainList">
+								{volist name="domainList" id="domain"}
+								<option value="{$domain.name}">{$domain.name}</option>
+								{/volist}
+							</select>
+							<div class="input-group-append">
+								<button class="btn btn-outline-secondary btn-success" type="button"
+									onclick="sslApply()">一键申请证书</button>
+							</div>
+						</div>
+						<hr>
+						<small class="text-muted">
+							<li>宝塔SSL申请的是TrustAsia DV SSL CA - G5 原价：1900元/1年，宝塔用户免费！</li>
+							<li>一年满期后免费颁发</li>
+						</small>
+					</div>
+					<div class="tab-pane fade" id="profile">
+						{if $Domains.domains}
+						{volist name="Domains.domains" id="domain"}
+						<div class="custom-control custom-checkbox custom-control-inline">
+							<input type="checkbox" id="customCheckboxInline{$i}" name="letsDomain"
+								class="custom-control-input" value="{$domain.name}">
+							<label class="custom-control-label" for="customCheckboxInline{$i}">{$domain.name}</label>
+						</div>
+						{/volist}
+						<hr>
+						<div class="form-group">
+							<p><a href="javascript:sslApplyLets();" class="btn btn-success">一键申请</a> <a
+									href="javascript:sslrenewlets();" class="btn btn-warning">续签</a></p>
+						</div>
+						<hr>
+						<small class="text-muted">
+							<li>申请之前，请确保域名已解析，如未解析会导致审核失败</li>
+							<li>Let's Encrypt免费证书，有效期3个月，支持多域名。默认会自动续签</li>
+							<li>若您的站点使用了CDN或301重定向会导致续签失败</li>
+							<li>在未指定SSL默认站点时,未开启SSL的站点使用HTTPS会直接访问到已开启SSL的站点</li>
+							<li>如开启后无法使用HTTPS访问，请检查安全组是否正确放行443端口</li>
+						</small>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<header class="card-title">
+					证书配置
+				</header>
+			</div>
+			<div class="card-body" id="sslSet_loading">
+				<form action="" method="post">
+					<div class="row">
+						<div class="col-lg-6 col-md-6">
+							<label for="key">密钥(KEY)：</label>
+							<textarea name="key" id="key" style="width:100%;line-height:22px" class="form-control"
+								rows="10">{$GetSSL.key|default=""}</textarea>
+						</div>
+						<div class="col-lg-6 col-md-6">
+							<label for="csr">证书(PEM格式)：</label>
+							<textarea name="csr" id="csr" style="width:100%;line-height:22px" class="form-control"
+								rows="10">{$GetSSL.csr|default=""}</textarea>
+						</div>
+
+						<div class="col-md-12">
+							<div class="form-group">
+								<input type="button" value="保存并开启SSL" class="btn btn-warning" onclick="sslSet()">
+							</div>
+						</div>
+					</div>
+
+
+				</form>
+				<hr>
+				<small class="text-muted">
+					<li>粘贴您的*.key以及*.pem内容，然后保存即可[<a href="https://www.bt.cn/bbs/thread-704-1-1.html"
+							target="_blank">帮助</a>]。</li>
+					<li>如果浏览器提示证书链不完整,请检查是否正确拼接PEM证书</li>
+					<li>PEM格式证书 = 域名证书.crt + 根证书(root_bundle).crt</li>
+					<li>在未指定SSL默认站点时,未开启SSL的站点使用HTTPS会直接访问到已开启SSL的站点</li>
+					<li>如开启后无法使用HTTPS访问，请检查安全组是否正确放行443端口</li>
+				</small>
+			</div>
+		</div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	$(function () {
+		$("#toHttps").change(function () {
+			var a = $("#toHttps").is(':checked') ? '1' : '0';
+			$.post('{:url("index/vhost/toHttps")}', {
+					toHttps: a
+				}, function (data) {
+					EchoMsg(data.msg);
+				})
+				.fail(function () {
+					EchoMsg('请求错误，请稍候重试');
+				})
+		});
+	});
+
+	function sslSet() {
+		key = $('#key').val();
+		csr = $('#csr').val();
+		if (!key || !csr) {
+			EchoMsg('都不能为空');
+			return false;
+		}
+		var l = $('#sslSet_loading').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
+		$.post('{:url("index/vhost/sslSet")}', {
+				key: key,
+				csr: csr
+			}, function (res) {
+				EchoMsg(res.msg);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+			.always(function () {
+				l.destroy();
+			})
+	}
+
+	function sslOff() {
+		$.post('{:url("index/vhost/sslOff")}', {
+				ssl: 'off'
+			}, function (res) {
+				EchoMsg(res.msg);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+	}
+
+	function sslApply() {
+		domain = $('#domainList').val();
+		if (!domain) {
+			layer.msg('请选择域名')
+			return false;
+		}
+		var l = $('#ssl_loading').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
+		$.post('{:url("index/vhost/sslApply")}', {
+				domain: domain
+			}, function (data, textStatus, xhr) {
+				EchoMsg(data.msg);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+			.always(function () {
+				l.destroy();
+			})
+	}
+
+	function sslApplyLets() {
+		domain = jqchk();
+		if (!domain) {
+			layer.msg('请选择域名')
+			return false;
+		}
+
+		setTimeout("getletlog()", 1000);
+		$.post('{:url("index/vhost/sslApplyLets")}', {
+				domain: domain
+			}, function (data, textStatus, xhr) {
+				EchoMsg(data.msg);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+	}
+
+	function getletlog() {
+		$.ajax({
+				url: '{:url("getFileLog")}',
+				type: 'post',
+				dataType: 'json',
+			})
+			.done(function (res) {
+				if (res.code == 1) {
+					layer.msg(res.msg);
+					getletlog();
+				} else {
+					return false;
+				}
+			})
+			.fail(function () {
+				layer.alert('连接服务器失败，请稍候重试');
+			})
+			.always(function () {
+				console.log("complete");
+			});
+
+	}
+
+	function sslrenewlets() {
+		var l = $('#ssl_loading').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
+		$.post('{:url("index/vhost/sslRenewLets")}', '', function (data, textStatus, xhr) {
+				try {
+					EchoMsg(data.msg + '<br/>成功：' + data[0].sucess_list.length + '失败：' + data[0].err_list.length);
+				} catch (error) {
+					EchoMsg(data.msg);
+				}
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+			.always(function () {
+				l.destroy();
+			})
+	}
+
+	function jqchk() {
+
+		var chk_value = [];
+
+		$('input[name="letsDomain"]:checked').each(function () {
+
+			chk_value.push($(this).val());
+
+		});
+		return chk_value.length == 0 ? false : chk_value;
+	}
+</script>
+{/block}

@@ -1,0 +1,179 @@
+{extend name="common/base" /}
+{block name="title"}反向代理{/block}
+{block name="content"}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <form action="" method="post">
+                        <table class="table table-hover" id="proxy_list">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        名称
+                                    </th>
+                                    <th>
+                                        代理目录
+                                    </th>
+                                    <th>
+                                        目标Url
+                                    </th>
+                                    <th>
+                                        缓存
+                                    </th>
+                                    <th>
+                                        状态
+                                    </th>
+                                    <th style="text-align:right;">
+                                        操作
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {volist name="proxyList" id="proxy"}
+                                <tr>
+                                    <td>
+                                        {$proxy.proxyname}
+                                    </td>
+                                    <td>
+                                        {$proxy.root_path}
+                                    </td>
+                                    <td>
+                                        {$proxy.tourl}
+                                    </td>
+                                    <td>
+                                        {$proxy.cache_open?'已开启':'已关闭'}
+                                    </td>
+                                    <td>
+                                        {$proxy.open?'运行中':'已暂停'}
+                                    </td>
+                                    <td style="text-align: right;">
+                                        <a href="javascript:del('{$proxy.proxyname}')">
+                                            删除
+                                        </a>
+                                    </td>
+                                </tr>
+                                {/volist}
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div>
+                    <form id="incPorxy" style="padding: 20px;">
+                        <h3>
+                            新增反代
+                        </h3>
+                        <span>
+                            开启代理：
+                        </span>
+                        <input name="type" type="checkbox" />
+                        <br />
+                        <span>
+                            开启缓存：
+                        </span>
+                        <input name="cache" type="checkbox" />
+                        <br />
+                        <span>
+                            开启代理目录：
+                        </span>
+                        <input name="advanced" type="checkbox" />
+                        <br />
+                        <span>
+                            代理名称：
+                        </span>
+                        <input class="form-control" name="proxyname" type="text" />
+                        <br />
+                        <span>
+                            缓存时间：
+                        </span>
+                        <input class="form-control" name="cachetime" type="text" value="0" />
+                        分钟
+                        <br />
+                        <span>
+                            代理目录：
+                        </span>
+                        <input class="form-control" name="proxydir" type="text" value="/" />
+                        <br />
+                        <span>请求域名：</span>
+                        <select class="form-control" name="proxydomains">
+                            {volist name="domainList" id="domain"}
+                            <option value="{$domain.name}">{$domain.name}</option>
+                            {/volist}
+                        </select>
+                        <br />
+                        <span>
+                            目标Url：
+                        </span>
+                        <input class="form-control" name="proxysite" type="text" placeholder="https://www.baidu.com" />
+                        <br />
+                        <span>
+                            发送域名：
+                        </span>
+                        <input class="form-control" name="todomain" type="text" placeholder="www.baidu.com" />
+                        <br />
+                        <!--                         <span>
+                            内容替换：
+                        </span>
+                        <input class="form-control" name="subfiltera" placeholder="被替换文本，可留空" type="text"/>
+                        <input class="form-control" name="subfilterb" placeholder="替换为，可留空" type="text"/> -->
+                        <br />
+                        <input onclick="inc()" type="button" value="提交" class="btn btn-warning">
+                        </input>
+                    </form>
+                </div>
+                <div style="padding: 20px;">
+                    <h3>
+                        反代说明
+                    </h3>
+                    <ul>
+                        <li>
+                            代理目录：访问这个目录时将会把目标URL的内容返回并显示(需要开启高级功能)
+                        </li>
+                        <li>
+                            目标URL：可以填写你需要代理的站点，目标URL必须为可正常访问的URL，否则将返回错误
+                        </li>
+                        <li>
+                            发送域名：将域名添加到请求头传递到代理服务器，默认为目标URL域名，若设置不当可能导致代理无法正常运行
+                        </li>
+                        <li>
+                            内容替换：只能在使用nginx时提供，最多可以添加3条替换内容,如果不需要替换请留空
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+    function inc() {
+        data = $('#incPorxy').serialize();
+        $.post('{:url("index/vhost/proxy")}', data, function (data, textStatus, xhr) {
+                EchoMsg(data.msg);
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+    }
+
+    function del(name) {
+        layer.confirm('确定要删除？', {
+            btn: ['确定', '取消']
+        }, function () {
+            $.post('{:url("index/vhost/proxyDel")}', {
+                    proxyname: name
+                }, function (data, textStatus, xhr) {
+                    EchoMsg(data.msg, 1);
+                })
+                .fail(function () {
+                    EchoMsg('请求错误，请稍候重试');
+                })
+        }, function (index) {
+            layer.close(index);
+        });
+
+    }
+</script>
+{/block}

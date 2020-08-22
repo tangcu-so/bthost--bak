@@ -1,6 +1,6 @@
 <?php
 
-namespace app\admin\model;
+namespace app\common\model;
 
 use think\Model;
 use traits\model\SoftDelete;
@@ -94,8 +94,13 @@ class Host extends Model
         if($value){
             $bt = new Btaction();
             $sortList = $bt->getsitetype();
-            $newArr = array_column($sortList,'name');
-            return isset($newArr[$value])?$newArr[$value]:$value;
+            if($sortList){
+                $newArr = array_column($sortList,'name');
+                return isset($newArr[$value])?$newArr[$value]:$value;
+            }else{
+                return $value;
+            }
+            
         }else{
             return $value;
         }
@@ -132,5 +137,17 @@ class Host extends Model
         }else{
             return $dnspod->msg;
         }
+    }
+
+    // 获取sql信息
+    public function getSqlInfo($value, $data)
+    {
+        return Sql::get(['vhost_id' => $data['id']]);
+    }
+
+    // 获取ftp信息
+    public function getFtpInfo($value, $data)
+    {
+        return Ftp::get(['vhost_id' => $data['id']]);
     }
 }

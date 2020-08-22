@@ -18,14 +18,14 @@ class Host extends Backend
     
     /**
      * Host模型对象
-     * @var \app\admin\model\Host
+     * @var \app\common\model\Host
      */
     protected $model = null;
 
     public function _initialize()
     {
         parent::_initialize();
-        $this->model = new \app\admin\model\Host;
+        $this->model = new \app\common\model\Host;
         $this->view->assign("isVsftpdList", $this->model->getIsVsftpdList());
         $this->view->assign("statusList", $this->model->getStatusList());
     }
@@ -62,7 +62,7 @@ class Host extends Backend
             foreach ($list as $k => $v) {
                 // 关联分类
                 $v->sort_id = $this->model->sort($v->sort_id);
-                // var_dump($v->sort_id);
+                
                 $v->hidden(['user.password', 'user.salt']);
             }
             $result = array("total" => $total, "rows" => $list);
@@ -81,145 +81,139 @@ class Host extends Backend
     public function add(){
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
-            // 判断用户是否存在
-            $find = model('User')->where('username',$params['username'])->find();
-            if($find){
-                $this->error('用户名已存在');
-            }
-            // var_dump($params);exit;
-            // 读取资源组
-            // 资源组信息转化
-            $plansInfo = model('Plans')->getPlanInfo($params['plans']);
-            if(!$plansInfo){
-                $this->error(model('Plans')->msg);
-            }
-            // var_dump($plansInfo);exit;
-            $bt = new Btaction();
-            
-            $hostSetInfo = $bt->setInfo($params,$plansInfo);
+            // try {
+                // 读取资源组
+                // 资源组信息转化
+                $plansInfo = model('Plans')->getPlanInfo($params['plans']);
+                if(!$plansInfo){
+                    $this->error(model('Plans')->msg);
+                }
+                // var_dump($plansInfo);exit;
+                $bt = new Btaction();
+                
+                $hostSetInfo = $bt->setInfo($params,$plansInfo);
 
-            // 连接宝塔进行站点开通
-            $btInfo = $bt->btBuild($hostSetInfo);
-            if (!$btInfo) {
-                $this->error($bt->_error);
-            }
-            $btId = $btInfo['siteId'];
-            $btName = $hostSetInfo['bt_name'];
-
-            Db::startTrans();
-            
-            // 存储用户及站点信息
-            $userInc = model('User')->allowField(true)->data($params)->save();
-            
-            $user_id = model('User')->id;
-            if(!$user_id){
-                $this->error('添加失败');
-            }
-
-            $ftp_id = $sql_id = 0;
-            if($btInfo['ftpStatus']==true){
-                // 存储ftp
-                $ftp = model('Ftp')::create([
-                    'user_id'=>$user_id,
-                    'username'=>$btInfo['ftpUser'],
-                    'password'=>$btInfo['ftpPass'],
-                ]);
-                $ftp_id = $ftp->id;
-            }
-            
-            if($btInfo['databaseStatus']==true){
-                // 存储sql
-                $sql = model('Sql')::create([
-                    'user_id'=>$user_id,
-                    'username'=>$btInfo['databaseUser'],
-                    'password'=>$btInfo['databasePass'],
-                ]);
-                $sql_id = $sql->id;
-            }
-            // vsftpd创建
-            // 修改到期时间
-            $timeSet = $bt->btAction->WebSetEdate($btId,$params['endtime']);
-            if (!$timeSet['status']) {
-                $this->error('开通时间设置失败|' . json_encode($params['endtime']));
-            }
-            
-            // 预装程序
-            if($plansInfo['preset_procedure']){
-                // 程序预装
-                $defaultPhp = $hostSetInfo['version']&&$hostSetInfo['version']!='00'?$hostSetInfo['version']:'56';
-                $setUp = $bt->presetProcedure($plansInfo['preset_procedure'], $btName, $defaultPhp);
-                if(!$setUp){
+                // 连接宝塔进行站点开通
+                $btInfo = $bt->btBuild($hostSetInfo);
+                if (!$btInfo) {
                     $this->error($bt->_error);
                 }
-            }
-            // session隔离
-            // 并发、限速设置
-            // 默认并发、网速限制
-            if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0) {
-                // 有错误，记录，防止开通被打断
-                $modify_status = $bt->setLimit($btId, $plansInfo);
-                if (!$modify_status) {
-                    $this->error($bt->_error);
-                }
-            }
-            // dnspod智能解析
-            if($plansInfo['dnspod']){
-                $sub_domain = $hostSetInfo['domain'];
-                $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$plansInfo['ip'],$sub_domain);
-                if(!is_array($domain_jx)){
-                    $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$plansInfo['ip'],$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
-                }
-                $dnspod_record = $domain_jx['domain'];
-                $dnspod_record_id = $domain_jx['id'];
-                $dnspod_domain_id = $domain_jx['domain_id'];
-            }else{
-                $dnspod_record = '';
-                $dnspod_record_id = '';
-                $dnspod_domain_id = '';
-            }
-            
-            // 绑定多ip
-            
-            // 获取信息后存入数据库
-            $inc = model('Host')::create([
-                'user_id'               => $user_id,
-                'sort_id'               => $params['sort_id'],
-                'ftp_id'                => $ftp_id,
-                'sql_id'                => $sql_id,
-                'bt_id'                 => $btId,
-                'bt_name'               => $btName,
-                'site_max'              => $plansInfo['site_max'],
-                'sql_max'               => $plansInfo['sql_max'],
-                'flow_max'              => $plansInfo['flow_max'],
-                'analysis_type'         => $plansInfo['analysis_type'],
-                'default_analysis'      => $plansInfo['default_analysis'],
-                'is_audit'              => $plansInfo['domain_audit'],
-                'is_vsftpd'             => $plansInfo['vsftpd'],
-                'domain_max'            => $plansInfo['domain_num'],
-                'web_back_num'          => $plansInfo['web_back_num'],
-                'sql_back_num'          => $plansInfo['sql_back_num'],
-                'ip_address'            => $plansInfo['ip'],
-                'endtime'               => $params['endtime'],
-            ]);
+                $btId = $btInfo['siteId'];
+                $btName = $hostSetInfo['bt_name'];
 
-            $vhost_id = $inc->id;
-            if(!$vhost_id){
-                $this->error('主机信息存储失败');
-            }
-            // 存入域名信息
-            model('domain')::create([
-                'domain'=>$btName,
-                'host_id'=>$vhost_id,
-                'user_id'=>$user_id,
-                'domainlist_id'=>$plansInfo['domainlist_id'],
-                'dnspod_record'=>$dnspod_record,
-                'dnspod_record_id'=>$dnspod_record_id,
-                'dnspod_domain_id'=>$dnspod_domain_id,
-                'dir'=>'/',
-            ]);
+                Db::startTrans();
 
+                
+                // vsftpd创建
+                // 修改到期时间
+                $timeSet = $bt->btAction->WebSetEdate($btId,$params['endtime']);
+                if (!$timeSet['status']) {
+                    $this->error('开通时间设置失败|' . json_encode($params['endtime']));
+                }
+                
+                // 预装程序
+                if($plansInfo['preset_procedure']){
+                    // 程序预装
+                    $defaultPhp = $hostSetInfo['version']&&$hostSetInfo['version']!='00'?$hostSetInfo['version']:'56';
+                    $setUp = $bt->presetProcedure($plansInfo['preset_procedure'], $btName, $defaultPhp);
+                    if(!$setUp){
+                        $this->error($bt->_error);
+                    }
+                }
+                // session隔离
+                // 并发、限速设置
+                // 默认并发、网速限制
+                if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0) {
+                    // 有错误，记录，防止开通被打断
+                    $modify_status = $bt->setLimit($btId, $plansInfo);
+                    if (!$modify_status) {
+                        $this->error($bt->_error);
+                    }
+                }
+                // dnspod智能解析
+                if($plansInfo['dnspod']){
+                    // var_dump($plansInfo['ip']);exit;
+                    $sub_domain = $hostSetInfo['domain'];
+                    $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$plansInfo['ip'],$sub_domain);
+                    if(!is_array($domain_jx)){
+                        $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$plansInfo['ip'],$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
+                    }
+                    $dnspod_record = $domain_jx['domain'];
+                    $dnspod_record_id = $domain_jx['id'];
+                    $dnspod_domain_id = $domain_jx['domain_id'];
+                }else{
+                    $dnspod_record = '';
+                    $dnspod_record_id = '';
+                    $dnspod_domain_id = '';
+                }
+                
+                // 绑定多ip
+                
+                // 获取信息后存入数据库
+                $inc = model('Host')::create([
+                    'user_id'               => $params['user_id'],
+                    'sort_id'               => $params['sort_id'],
+                    'bt_id'                 => $btId,
+                    'bt_name'               => $btName,
+                    'site_max'              => $plansInfo['site_max'],
+                    'sql_max'               => $plansInfo['sql_max'],
+                    'flow_max'              => $plansInfo['flow_max'],
+                    'analysis_type'         => $plansInfo['analysis_type'],
+                    'default_analysis'      => $plansInfo['default_analysis'],
+                    'is_audit'              => $plansInfo['domain_audit'],
+                    'is_vsftpd'             => $plansInfo['vsftpd'],
+                    'domain_max'            => $plansInfo['domain_num'],
+                    'web_back_num'          => $plansInfo['web_back_num'],
+                    'sql_back_num'          => $plansInfo['sql_back_num'],
+                    'ip_address'            => $plansInfo['ip'],
+                    'endtime'               => $params['endtime'],
+                ]);
+
+                
+
+                $vhost_id = $inc->id;
+                if(!$vhost_id){
+                    $this->error('主机信息存储失败');
+                }
+                
+                if($btInfo['ftpStatus']==true){
+                    // 存储ftp
+                    $ftp = model('Ftp')::create([
+                        'vhost_id'=>$vhost_id,
+                        'username'=>$btInfo['ftpUser'],
+                        'password'=>$btInfo['ftpPass'],
+                    ]);
+                }
+                
+                if($btInfo['databaseStatus']==true){
+                    // 存储sql
+                    $sql = model('Sql')::create([
+                        'vhost_id'=>$vhost_id,
+                        'username'=>$btInfo['databaseUser'],
+                        'password'=>$btInfo['databasePass'],
+                    ]);
+                }
+
+                // IP池地址占用
+                model('Ipaddress')->where(['ip'=>$plansInfo['ip'],'ippools_id'=>$plansInfo['ippools_id']])->update(['vhost_id'=>$vhost_id]);
+                // 存入域名信息
+                model('domain')::create([
+                    'domain'=>$btName,
+                    'vhost_id'=>$vhost_id,
+                    'domainlist_id'=>$plansInfo['domainlist_id'],
+                    'dnspod_record'=>$dnspod_record,
+                    'dnspod_record_id'=>$dnspod_record_id,
+                    'dnspod_domain_id'=>$dnspod_domain_id,
+                    'dir'=>'/',
+                ]);
+                
+                Db::commit();
+            // } catch (\Exception $ex) {
+            //     return ['code'=>0,'msg'=>$ex->getMessage()];
+            // } catch (\Throwable $th) {
+            //     return ['code'=>0,'msg'=>$th->getMessage()];
+            // }
             
-            Db::commit();
             $this->success('添加成功');
         }
         return $this->view->fetch();

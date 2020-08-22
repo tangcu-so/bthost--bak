@@ -26,7 +26,7 @@ class Auth
     //默认配置
     protected $config = [];
     protected $options = [];
-    protected $allowFields = ['id', 'username', 'nickname', 'mobile', 'avatar', 'score'];
+    protected $allowFields = ['id', 'username', 'nickname', 'avatar'];
 
     public function __construct($options = [])
     {
@@ -114,83 +114,6 @@ class Auth
     }
 
     /**
-     * 注册用户
-     *
-     * @param string $username 用户名
-     * @param string $password 密码
-     * @param string $email    邮箱
-     * @param string $mobile   手机号
-     * @param array  $extend   扩展参数
-     * @return boolean
-     */
-    public function register($username, $password, $email = '', $mobile = '', $extend = [])
-    {
-        // 检测用户名、昵称、邮箱、手机号是否存在
-        if (User::getByUsername($username)) {
-            $this->setError('Username already exist');
-            return false;
-        }
-        if (User::getByNickname($username)) {
-            $this->setError('Nickname already exist');
-            return false;
-        }
-        if ($email && User::getByEmail($email)) {
-            $this->setError('Email already exist');
-            return false;
-        }
-        if ($mobile && User::getByMobile($mobile)) {
-            $this->setError('Mobile already exist');
-            return false;
-        }
-
-        $ip = request()->ip();
-        $time = time();
-
-        $data = [
-            'username' => $username,
-            'password' => $password,
-            'email'    => $email,
-            'mobile'   => $mobile,
-            'level'    => 1,
-            'score'    => 0,
-            'avatar'   => '',
-        ];
-        $params = array_merge($data, [
-            'nickname'  => $username,
-            'salt'      => Random::alnum(),
-            'jointime'  => $time,
-            'joinip'    => $ip,
-            'logintime' => $time,
-            'loginip'   => $ip,
-            'prevtime'  => $time,
-            'status'    => 'normal'
-        ]);
-        $params['password'] = $this->getEncryptPassword($password, $params['salt']);
-        $params = array_merge($params, $extend);
-
-        //账号注册时需要开启事务,避免出现垃圾数据
-        Db::startTrans();
-        try {
-            $user = User::create($params, true);
-
-            $this->_user = User::get($user->id);
-
-            //设置Token
-            $this->_token = Random::uuid();
-            Token::set($this->_token, $user->id, $this->keeptime);
-
-            //注册成功的事件
-            Hook::listen("user_register_successed", $this->_user, $data);
-            Db::commit();
-        } catch (Exception $e) {
-            $this->setError($e->getMessage());
-            Db::rollback();
-            return false;
-        }
-        return true;
-    }
-
-    /**
      * 用户登录
      *
      * @param string $account  账号,用户名、邮箱、手机号
@@ -210,7 +133,10 @@ class Auth
             $this->setError('Account is locked');
             return false;
         }
-        if ($user->password != $this->getEncryptPassword($password, $user->salt)) {
+        // if ($user->password != $this->getEncryptPassword($password, $user->salt)) {
+        // var_dump($password, $user->password,decode($password, $user->salt));exit;
+        // var_dump($password , decode($user->password, $user->salt));exit;
+        if ($password != decode($user->password, $user->salt)) {
             $this->setError('Password is incorrect');
             return false;
         }
@@ -255,11 +181,13 @@ class Auth
             return false;
         }
         //判断旧密码是否正确
-        if ($this->_user->password == $this->getEncryptPassword($oldpassword, $this->_user->salt) || $ignoreoldpassword) {
+        // if ($this->_user->password == $this->getEncryptPassword($oldpassword, $this->_user->salt) || $ignoreoldpassword) {
+        if ($oldpassword == decode($this->_user->password, $this->_user->salt) || $ignoreoldpassword) {
             Db::startTrans();
             try {
                 $salt = Random::alnum();
-                $newpassword = $this->getEncryptPassword($newpassword, $salt);
+                // $newpassword = $this->getEncryptPassword($newpassword, $salt);
+                $newpassword = encode($newpassword, $salt);
                 $this->_user->save(['loginfailure' => 0, 'password' => $newpassword, 'salt' => $salt]);
 
                 Token::delete($this->_token);
@@ -291,12 +219,6 @@ class Auth
             try {
                 $ip = request()->ip();
                 $time = time();
-
-                //判断连续登录和最大连续登录
-                if ($user->logintime < \fast\Date::unixtime('day')) {
-                    $user->successions = $user->logintime < \fast\Date::unixtime('day', -1) ? 1 : $user->successions + 1;
-                    $user->maxsuccessions = max($user->successions, $user->maxsuccessions);
-                }
 
                 $user->prevtime = $user->logintime;
                 //记录本次登录的IP和时间
@@ -380,7 +302,23 @@ class Auth
         $allowFields = $this->getAllowFields();
         $userinfo = array_intersect_key($data, array_flip($allowFields));
         $userinfo = array_merge($userinfo, Token::get($this->_token));
+
+        // 获取host信息
+        // 获取ftp
+        // 获取sql
         return $userinfo;
+    }
+
+    /**
+     * 获取会员所在用户组
+     * @Author   Youngxj
+     * @DateTime 2019-11-01
+     * @return   [type]     [description]
+     */
+    public function getGroup()
+    {
+        $groupInfo = $this->getUser()->getGroupAttr('', $this->_user->toArray());
+        return $groupInfo['name'] ? $groupInfo['name'] : '';
     }
 
     /**

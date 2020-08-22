@@ -14,14 +14,14 @@ class User extends Backend
     
     /**
      * User模型对象
-     * @var \app\admin\model\user\User
+     * @var \app\admin\model\User
      */
     protected $model = null;
 
     public function _initialize()
     {
         parent::_initialize();
-        $this->model = new \app\admin\model\user\User;
+        $this->model = new \app\admin\model\User;
         $this->view->assign("statusList", $this->model->getStatusList());
     }
 

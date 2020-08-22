@@ -1,0 +1,118 @@
+{extend name="common/base" /}
+{block name="title"}网站重定向{/block}
+{block name="content"}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form action="" method="post">
+                    <table id="proxy_list" class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>名称</th>
+                                <th>保护的目录</th>
+                                <th style="text-align:right;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {volist name="dirAuthList" id="list"}
+                            <tr>
+                                <td>{$list.name}</td>
+                                <td>{$list.site_dir}</td>
+                                <td style="text-align:right" data-index="0">
+                                    <a class="btlink" href="javascript:del('{$list.name}');">删除</a>
+                                </td>
+                            </tr>
+                            {/volist}
+                        </tbody>
+                    </table>
+                </form>
+                <hr>
+                <div class="row">
+                    <div class="col-lg-12">
+                        <section class="panel" id="RedirectList">
+                            <header class="panel-heading">
+                                <h2 id="rTitle">添加目录保护</h2>
+                            </header>
+                            <div class="panel-body">
+                                <div class="form-group">
+                                    <label for="sitedir">保护目录</label>
+                                    <input name="sitedir" id="sitedir" class="bt-input-text mr5 form-control"
+                                        type="text" value="/">
+                                </div>
+
+
+                                <div class="form-group">
+                                    <label for="username">用户名</label>
+                                    <input name="username" id="username" class="bt-input-text mr5 form-control"
+                                        type="text" value="">
+                                </div>
+                                <div class="form-group">
+                                    <label for="passwd">密码</label>
+                                    <input name="passwd" id="passwd" class="bt-input-text mr5 form-control" type="text"
+                                        value="">
+                                </div>
+                                <div class="form-group">
+                                    <input type="button" value="提交" onclick="dirauthAdd()"
+                                        class="btn btn-sm btn-success">
+                                </div>
+                            </div>
+
+
+                        </section>
+                    </div>
+                </div>
+                <ul>
+                    <li>目录设置保护后，访问时需要输入账号密码才能访问</li>
+                    <li>例如我设置了保护目录 /test/ ,那我访问 http://aaa.com/test/ 是就要输入账号密码才能访问</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+    function del(str) {
+        $.post('{:url("index/vhost/delDirAuth")}', {
+                delname: str
+            }, function (res) {
+                if (res.code == 1) {
+                    EchoMsg(res.msg, 1, '{:url("index/vhost/dirauth")}');
+                } else {
+                    EchoMsg('error:' + res.msg);
+                }
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+    }
+
+
+    function dirauthAdd() {
+        sitedir = $('#sitedir').val();
+        username = $('#username').val();
+        passwd = $('#passwd').val();
+        if (!sitedir || !username || !passwd) {
+            layer.msg('内容不能为空');
+            return false;
+        }
+        $.post('{:url("index/vhost/setDirAuth")}', {
+                sitedir: sitedir,
+                username: username,
+                passwd: passwd
+            }, function (res) {
+                if (res.code == 1) {
+                    EchoMsg(res.msg, 1, '{:url("index/vhost/dirauth")}');
+                } else {
+                    EchoMsg('error:' + res.msg);
+                }
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+
+
+    }
+</script>
+{/block}

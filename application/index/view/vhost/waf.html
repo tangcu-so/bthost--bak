@@ -1,0 +1,448 @@
+{extend name="common/base" /}
+{block name="title"}网站防火墙{/block}
+{block name="css"}
+<style type="text/css">
+	#wafInfo span {
+		color: red;
+	}
+
+	#wafInfo .green {
+		color: green;
+	}
+
+	#wafInfo .danger {
+		color: red;
+	}
+</style>
+{/block}
+{block name="content"}
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<header class="card-title">
+					防火墙运行状况
+				</header>
+			</div>
+			<div class="card-body">
+				<div class="table-responsive">
+					<table class="table table-bordered">
+						<thead>
+							<tr>
+								<th colspan="2">状态：{if isset($Sitewaf.open)&&$Sitewaf.open}<span
+										style="color:green">已开启</span><a
+										href="javascript:wafStatus('open');">[关闭]</a>{else /}<span
+										style="color:#2288cc">未开启</span><a
+										href="javascript:wafStatus('open');">[开启]</a>{/if}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{if $total}
+							<tr>
+								{volist name="total" id="tal"}
+								<td>{$tal.name}</td>
+								{/volist}
+							</tr>
+							<tr>
+								{volist name="total" id="tal"}
+								<td>{$tal.value}</td>
+								{/volist}
+							</tr>
+							{else /}
+							<tr>
+								<td>没有获取到统计数据</td>
+							</tr>
+							{/if}
+						</tbody>
+					</table>
+				</div>
+
+
+
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<header class="card-title">
+					防火墙配置
+				</header>
+			</div>
+			<div class="card-body">
+				<table class="table table-bordered">
+					<tbody id="wafInfo">
+						<tr>
+							<td>名称</td>
+							<td>描述</td>
+							<td>状态</td>
+							<td>操作</td>
+						</tr>
+						<tr>
+							<td>CC防御</td>
+							<td><span>{$Sitewaf.cc.cycle}</span> 秒内,请求同一URI累计超过 <span>{$Sitewaf.cc.limit}</span> 次,封锁IP
+								<span>{$Sitewaf.cc.endtime}</span> 秒</td>
+							<td>{if $Sitewaf.cc.open}<a href="javascript:wafStatus('cc')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('cc')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td><a href="javascript:;" data-toggle="modal" data-target="#ccModal" class="btn btn-xs btn-warning">设置</a></td>
+						</tr>
+						<tr>
+							<td>恶意容忍设置</td>
+							<td><span>{$Sitewaf.retry_cycle}</span> 秒内,累计超过 <span>{$Sitewaf.retry}</span> 次恶意请求,封锁IP
+								<span>{$Sitewaf.retry_time}</span> 秒</td>
+							<td>--</td>
+							<td><a href="javascript:;" data-toggle="modal" data-target="#retryModal" class="btn btn-xs btn-warning">设置</a></td>
+						</tr>
+						<tr>
+							<td>GET-URI过滤</td>
+							<td>{$Sitewaf.top.get.ps}</td>
+							<td>{if $Sitewaf.get}<a href="javascript:wafStatus('get')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('get')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>GET-参数过滤</td>
+							<td>{$Sitewaf.top.get.ps}</td>
+							<td>{if $Sitewaf.get}<a href="javascript:wafStatus('get')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('get')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>POST过滤</td>
+							<td>{$Sitewaf.top.post.ps}</td>
+							<td>{if $Sitewaf.post}<a href="javascript:wafStatus('post')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('post')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>User-Agent过滤</td>
+							<td>{$Sitewaf.top['user-agent']['ps']}</td>
+							<td>{if $Sitewaf['user-agent']}<a href="javascript:wafStatus('user-agent')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('user-agent')"
+									class="danger btn btn-xs btn-danger" title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>Cookie过滤</td>
+							<td>{$Sitewaf.top.cookie.ps}</td>
+							<td>{if $Sitewaf.cookie}<a href="javascript:wafStatus('cookie')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('cookie')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>禁止海外访问</td>
+							<td>{$Sitewaf.top.drop_abroad.ps}</td>
+							<td>{if $Sitewaf.drop_abroad}<a href="javascript:wafStatus('drop_abroad')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('drop_abroad')"
+									class="danger btn btn-xs btn-danger" title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>常见扫描器</td>
+							<td>{$Sitewaf.top.scan.ps}</td>
+							<td>{if $Sitewaf.scan}<a href="javascript:wafStatus('scan')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('scan')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+						<tr>
+							<td>使用CDN</td>
+							<td>该站点使用了CDN,启用后方可正确获取客户IP</td>
+							<td>{if $Sitewaf.cdn}<a href="javascript:wafStatus('cdn')" class="green btn btn-xs btn-info"
+									title="点击开启">开启</a>{else /}<a href="javascript:wafStatus('cdn')" class="danger btn btn-xs btn-danger"
+									title="点击开启">关闭</a>{/if}</td>
+							<td>--</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-12">
+		<div class="card">
+			<div class="card-header">
+				<header class="card-title">
+					拦截日志 <a href="javascript:$('#waflog').toggle();" class="btn btn-info btn-xs">显示/隐藏</a>
+				</header>
+			</div>
+			<div class="card-body">
+				<table class="table table-bordered">
+					<tbody id="waflog" style="display: none;">
+						{if $GetLog}
+						<tr>
+							<td>时间</td>
+							<td>IP</td>
+							<td>请求方式</td>
+							<td>请求路径</td>
+							<td>来路</td>
+							<td>拦截规则</td>
+							<td>详情</td>
+						</tr>
+						{volist name="GetLog" id="log"}
+						<tr>
+							{volist name="log" id="l"}
+							<td>{$l}</td>
+							{/volist}
+						</tr>
+						{/volist}
+						{else /}
+						<tr>
+							<td>当前没有拦截记录</td>
+						</tr>
+						{/if}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="ccModal" tabindex="-1" role="dialog" aria-labelledby="ccModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content" id="loading_box_cc">
+			<div class="modal-header">
+				<h6 class="modal-title" id="ccModalLabel">CC防御设置</h6>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="form-group form-inline">
+					<label for="cc_mode">模式：</label>
+					<select name="cc_mode" id="cc_mode" class="form-control">
+						<option value="1" {if @$Sitewaf.cc.cc_mode=='1' }selected='' {/if}>小白模式 </option>
+						<option value="2" {if @$Sitewaf.cc.cc_mode=='2' }selected='' {/if}>一般模式 </option>
+						<option value="3" {if @$Sitewaf.cc.cc_mode=='3' }selected='' {/if}>自动模式 </option>
+						<option value="4" {if @$Sitewaf.cc.cc_mode=='4' }selected='' {/if}>增强模式 </option>
+					</select>
+				</div>
+				<div class="form-group form-inline">
+					<label for="cc_cycle">周期：</label>
+					<input class="form-control cc_cycle" name="cc_cycle" id='cc_cycle' type="number"  value="{$Sitewaf.cc.cycle}">  <small class="text-muted"> 秒</small>
+				</div>
+				<div class="form-group form-inline">
+					<label for="cc_limit">频率：</label>
+					<input class="form-control cc_limit" name="cc_limit" id='cc_limit' type="number"  value="{$Sitewaf.cc.limit}">  <small class="text-muted"> 次</small>
+				</div>
+				<div class="form-group form-inline">
+					<label for="cc_endtime">封锁时间：</label>
+					<input class="form-control cc_endtime" name="cc_endtime" id='cc_endtime' type="number"  value="{$Sitewaf.cc.endtime}">  <small class="text-muted"> 秒</small>
+				</div>
+				<div class="form-group form-inline is_not_xb">
+					<label for="increase_wu_heng">浏览器验证：</label>
+					<select name="increase_wu_heng" id="increase_wu_heng" class="form-control">
+						<option value="0" {if @$Sitewaf.increase_wu_heng=='false'}selected=''{/if}>关闭 </option>
+						<option value="1" {if @$Sitewaf.increase_wu_heng=='true'}selected=''{/if}>开启 </option>
+					</select>
+				</div>
+				<div class="form-group form-inline is_not_xb is_zq">
+					<label for="cc_increase_type">验证方式：</label>
+					<select name="cc_increase_type" id="cc_increase_type" class="form-control">
+						<option value="js" {if @$Sitewaf.cc.cc_increase_type=='js'}selected=''{/if}>跳转验证 </option>
+						<option value="code" {if @$Sitewaf.cc.cc_increase_type=='code'}selected=''{/if}>验证码验证 </option>
+					</select>
+				</div>
+				<div class="form-group form-inline is_not_xb">
+					<label for="cc_four_defense">四层防御：</label>
+					<select name="cc_four_defense" id="cc_four_defense" class="form-control">
+						<option value="0" {if $ip_stop=='false'}selected=''{/if}>关闭</option>
+						<option value="1" {if $ip_stop=='true'}selected=''{/if}>开启</option>
+					</select>
+				</div>
+				<hr>
+				<small class="text-muted">
+					<li><span class="text-danger cc_cycle_text">{$Sitewaf.cc.cycle}</span> 秒内累计请求同一URL超过 <span class="text-danger cc_limit_text">{$Sitewaf.cc.limit}</span> 次,触发CC防御,封锁此IP <span class="text-danger cc_endtime_text">{$Sitewaf.cc.endtime}</span> 秒</li>
+					<li>请不要设置过于严格的CC规则,以免影响正常用户体验</li>
+					<li class="cc_borwser text-danger">浏览器验证:验证是否为正常浏览器请求，若打开后网站访问异常，请关闭它</li>
+					<li class="cc_four text-danger">增强模式,CC防御威力加强版，开启后可能会影响用户体验。</li>
+					<li class="cc_auto text-danger">设置为自动模式为开启状态时，当网站 <span class="cc_cycle_text">60</span> 秒 时间内,被访问 <span class="cc_limit_text">600</span> 次自动开启增强模式，没有触发该规则，自动关闭增强模式。</li>
+				</small>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+				<button type="button" class="btn btn-warning" onclick='setWafcc("cc")'>保存</button>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="modal fade" id="retryModal" tabindex="-1" role="dialog" aria-labelledby="retryModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content" id="loading_box_retry">
+		<div class="modal-header">
+		  <h6 class="modal-title" id="retryModalLabel">恶意容忍设置</h6>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div class="modal-body">
+			<div class="form-group form-inline">
+				<label for="retry_cycle">周期：</label>
+				<input class="form-control retry_cycle" name="retry_cycle" id='retry_cycle' type="number" value="{$Sitewaf.retry_cycle}"> <small class="text-muted">秒</small>
+			</div>
+
+			<div class="form-group form-inline">
+				<label for="retry">频率：</label>
+				<input class="form-control retry" name="retry" id='retry' type="number" value="{$Sitewaf.retry}"> <small class="text-muted">次</small>
+			</div>
+		
+			<div class="form-group form-inline">
+				<label for="retry_time">封锁时间：</label>
+				<input class="form-control retry_time" name="retry_time" id='retry_time' type="number" value="{$Sitewaf.retry_time}"> <small class="text-muted">秒</small>
+			</div>
+			<hr>
+			<small class="text-muted">
+				<li><span class="text-danger retry_cycle_text">{$Sitewaf.retry_cycle}</span> 秒内累计恶意请求超过  <span class="text-danger retry_text">{$Sitewaf.retry}</span> 次,封锁 <span class="text-danger retry_time_text">{$Sitewaf.retry_time}</span> 秒</li>
+			</small>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+		  <button type="button" class="btn btn-warning" onclick='setWafcc("retry")'>保存</button>
+		</div>
+	  </div>
+	</div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript">
+	function it(){
+		console.log($('#cc_mode').val());
+		if($('#cc_mode').val()=='1'){
+			$('#cc_cycle').val('60');
+			$('#cc_limit').val('180');
+			$('#cc_endtime').val('300');
+			$('.is_not_xb').hide();
+			$('.cc_auto').hide();
+			$('.cc_four').hide();
+			$('.cc_borwser').hide();
+
+		}
+		if($('#cc_mode').val()=='2'){
+			$('#cc_cycle').val('60');
+			$('#cc_limit').val('240');
+			$('#cc_endtime').val('300');
+			$('.is_not_xb').hide();
+			$('.cc_four').hide();
+			$('.cc_auto').hide();
+			$('.cc_borwser').hide();
+		}
+		if($('#cc_mode').val()=='3'){
+			$('.cc_auto').show();
+			$('.is_not_xb').show();
+			$('.cc_four').hide();
+			$('.is_zq').hide();
+			$('.cc_borwser').show();
+		}
+		if($('#cc_mode').val()=='4'){
+			$('.is_not_xb').show();
+			$('.is_zq').show();
+			$('.cc_four').show();
+			$('.cc_borwser').show();
+		}
+	}
+	$(function(){
+		it();
+		$('#cc_mode').on('change',function(){
+			it();
+		});
+		$('.cc_cycle,.cc_limit,.cc_endtime').on('change',function(){
+			console.log($(this));
+			id = $(this).attr('id');
+			console.log($(this).val());
+			console.log(id);
+			$('.'+id+'_text').html($(this).val());
+		});
+
+		$('.retry_cycle,.retry,.retry_time').on('change',function(){
+			console.log($(this));
+			id = $(this).attr('id');
+			console.log($(this).val());
+			console.log(id);
+			$('.'+id+'_text').html($(this).val());
+		});
+	});
+	function wafStatus(type) {
+		$.post('{:url("index/vhost/wafStatus")}', {
+				type: type
+			}, function (res) {
+				EchoMsg(res.msg, 1);
+			})
+			.fail(function () {
+				EchoMsg('请求错误，请稍候重试');
+			})
+	}
+
+	function setWafcc(type) {
+		if (type == 'cc') {
+			cycle = $('#cc_cycle').val();
+			limit = $('#cc_limit').val();
+			endtime = $('#cc_endtime').val();
+			cc_mode = $("#cc_mode option:selected").val();
+			// increase = $("#increase option:selected").val();
+			increase_wu_heng = $('#increase_wu_heng option:selected').val();
+			cc_increase_type = $('#cc_increase_type option:selected').val();
+			cc_four_defense = $('#cc_four_defense option:selected').val();
+
+			if (!cc_cycle || !cc_limit || !cc_endtime) {
+				EchoMsg('都不能为空');
+				return false;
+			}
+			var l = $('#loading_box_cc').lyearloading({
+				opacity: 0.125,
+				spinnerSize: 'lg'
+			});
+			$.post('{:url("index/vhost/setWafcc")}', {
+					type: type,
+					cycle: cycle,
+					limit: limit,
+					endtime: endtime,
+					increase_wu_heng: increase_wu_heng,
+					cc_increase_type: cc_increase_type,
+					cc_mode: cc_mode,
+					cc_four_defense:cc_four_defense
+				}, function (res) {
+					EchoMsg(res.msg, 1);
+				})
+				.fail(function () {
+					EchoMsg('请求错误，请稍候重试');
+				})
+				.always(function () {
+					l.destroy();
+				})
+		} else if (type == 'retry') {
+			retry_cycle = $('#retry_cycle').val();
+			retry = $('#retry').val();
+			retry_time = $('#retry_time').val();
+			if (!retry_cycle || !retry || !retry_time) {
+				EchoMsg('都不能为空');
+				return false;
+			}
+			var l = $('#loading_box_retry').lyearloading({
+				opacity: 0.125,
+				spinnerSize: 'lg'
+			});
+			$.post('{:url("index/vhost/setWafcc")}', {
+					type: type,
+					retry_cycle: retry_cycle,
+					retry: retry,
+					retry_time: retry_time
+				}, function (res) {
+					EchoMsg(res.msg, 1);
+				})
+				.fail(function () {
+					EchoMsg('请求错误，请稍候重试');
+				})
+				.always(function () {
+					l.destroy();
+				})
+		}
+	}
+</script>
+{/block}

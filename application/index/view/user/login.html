@@ -1,4 +1,4 @@
-<div id="content-container" class="container">
+<!-- <div id="content-container" class="container">
     <div class="user-section login-section">
         <div class="logon-tab clearfix"><a class="active">{:__('Sign in')}</a> <a href="{:url('user/register')}?url={$url|urlencode}">{:__('Sign up')}</a></div>
         <div class="login-main">
@@ -34,8 +34,8 @@
             </form>
         </div>
     </div>
-</div>
-<script type="text/html" id="resetpwdtpl">
+</div> -->
+<!-- <script type="text/html" id="resetpwdtpl">
     <form id="resetpwd-form" class="form-horizontal form-layer" method="POST" action="{:url('api/user/resetpwd')}">
         <div class="form-body">
             <input type="hidden" name="action" value="resetpwd"/>
@@ -89,4 +89,75 @@
             </div>
         </div>
     </form>
-</script>
+</script> -->
+
+{__NOLAYOUT__}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>登录页面 - 光年(Light Year Admin V4)后台管理系统模板</title>
+<link rel="icon" href="__CDN__/assets/img/favicon.ico" type="image/ico">
+<meta name="keywords" content="LightYear,LightYearAdmin,光年,后台模板,后台管理系统,光年HTML模板">
+<meta name="description" content="Light Year Admin V4是一个后台管理系统的HTML模板，基于Bootstrap v4.4.1。">
+<meta name="author" content="yinqi">
+<link href="__STATIC__/Light-Year/css/bootstrap.min.css" rel="stylesheet">
+<link href="__STATIC__/Light-Year/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="__STATIC__/Light-Year/css/style.min.css" rel="stylesheet">
+</head>
+  
+<body>
+<div class="row no-gutters bg-white vh-100">
+    <div class="col-md-6 col-lg-7 col-xl-8 d-none d-md-block" style="background-image: url(__STATIC__/Light-Year/images/login-bg-1.jpg); background-size: cover;">
+
+    <div class="d-flex vh-100">
+        <div class="p-5 align-self-end">
+        <img src="__STATIC__/Light-Year/images/logo.png" alt="...">
+        <br><br><br>
+        <p class="text-white">Light Year Admin V4是一个后台管理系统的HTML模板，基于Bootstrap v4.4.1。</p>
+        </div>
+    </div>
+
+    </div>
+
+    <div class="col-md-6 col-lg-5 col-xl-4 align-self-center">
+    <div class="p-5">
+        <div class="text-center">
+        <a href="index.html"> <img alt="light year admin" src="__STATIC__/Light-Year/images/logo-sidebar.png"> </a>
+        </div>
+        <p class="text-center text-muted"><small>请使用您的账号登录系统</small></p>
+
+        <form name="form" id="login-form" class="form-vertical" method="POST" action="">
+            <input type="hidden" name="url" value="{$url}"/>
+            {:token()}
+            <div class="form-group">
+                <label for="username">{:__('Account')}</label>
+                <input type="text" class="form-control" id="account" name="account" placeholder="请输入您的{:__('Account')}">
+            </div>
+
+            <div class="form-group">
+                <label for="password">{:__('Password')}</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="请输入您的{:__('Password')}">
+            </div>
+
+            <div class="form-group">
+                <div class="custom-control custom-checkbox">
+                <input type="checkbox" class="custom-control-input" id="rememberme">
+                <label class="custom-control-label not-user-select" for="rememberme">5天内自动登录</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button class="btn btn-block btn-primary" type="submit">立即登录</button>
+            </div>
+        </form>
+        <p class="text-center text-muted mt-3">Copyright © 2020 <a href="http://lyear.itshubao.com">IT书包</a>. All right reserved</p>
+    </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="__STATIC__/Light-Year/js/jquery.min.js"></script>
+<script type="text/javascript">;</script>
+</body>
+</html>

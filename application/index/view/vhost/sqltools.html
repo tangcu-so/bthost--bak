@@ -1,0 +1,224 @@
+{extend name="common/base" /}
+{block name="title"}Mysql工具箱{/block}
+
+{block name="content"}
+<link href="__STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+<div class="row">
+
+    <div class="col-lg-12">
+        <div class="card" id="loading_box">
+            <header class="card-header">
+                <div class="card-title">Mysql工具箱</div>
+            </header>
+            <div class="card-body">
+                <div id="toolbar" class="toolbar-btn-action">
+                    <button id="btn_retable" type="button" class="btn btn-primary m-r-5 btn_retable"
+                        data-type="retable">
+                        修复
+                    </button>
+                    <button id="btn_optable" type="button" class="btn btn-success m-r-5 btn_optable"
+                        data-type="optable">
+                        优化
+                    </button>
+                    <button id="btn_aitable" type="button" class="btn btn-warning m-r-5 btn_aitable" data-type="InnoDB">
+                        转为InnoDB
+                    </button>
+                    <button type="button" class="btn btn-danger btn_aitable" data-type="MyISAM">
+                        转为MyISAM
+                    </button>
+                </div>
+                <table id="tb_departments"></table>
+                <hr>
+                <small class="text-muted">
+                    <span class="text-danger">!</span> 【修复】尝试使用REPAIR命令修复损坏的表，仅能做简单修复，若修复不成功请考虑使用myisamchk工具<br>
+                    <span class="text-danger">!</span> 【优化】执行OPTIMIZE命令，可回收未释放的磁盘空间，建议每月执行一次<br>
+                    <span class="text-danger">!</span> 【转为InnoDB/MyISAM】转换数据表引擎，建议将所有表转为InnoDB<br>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{/block}
+{block name="script"}
+<script type="text/javascript" src="__STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="__STATIC__/Light-Year/js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js">
+</script>
+<script type="text/javascript">
+    $('#tb_departments').bootstrapTable({
+        classes: 'table table-hover table-striped',
+        url: '{:url("index/vhost/sqlTools")}',
+        method: 'get',
+        dataType: 'jsonp', // 因为本示例中是跨域的调用,所以涉及到ajax都采用jsonp,
+        uniqueId: 'id',
+        idField: 'id', // 每行的唯一标识字段
+        toolbar: '#toolbar', // 工具按钮容器
+        //clickToSelect: true,     // 是否启用点击选中行
+        showColumns: true, // 是否显示所有的列
+        showRefresh: true, // 是否显示刷新按钮
+
+        showToggle: true, // 是否显示详细视图和列表视图的切换按钮(clickToSelect同时设置为true时点击会报错)
+
+        pagination: true, // 是否显示分页
+        sortOrder: "asc", // 排序方式
+        queryParams: function (params) {
+            var temp = {
+                limit: params.limit, // 每页数据量
+                offset: params.offset, // sql语句起始索引
+                page: (params.offset / params.limit) + 1,
+                sort: params.sort, // 排序的列名
+                sortOrder: params.order // 排序方式'asc' 'desc'
+            };
+            return temp;
+        }, // 传递参数
+        sidePagination: "server", // 分页方式：client客户端分页，server服务端分页
+        pageNumber: 1, // 初始化加载第一页，默认第一页
+        pageSize: 10, // 每页的记录行数
+        pageList: [10, 25, 50, 100], // 可供选择的每页的行数
+        //search: true,                      // 是否显示表格搜索，此搜索是客户端搜索
+
+        //showExport: true,        // 是否显示导出按钮, 导出功能需要导出插件支持(tableexport.min.js)
+        //exportDataType: "basic", // 导出数据类型, 'basic':当前页, 'all':所有数据, 'selected':选中的数据
+
+        columns: [{
+            field: 'example',
+            checkbox: true // 是否显示复选框
+        }, {
+            field: 'table_name',
+            title: '表名'
+        }, {
+            field: 'type',
+            title: '引擎',
+        }, {
+            field: 'collation',
+            title: '字符集'
+        }, {
+            field: 'rows_count',
+            title: '行数'
+        }, {
+            field: 'data_size',
+            title: '大小'
+        }, {
+            field: 'operate',
+            title: '操作',
+            formatter: function (value, item, index) {
+                tables_type = item.type == 'InnoDB' ? 'MyISAM' : 'InnoDB';
+                let html =
+                    '<a href="#!" class="btn btn-xs btn-default m-r-5 retable-btn" title="修复" data-toggle="tooltip">修复</a>' +
+                    '<a href="#!" class="btn btn-xs btn-default m-r-5 optable-btn" title="优化" data-toggle="tooltip">优化</a>' +
+                    '<a href="#!" class="btn btn-xs btn-default aitable-btn" title="转为' +
+                    tables_type + '" data-toggle="tooltip">转为' + tables_type + '</a>';
+                return html;
+            }, // 自定义方法
+            events: {
+                'click .retable-btn': function (event, value, row, index) {
+                    retable(row);
+                },
+                'click .optable-btn': function (event, value, row, index) {
+                    optable(row);
+                },
+                'click .aitable-btn': function (event, value, row, index) {
+                    aitable(row);
+                }
+            }
+        }],
+        onLoadSuccess: function (data) {
+            $("[data-toggle='tooltip']").tooltip();
+        }
+    });
+
+    $(function () {
+        $('.btn_retable,.btn_optable,.btn_aitable').on('click', function () {
+            l = $('#tb_departments').bootstrapTable('getAllSelections');
+            tabels = '';
+            for (let index = 0; index < l.length; index++) {
+                tabels += l[index]['table_name'] + ',';
+            }
+            if (!tabels) {
+                EchoMsg('请先选择表名');
+                return false;
+            }
+            var l = $('#loading_box').lyearloading({
+                opacity: 0.125,
+                spinnerSize: 'lg'
+            });
+            table_type = $(this).data('type') ? $(this).data('type') : '';
+            $.post('{:url("index/vhost/sqlToolsAction")}', {
+                    type: table_type,
+                    tables: tabels,
+                    table_type: table_type,
+                }, function (res) {
+                    EchoMsg(res.msg);
+                })
+                .fail(function () {
+                    EchoMsg('请求错误，请稍候重试');
+                })
+                .always(function () {
+                    l.destroy();
+                })
+        });
+    })
+
+    // 操作按钮
+
+
+    // 操作方法 - 修复表
+    function retable(row) {
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
+        $.post('{:url("index/vhost/sqlToolsAction")}', {
+                type: 'retable',
+                tables: row.table_name
+            }, function (res) {
+                EchoMsg(res.msg);
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+            .always(function () {
+                l.destroy();
+            })
+    }
+    // 操作方法 - 优化表
+    function optable(row) {
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
+        $.post('{:url("index/vhost/sqlToolsAction")}', {
+                type: 'optable',
+                tables: row.table_name
+            }, function (res) {
+                EchoMsg(res.msg);
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+            .always(function () {
+                l.destroy();
+            })
+    }
+    // 操作方法 - 转换类型
+    function aitable(row) {
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
+        table_type = row.type == 'InnoDB' ? 'MyISAM' : 'InnoDB';
+        $.post('{:url("index/vhost/sqlToolsAction")}', {
+                type: 'aitable',
+                tables: row.table_name,
+                table_type: table_type,
+            }, function (res) {
+                EchoMsg(res.msg);
+            })
+            .fail(function () {
+                EchoMsg('请求错误，请稍候重试');
+            })
+            .always(function () {
+                l.destroy();
+            })
+    }
+</script>
+{/block}
