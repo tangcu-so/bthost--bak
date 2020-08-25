@@ -12,8 +12,10 @@ class Btaction
     public $_error = '';
     public $btAction  = null;
     protected $api_url = 'http://192.168.191.129';
+        // protected $api_url = 'http://117.50.77.190';
         // protected $api_url = 'http://139.9.222.32';
     protected $api_token = '00nL2eLQCxDfk06AQ15w1VQ93O3A94HV';
+        // protected $api_token = '48Gib2QOMEI21d19xbM1ntvJHvZTRE6f';
         // protected $api_token = 'RMCknu6nSiBYcif8S2beSi7ar8vN7phs';
     public $bt_id = '';
     public $bt_name = '';
@@ -21,6 +23,8 @@ class Btaction
     public $sql_name = '';
     public $webRootPath = '';
     public $siteInfo = '';
+    public $os = 'linux';
+    public $serverConfig = null;
     public $dirUserIni = null; // 网站三项配置开关
     public $userini = 1; // 是否强制打开跨站锁
     public $iis_locking = 1; // 是否强制锁定iis配置
@@ -215,6 +219,7 @@ class Btaction
     {
         $config = $this->getServerConfig();
         if ($config && isset($config['status']) && $config['status'] == true) {
+            $this->serverConfig = $config;
             return true;
         } else if (isset($config['status']) && $config['status'] == false) {
             $this->setError($config['msg'] . $this->getRequestTime());
@@ -229,7 +234,7 @@ class Btaction
     {
         $config = $this->getServerConfig();
         if ($config && isset($config['status']) && $config['status'] === 0) {
-
+            $this->serverConfig = $config;
             return true;
         } else if (isset($config['status']) && $config['status'] === false) {
 
@@ -773,37 +778,38 @@ class Btaction
      */
     public function getWaf()
     {
-        $GetSoftList = $this->btAction->GetSoftList();
-        $isWaf       = '';
-        if ($GetSoftList) {
-            foreach ($GetSoftList['list']['data'] as $key => $value) {
-                if ($GetSoftList['list']['data'][$key]['name'] == 'btwaf_httpd' && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
-                    $isWaf = '&name=btwaf_httpd';
-                    break;
-                }
-                if ($GetSoftList['list']['data'][$key]['name'] == 'btwaf' && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
-                    $isWaf = '&name=btwaf';
-                    break;
-                }
-                if ($GetSoftList['list']['data'][$key]['name'] == 'waf_nginx' && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
-                    $isWaf = '&name=waf_nginx';
-                    break;
-                }
-                if ($GetSoftList['list']['data'][$key]['name'] == 'waf_iis' && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
-                    $isWaf = '&name=waf_iis';
-                    break;
-                }
-                if ($GetSoftList['list']['data'][$key]['name'] == 'waf_apache' && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
-                    $isWaf = '&name=waf_apache';
-                    break;
-                }
-            }
-            if ($isWaf != '') {
-                return $isWaf;
-            } else {
-                return false;
+        $list = ['btwaf_httpd','btwaf','waf_nginx','waf_iis','waf_apache','free_waf'];
+        $isWaf = '';
+        foreach ($list as $key => $value) {
+            if($this->softQuery($value)!==false){
+                $isWaf = '&name='.$value;
+                break;
             }
         }
+        if ($isWaf != '') {
+            return $isWaf;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 查询是否安装某个插件
+     *
+     * @param [type] $name
+     * @return void
+     */
+    public function softQuery($name){
+        $GetSoftList = $this->btAction->GetSoftList($name);
+        if ($GetSoftList) {
+            foreach ($GetSoftList['list']['data'] as $key => $value) {
+                if ($GetSoftList['list']['data'][$key]['name'] == $name && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
+                    return $GetSoftList['list']['data'][$key];
+                    break;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -1022,6 +1028,18 @@ class Btaction
             $this->setError('请求失败');
             return false;
         }
+    }
+
+    public function free_waf_site_info(){
+        $list = $this->btAction->free_waf_site_config();
+        if($list){
+            foreach ($list as $key => $value) {
+                if($list[$key]['siteName']==$this->bt_name){
+                    return $list[$key];
+                }
+            }
+        }
+        return false;
     }
 
     /**

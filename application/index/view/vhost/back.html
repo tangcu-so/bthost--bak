@@ -1,21 +1,29 @@
 {extend name="common/base" /}
-{block name="title"}数据库备份{/block}
+{block name="title"}备份{/block}
 {block name="content"}
 <div class="row">
-    <div class="col-md-12">
-        <div class="card" id="loading_box">
-            <div class="card-header">
-                <header class="card-title">
-                    数据库备份
-                </header>
-            </div>
-            <div class="card-body">
-                <a href="javascript:sqlBackInc()" class="btn btn-warning btn-w-md">手动备份</a>
-                <p>
-                    <small id="passwordHelpInline" class="text-muted">
-                        剩余手动备份次数：{$hostInfo.web_back_num-$countback}次{if ($hostInfo.web_back_num - $countback) < 1}，请先删除原有备份再进行备份{/if}
+	<div class="col-md-12">
+		<div class="card" id="loading_box">
+			<div class="card-header">
+				<header class="card-title">
+					备份
+				</header>
+			</div>
+			<div class="card-body">
+				<a href="javascript:webBackInc()" class="btn btn-warning btn-w-md">站点备份</a>
+				<p>
+					<small id="passwordHelpInline" class="text-muted">
+						剩余手动备份次数：{$hostInfo.web_back_num-$countback_site}次{if ($hostInfo.web_back_num - $countback_site) < 1}，请先删除原有备份再进行备份{/if}
 					</small>
 				</p>
+				{if $hostInfo.sql.username}
+				<a href="javascript:sqlBackInc()" class="btn btn-warning btn-w-md">数据库备份</a>
+                <p>
+                    <small id="passwordHelpInline" class="text-muted">
+                        剩余手动备份次数：{$hostInfo.sql_back_num-$countback_sql}次{if ($hostInfo.sql_back_num - $countback_sql) < 1}，请先删除原有备份再进行备份{/if}
+					</small>
+				</p>
+				{/if}
 			</div>
 		</div>
 	</div>
@@ -41,13 +49,26 @@
 								</tr>
 							</thead>
 							<tbody>
-								{volist name="WebBackupList.data" id="sql"}
+								{volist name="WebBackupList.data" id="web"}
 								<tr>
-									<td>{$sql.name}</td>
+									<td>{$web.name} <span class="badge badge-info">网站备份</span></td>
+									<td>{$web.size}</td>
+									<td>{$web.addtime}</td>
+									<td>
+										<a href="{:url('index/vhost/back')}?down_back_file={$web.name}"
+											target="_blank" class="btn btn-label btn-info btn-xs"><label><i class="mdi mdi-arrow-down-bold-hexagon-outline"></i></label> 下载</a>
+											<a class="btn btn-label btn-danger btn-xs" onclick="webBackDel('{$web.id}')"><label><i class="mdi mdi-close"></i></label> 删除</a>
+									</td>
+								</tr>
+								{/volist}
+								{if $hostInfo.sql.username}
+								{volist name="SqlBackupList.data" id="sql"}
+								<tr>
+									<td>{$sql.name} <span class="badge badge-purple">数据库备份</span></td>
 									<td>{$sql.size}</td>
 									<td>{$sql.addtime}</td>
 									<td>
-										<a href="{:url('index/vhost/Sqlback')}?down_back_sql={$sql.name}"
+										<a href="{:url('index/vhost/sqlBackDown')}?down_back_sql={$sql.name}"
                                             target="_blank" class="btn btn-label btn-info btn-xs">
                                             <label><i class="mdi mdi-arrow-down-bold-hexagon-outline"></i></label> 下载
                                         </a>
@@ -60,6 +81,7 @@
 									</td>
 								</tr>
 								{/volist}
+								{/if}
 							</tbody>
 						</table>
 					</form>
@@ -69,16 +91,95 @@
 	</div>
 </div>
 {/block}
-{block name="publicjs"}
-<script type="text/javascript" src="__STATIC__/vhost/js/artDialog.js"></script>
-{/block}
 {block name="script"}
 <script type="text/javascript">
+	function webBackInc() {
+		$.confirm({
+			title: '温馨提醒',
+			content: '备份时间依照网站大小而定',
+			icon: 'mdi mdi-alert',
+			animation: 'scale',
+			closeAnimation: 'zoom',
+			buttons: {
+				confirm: {
+					text: '备份',
+					btnClass: 'btn-orange',
+					action: function () {
+						var l = $('#loading_box').lyearloading({
+							opacity: 0.125,
+							spinnerSize: 'lg'
+						});
+						$.post('{:url("index/vhost/webBackInc")}', {
+							to: 'back'
+						}, function (res) {
+							EchoMsg(res.msg, 1);
+						})
+						.fail(function () {
+							EchoMsg('请求错误，请稍候重试');
+						})
+						.always(function () {
+							l.destroy();
+						})
+					}
+				},
+				'取消': function () {
 
-    function sqlBackInc() {
+				}
+			}
+		});
+	}
+
+	function webBackDel(id) {
+		$.confirm({
+			title: '温馨提醒',
+			content: '确定删除？',
+			icon: 'mdi mdi-alert',
+			animation: 'scale',
+			closeAnimation: 'zoom',
+			buttons: {
+				confirm: {
+					text: '确定',
+					btnClass: 'btn-orange',
+					action: function () {
+						var l = $('#loading_list').lyearloading({
+							opacity: 0.125,
+							spinnerSize: 'lg'
+						});
+						$.post('{:url("index/vhost/webBackDel")}', {
+							del: id
+						}, function (res) {
+							EchoMsg(res.msg, 1);
+						})
+						.fail(function () {
+							EchoMsg('请求错误，请稍候重试');
+						})
+						.always(function () {
+							l.destroy();
+						})
+					}
+				},
+				'取消': function () {
+
+				}
+			}
+		});
+	}
+
+	function webBackDown(id) {
+		$.post('{:url("index/vhost/webBackDown")}', {
+			down: id
+		}, function (res) {
+			EchoMsg(res.msg, 1);
+		})
+		.fail(function () {
+			EchoMsg('请求错误，请稍候重试');
+		})
+	}
+
+	function sqlBackInc() {
         $.confirm({
             title: '温馨提醒',
-            content: '备份时间依照网站大小而定',
+            content: '备份时间依照数据库大小而定',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',

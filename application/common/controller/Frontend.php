@@ -43,7 +43,6 @@ class Frontend extends Controller
 
     public function _initialize()
     {
-        Debug::remark('begin');
         //移除HTML标签
         $this->request->filter('trim,strip_tags,htmlspecialchars');
         $modulename = $this->request->module();

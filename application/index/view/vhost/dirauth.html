@@ -1,9 +1,14 @@
 {extend name="common/base" /}
-{block name="title"}网站重定向{/block}
+{block name="title"}目录保护{/block}
 {block name="content"}
 <div class="row">
     <div class="col-md-12">
         <div class="card">
+            <div class="card-header">
+                <header class="card-title">
+                    目录保护
+                </header>
+            </div>
             <div class="card-body">
                 <form action="" method="post">
                     <table id="proxy_list" class="table table-hover">
@@ -27,45 +32,43 @@
                         </tbody>
                     </table>
                 </form>
-                <hr>
-                <div class="row">
-                    <div class="col-lg-12">
-                        <section class="panel" id="RedirectList">
-                            <header class="panel-heading">
-                                <h2 id="rTitle">添加目录保护</h2>
-                            </header>
-                            <div class="panel-body">
-                                <div class="form-group">
-                                    <label for="sitedir">保护目录</label>
-                                    <input name="sitedir" id="sitedir" class="bt-input-text mr5 form-control"
-                                        type="text" value="/">
-                                </div>
 
-
-                                <div class="form-group">
-                                    <label for="username">用户名</label>
-                                    <input name="username" id="username" class="bt-input-text mr5 form-control"
-                                        type="text" value="">
-                                </div>
-                                <div class="form-group">
-                                    <label for="passwd">密码</label>
-                                    <input name="passwd" id="passwd" class="bt-input-text mr5 form-control" type="text"
-                                        value="">
-                                </div>
-                                <div class="form-group">
-                                    <input type="button" value="提交" onclick="dirauthAdd()"
-                                        class="btn btn-sm btn-success">
-                                </div>
-                            </div>
-
-
-                        </section>
-                    </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <header class="card-title">
+                    添加目录保护
+                </header>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="sitedir">保护目录</label>
+                    <input name="sitedir" id="sitedir" class="bt-input-text mr5 form-control" type="text" value="/"
+                        placeholder="以/结尾">
                 </div>
-                <ul>
-                    <li>目录设置保护后，访问时需要输入账号密码才能访问</li>
-                    <li>例如我设置了保护目录 /test/ ,那我访问 http://aaa.com/test/ 是就要输入账号密码才能访问</li>
-                </ul>
+
+
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input name="username" id="username" class="bt-input-text mr5 form-control" type="text" value="">
+                </div>
+                <div class="form-group">
+                    <label for="passwd">密码</label>
+                    <input name="passwd" id="passwd" class="bt-input-text mr5 form-control" type="text" value="">
+                </div>
+                <div class="form-group">
+                    <input type="button" value="提交" onclick="dirauthAdd()" class="btn btn-warning">
+                </div>
+                <hr>
+                <small class="text-muted">
+                    <span class="text-danger">！</span> 目录设置保护后，访问时需要输入账号密码才能访问<br>
+                    <span class="text-danger">！</span> 例如我设置了保护目录 /test/ ,那我访问 http://aaa.com/test/ 是就要输入账号密码才能访问<br>
+                </small>
             </div>
         </div>
     </div>
@@ -94,7 +97,7 @@
         username = $('#username').val();
         passwd = $('#passwd').val();
         if (!sitedir || !username || !passwd) {
-            layer.msg('内容不能为空');
+            EchoMsg('内容不能为空');
             return false;
         }
         $.post('{:url("index/vhost/setDirAuth")}', {

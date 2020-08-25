@@ -92,7 +92,6 @@ class Host extends Backend
                 $bt = new Btaction();
                 
                 $hostSetInfo = $bt->setInfo($params,$plansInfo);
-
                 // 连接宝塔进行站点开通
                 $btInfo = $bt->btBuild($hostSetInfo);
                 if (!$btInfo) {
@@ -105,6 +104,7 @@ class Host extends Backend
 
                 
                 // vsftpd创建
+                
                 // 修改到期时间
                 $timeSet = $bt->btAction->WebSetEdate($btId,$params['endtime']);
                 if (!$timeSet['status']) {
@@ -123,7 +123,7 @@ class Host extends Backend
                 // session隔离
                 // 并发、限速设置
                 // 默认并发、网速限制
-                if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0) {
+                if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0&&isset($bt->btTend->serverConfig['webserver'])&&$bt->btTend->serverConfig['webserver']=='nginx') {
                     // 有错误，记录，防止开通被打断
                     $modify_status = $bt->setLimit($btId, $plansInfo);
                     if (!$modify_status) {

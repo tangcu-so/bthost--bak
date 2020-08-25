@@ -17,7 +17,7 @@
 
   .box-placeholder {
     margin-bottom: 15px;
-    padding: 20px;
+    padding: 8px;
     border: 1px dashed #dddddd;
     background: #fafafa;
     color: #444444;
@@ -47,9 +47,6 @@
 
   .row-flush .m0 {
     color: rgba(255, 255, 255, 0.74);
-  }
-  .hide {
-    /* display: none; */
   }
 </style>
 {/block}
@@ -193,12 +190,12 @@
         <div class="card">
           <header class="card-header"><div class="card-title">功能导航</div></header>
           <div class="card-body">
-            <ul class="nav nav-pills mb-3">
+            <ul class="nav nav-tabs nav-fill">
               <li class="nav-item">
                 <a class="nav-link active" data-toggle="tab" href="#home-pills" aria-selected="true">基本功能</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#files-pills" aria-selected="false">文件管理</a>
+                <a class="nav-link" data-toggle="tab" href="#files-pills" aria-selected="false">文件/备份</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#security-pills" aria-selected="false">安全设置</a>
@@ -210,82 +207,82 @@
             <div class="tab-content" id="v-pills-tabContent">
               <div class="tab-pane fade show active" id="home-pills">
                 <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/domain')?'':'hide'}">
-                    <a href="{:url('index/vhost/domain')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/domain')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="域名绑定" data-url="{:url('index/vhost/domain')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-web"></p>
                         <p>域名绑定</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/pass')?'':'hide'}">
-                    <a href="{:url('index/vhost/pass')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/pass')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="密码设置" data-url="{:url('index/vhost/pass')}">
                       <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-wrench"></p>
+                        <p class="mdi mdi-lock-reset"></p>
                         <p>密码设置</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/speed')?'':'hide'}">
-                    <a href="{:url('index/vhost/speed')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/speed')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="网站限速" data-url="{:url('index/vhost/speed')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-rocket"></p>
-                        <p>带宽限制</p>
+                        <p>网站限速</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/Rewrite301')?'':'hide'}">
-                    <a href="{:url('index/vhost/Rewrite301')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/Rewrite301')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="域名跳转" data-url="{:url('index/vhost/Rewrite301')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-undo-variant"></p>
                         <p>域名跳转</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/redir')?'':'hide'}">
-                    <a href="{:url('index/vhost/redir')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/redir')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="重定向" data-url="{:url('index/vhost/redir')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-umbraco"></p>
                         <p>重定向</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/defaultfile')?'':'hide'}">
-                    <a href="{:url('index/vhost/defaultfile')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/defaultfile')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="默认文件" data-url="{:url('index/vhost/defaultfile')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-home"></p>
                         <p>默认文件</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/rewrite')?'':'hide'}">
-                    <a href="{:url('index/vhost/rewrite')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/rewrite')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="伪静态规则" data-url="{:url('index/vhost/rewrite')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-tree"></p>
                         <p>伪静态规则</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/ssl')?'':'hide'}">
-                    <a href="{:url('index/vhost/ssl')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/ssl')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="SSL设置" data-url="{:url('index/vhost/ssl')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-send"></p>
                         <p>SSL设置</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/runPath')?'':'hide'}">
-                    <a href="{:url('index/vhost/runPath')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/runPath')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="运行目录" data-url="{:url('index/vhost/runPath')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-folder-account"></p>
                         <p>运行目录</p>
                       </div>
                     </a>
                   </div>
-                  {notempty name="hostInfo.sql_name"}
+                  {notempty name="hostInfo.sql.console"}
                   <div class="col-lg-3 col-sm-6 col-6">
-                    <a href="{$hostInfo.phpMyAdmin?$hostInfo.phpMyAdmin:" javascript:EchoMsg('未提供在线数据库管理')"}"
-                      {if $hostInfo.phpMyAdmin}target="_blank"{/if}>
+                    <a href="{$hostInfo.sql.console?$hostInfo.sql.console:" javascript:EchoMsg('未提供在线数据库管理')"}"
+                      {if $hostInfo.sql.console}target="_blank"{/if}>
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-database"></p>
                         <p>数据库管理</p>
@@ -297,17 +294,17 @@
               </div>
               <div class="tab-pane fade" id="files-pills">
                 <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/file')?'':'hide'}">
-                    <a href="{:url('index/vhost/file')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/file')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="在线文件管理" data-url="{:url('index/vhost/file')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-folder-account"></p>
                         <p>在线文件管理</p>
                       </div>
                     </a>
                   </div>
-                  {notempty name="hostInfo.ftp_id"}
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/file_ftp')?'':'hide'}">
-                    <a href="{:url('index/vhost/file_ftp')}">
+                  {notempty name="hostInfo.ftp.username"}
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/file_ftp')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="在线文件管理(FTP)" data-url="{:url('index/vhost/file_ftp')}">
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-folder-account"></p>
                         <p>在线文件管理(FTP)</p>
@@ -315,49 +312,47 @@
                     </a>
                   </div>
                   {/notempty}
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/siteback')?'':'hide'}">
-                    <a href="{:url('index/vhost/siteback')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/back')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="网站备份" data-url="{:url('index/vhost/back')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-clipboard-flow"></p>
-                        <p>网站备份</p>
+                        <p>备份</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/sqlback')?'':'hide'}">
-                    <a href="{:url('index/vhost/sqlback')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-clipboard-flow"></p>
-                        <p>数据备份</p>
-                      </div>
-                    </a>
-                  </div>
-                  {notempty name="hostInfo.ftp_id"}
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/ftp')?'':'hide'}">
-                    <a href="{:url('index/vhost/ftp')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-cloud-upload"></p>
-                        <p>FTP设置</p>
-                      </div>
-                    </a>
-                  </div>
-                  {/notempty}
                 </div>
               </div>
               <div class="tab-pane fade" id="security-pills">
                 <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/protection')?'':'hide'}">
-                    <a href="{:url('index/vhost/protection')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/protection')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="防盗链" data-url="{:url('index/vhost/protection')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-minus-network"></p>
                         <p>防盗链</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/waf')?'':'hide'}">
-                    <a href="{:url('index/vhost/waf')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/waf')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="防火墙" data-url="{:url('index/vhost/waf')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-wall"></p>
                         <p>防火墙</p>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/dirauth')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="目录保护" data-url="{:url('index/vhost/dirauth')}" >
+                      <div class="box-placeholder" align="center">
+                        <p class="mdi mdi-file-lock-outline"></p>
+                        <p>目录保护</p>
+                      </div>
+                    </a>
+                  </div>
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/proof')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="网站防篡改" data-url="{:url('index/vhost/proof')}" >
+                      <div class="box-placeholder" align="center">
+                        <p class="mdi mdi-webcam"></p>
+                        <p>网站防篡改</p>
                       </div>
                     </a>
                   </div>
@@ -365,48 +360,48 @@
               </div>
               <div class="tab-pane fade" id="expert-pills">
                 <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/sitelog')?'':'hide'}">
-                    <a href="{:url('index/vhost/sitelog')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/sitelog')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="日志分析" data-url="{:url('index/vhost/sitelog')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-chart-bar-stacked"></p>
                         <p>日志分析</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/httpauth')?'':'hide'}">
-                    <a href="{:url('index/vhost/httpauth')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/httpauth')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="HTTP认证" data-url="{:url('index/vhost/httpauth')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-wan"></p>
                         <p>HTTP认证</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/deployment')?'':'hide'}">
-                    <a href="{:url('index/vhost/deployment')}" target="_blank" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/deployment')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="一键部署" data-url="{:url('index/vhost/deployment')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-puzzle"></p>
                         <p>一键部署</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/proof')?'':'hide'}">
-                    <a href="{:url('index/vhost/proof')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/deployment_new')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="一键部署(新)" data-url="{:url('index/vhost/deployment_new')}" >
                       <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-webcam"></p>
-                        <p>网站防篡改</p>
+                        <p class="mdi mdi-puzzle"></p>
+                        <p>一键部署(新)</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/total')?'':'hide'}">
-                    <a href="{:url('index/vhost/total')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/total')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="流量报表" data-url="{:url('index/vhost/total')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-chart-pie"></p>
-                        <p>网站监控报表</p>
+                        <p>流量报表</p>
                       </div>
                     </a>
                   </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('index/vhost/proxy')?'':'hide'}">
-                    <a href="{:url('index/vhost/proxy')}" >
+                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/proxy')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="反向代理" data-url="{:url('index/vhost/proxy')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-harddisk"></p>
                         <p>反向代理</p>
@@ -429,7 +424,7 @@
     <!-- START activity-->
     <div class="card card-default">
       <header class="card-header">
-        <div class="card-title">账户主机信息</div>
+        <div class="card-title">主机信息</div>
       </header>
       <!-- START list group-->
       <div class="list-group">
@@ -438,8 +433,8 @@
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-purple m0">FTP链接信息 <a href="{:url('index/vhost/file')}"
-                  class="float-right badge badge-purple">在线文件管理器</a></div>
+              <div class="media-heading text-purple m0">FTP <a href="#!" data-title="在线文件管理" data-url="{:url('index/vhost/file')}"
+                  class="float-right badge badge-purple js-create-tab">在线文件管理器</a></div>
               <p class="m0">
                 <small>FTP地址：{$hostInfo.ftp_server?$hostInfo.ftp_server:$hostInfo.ip_address}</small>
                 <br><small>FTP端口：{$hostInfo.ftp.ftp_port|default="80"}</small>
@@ -447,8 +442,8 @@
                 <br><small>FTP密码：<a onclick="$(this).html($(this).attr('val'))"
                     val="{$hostInfo.ftp.password}">*******</a></small>
                 <br><small>FTP状态：{if $ftpInfo.status}<a href="javascript:ftpStatus(0);" class="text-success"
-                    title="点击关闭">正常</a>{else/}<a href="javascript:ftpStatus(1);" class="text-danger"
-                    title="点击开启">禁用</a>{/if}</small>
+                    data-toggle="tooltip" data-original-title="点击关闭">正常</a>{else/}<a href="javascript:ftpStatus(1);" class="text-danger"
+                    data-toggle="tooltip" data-original-title="点击开启">禁用</a>{/if}</small> <span class="badge badge-pill badge-info" data-toggle="tooltip" data-original-title="注意：FTP属于应急通道，如非特殊环境使用，请勿手动关闭">!</span>
               </p>
             </div>
           </div>
@@ -460,8 +455,8 @@
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-info m0">数据库链接信息 <a href="{$hostInfo.phpMyAdmin?$hostInfo.phpMyAdmin:"
-                  javascript:EchoMsg('未提供在线数据库管理')"}" class="float-right badge badge-info">phpMyAdmin</a>
+              <div class="media-heading text-info m0">数据库 <a href="{$hostInfo.sql.console?$hostInfo.sql.console:"
+                  javascript:EchoMsg('未提供在线数据库管理')"}" class="float-right badge badge-info" target="_blank">phpMyAdmin</a>
               </div>
               <p class="m0">
                 <small>数据库地址：localhost</small><br><small>数据库端口：3306</small><br><small>数据库名：{$hostInfo.sql.username}</small><br><small>数据库用户名：{$hostInfo.sql.username}</small><br><small>数据库密码：<a
@@ -475,31 +470,29 @@
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-success m0">主机参数信息</div>
+              <div class="media-heading text-success m0">其他</div>
               <p class="m0">
                 <small>到期时间：{if $hostInfo.endtime}{$hostInfo.endtime|date="Y-m-d H:i",###}{else/}数据有误{/if}</small>
-                
-                <br /><small>环境：{$hostInfo.server_os}</small>
-                <br /><small>延迟：{$timeOut}</small>
+                <br /><small>环境：{$hostInfo.server_os} + {$serverConfig.webserver|default=""}</small>
+                <br /><small>响应：{:debug('begin','end',6).'s'}</small>
               </p>
-                <form action="{:url('index/vhost/phpSet')}" method="POST">
-                  <div class="form-inline">
-                    <div class="form-group">
-                      <label for="phpSet">切换php版本：</label>
-                      <select name="v" id="phpSet" class="form-control form-control-sm">
-                        {volist name="phpversion_list" id="php"}
-                        <option value="{$php.version}" id="php_{$php.version}" {$php.version==$phpVer? 'selected' :''}>
-                          {$php.name}</option>
-                        {/volist}
-                      </select>
-                    </div>
-                    <div class="form-group">
-                      <input onclick="setPhpVer()" type="button" class="btn btn-warning btn-sm" value="切换" />
-                    </div>
+              <form action="{:url('index/vhost/phpSet')}" method="POST">
+                <div class="form-inline">
+                  <div class="form-group">
+                    <small for="phpSet">php版本：</small>
+                    <select name="v" id="phpSet" class="form-control form-control-sm">
+                      {volist name="phpversion_list" id="php"}
+                      <option value="{$php.version}" id="php_{$php.version}" {$php.version==$phpVer? 'selected' :''}>
+                        {$php.name}</option>
+                      {/volist}
+                    </select>
                   </div>
-                  
-                </form>
-              </small>
+                  <div class="form-group">
+                    <input onclick="setPhpVer()" type="button" class="btn btn-outline-warning btn-sm" value="切换" />
+                  </div>
+                </div>
+                
+              </form>
             </div>
           </div>
         </div>

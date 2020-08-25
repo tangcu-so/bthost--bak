@@ -285,7 +285,7 @@
                             {/if}
                             {/volist}
                             {volist name="dirList.FILES" id="files"}
-                            {if $files['0']!='.user.ini' && $files['4']!='root'}
+                            {if $files['0']!='.user.ini' && (isset($files['4']) && $files['4']!='root') || $hostInfo->server_os=='windows'}
                             <tr>
                                 <td>
                                     <label class="lyear-checkbox checkbox-primary">
@@ -422,6 +422,7 @@
                                             导入
                                         </a>
                                         <?php
+                                        break;
                                 case 'php':
                                 ?>
                                         |

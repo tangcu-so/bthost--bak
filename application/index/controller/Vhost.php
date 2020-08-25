@@ -20,8 +20,8 @@ class Vhost extends Frontend
 {
     protected $layout = 'default';
     protected $noNeedLogin = ['login', 'register'];
-    protected $noNeedRight = ['*']; //测试阶段无需鉴权
-    // protected $noNeedRight = ['logout'];
+    // protected $noNeedRight = ['*']; //测试阶段无需鉴权
+    protected $noNeedRight = ['logout'];
 
     /**
      * 宝塔站点ID
@@ -49,8 +49,8 @@ class Vhost extends Frontend
 
     public function _initialize()
     {
+        Debug::remark('begin');
         parent::_initialize();
-        // Debug::remark('begin');
         $this->hostModel = model('Host');
         $this->ftpModel = model('Ftp');
         $this->sqlModel = model('Sql');
@@ -113,7 +113,7 @@ class Vhost extends Frontend
         // 获取等待连接耗时
         $connectTime = $this->btTend->getRequestTime();
         if (!$connectTime) {
-            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常');
+            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','');
         }
         $this->assign('timeOut', $connectTime);
         // php加载时长
@@ -121,6 +121,7 @@ class Vhost extends Frontend
         
         $this->assign('hostInfo', $this->hostInfo);
         $this->assign('userInfo', $this->userInfo);
+        $this->assign('serverConfig', $this->btTend->serverConfig);
     }
 
     /**
@@ -136,6 +137,7 @@ class Vhost extends Frontend
         }
         return $this->view->fetch('user/' . $name);
     }
+    
     /**
      * 首页
      */
@@ -158,6 +160,7 @@ class Vhost extends Frontend
         } else {
             $ftpInfo = false;
         }
+
         $this->view->assign('title', __('Console center'));
         $this->view->assign('ftpInfo', $ftpInfo);
         $this->view->assign('phpVer', $phpVer);
@@ -744,8 +747,8 @@ class Vhost extends Frontend
      */
     public function Rewrite301()
     {
-        if ($this->server_type != 'linux') {
-            $this->error('当前不支持该模块');
+        if ($this->hostInfo->server_os == 'windows') {
+            $this->error('当前不支持该模块','');
         }
 
         $rewriteInfo           = $this->btAction->Get301Status($this->siteName);
@@ -764,7 +767,7 @@ class Vhost extends Frontend
      */
     public function r301Up()
     {
-        if ($this->server_type != 'linux') {
+        if ($this->hostInfo->server_os == 'windows') {
             $this->error('当前不支持该模块');
         }
         $post_str = $this->request->post();
@@ -798,7 +801,7 @@ class Vhost extends Frontend
      */
     public function r301Off()
     {
-        if ($this->server_type != 'linux') {
+        if ($this->hostInfo->server_os == 'windows') {
             $this->error('当前不支持该模块');
         }
         $post_str = $this->request->post();
@@ -820,6 +823,9 @@ class Vhost extends Frontend
      */
     public function redir()
     {
+        if ($this->btTend->serverConfig['webserver'] != 'nginx') {
+            $this->error('当前不支持该模块','');
+        }
         // 获取网站下的域名列表
         $WebsitesList = $this->btAction->Websitess($this->bt_id, 'domain');
         // 获取重定向内测版列表
@@ -1060,7 +1066,7 @@ class Vhost extends Frontend
     public function file_ftp()
     {
         if (!extension_loaded('ftp')) {
-            $this->error('未开启FTP扩展');
+            $this->error('未开启FTP扩展','');
         }
 
         // 判断当前站点是否开通ftp
@@ -1073,7 +1079,7 @@ class Vhost extends Frontend
         $username = $this->hostInfo->ftp->username;
         $password = $this->hostInfo['ftp_pass'];
         if (!$host || !$port || !$username || !$password) {
-            $this->error('当前不支持FTP文件管理');
+            $this->error('当前不支持FTP文件管理','');
         }
 
         // 防止错误
@@ -1529,7 +1535,7 @@ class Vhost extends Frontend
         try {
             $list = $ftp->get_rawlist($path);
         } catch (\Exception $e) {
-            $this->error('文件获取失败' . $e->getMessage());
+            $this->error('文件获取失败' . $e->getMessage(),'');
         }
 
         $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
@@ -1555,12 +1561,12 @@ class Vhost extends Frontend
         //获取网站根目录
         $WebGetKey = $this->webRootPath;
         if (!$WebGetKey) {
-            $this->error('获取网站根目录失败');
+            $this->error('获取网站根目录失败','');
         }
         // 获取跨域信息
         $getini = $this->dirUserIni;
         if (!$getini) {
-            $this->error('意外的错误');
+            $this->error('意外的错误','');
         }
         
         //请求路径
@@ -1592,7 +1598,7 @@ class Vhost extends Frontend
         //     $this->error('非法请求');
         // }
         if (preg_match($this->reg_file, $file)) {
-            $this->error('非法请求');
+            $this->error('非法请求','');
         }
 
         if ($WebGetKey) {
@@ -1652,29 +1658,6 @@ class Vhost extends Frontend
                     $this->error('非法操作');
                 }
                 $down = $this->btAction->download($WebGetKey . $file, $info['basename']);
-                if ($down && isset($down['status']) && $down['status'] == 'false') {
-                    $this->success($down['msg']);
-                }
-                exit();
-            }
-            // 网站备份文件下载
-            if (input('get.down_back_file')) {
-                $file = input('get.down_back_file') ? preg_replace('/([\.]){2,}/', '/', input('get.down_back_file')) : '/';
-                $info = pathinfo($file);
-                // var_dump($this->btTend->getServerConfig());exit;
-
-                $down = $this->btAction->download('/www/backup/site/' . $file, $info['basename']);
-                if ($down && isset($down['status']) && $down['status'] == 'false') {
-                    $this->success($down['msg']);
-                }
-                exit();
-            }
-            // 网站备份文件下载
-            if (input('get.down_back_sql')) {
-                $file = input('get.down_back_sql') ? preg_replace('/([\.]){2,}/', '/', input('get.down_back_sql')) : '/';
-                $info = pathinfo($file);
-
-                $down = $this->btAction->download('/www/backup/database/' . $file, $info['basename']);
                 if ($down && isset($down['status']) && $down['status'] == 'false') {
                     $this->success($down['msg']);
                 }
@@ -2155,12 +2138,13 @@ class Vhost extends Frontend
                     $this->error('下载失败');
                 }
             }
+            
             $search = $this->request->get('search');
             // 目前子目录搜索有问题
             // $all = $this->request->get('all')?'True':'';
             $dirList = $this->btAction->GetDir($Webpath,1,$search);
             if (isset($dirList['status']) && $dirList['status'] != 'true') {
-                $this->error('请求目录不存在');
+                $this->error('请求目录不存在','');
             }
 
             //文件夹
@@ -2250,7 +2234,6 @@ class Vhost extends Frontend
                 $total = count($list);
                 return jsonp(['rows'=>$list,'total'=>$total],200);
             }
-
             $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
             return view('file', [
                 'search'         => $this->request->get('search'),
@@ -2259,7 +2242,7 @@ class Vhost extends Frontend
                 'php_upload_max' => $php_upload_max,
             ]);
         } else {
-            $this->error('读取网站根目录出错');
+            $this->error('读取网站根目录出错','');
         }
     }
 
@@ -2283,8 +2266,9 @@ class Vhost extends Frontend
      * @Author   Youngxj
      * @DateTime 2019-12-03
      */
-    public function Siteback()
+    public function back()
     {
+        $WebBackupList = $SqlBackupList = [];
 
         $WebBackupList = $this->btAction->WebBackupList($this->bt_id);
         if (isset($WebBackupList['data'][0])) {
@@ -2303,9 +2287,41 @@ class Vhost extends Frontend
             }
         }
 
-        return view('siteback', [
-            'WebBackupList' => $WebBackupList,
-            'countback'     => count(@$WebBackupList['data']),
+        if (isset($this->hostInfo->sql->username) || $this->hostInfo->sql->username) {
+            //获取数据库ID
+            $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+            if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
+                $SqlBackupList['data'] = [];
+                // $this->error('没有找到数据库','');
+            }else{
+                //获取数据库备份列表
+                $SqlBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
+
+                if (isset($SqlBackupList['data'][0])) {
+                    foreach ($SqlBackupList['data'] as $key => $value) {
+                        $SqlBackupList['data'][$key]['size'] = formatBytes($SqlBackupList['data'][$key]['size']);
+                        // 下载备份文件
+                        if (input('get.down_back_sql') == $SqlBackupList['data'][$key]['name']) {
+                            $filePath = $SqlBackupList['data'][$key]['filename'];
+                            $fileName = $SqlBackupList['data'][$key]['name'];
+                            $down     = $this->btAction->download($filePath, $fileName);
+                            if ($down && isset($down['status']) && $down['status'] == 'false') {
+                                $this->success($down['msg']);
+                            }
+                            exit;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        return view('back', [
+            'title'             => '备份',
+            'countback_site'    => count(@$WebBackupList['data']),
+            'WebBackupList'     => $WebBackupList,
+            'SqlBackupList'     => $SqlBackupList,
+            'countback_sql'     => count(@$SqlBackupList['data']),
         ]);
     }
 
@@ -2371,32 +2387,6 @@ class Vhost extends Frontend
     }
 
     /**
-     * ftp
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
-    public function Ftp()
-    {
-        if (isset($this->hostInfo->ftp->username) && $this->hostInfo->ftp->username) {
-            $ftpInfo = $this->btTend->getFtpInfo();
-            if (!$ftpInfo) {
-                $this->error('没有开通这项业务');
-            }
-        } else {
-            $this->error('没有开通这项业务');
-        }
-        if($this->hostInfo->ftp->username!=$ftpInfo['name']){
-            $this->error('FTP异常，请联系管理员处理');
-        }
-
-        $ftp = $ftpInfo;
-
-        return $this->view->fetch('ftp', [
-            'ftp' => $ftp,
-        ]);
-    }
-
-    /**
      * FTP开关
      * @Author   Youngxj
      * @DateTime 2019-12-03
@@ -2433,12 +2423,15 @@ class Vhost extends Frontend
      * @return void
      */
     public function sqlTools(){
+        if($this->hostInfo->server_os=='windows'){
+            $this->error('当前主机不支持该功能','');
+        }
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
-            $this->error('没有开通该项业务');
+            $this->error('没有开通该项业务','');
         }
         $sqlInfo = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$sqlInfo || !isset($sqlInfo['data']['0'])) {
-            $this->error('没有开通这项业务');
+            $this->error('没有开通这项业务','');
         }
         $mysql_list = $this->btAction->GetSqlSize($this->hostInfo->sql->username);
         if($this->request->get('callback')){
@@ -2501,52 +2494,6 @@ class Vhost extends Frontend
     }
 
     /**
-     * 数据库备份
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
-    public function Sqlback()
-    {
-        if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
-            $this->error('没有开通该项业务');
-        }
-
-        //获取数据库ID
-        $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
-        if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
-            $this->error('没有找到数据库');
-        }
-        //获取数据库备份列表
-        $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
-
-        // $securityArray = [];
-        // foreach ($WebBackupList['data'] as $key => $value) {
-        //     $securityArray[$key] = $WebBackupList['data'][$key]['id'];
-        // }
-
-        if (isset($WebBackupList['data'][0])) {
-            foreach ($WebBackupList['data'] as $key => $value) {
-                $WebBackupList['data'][$key]['size'] = formatBytes($WebBackupList['data'][$key]['size']);
-                // var_dump($WebBackupList);exit;
-                // 下载备份文件
-                if (input('get.down_back_sql') == $WebBackupList['data'][$key]['name']) {
-                    $filePath = $WebBackupList['data'][$key]['filename'];
-                    $fileName = $WebBackupList['data'][$key]['name'];
-                    $down     = $this->btAction->download($filePath, $fileName);
-                    if ($down && isset($down['status']) && $down['status'] == 'false') {
-                        $this->success($down['msg']);
-                    }
-                    exit;
-                }
-            }
-        }
-        return $this->view->fetch('sqlback', [
-            'countback'     => count(@$WebBackupList['data']),
-            'WebBackupList' => $WebBackupList,
-        ]);
-    }
-
-    /**
      * 数据库备份生成
      * @Author   Youngxj
      * @DateTime 2019-12-03
@@ -2554,7 +2501,9 @@ class Vhost extends Frontend
      */
     public function sqlBackInc()
     {
-
+        if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
+            $this->error('没有开通该项业务','');
+        }
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
@@ -2592,7 +2541,9 @@ class Vhost extends Frontend
      */
     public function sqlBackDel()
     {
-
+        if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
+            $this->error('没有开通该项业务','');
+        }
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
@@ -2625,29 +2576,32 @@ class Vhost extends Frontend
      */
     public function sqlBackDown()
     {
+        if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
+            $this->error('没有开通该项业务','');
+        }
 
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
-            $this->error('没有开通这项业务');
+            $this->error('没有找到数据库');
         }
         //获取数据库备份列表
         $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
-        $securityArray = [];
-        foreach ($WebBackupList['data'] as $key => $value) {
-            $securityArray[$key] = $WebBackupList['data'][$key]['id'];
-        }
-        $post_str = $this->request->post();
-        if (in_array($post_str['down'], $securityArray)) {
-            $this->success('正在开发中');
-            // if($modify_status = $this->btAction->SQLDelBackup($post_str['down'])){
-            //     ['code' => '200','msg' =>$modify_status['msg']];
-            // }else{
-            //     ['code' => '-1','msg' =>'删除失败'.$modify_status['msg']];
-            // }
-        } else {
-            $this->error('非法操作');
+        if (isset($WebBackupList['data'][0])) {
+            foreach ($WebBackupList['data'] as $key => $value) {
+                $WebBackupList['data'][$key]['size'] = formatBytes($WebBackupList['data'][$key]['size']);
+                // 下载备份文件
+                if (input('get.down_back_sql') == $WebBackupList['data'][$key]['name']) {
+                    $filePath = $WebBackupList['data'][$key]['filename'];
+                    $fileName = $WebBackupList['data'][$key]['name'];
+                    $down     = $this->btAction->download($filePath, $fileName);
+                    if ($down && isset($down['status']) && $down['status'] == 'false') {
+                        $this->success($down['msg']);
+                    }
+                    exit;
+                }
+            }
         }
     }
 
@@ -2662,39 +2616,24 @@ class Vhost extends Frontend
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
-            $this->error('没有开通这项业务');
+            $this->error('没有开通这项业务','');
         }
         //获取数据库备份列表
         $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
-        $securityArray = [];
-        foreach ($WebBackupList['data'] as $key => $value) {
-            $securityArray[$key] = $WebBackupList['data'][$key]['name'];
-        }
-        $post_str = $this->request->post();
-        if (in_array($post_str['file'], $securityArray)) {
-            if ($modify_status = $this->btAction->SQLInputSql($post_str['file'], $this->hostInfo->sql->username)) {
-                $this->success($modify_status['msg']);
-            } else {
-                $this->error('删除失败' . $modify_status['msg']);
+        if (isset($WebBackupList['data'][0])) {
+            foreach ($WebBackupList['data'] as $key => $value) {
+                // 下载备份文件
+                if (input('post.file') == $value['name']) {
+                    if ($modify_status = $this->btAction->SQLInputSqlFile($value['filename'], $this->hostInfo->sql->username)) {
+                        $this->success($modify_status['msg']);
+                    } else {
+                        $this->error('还原失败' . $modify_status['msg']);
+                    }
+                }
             }
-        } else {
-            $this->error('非法操作');
-        }
-    }
-
-    /**
-     * 数据库导入
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
-    public function sqlInputSqlFile()
-    {
-        //获取数据库ID
-        $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
-        if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
-            $this->error('没有开通这项业务');
+        }else{
+            $this->error('文件错误，请重试！');
         }
     }
 
@@ -3018,7 +2957,9 @@ class Vhost extends Frontend
      */
     public function Httpauth()
     {
-
+        if($this->hostInfo->server_os=='windows'){
+            $this->error('当前主机不支持该功能','');
+        }
         $vhost_url = '/www/wwwroot/' . explode('.', $this->siteName)[0];
         $setting   = $this->btAction->GetDirUserINI($this->bt_id, $vhost_url);
 
@@ -3035,6 +2976,9 @@ class Vhost extends Frontend
      */
     public function httpauthSet()
     {
+        if($this->hostInfo->server_os=='windows'){
+            $this->error('当前主机不支持该功能','');
+        }
         $post_str = $this->request->post();
         if (!empty($post_str['username']) && !empty($post_str['password'])) {
             if (preg_match($this->reg, $post_str['username']) || preg_match($this->reg, $post_str['password'])) {
@@ -3059,6 +3003,9 @@ class Vhost extends Frontend
      */
     public function httpauthOff()
     {
+        if($this->hostInfo->server_os=='windows'){
+            $this->error('当前主机不支持该功能','');
+        }
         $post_str = $this->request->post();
         if (isset($post_str['auth']) && $post_str['auth'] == 'off') {
             if ($modify_status = $this->btAction->CloseHasPwd($this->bt_id)) {
@@ -3083,6 +3030,7 @@ class Vhost extends Frontend
             $this->error($list['msg']);
         }
         return view('dirauth', [
+            'title'=>'目录保护',
             'dirAuthList' => isset($list[$this->siteName]) ? $list[$this->siteName] : '',
         ]);
     }
@@ -3220,12 +3168,13 @@ class Vhost extends Frontend
 
         $deploymentList = $this->btAction->deployment();
         if (!$deploymentList || isset($deploymentList['status']) && $deploymentList['status'] == false) {
-            $this->error('暂不支持该功能');
+            $this->error('暂不支持该功能','');
         }
         //程序列表倒叙
         $deploymentList['data'] = array_reverse($deploymentList['data']);
 
         return view('deployment', [
+            'title'=>'一键部署',
             'deploymentList' => $deploymentList,
         ]);
     }
@@ -3283,6 +3232,7 @@ class Vhost extends Frontend
         $deploymentList = $this->btAction->GetList();
 
         return view('deployment_new', [
+            'title'=>'一键部署(新版)',
             'deploymentList' => $deploymentList,
         ]);
     }
@@ -3308,7 +3258,7 @@ class Vhost extends Frontend
                 $this->error('没有找到该站点');
             }
         } else {
-            $this->error('当前主机不支持该插件');
+            $this->error('当前主机不支持该插件','');
         }
         return $this->view->fetch('proof', [
             'proofInfo' => $proofInfo,
@@ -3403,10 +3353,10 @@ class Vhost extends Frontend
         if ($Total && @$Total['open'] == 'true') {
             $siteTotal = $this->btAction->SiteTotal($this->siteName, $day);
             if (!$siteTotal) {
-                $this->error('意外的错误');
+                $this->error('意外的错误','');
             }
         } else {
-            $this->error('当前主机不支持该插件');
+            $this->error('当前主机不支持该插件','');
         }
         $Network = $this->btAction->SiteNetworkTotal($this->siteName);
         if (isset($Network['days']) && $Network['days'] != '') {
@@ -3439,16 +3389,18 @@ class Vhost extends Frontend
      */
     public function Waf()
     {
+        // 获取防火墙类型
         $isWaf = $this->btTend->getWaf();
         // var_dump($isWaf);exit;
         if (!$isWaf) {
-            $this->error('当前主机不支持该插件');
+            $this->error('当前主机不支持该插件','');
         }
+        // 获取防火墙插件
         $waf = $this->btAction->Getwaf($isWaf);
         if (isset($waf) && $waf['open'] == 'true') {
             $Sitewaf = $this->btAction->Sitewaf($isWaf, $this->siteName);
             if (!$Sitewaf) {
-                $this->error('意外的错误');
+                $this->error('意外的错误','');
             }
             $SitewafConfig = $this->btAction->SitewafConfig($isWaf);
             if ($SitewafConfig) {
@@ -3462,7 +3414,7 @@ class Vhost extends Frontend
                 }
             }
         } else {
-            $this->error('当前主机不支持该插件');
+            $this->error('当前主机不支持该插件','');
         }
         // var_dump($Sitewaf);exit;
         
@@ -3658,6 +3610,34 @@ class Vhost extends Frontend
         } else {
             $this->error('删除失败');
         }
+    }
+
+    /**
+     * Nginx免费防火墙
+     *
+     * @return void
+     */
+    public function free_waf(){
+        // 判断环境是否为nginx
+        if(isset($this->btTend->serverConfig['webserver'])&&$this->btTend->serverConfig['webserver']=='nginx'){
+            // 判断是否安装该插件
+            $pluginInfo = $this->btTend->softQuery('free_waf');
+            if(!$pluginInfo){
+                $this->error('当前主机不支持该插件','');
+            }
+            // waf站点信息
+            $waf = $this->btTend->free_waf_site_info();
+            // waf站点日志
+            $logs = $this->btAction->free_waf_get_logs_list($this->siteName);
+            $this->view->assign('waf',$waf);
+            $this->view->assign('logs',$logs);
+            $this->view->assign('total',$waf['total']);
+            $this->view->assign('title','防火墙');
+        }else{
+            $this->error('当前主机不支持该插件','');
+        }
+        
+        // return $this->view->fetch();
     }
 
     /**

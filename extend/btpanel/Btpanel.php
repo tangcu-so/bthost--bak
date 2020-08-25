@@ -4055,6 +4055,21 @@ class Btpanel
     }
 
     /**
+     * 站点列表、配置、统计
+     *
+     * @return void
+     */
+    public function free_waf_site_config(){
+        $url = $this->BT_PANEL . config("bt.free_waf_site_config");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
      * 文件查杀
      *
      * @param [type] $filename  文件全路径
