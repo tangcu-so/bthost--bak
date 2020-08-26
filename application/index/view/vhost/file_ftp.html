@@ -2,17 +2,19 @@
 {block name="title"}在线文件管理(FTP){/block}
 {block name="css"}
 <style type="text/css">
-    .cm-s-default{
-        height:100% !important;
+    .cm-s-default {
+        height: 100% !important;
     }
+
     /*.CodeMirror pre{
         padding-left: 25px !important;
     }*/
     /*分片上传css*/
-    #file_input{
+    #file_input {
         display: none;
     }
-    #up_box{
+
+    #up_box {
         background-color: #fafbfe;
         border: #e4e5e9 1px solid;
         margin: 0;
@@ -21,7 +23,8 @@
         height: 360px;
         overflow: auto;
     }
-    #up_box li{
+
+    #up_box li {
         list-style-type: none;
         height: 30px;
         line-height: 30px;
@@ -30,7 +33,8 @@
         margin: 0 0 5px;
         padding: 0;
     }
-    #up_box li .filename{
+
+    #up_box li .filename {
         display: inline-block;
         height: 30px;
         margin-right: 20px;
@@ -39,19 +43,22 @@
         white-space: nowrap;
         width: 240px;
     }
-    #up_box li .filesize{
+
+    #up_box li .filesize {
         color: #999;
         display: inline-block;
         height: 30px;
         overflow: hidden;
     }
-    #up_box li em{
+
+    #up_box li em {
         font-style: normal;
         color: #06F;
         float: right;
         margin-right: 10px;
     }
-    #totalProgress progress{
+
+    #totalProgress progress {
         width: 180px;
         height: 10px;
         border: 1px solid #ccc;
@@ -59,84 +66,89 @@
         color: #0064b4;
         opacity: .9;
     }
-    .layui-layer-content{
+
+    .layui-layer-content {
         padding: 10px;
+    }
+    .text-middle{
+        vertical-align:middle;
     }
 </style>
 {/block}
 {block name="content"}
-<link rel="stylesheet" type="text/css" href="__LIBS__/codemirror/lib/codemirror.css">
-<script type="text/javascript" src="__LIBS__/codemirror/lib/codemirror.js"></script>
-<script type="text/javascript" src="__LIBS__/codemirror/addon/scroll/annotatescrollbar.js"></script>
+<link href="__STATIC__/Light-Year/css/animate.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="/assets/libs/codemirror/lib/codemirror.css">
+<script type="text/javascript" src="/assets/libs/codemirror/lib/codemirror.js"></script>
+<script type="text/javascript" src="/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
 
-<!-- <script type="text/javascript" src="__LIBS__/codemirror/addon/edit/editAll.js"></script> -->
-<!-- <script type="text/javascript" src="__LIBS__/codemirror/mode/modeAll.js"></script> -->
+<!-- <script type="text/javascript" src="/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
+<!-- <script type="text/javascript" src="/assets/libs/codemirror/mode/modeAll.js"></script> -->
 <!-- 引入javascript编辑器格式 -->
-<script src="__LIBS__/codemirror/mode/clike/clike.js"></script>
-<script src="__LIBS__/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<!-- <script src="__LIBS__/codemirror/mode/javascript/javascript.js"></script> -->
-<!-- <script src="__LIBS__/codemirror/mode/php/php.js"></script> -->
-<!-- <script src="__LIBS__/codemirror/mode/shell/shell.js"></script>
-<script src="__LIBS__/codemirror/mode/python/python.js"></script>
-<script src="__LIBS__/codemirror/mode/nginx/nginx.js"></script>
-<script src="__LIBS__/codemirror/mode/markdown/markdown.js"></script>
+<script src="/assets/libs/codemirror/mode/clike/clike.js"></script>
+<script src="/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<!-- <script src="/assets/libs/codemirror/mode/javascript/javascript.js"></script> -->
+<!-- <script src="/assets/libs/codemirror/mode/php/php.js"></script> -->
+<!-- <script src="/assets/libs/codemirror/mode/shell/shell.js"></script>
+<script src="/assets/libs/codemirror/mode/python/python.js"></script>
+<script src="/assets/libs/codemirror/mode/nginx/nginx.js"></script>
+<script src="/assets/libs/codemirror/mode/markdown/markdown.js"></script>
  -->
-<script type="text/javascript" src="__LIBS__/codemirror/addon/dialog/dialog.js"></script>
-<script type="text/javascript" src="__LIBS__/codemirror/addon/search/search.js"></script>
+<script type="text/javascript" src="/assets/libs/codemirror/addon/dialog/dialog.js"></script>
+<script type="text/javascript" src="/assets/libs/codemirror/addon/search/search.js"></script>
 <!-- 各种主题配色 -->
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/monokai.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/3024-day.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/3024-night.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/abcdef.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/ambiance.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/base16-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/bespin.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/base16-light.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/blackboard.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/cobalt.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/colorforth.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/dracula.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/duotone-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/duotone-light.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/eclipse.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/elegant.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/erlang-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/hopscotch.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/icecoder.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/isotope.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/lesser-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/liquibyte.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/material.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/mbo.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/mdn-like.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/midnight.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/monokai.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/neat.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/neo.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/night.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/panda-syntax.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/paraiso-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/paraiso-light.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/pastel-on-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/railscasts.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/rubyblue.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/seti.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/solarized.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/the-matrix.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/tomorrow-night-bright.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/tomorrow-night-eighties.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/ttcn.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/twilight.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/vibrant-ink.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/xq-dark.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/xq-light.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/yeti.css">
-    <link rel="stylesheet" href="__LIBS__/codemirror/theme/zenburn.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/monokai.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/3024-day.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/3024-night.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/abcdef.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/ambiance.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/base16-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/bespin.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/base16-light.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/blackboard.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/cobalt.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/colorforth.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/dracula.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/duotone-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/duotone-light.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/eclipse.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/elegant.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/erlang-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/hopscotch.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/icecoder.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/isotope.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/lesser-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/liquibyte.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/material.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/mbo.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/mdn-like.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/midnight.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/monokai.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/neat.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/neo.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/night.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/panda-syntax.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/paraiso-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/paraiso-light.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/pastel-on-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/railscasts.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/rubyblue.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/seti.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/solarized.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/the-matrix.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/tomorrow-night-bright.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/tomorrow-night-eighties.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/ttcn.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/twilight.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/vibrant-ink.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/xq-dark.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/xq-light.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/yeti.css">
+<link rel="stylesheet" href="/assets/libs/codemirror/theme/zenburn.css">
 <div class="row">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body example-box">
-                <button style="float: right;" class="btn btn-sm btn-success" onclick="location.reload()" title="刷新"><i class="mdi mdi-rotate-3d"></i></button>
+                <button style="float: right;" class="btn btn-sm btn-success" onclick="location.reload()" title="刷新"><i class="mdi mdi-restore"></i></button>
                 <button style="float: right;" class="btn btn-sm btn-dark" onclick="newdir()">新建目录</button>
                 <button style="float: right;" class="btn btn-sm btn-purple" onclick="newfile()">新建文件</button>
                 <!-- <button style="float: right;" class="btn btn-sm btn-info" onclick="UploadFiles()">上传</button> -->
@@ -155,10 +167,12 @@
                 </form>
                 <div style="float: left;padding-left: 10px;padding-top:5px;">
                     当前目录：
-                    <a href="?path=/">
+                    <a href="?path=/" class="loading_dir">
                         根目录
                     </a>
-                    {$viewpath}
+                    {volist name="paths" id="path"}
+                    / <a href="?path={$path.url}" class="loading_dir">{$path.path}</a>
+                    {/volist}
                     {if cookie('cutFileName')}
                     <a href="javascript:PasteFile('{$viewpath}');">粘贴</a>
                     {elseif cookie('copyFileName')}
@@ -207,7 +221,7 @@
                                 <input type="checkbox" name="ids[]" value="{$key}"><span></span>
                             </label>
                         </td>
-                        <td><a href="?path={$viewpath}{$dirs.name}">{$dirs.name}</a></td>
+                        <td><span class="mdi mdi-folder text-warning mdi-24px text-middle"></span> <a href="?path={$viewpath}{$dirs.name}">{$dirs.name}</a></td>
                         <td><a href="javascript:;" onclick="getSize('{$dirs.name}',this)">计算大小</a></td>
                         <td>{:monthTosmonth($dirs.month)}-{$dirs.day} {$dirs.time}</td>
                         <td>{$dirs.chmod}</td>
@@ -231,13 +245,66 @@
                     </tr>
                     {/volist}
                     {volist name="list.files" id="files"}
+                    {if $files.group=='www'&&$files.name!='.user.ini'}
                     <tr>
                         <td>
                             <label class="lyear-checkbox checkbox-primary">
                                 <input type="checkbox" name="ids[]" value="{$key}"><span></span>
                             </label>
                         </td>
-                        <td>{$files.name}</td>
+                        <td>
+                            <?php
+                            switch (fileExtension($files['name'])) {
+                                case 'bmp':
+                                case 'gif':
+                                case 'png':
+                                case 'jpeg':
+                                case 'jpg':
+                                case 'tiff':
+                                case 'ico':
+                                ?>
+                                <span class="mdi mdi-file-image text-primary mdi-24px text-middle"></span>
+                                <?php 
+                                break;
+                                case 'zip':
+                                case 'rar':
+                                case 'gz':
+                                case '7z':
+                                case 'rar':
+                                case 'gz':
+                                ?>
+                                <span class="mdi mdi-zip-box text-warning mdi-24px text-middle"></span>
+                                <?php 
+                                break;
+                                case 'sql':
+                                ?>
+                                <span class="mdi mdi-database text-danger mdi-24px text-middle"></span>
+                                <?php 
+                                break;
+                                case 'txt':
+                                ?>
+                                <span class="mdi mdi-file-document text-gray mdi-24px text-middle"></span>
+                                <?php 
+                                break;
+                                case 'php':
+                                ?>
+                                <span class="mdi mdi-file-code text-cyan mdi-24px text-middle"></span>
+                                <?php 
+                                break;
+                                case 'html':
+                                ?>
+                                <span class="mdi mdi-language-html5 text-info mdi-24px text-middle"></span>
+                                <?php 
+                                break;
+                            default:
+                                ?>
+                                <span class="mdi mdi-file text-secondary mdi-24px text-middle"></span>
+                                <?php 
+                                    break;
+                            }
+                            ?>
+                            {$files.name}
+                        </td>
                         <td>{:formatBytes($files.size)}</td>
                         <td>{:monthTosmonth($files.month)}-{$files.day} {notempty name="dirs.time"} {$dirs.time}{/notempty}</td>
                         <td>{$files.chmod}</td>
@@ -295,6 +362,7 @@
                             </span>
                         </td>
                     </tr>
+                    {/if}
                     {/volist}
                 </tbody>
             </table>
@@ -305,6 +373,8 @@
 </div>
 {/block}
 {block name="script"}
+<script src="/assets/libs/layer/layer.js"></script>
+<script type="text/javascript" src="__STATIC__/Light-Year/js/bootstrap-notify.min.js"></script>
 <script type="text/javascript">
     function DeleteFile(file){
         if(!file){
@@ -609,7 +679,7 @@
                   return false;  
               }else{
                   layer.msg('正在上传');
-                  lightyear.loading('show');
+                  
                   var data = new FormData($('#btyUploadFile')[0]);
                   $.ajax({
                     url: '?type=uploadfile&path={:htmlspecialchars($viewpath)}',   
@@ -626,7 +696,7 @@
                    }
                }
            }).done(function(ret){
-            lightyear.loading('hide');
+            
             EchoMsg(ret.msg);
         });
            return false;  
@@ -772,9 +842,9 @@
             layer.msg('请选择文件');
             return false;
         }
-        lightyear.loading('show');
+        
         $.post('', {file:file,type:'savefile',content:content,encoding:encoding}, function(data, textStatus, xhr) {
-            lightyear.loading('hide');
+            
             layer.closeAll('loading');
             layer.msg(data.msg, {time: 2000, icon:6});
         });
@@ -803,9 +873,9 @@
         path = '{$viewpath}';
         layer.prompt({title: '新建文件夹', formType: 3}, function(text, index){
             layer.close(index);
-            lightyear.loading('show');
+            
             $.post('', {type:'newdir',path: path,newdir:text}, function(data, textStatus, xhr) {
-                lightyear.loading('hide');
+                
                 EchoMsg(data.msg);
             });
         });
@@ -815,9 +885,9 @@
         path = '{$viewpath}';
         layer.prompt({title: '新建文件', formType: 3}, function(text, index){
             layer.close(index);
-            lightyear.loading('show');
+            
             $.post('', {type:'newfile',path: path,newfile:text}, function(data, textStatus, xhr) {
-                lightyear.loading('hide');
+                
                 EchoMsg(data.msg);
             });
         });
@@ -877,9 +947,9 @@
         layer.confirm(msg, {
               btn: ['确定','取消']
             }, function(){
-                lightyear.loading('show');
+                
                 $.post('', {type:'batch',path: path,data:data,batch:batchType}, function(data, textStatus, xhr) {
-                    lightyear.loading('hide');
+                    
                     if(batchType=='CutFile'||batchType=='CutFiles'){
                         layer.msg(data.msg);
                         // setTimeout("location.reload();", 1000);
@@ -921,9 +991,9 @@
     // 执行粘贴批量复制/剪切的任务
     function BatchPaste(type){
         path = '{$viewpath}';
-        lightyear.loading('show');
+        
         $.post('', {type: 'BatchPaste',path:path,ty:type}, function(data) {
-            lightyear.loading('hide');
+            
                 EchoMsg(data.msg)
         });
     }

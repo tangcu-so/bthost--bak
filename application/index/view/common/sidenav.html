@@ -2,7 +2,7 @@
     <ul class="nav-drawer">
         <li class="nav-item active"> <a class="multitabs" href="main""><i class="mdi mdi-home"></i> <span>控制台</span></a> </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-palette"></i> <span>基础功能</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-hexagon-multiple"></i> <span>基础功能</span></a>
         <ul class="nav nav-subnav">
             <li> <a class="multitabs {:$auth->check('vhost/domain')?'':'d-none'}" href="{:url('index/vhost/domain')}">域名绑定</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/pass')?'':'d-none'}" href="{:url('index/vhost/pass')}">密码设置</a> </li>
@@ -25,7 +25,7 @@
         </ul>
         </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-tools"></i> <span>安全设置</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-sort-variant-lock"></i> <span>安全设置</span></a>
         <ul class="nav nav-subnav">
             <li> <a class="multitabs {:$auth->check('vhost/protection')?'':'d-none'}" href="{:url('index/vhost/protection')}">防盗链</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/waf')?'':'d-none'}" href="{:url('index/vhost/waf')}">防火墙</a> </li>
@@ -34,7 +34,7 @@
         </ul>
         </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-file-outline"></i> <span>高级功能</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-webpack"></i> <span>高级功能</span></a>
         <ul class="nav nav-subnav">
             <li> <a class="multitabs {:$auth->check('vhost/sitelog')?'':'d-none'}" href="{:url('index/vhost/sitelog')}">网站日志</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/sqltools')?'':'d-none'}" href="{:url('index/vhost/sqltools')}">Mysql工具箱</a> </li>

@@ -84,7 +84,9 @@ class Vhost extends Frontend
 
         $this->btTend   = new Btaction();
         $this->btAction = $this->btTend->btAction;
-        $this->hostInfo->server_os = $this->btTend->os = $this->server_type = 'linux';
+        // $os = getOs();
+        $os = 'linux';
+        $this->hostInfo->server_os = $this->btTend->os = $this->server_type = $os;
         
         // 信息初始化
         $this->btTend->ftp_name = isset($hostInfo->ftp->username)?$hostInfo->ftp->username:'';
@@ -129,14 +131,14 @@ class Vhost extends Frontend
      * @param $name
      * @return mixed
      */
-    public function _empty($name)
-    {
-        $data = Hook::listen("user_request_empty", $name);
-        foreach ($data as $index => $datum) {
-            $this->view->assign($datum);
-        }
-        return $this->view->fetch('user/' . $name);
-    }
+    // public function _empty($name)
+    // {
+    //     $data = Hook::listen("user_request_empty", $name);
+    //     foreach ($data as $index => $datum) {
+    //         $this->view->assign($datum);
+    //     }
+    //     return $this->view->fetch('user/' . $name);
+    // }
     
     /**
      * 首页
@@ -1073,11 +1075,11 @@ class Vhost extends Frontend
 
         $type = input('post.type');
 
-        $host     = $this->hostInfo['ftp_server'];
+        $host     = isset($this->hostInfo['ftp_server'])?$this->hostInfo['ftp_server']:'192.168.191.129';
         $ssl     = isset($this->hostInfo['ssl'])?$this->hostInfo['ssl']:false;
-        $port     = $this->hostInfo['ftp_port']?$this->hostInfo['ftp_port']:'21';
+        $port     = isset($this->hostInfo['ftp_port'])?$this->hostInfo['ftp_port']:'21';
         $username = $this->hostInfo->ftp->username;
-        $password = $this->hostInfo['ftp_pass'];
+        $password = $this->hostInfo->ftp->password;
         if (!$host || !$port || !$username || !$password) {
             $this->error('当前不支持FTP文件管理','');
         }
@@ -1091,10 +1093,10 @@ class Vhost extends Frontend
             $excMsg = $e->getMessage();
             switch ($excMsg) {
                 case 'Login incorrect':
-                    $this->error('账号或密码错误');
+                    $this->error('账号或密码错误','');
                     break;
                 case 'Unable to connect':
-                    $this->error('FTP服务器连接失败');
+                    $this->error('FTP服务器连接失败','');
                     break;
                 default:
                     // $this->error('FTP连接失败');
@@ -1114,6 +1116,22 @@ class Vhost extends Frontend
         $ftp->chdir($path);
 
         $path = $ftp->pwd();
+
+        $path_arr = explode('/',$path);
+        $text_arr = [];
+        for ($i=0; $i < count($path_arr); $i++) { 
+            if($path_arr[$i]){
+                if(isset($text_arr[$i-1]['url'])&&$text_arr[$i-1]['url']){
+                    $str = $text_arr[$i-1]['url'];
+                }else{
+                    $str = '';
+                }
+                $text_arr[$i]['path'] = $path_arr[$i];
+                $text_arr[$i]['url'] = $str.'/'.$path_arr[$i];
+            }
+            
+        }
+        $this->view->assign('paths',$text_arr);
 
         // 新文件夹
         if ($type == 'newdir') {
@@ -1543,6 +1561,7 @@ class Vhost extends Frontend
         $crumbs_nav = array_filter(explode('/', $path));
 
         return $this->view->fetch('file_ftp', [
+            'title'          => '在线文件管理',
             'crumbs_nav'     => $crumbs_nav,
             'viewpath'       => $path == '/' ? $path : $path . '/',
             'list'           => $list,
@@ -3396,6 +3415,7 @@ class Vhost extends Frontend
             $this->error('当前主机不支持该插件','');
         }
         // 获取防火墙插件
+        $total = [];
         $waf = $this->btAction->Getwaf($isWaf);
         if (isset($waf) && $waf['open'] == 'true') {
             $Sitewaf = $this->btAction->Sitewaf($isWaf, $this->siteName);
@@ -3409,26 +3429,26 @@ class Vhost extends Frontend
                         $total = $SitewafConfig[$key]['total'];
                         break;
                     } else {
-                        $total = '';
+                        $total = [];
                     }
                 }
             }
         } else {
             $this->error('当前主机不支持该插件','');
         }
-        // var_dump($Sitewaf);exit;
         
         // 获取四层防御状态
-        $ip_stop = $this->btTend->getIpstopStatus($isWaf);
+        $ip_stop = $isWaf!='free_waf'?$this->btTend->getIpstopStatus($isWaf):false;
 
-        $Getcnip = $this->btAction->Getwafcnip($isWaf);
-        $GetCms  = $this->btAction->GetwafCms($isWaf);
+        // $Getcnip = $this->btAction->Getwafcnip($isWaf);
+        // $GetCms  = $this->btAction->GetwafCms($isWaf);
         $GetLog  = $this->btAction->GetwafLog($isWaf, $this->siteName, date('Y-m-d', time()));
 
         return $this->view->fetch('waf', [
+            'waf_type'=> $isWaf,
             'ip_stop' => $ip_stop,
             'GetLog'  => $GetLog,
-            'Getcnip' => $Getcnip,
+            // 'Getcnip' => $Getcnip,
             'Sitewaf' => $Sitewaf,
             'total'   => $total,
         ]);

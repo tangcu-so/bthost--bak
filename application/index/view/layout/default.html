@@ -183,8 +183,8 @@
                     <!--切换主题配色-->
                     <li class="dropdown dropdown-profile">
                     <a href="javascript:void(0)" data-toggle="dropdown" class="dropdown-toggle">
-                        <img class="img-avatar img-avatar-48 m-r-10" src="/favicon.png" alt="笔下光年" />
-                        <span>Admin</span>
+                        <img class="img-avatar img-avatar-48 m-r-10" src="{$user.avatar|default='/favicon.png'}" alt="{$user.username}" />
+                        <span>{$user.username}</span>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <li>

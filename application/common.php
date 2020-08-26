@@ -785,3 +785,70 @@ function getround($sum, $row)
 {
     return @round($row / $sum * 100);
 }
+
+/**
+ * 获取操作系统类型
+ *
+ * @return string
+ */
+function getOs(){
+    $os_name = php_uname();
+    if(strpos($os_name,"Linux")!==false){
+        $os_str = 'linux';
+    }else if(strpos($os_name,"Windows")!==false){
+        $os_str = 'windows';
+    }
+    return $os_str;
+}
+
+/**
+ * 英文月份转数字月份
+ *
+ * @param [type] $value
+ * @return void
+ */
+function monthTosmonth($value)
+{
+    switch (mb_strtolower($value)) {
+        case 'jan':
+            $m = '01';
+            break;
+        case 'feb':
+            $m = '02';
+            break;
+        case 'mar':
+            $m = '03';
+            break;
+        case 'apr':
+            $m = '04';
+            break;
+        case 'may':
+            $m = '05';
+            break;
+        case 'jun':
+            $m = '06';
+            break;
+        case 'jul':
+            $m = '07';
+            break;
+        case 'aug':
+            $m = '08';
+            break;
+        case 'sep':
+            $m = '09';
+            break;
+        case 'oct':
+            $m = '10';
+            break;
+        case 'nov':
+            $m = '11';
+            break;
+        case 'dec':
+            $m = '12';
+            break;
+        default:
+            $m = $value;
+            break;
+    }
+    return $m;
+}

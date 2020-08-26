@@ -2021,7 +2021,7 @@ class Btpanel
      */
     public function Getwaf($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.Getwaf") . $wafType;
+        $url = $this->BT_PANEL . config("bt.Getwaf") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2035,7 +2035,7 @@ class Btpanel
      */
     public function Setwaf($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.Setwaf") . $wafType;
+        $url = $this->BT_PANEL . config("bt.Setwaf") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2050,7 +2050,7 @@ class Btpanel
      */
     public function Sitewaf($wafType, $siteName)
     {
-        $url = $this->BT_PANEL . config("bt.Sitewaf") . $wafType;
+        $url = $this->BT_PANEL . config("bt.Sitewaf") .'&name='. $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2067,7 +2067,7 @@ class Btpanel
      */
     public function SitewafStatus($wafType, $siteName, $obj = 'open')
     {
-        $url = $this->BT_PANEL . config("bt.SitewafStatus") . $wafType;
+        $url = $this->BT_PANEL . config("bt.SitewafStatus") .'&name='. $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2093,7 +2093,7 @@ class Btpanel
      */
     public function Setwafcc($wafType, $siteName, $cycle, $limit, $endtime, $increase = 0,$cc_mode = 1 ,$cc_increase_type='js',$increase_wu_heng = 0,$is_open_global = 0)
     {
-        $url = $this->BT_PANEL . config("bt.Setwafcc") . $wafType;
+        $url = $this->BT_PANEL . config("bt.Setwafcc") .'&name='. $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2120,7 +2120,7 @@ class Btpanel
      */
     public function SetwafRetry($wafType, $siteName, $retry, $retry_time, $retry_cycle)
     {
-        $url = $this->BT_PANEL . config("bt.SetwafRetry") . $wafType;
+        $url = $this->BT_PANEL . config("bt.SetwafRetry") .'&name='. $wafType;
 
         $p_data                = $this->GetKeyData();
         $p_data['siteName']    = $siteName;
@@ -2140,7 +2140,7 @@ class Btpanel
      */
     public function Addwafcnip($wafType, $start_ip, $end_ip)
     {
-        $url = $this->BT_PANEL . config("bt.Addwafcnip") . $wafType;
+        $url = $this->BT_PANEL . config("bt.Addwafcnip") .'&name='. $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['start_ip'] = $start_ip;
@@ -2157,7 +2157,7 @@ class Btpanel
      */
     public function Getwafcnip($wafType, $ruleName = 'cn')
     {
-        $url = $this->BT_PANEL . config("bt.Getwafcnip") . $wafType;
+        $url = $this->BT_PANEL . config("bt.Getwafcnip") .'&name='. $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['ruleName'] = $ruleName;
@@ -2172,7 +2172,7 @@ class Btpanel
      */
     public function GetwafCms($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.GetwafCms") . $wafType;
+        $url = $this->BT_PANEL . config("bt.GetwafCms") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2189,7 +2189,7 @@ class Btpanel
      */
     public function GetwafLog($wafType, $siteName, $toDate, $p = '1')
     {
-        $url = $this->BT_PANEL . config("bt.GetwafLog") . $wafType;
+        $url = $this->BT_PANEL . config("bt.GetwafLog") .'&name='. $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2206,7 +2206,7 @@ class Btpanel
      */
     public function SitewafConfig($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.SitewafConfig") . $wafType;
+        $url = $this->BT_PANEL . config("bt.SitewafConfig") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2219,7 +2219,7 @@ class Btpanel
      * 防火墙停用四层防御
      */
     public function SetIPStopStop($wafType){
-        $url = $this->BT_PANEL . config("bt.SetIPStopStop") . $wafType;
+        $url = $this->BT_PANEL . config("bt.SetIPStopStop") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2232,7 +2232,7 @@ class Btpanel
      * 防火墙开启四层防御
      */
     public function SetIPStop($wafType){
-        $url = $this->BT_PANEL . config("bt.SetIPStop") . $wafType;
+        $url = $this->BT_PANEL . config("bt.SetIPStop") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2245,7 +2245,7 @@ class Btpanel
      * 防火墙获取四层防御状态
      */
     public function GetIPStop($wafType){
-        $url = $this->BT_PANEL . config("bt.GetIPStop") . $wafType;
+        $url = $this->BT_PANEL . config("bt.GetIPStop") .'&name='. $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -4214,14 +4214,13 @@ class Btpanel
         $path = ROOT_PATH . 'logs/';
         if(!is_dir($path)){
             mkdir($path,0777,true);
-        } 
+        }
         //定义cookie保存位置
         $cookie_file =  $path. md5($this->BT_PANEL) . '.cookie';
         if (!file_exists($cookie_file)) {
             $fp = fopen($cookie_file, 'w+');
             fclose($fp);
         }
-
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);

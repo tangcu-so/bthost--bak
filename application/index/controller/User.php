@@ -64,7 +64,7 @@ class User extends Frontend
     public function index(){
         if(Cookie::get('host_id')){
             // 跳转到vhost控制中心
-            return $this->redirect('Vhost/index');
+            return $this->redirect('index/Vhost/index');
         }else{
             // 站点选择页
             $this->view->assign('title', __('站点选择'));
@@ -80,7 +80,7 @@ class User extends Frontend
     {
         $url = $this->request->request('url', '');
         if ($this->auth->id) {
-            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('Vhost/index'));
+            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('index/Vhost/index'));
         }
         if ($this->request->isPost()) {
             $account = $this->request->post('account');
@@ -111,7 +111,7 @@ class User extends Frontend
                 return false;
             }
             if ($this->auth->login($account, $password)) {
-                $this->success(__('Logged in successful'), $url ? $url : url('vhost/index'));
+                $this->success(__('Logged in successful'), $url ? $url : url('index/vhost/index'));
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
             }
@@ -134,7 +134,7 @@ class User extends Frontend
     {
         //注销本站
         $this->auth->logout();
-        $this->success(__('Logout successful'), url('Vhost/index'));
+        $this->success(__('Logout successful'), url('index/Vhost/index'));
     }
 
     /**

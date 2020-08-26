@@ -275,19 +275,19 @@ class Btaction
 
     // 获取默认建站目录
     public function getSitePath(){
-        $path = $this->getServerConfig('sites_path');
+        $path = isset($this->serverConfig['sites_path'])&&$this->serverConfig['sites_path']?$this->serverConfig['sites_path']:$this->getServerConfig('sites_path');
         return $path?$path:'/www/wwwroot';
     }
 
     // 获取默认备份目录
     public function getBackupPath(){
-        $path = $this->getServerConfig('backup_path');
+        $path = isset($this->serverConfig['backup_path'])&&$this->serverConfig['backup_path']?$this->serverConfig['backup_path']:$this->getServerConfig('backup_path');
         return $path?$path:'/www/backup';
     }
 
     // 获取运行服务类型nginx、apache
     public function getWebServer(){
-        $type = $this->getServerConfig('webserver');
+        $type = isset($this->serverConfig['webserver'])&&$this->serverConfig['webserver']?$this->serverConfig['webserver']:$this->getServerConfig('webserver');
         return $type;
     }
 
@@ -771,7 +771,7 @@ class Btaction
     }
 
     /**
-     * 获取防火墙
+     * 获取防火墙类型
      * @Author   Youngxj
      * @DateTime 2019-12-05
      * @return   [type]     [description]
@@ -779,10 +779,11 @@ class Btaction
     public function getWaf()
     {
         $list = ['btwaf_httpd','btwaf','waf_nginx','waf_iis','waf_apache','free_waf'];
+        return 'free_waf';
         $isWaf = '';
         foreach ($list as $key => $value) {
             if($this->softQuery($value)!==false){
-                $isWaf = '&name='.$value;
+                $isWaf = $value;
                 break;
             }
         }

@@ -167,7 +167,7 @@ return [
     'SiteLogTotal'          => '/plugin?action=a&name=total&s=get_site_log_byday', //站点错误统计
     'Siteclient'            => '/plugin?action=a&name=total&s=get_site_total_byclient', //站点客户端统计
 
-    // Nginx/Apache防火墙
+    // Nginx/Apache/IIS防火墙
     'Getwaf'                => '/plugin?action=a&s=get_total_all', //首页数据
     'Setwaf'                => '/plugin?action=a&s=set_open', //总开关
     'Sitewaf'               => '/plugin?action=a&s=get_site_config_byname', //站点信息

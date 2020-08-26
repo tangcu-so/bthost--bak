@@ -220,8 +220,10 @@
 					<select name="cc_mode" id="cc_mode" class="form-control">
 						<option value="1" {if @$Sitewaf.cc.cc_mode=='1' }selected='' {/if}>小白模式 </option>
 						<option value="2" {if @$Sitewaf.cc.cc_mode=='2' }selected='' {/if}>一般模式 </option>
+						{if $waf_type!='free_waf'}
 						<option value="3" {if @$Sitewaf.cc.cc_mode=='3' }selected='' {/if}>自动模式 </option>
 						<option value="4" {if @$Sitewaf.cc.cc_mode=='4' }selected='' {/if}>增强模式 </option>
+						{/if}
 					</select>
 				</div>
 				<div class="form-group form-inline">
