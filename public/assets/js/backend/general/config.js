@@ -76,6 +76,29 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 });
 
             });
+
+            // 获取phpmyadmin数据库管理地址
+            $('input[name="row[phpmyadmin]"]').parent().next().append('<a class="btn btn-info getphpmyadminurl">' + __('Get Phpmyadmin Url') + '</a>');
+            $(document).on("click", ".getphpmyadminurl", function () {
+                var that = this;
+                // 发送方糖测试信息
+                Backend.api.ajax({
+                    url: "ajax/getphpmyadmin_url",
+                }, function(data, ret){
+                    //成功的回调
+                    $('input[name="row[phpmyadmin]"]').val(data.url);
+                });
+            });
+
+            // 测试宝塔通讯
+            $('input[name="row[api_token]"]').parent().next().append('<a class="btn btn-info bt_test">' + __('Bt Test') + '</a>');
+            $(document).on("click", ".bt_test", function () {
+                var that = this;
+                Backend.api.ajax({
+                    url: "ajax/bt_test",
+                    data: $(that).closest("form").serialize()
+                });
+            });
         },
         add: function () {
             Controller.api.bindevent();

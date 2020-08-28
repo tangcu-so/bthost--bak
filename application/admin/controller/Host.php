@@ -18,14 +18,14 @@ class Host extends Backend
     
     /**
      * Host模型对象
-     * @var \app\common\model\Host
+     * @var \app\admin\model\Host
      */
     protected $model = null;
 
     public function _initialize()
     {
         parent::_initialize();
-        $this->model = new \app\common\model\Host;
+        $this->model = new \app\admin\model\Host;
         $this->view->assign("isVsftpdList", $this->model->getIsVsftpdList());
         $this->view->assign("statusList", $this->model->getStatusList());
     }
@@ -97,8 +97,9 @@ class Host extends Backend
                 if (!$btInfo) {
                     $this->error($bt->_error);
                 }
-                $btId = $btInfo['siteId'];
+                $bt->bt_id = $btId = $btInfo['siteId'];
                 $btName = $hostSetInfo['bt_name'];
+                
 
                 Db::startTrans();
 
@@ -125,11 +126,12 @@ class Host extends Backend
                 // 默认并发、网速限制
                 if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0&&isset($bt->btTend->serverConfig['webserver'])&&$bt->btTend->serverConfig['webserver']=='nginx') {
                     // 有错误，记录，防止开通被打断
-                    $modify_status = $bt->setLimit($btId, $plansInfo);
+                    $modify_status = $bt->setLimit($plansInfo);
                     if (!$modify_status) {
                         $this->error($bt->_error);
                     }
                 }
+                
                 // dnspod智能解析
                 if($plansInfo['dnspod']){
                     // var_dump($plansInfo['ip']);exit;

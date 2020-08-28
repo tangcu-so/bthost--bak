@@ -71,6 +71,7 @@
                   {case value="2"}<span class="text-warning">超量</span>{/case}
                   {case value="3"}<span class="text-danger">过期</span>{/case}
                   {/switch}
+                  {if $siteStr!='正常'}{$siteStr}{/if}
                 </h4>
               </div>
               <div class="col-lg-4 col-sm-4 col-4 col-md-4 text-center">
@@ -85,9 +86,9 @@
                 <input type="checkbox" class="custom-control-input" id="customSwitch2" {if $siteStatus}checked{/if}>
                 <label class="custom-control-label" for="customSwitch2">
                   {if $siteStatus}
-                    <a href="javascript:sitestop();" class="text-success" title="点击停止网站">停止网站</a>
+                    <a href="javascript:sitestop();" class="text-success" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击停止网站">停止网站</a>
                   {else/}
-                    <a href="javascript:sitestart();" class="text-danger" title="点击开启网站">开启网站</a>
+                    <a href="javascript:sitestart();" class="text-danger" data-toggle="tooltip" data-placement="top" title="" data-original-title="点击开启网站">开启网站</a>
                   {/if}
                 </label>
               </div>
@@ -112,11 +113,11 @@
             </div>
           </div>
           <div class="card-body" id="web">
-            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success"
-              title="总大小：{$hostInfo.site_max!='0.00'?$hostInfo.site_max.'M':'无限制'}   已使用：{$hostInfo.site_size?$hostInfo.site_size:'0'}M">
+            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$hostInfo.site_max!='0.00'?$hostInfo.site_max.'M':'无限制'}<br/>已使用：{$hostInfo.site_size?$hostInfo.site_size:'0'}M">
               <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
                 value="{$hostInfo.site_size?$hostInfo.site_size:'0'}" max="{$hostInfo.site_max}"
                 style="width:{if $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%">
+                {if $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%
               </div>
             </div>
           </div>
@@ -140,11 +141,11 @@
             </div>
           </div>
           <div class="card-body" id="sql">
-            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success"
-              title="总大小：{$hostInfo.sql_max!='0.00'?$hostInfo.sql_max:'无限制'}   已使用：{$hostInfo.sql_size?$hostInfo.sql_size:'0'}M">
+            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$hostInfo.sql_max!='0.00'?$hostInfo.sql_max:'无限制'}<br/>已使用：{$hostInfo.sql_size?$hostInfo.sql_size:'0'}M">
               <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
                 value="{$hostInfo.sql_size?$hostInfo.sql_size:'0'}" max="{$hostInfo.sql_max}"
                 style="width:{if $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%">
+                {if $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%
               </div>
             </div>
           </div>
@@ -170,11 +171,11 @@
             </div>
           </div>
           <div class="card-body" id="flow">
-            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success"
-              title="总大小：{$hostInfo.flow_max!='0.00'?$hostInfo.flow_max:'无限制'}   已使用：{$hostInfo.flow_size?$hostInfo.flow_size:'0'}M">
+            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$hostInfo.flow_max!='0.00'?$hostInfo.flow_max:'无限制'}<br/>已使用：{$hostInfo.flow_size?$hostInfo.flow_size:'0'}M">
               <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
                 value="{$hostInfo.flow_size?$hostInfo.flow_size:'0'}" max="{$hostInfo.flow_max}"
                 style="width:{if $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%">
+                {if $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%
               </div>
             </div>
           </div>
@@ -183,6 +184,11 @@
       {/notempty}
     </div>
     <!-- END summary widgets-->
+    <div class="row">
+      <div class="col-lg-12">
+        {$Think.config.site.main_center_notice}
+      </div>
+    </div>
     <!-- START chart-->
     <div class="row">
       <div class="col-lg-12">
@@ -281,8 +287,8 @@
                   </div>
                   {notempty name="hostInfo.sql.console"}
                   <div class="col-lg-3 col-sm-6 col-6">
-                    <a href="{$hostInfo.sql.console?$hostInfo.sql.console:" javascript:EchoMsg('未提供在线数据库管理')"}"
-                      {if $hostInfo.sql.console}target="_blank"{/if}>
+                    <a href="{$phpmyadmin?$phpmyadmin:" javascript:EchoMsg('未提供在线数据库管理')"}"
+                      {if $phpmyadmin}target="_blank"{/if}>
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-database"></p>
                         <p>数据库管理</p>
@@ -416,6 +422,7 @@
         <!-- END card-->
       </div>
     </div>
+    
     <!-- END chart-->
   </div>
   <!-- END dashboard main content-->
@@ -428,6 +435,23 @@
       </header>
       <!-- START list group-->
       <div class="list-group">
+        {notempty name="hostInfo.ip_address"}
+        <div class="list-group-item">
+          <div class="media">
+            <div class="media-body clearfix">
+              <div class="media-heading text-success m0">IP
+                <!-- <a class="float-right badge badge-brown" data-toggle="collapse" href="#ip_list" role="button" aria-expanded="true" aria-controls="ip_list">隐藏</a> -->
+              </div>
+              <div class="collapse multi-collapse show" id="ip_list">
+                {volist name="hostInfo.ip_address" id="ip"}
+                  <span class="badge badge-info">{$ip.ip}</span>
+                  {/volist}
+              </div>
+              
+            </div>
+          </div>
+        </div>
+        {/notempty}
         <!-- START list group item-->
         {notempty name="hostInfo.ftp.username"}
         <div class="list-group-item">
@@ -436,14 +460,14 @@
               <div class="media-heading text-purple m0">FTP <a href="#!" data-title="在线文件管理" data-url="{:url('index/vhost/file')}"
                   class="float-right badge badge-purple js-create-tab">在线文件管理器</a></div>
               <p class="m0">
-                <small>FTP地址：{$hostInfo.ftp_server?$hostInfo.ftp_server:$hostInfo.ip_address}</small>
-                <br><small>FTP端口：{$hostInfo.ftp.ftp_port|default="80"}</small>
+                <small>FTP地址：{$hostInfo.ftp_server?$hostInfo.ftp_server:'请使用IP地址'}</small>
+                <br><small>FTP端口：{$hostInfo.ftp.ftp_port|default="21"}</small>
                 <br><small>FTP用户名：{$hostInfo.ftp.username}</small>
                 <br><small>FTP密码：<a onclick="$(this).html($(this).attr('val'))"
                     val="{$hostInfo.ftp.password}">*******</a></small>
                 <br><small>FTP状态：{if $ftpInfo.status}<a href="javascript:ftpStatus(0);" class="text-success"
                     data-toggle="tooltip" data-original-title="点击关闭">正常</a>{else/}<a href="javascript:ftpStatus(1);" class="text-danger"
-                    data-toggle="tooltip" data-original-title="点击开启">禁用</a>{/if}</small> <span class="badge badge-pill badge-info" data-toggle="tooltip" data-original-title="注意：FTP属于应急通道，如非特殊环境使用，请勿手动关闭">!</span>
+                    data-toggle="tooltip" data-original-title="点击开启">禁用</a>{/if}</small> <span class="badge badge-pill badge-info" data-toggle="tooltip" data-original-title="注意：FTP可用于应急管理，如非特殊环境使用，请勿手动关闭">!</span>
               </p>
             </div>
           </div>
@@ -455,7 +479,7 @@
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-info m0">数据库 <a href="{$hostInfo.sql.console?$hostInfo.sql.console:"
+              <div class="media-heading text-info m0">数据库 <a href="{$phpmyadmin?$phpmyadmin:"
                   javascript:EchoMsg('未提供在线数据库管理')"}" class="float-right badge badge-info" target="_blank">phpMyAdmin</a>
               </div>
               <p class="m0">
@@ -493,6 +517,13 @@
                 </div>
                 
               </form>
+            </div>
+          </div>
+        </div>
+        <div class="list-group-item">
+          <div class="media">
+            <div class="media-body clearfix">
+              {$Think.config.site.main_right_notice}
             </div>
           </div>
         </div>

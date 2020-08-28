@@ -16,7 +16,7 @@
         <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod')}:</label>
         <div class="col-xs-12 col-sm-8">
             
-            <select  id="c-dnspod" data-rule="required" class="form-control selectpicker " name="row[dnspod]" disabled>
+            <select  id="c-dnspod" data-rule="required" class="form-control selectpicker " name="row[dnspod]">
                 {foreach name="dnspodList" item="vo"}
                     <option value="{$key}" {in name="key" value="$row.dnspod"}selected{/in}>{$vo}</option>
                 {/foreach}

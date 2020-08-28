@@ -17,7 +17,7 @@ class User extends Model
     protected $updateTime = 'updatetime';
     // 追加属性
     protected $append = [
-        'url',
+        // 'url',
     ];
 
     /**

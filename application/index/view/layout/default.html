@@ -26,6 +26,7 @@
                 {include file="common/sidenav" }
                 
                 <div class="sidebar-footer">
+                    {$Think.config.site.main_left_notice}
                 <p class="copyright">Copyright &copy; 2019. <a target="_blank" href="http://lyear.itshubao.com">IT书包</a> All rights reserved.</p>
                 </div>
             </div>
@@ -47,28 +48,23 @@
                 </div>
                 
                 <ul class="navbar-right d-flex align-items-center">
-                    <!-- <li class="dropdown dropdown-notice">
+                    {notempty name="Think.config.site.public_head_notice"}
+                    <li class="dropdown dropdown-notice">
                     <span data-toggle="dropdown" class="icon-item">
                         <i class="mdi mdi-bell-outline"></i>
-                        <span class="badge badge-danger">10</span>
+                        <span class="badge badge-danger">N</span>
                     </span>
                     <div class="dropdown-menu dropdown-menu-right">
                         <div class="lyear-notifications">
                         
-                        <div class="lyear-notifications-title clearfix"  data-stopPropagation="true"><a href="#!" class="float-right">查看全部</a>你有 10 条未读消息</div>
                         <div class="lyear-notifications-info lyear-scroll">
-                            <a href="#!" class="dropdown-item" title="树莓派销量猛增，疫情期间居家工作学习、医疗领域都需要它">树莓派销量猛增，疫情期间居家工作学习、医疗领域都需要它</a>
-                            <a href="#!" class="dropdown-item" title="GNOME 用户体验团队将为 GNOME Shell 提供更多改进">GNOME 用户体验团队将为 GNOME Shell 提供更多改进</a>
-                            <a href="#!" class="dropdown-item" title="Linux On iPhone 即将面世，支持 iOS 的双启动">Linux On iPhone 即将面世，支持 iOS 的双启动</a>
-                            <a href="#!" class="dropdown-item" title="GitHub 私有仓库完全免费面向团队提供">GitHub 私有仓库完全免费面向团队提供</a>
-                            <a href="#!" class="dropdown-item" title="Wasmtime 为 WebAssembly 增加 Go 语言绑定">Wasmtime 为 WebAssembly 增加 Go 语言绑定</a>
-                            <a href="#!" class="dropdown-item" title="红帽借“订阅”成开源一哥，首创者 Cormier 升任总裁">红帽借“订阅”成开源一哥，首创者 Cormier 升任总裁</a>
-                            <a href="#!" class="dropdown-item" title="Zend 宣布推出两项 PHP 新产品">Zend 宣布推出两项 PHP 新产品</a>
+                            {$Think.config.site.public_head_notice}
                         </div>
                         
                         </div>
                     </div>
-                    </li> -->
+                    </li>
+                    {/notempty}
                     <!--切换主题配色-->
                     <li class="dropdown dropdown-skin">
                     <span data-toggle="dropdown" class="icon-item"><i class="mdi mdi-palette"></i></span>

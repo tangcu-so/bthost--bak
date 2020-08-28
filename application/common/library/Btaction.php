@@ -5,36 +5,48 @@ namespace app\common\library;
 use btpanel\Btpanel;
 use think\Cache;
 use fast\Random;
+use think\Config;
 
 class Btaction
 {
 
-    public $_error = '';
+    public $_error = '';        //  错误信息
     public $btAction  = null;
     protected $api_url = 'http://192.168.191.129';
         // protected $api_url = 'http://117.50.77.190';
         // protected $api_url = 'http://139.9.222.32';
-    protected $api_token = '00nL2eLQCxDfk06AQ15w1VQ93O3A94HV';
+    protected $api_token = '';
         // protected $api_token = '48Gib2QOMEI21d19xbM1ntvJHvZTRE6f';
         // protected $api_token = 'RMCknu6nSiBYcif8S2beSi7ar8vN7phs';
-    public $bt_id = '';
-    public $bt_name = '';
-    public $ftp_name = '';
-    public $sql_name = '';
-    public $webRootPath = '';
-    public $siteInfo = '';
+    public $bt_id = '';         //  宝塔ID
+    public $bt_name = '';       //  站点名
+    public $ftp_name = '';      //  ftp名
+    public $sql_name = '';      //  数据库名
+    public $webRootPath = '';   //  网站根目录
+    public $siteInfo = '';      //  站点信息
+    
+    public $serverConfig = null;//  服务器配置信息
+    public $dirUserIni = null;  //  网站三项配置开关
+    
+    public $userini = 1;        //  是否强制打开跨站锁
+    public $iis_locking = 1;    //  是否强制锁定iis配置
+    public $userini_status = false;     //  跨站锁状态
+
     public $os = 'linux';
-    public $serverConfig = null;
-    public $dirUserIni = null; // 网站三项配置开关
-    public $userini = 1; // 是否强制打开跨站锁
-    public $iis_locking = 1; // 是否强制锁定iis配置
-    public $userini_status = false; // 跨站锁状态
-    public function __construct($os = 'linux')
+
+
+    public function __construct($api_token = '',$os = 'linux')
     {
         $this->port = '8888';
         $this->api_url = $this->api_url.':'.$this->port;
+        
+        $apiToken = Config('site.api_token');
+        $this->api_token = $api_token?$api_token:$apiToken;
+        // var_dump($this->api_token);exit;
         $this->btAction = new Btpanel($this->api_url, $this->api_token);
         $this->os = $os;
+        // 正式环境下切换到自动获取服务器操作系统类型
+        // $this->os = getOs();
     }
 
 
@@ -44,154 +56,6 @@ class Btaction
             return $this->tests_win();
         } else {
             return $this->tests();
-        }
-    }
-
-    // 获取网站全部分类
-    public function getsitetype(){
-        $list = $this->btAction->Webtypes();
-        if($list){
-            return $list;
-        }else{
-            return false;
-        }
-    }
-
-    // 站点初始化
-    public function webInit(){
-        // 连接测试
-        if(!$this->test()){
-            $this->setError($this->_error);
-            return false;
-        }
-        // 查找站点是否存在
-        $siteInfo = $this->getSiteInfo($this->bt_name);
-        if (!$siteInfo) {
-            $this->setError($this->_error);
-            return false;
-        }
-        if (($siteInfo['name'] != $this->bt_name) || ($siteInfo['id'] != $this->bt_id)) {
-            $this->setError('该站点信息有误，请联系管理员');
-            return false;
-        }
-        // 验证网站目录信息
-        $this->webRootPath = $siteInfo['path'];
-        if (empty($this->webRootPath) || !$this->webRootPath) {
-            $this->setError('该站点根目录有误，请联系管理员');
-            return false;
-        }
-        
-        // 检查运行目录及跨站锁
-        if(!$this->examineDir()){
-            $this->setError($this->_error);
-            return false;
-        }
-        
-        return true;
-    }
-
-    // 检查运行目录及跨站锁
-    public function examineDir(){
-        $this->dirUserIni = $this->btAction->GetDirUserINI($this->bt_id, $this->webRootPath);
-        // 检查运行目录
-        if (isset($this->dirUserIni['runPath']['dirs'])) {
-            $path = $this->dirUserIni['runPath']['runPath'];
-            // 修正网站停止时目录变更
-            if (!in_array($path, $this->dirUserIni['runPath']['dirs']) && $this->dirUserIni['runPath']['runPath'] != '/www/server/stop/') {
-                // 还原运行目录为/
-                $this->btAction->SetSiteRunPath($this->bt_id, '/');
-            }
-        } else {
-            $this->setError('网站目录错误，请联系管理员');
-            return false;
-        }
-        // 检查防跨站锁
-        if (isset($this->dirUserIni['userini']) && $this->dirUserIni['userini'] != true) {
-            $this->userini_status = false;
-            if($this->userini){
-                // 当防跨站锁丢失时，强制打开跨站锁
-                $setUserIni = $this->btAction->SetDirUserINI($this->webRootPath);
-                if (!$setUserIni || $setUserIni['status'] != true) {
-                    $this->setError('当前站点安全锁打开失败');
-                    return false;
-                }
-            }
-        }else{
-            $this->userini_status = true;
-        }
-        // windows专属iis锁
-        if($this->os=='windows'){
-            if($this->dirUserIni['locking'] != 'true'){
-                if($this->iis_locking){
-                    // 锁定IIS配置文件(windows)
-                    $this->btAction->SetConfigLocking($this->bt_name);
-                }
-            }
-        }
-        return true;
-    }
-
-    // 获取资源大小：流量、数据库、站点
-    public function getResourceSize(){
-        set_time_limit(60);
-        // 流量
-        $Total = $this->btAction->GetTotal();
-        if ($Total && isset($Total['open']) && $Total['open'] == 'true') {
-            $total_size = $this->getNetNumber_month($this->bt_name);
-            if (!$total_size || !isset($total_size['total_size'])) {
-                $total_size['total_size'] = 0;
-            }
-        } else {
-            $total_size['total_size'] = 0;
-        }
-        // 实际使用流量
-        $total_size = is_numeric($total_size['total_size']) ? bytes2mb($total_size['total_size']) : 0;
-        // 空间大小
-        $websize = bytes2mb($this->getWebSizes($this->bt_name));
-        // 数据库
-        $sqlsize = $this->sql_name?bytes2mb($this->getSqlSizes($this->sql_name)):0;
-        return ['sqlsize'=>$sqlsize,'websize'=>$websize,'total_size'=>$total_size];
-    }
-
-    /**
-     * 修改数据库密码
-     *
-     * @param [type] $id            数据库id
-     * @param [type] $name          数据库名
-     * @param [type] $newpassword   数据库新密码
-     * @return void
-     */
-    public function resetSqlPass($id, $name, $newpassword){
-        $reset = $this->btAction->ResDatabasePass($id, $name, $newpassword);
-        if(isset($reset['status'])&&$reset['status']==true){
-            return true;
-        }elseif(isset($reset['status'])&&isset($reset['msg'])){
-            $this->setError($reset['msg']);
-            return false;
-        }else{
-            $this->setError('error');
-            return false;
-        }
-    }
-
-    /**
-     * 修改FTP密码
-     *
-     * @param [type] $id
-     * @param [type] $name
-     * @param [type] $newpassword
-     * @return void
-     */
-    public function resetFtpPass($id, $name, $newpassword){
-        $reset = $this->btAction->SetUserPassword($id, $name, $newpassword);
-        if(isset($reset['status'])&&$reset['status']==true){
-            return true;
-        }elseif(isset($reset['status'])&&isset($reset['msg'])){
-            $this->setError($reset['msg']);
-            return false;
-        }else{
-            $this->setError('error');
-            return false;
         }
     }
 
@@ -246,6 +110,166 @@ class Btaction
         }
     }
 
+    // 获取网站全部分类
+    public function getsitetype(){
+        $list = $this->btAction->Webtypes();
+        if($list){
+            return $list;
+        }else{
+            return false;
+        }
+    }
+
+    // 站点初始化
+    public function webInit(){
+        // 连接测试
+        if(!$this->test()){
+            $this->setError($this->_error);
+            return false;
+        }
+        // 查找站点是否存在
+        $siteInfo = $this->getSiteInfo();
+        if (!$siteInfo) {
+            $this->setError($this->_error);
+            return false;
+        }
+        if (($siteInfo['name'] != $this->bt_name) || ($siteInfo['id'] != $this->bt_id)) {
+            $this->setError('该站点信息有误，请联系管理员');
+            return false;
+        }
+        // 验证网站目录信息
+        $this->webRootPath = $siteInfo['path'];
+        if (empty($this->webRootPath) || !$this->webRootPath) {
+            $this->setError('该站点根目录有误，请联系管理员');
+            return false;
+        }
+        
+        // 检查运行目录及跨站锁
+        if(!$this->examineDir()){
+            $this->setError($this->_error);
+            return false;
+        }
+                
+        return true;
+    }
+
+    // 检查运行目录及跨站锁
+    public function examineDir(){
+        $this->dirUserIni = $this->btAction->GetDirUserINI($this->bt_id, $this->webRootPath);
+        // 检查运行目录
+        if (isset($this->dirUserIni['runPath']['dirs'])) {
+            $path = $this->dirUserIni['runPath']['runPath'];
+            // 修正网站停止时目录变更
+            if (!in_array($path, $this->dirUserIni['runPath']['dirs']) && $this->dirUserIni['runPath']['runPath'] != '/www/server/stop/') {
+                // 还原运行目录为/
+                $this->btAction->SetSiteRunPath($this->bt_id, '/');
+            }
+        } else {
+            $this->setError('网站目录错误，请联系管理员');
+            return false;
+        }
+        // 网站停止后暂停跨站锁检查及挂锁，提升处理效率
+        if($this->dirUserIni['runPath']['runPath'] != '/www/server/stop/'){
+            // 检查防跨站锁
+            if (isset($this->dirUserIni['userini']) && $this->dirUserIni['userini'] != true) {
+                $this->userini_status = false;
+                if($this->userini){
+                    // 当防跨站锁丢失时，强制打开跨站锁
+                    $setUserIni = $this->btAction->SetDirUserINI($this->webRootPath);
+                    if (!$setUserIni || $setUserIni['status'] != true) {
+                        $this->setError('当前站点安全锁打开失败');
+                        return false;
+                    }
+                }
+            }else{
+                $this->userini_status = true;
+            }
+        }
+        // windows专属iis锁
+        if($this->os=='windows'){
+            if($this->dirUserIni['locking'] != 'true'){
+                if($this->iis_locking){
+                    // 锁定IIS配置文件(windows)
+                    $this->btAction->SetConfigLocking($this->bt_name);
+                }
+            }
+        }
+        return true;
+    }
+
+    // 获取资源大小：流量、数据库、站点
+    public function getResourceSize(){
+        set_time_limit(60);
+        // 流量
+        $Total = $this->btAction->GetTotal();
+        if ($Total && isset($Total['open']) && $Total['open'] == 'true') {
+            $total_size = $this->getNetNumber_month($this->bt_name);
+            if (!$total_size || !isset($total_size['total_size'])) {
+                $total_size['total_size'] = 0;
+            }
+        } else {
+            $total_size['total_size'] = 0;
+        }
+        // 实际使用流量
+        $total_size = is_numeric($total_size['total_size']) ? bytes2mb($total_size['total_size']) : 0;
+        // 空间大小
+        $websize = bytes2mb($this->getWebSizes($this->bt_name));
+        // 数据库
+        $sqlsize = $this->sql_name?bytes2mb($this->getSqlSizes($this->sql_name)):0;
+        return ['sqlsize'=>$sqlsize,'websize'=>$websize,'total_size'=>$total_size];
+    }
+
+    /**
+     * 修改数据库密码
+     *
+     * @param [type] $name          数据库名
+     * @param [type] $newpassword   数据库新密码
+     * @return void
+     */
+    public function resetSqlPass($name, $newpassword){
+        $id = $this->getSqlInfo('id');
+        if(!$id){
+            $this->setError('id获取有误');
+            return false;
+        }
+        $reset = $this->btAction->ResDatabasePass($id, $name, $newpassword);
+        if(isset($reset['status'])&&$reset['status']==true){
+            return true;
+        }elseif(isset($reset['status'])&&isset($reset['msg'])){
+            $this->setError($reset['msg']);
+            return false;
+        }else{
+            $this->setError('error');
+            return false;
+        }
+    }
+
+    /**
+     * 修改FTP密码
+     *
+     * @param [type] $id
+     * @param [type] $name
+     * @param [type] $newpassword
+     * @return void
+     */
+    public function resetFtpPass($name, $newpassword){
+        $id = $this->getFtpInfo('id');
+        if(!$id){
+            $this->setError('id获取有误');
+            return false;
+        }
+        $reset = $this->btAction->SetUserPassword($id, $name, $newpassword);
+        if(isset($reset['status'])&&$reset['status']==true){
+            return true;
+        }elseif(isset($reset['status'])&&isset($reset['msg'])){
+            $this->setError($reset['msg']);
+            return false;
+        }else{
+            $this->setError('error');
+            return false;
+        }
+    }
+
     /**
      * 新建网站
      *
@@ -292,7 +316,7 @@ class Btaction
     }
 
     // 构建创建站点需要的参数
-    public function setInfo($params,$plans=''){
+    public function setInfo($params = '',$plans=''){
         // 获取网站建站目录
         // 如果资源组中设定了，那么读取资源组中的，如果没有就默认读取配置接口中的
         if(isset($plans['sites_path'])&&$plans['sites_path']){
@@ -330,7 +354,7 @@ class Btaction
         $hostSetInfo = array(
             'webname'      => '{"domain":"' . $defaultDomain . '","domainlist":[],"count":0}',
             'path'         => $defaultPath . $userRandId,
-            'type_id'      => $params['sort_id']?$params['sort_id']:'0',
+            'type_id'      => isset($params['sort_id'])?$params['sort_id']:'0',
             'type'         => 'PHP',
             'version'      => $phpversion ? $phpversion : '00',
             'port'         => isset($plans['port']) ? $plans['port'] : '80',
@@ -377,25 +401,43 @@ class Btaction
      * @param string $os    环境linux/windows
      * @return void
      */
-    public function setLimit($btid, $data)
+    public function setLimit($data)
     {
         if ($this->os == 'linux') {
-            $modify_status = $this->btAction->SetLimitNet($btid, $data['perserver'], '25', $data['limit_rate']);
+            $modify_status = $this->btAction->SetLimitNet($this->bt_id, $data['perserver'], '25', $data['limit_rate']);
             if (isset($modify_status) && $modify_status['status'] != 'true') {
                 // 有错误，记录，防止开通被打断
-                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$btid, $data['perserver'], '25', $data['limit_rate']]]));
+                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], '25', $data['limit_rate']]]));
                 return false;
             }
         } else {
-            $modify_status = $this->btAction->SetLimitNet_win($btid, $data['perserver'], '120', $data['limit_rate']);
+            $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $data['perserver'], '120', $data['limit_rate']);
             if (isset($modify_status) && $modify_status['status'] != 'true') {
                 // 有错误，记录，防止开通被打断
-                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$btid, $data['perserver'], '120', $data['limit_rate']]]));
+                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], '120', $data['limit_rate']]]));
                 return false;
             }
         }
 
         return true;
+    }
+
+    /**
+     * 关闭限速
+     *
+     * @return void
+     */
+    public function closeLimit(){
+        $set = $this->btAction->CloseLimitNet($this->bt_id);
+        if(isset($set['status'])&&$set['status']==true){
+            return true;
+        }elseif(isset($set['msg'])){
+            $this->setError($set['msg']);
+            return false;
+        }else{
+            $this->setError('请求失败');
+            return false;
+        }
     }
 
     /**
@@ -442,12 +484,11 @@ class Btaction
      * 获取主机信息
      * @Author   Youngxj
      * @DateTime 2019-12-14
-     * @param    [type]     $siteName 站点名
      * @return   [type]               [description]
      */
-    public function getSiteInfo($siteName, $btId = '')
+    public function getSiteInfo()
     {
-        $siteInfo = $this->btAction->Websites($siteName);
+        $siteInfo = $this->btAction->Websites($this->bt_name);
         if (isset($siteInfo['status']) && $siteInfo['status'] === false) {
 
             $this->setError($siteInfo['msg']);
@@ -457,16 +498,16 @@ class Btaction
             return false;
         } elseif (isset($siteInfo['data']) && !empty($siteInfo['data'])) {
             $siteArr = '';
-            if ($siteName && $btId) {
+            if ($this->bt_name && $this->bt_id) {
                 foreach ($siteInfo['data'] as $value) {
-                    if ($value['name'] == $siteName && $value['id'] == $btId) {
+                    if ($value['name'] == $this->bt_name && $value['id'] == $this->bt_id) {
                         $siteArr = $value;
                         continue;
                     }
                 }
-            } elseif ($siteName || $btId) {
+            } elseif ($this->bt_name || $this->bt_id) {
                 foreach ($siteInfo['data'] as $value) {
-                    if ($value['name'] == $siteName || $value['id'] == $btId) {
+                    if ($value['name'] == $this->bt_name || $value['id'] == $this->bt_id) {
                         $siteArr = $value;
                         continue;
                     }
@@ -591,14 +632,18 @@ class Btaction
      * @DateTime 2019-12-05
      * @return   [type]               [description]
      */
-    public function getFtpInfo()
+    public function getFtpInfo($k = '')
     {
         $ftp = $this->btAction->WebFtpList($this->ftp_name);
-        if ($ftp && isset($ftp['data'][0])) {
-            return $ftp['data'][0];
-        } else {
-            return false;
+        if ($ftp && isset($ftp['data'])) {
+            // 遍历效验
+            foreach ($ftp['data'] as $key => $value) {
+                if($value['name']==$this->ftp_name){
+                    return $k?$value[$k]:$value;
+                }
+            }
         }
+        return false;
     }
 
     /**
@@ -607,11 +652,16 @@ class Btaction
      * @DateTime 2019-12-05
      * @return   [type]               [description]
      */
-    public function getSqlInfo()
+    public function getSqlInfo($k = '')
     {
         $sql = $this->btAction->WebSqlList($this->sql_name);
-        if ($sql && isset($sql['data'][0])) {
-            return $sql['data'][0];
+        if ($sql && isset($sql['data'])) {
+            // 遍历效验
+            foreach ($sql['data'] as $key => $value) {
+                if($value['name']==$this->sql_name){
+                    return $k?$value[$k]:$value;
+                }
+            }
         } else {
             return false;
         }
@@ -924,18 +974,17 @@ class Btaction
     /**
      * 站点稽核检查
      *
-     * @param [type] $domain    站点名
      * @param [type] $flow      是否检查流量（月）
      * @param [type] $sqlname   数据库名
      * @return void
      */
-    public function resource($domain, $sqlname = null, $flow = true)
+    public function resource($sqlname = null, $flow = true)
     {
         $data = [];
-        $data['site'] = $this->getWebSizes($domain);
+        $data['site'] = $this->getWebSizes($this->bt_name);
 
         if($flow){
-            $f = $this->getNetNumber_month($domain);
+            $f = $this->getNetNumber_month($this->bt_name);
             $data['flow'] = isset($f['month_total']) ? $f['month_total']:false;
         }else{
             $data['flow'] = false;
@@ -1031,6 +1080,7 @@ class Btaction
         }
     }
 
+    // Nginx免费防火墙（暂无用）
     public function free_waf_site_info(){
         $list = $this->btAction->free_waf_site_config();
         if($list){
@@ -1039,6 +1089,100 @@ class Btaction
                     return $list[$key];
                 }
             }
+        }
+        return false;
+    }
+
+    /**
+     * 设置到期时间
+     *
+     * @param [type] $endtime   到期时间 2020-8-27
+     * @return void
+     */
+    public function setEndtime($endtime){
+        $set = $this->btAction->WebSetEdate($this->bt_id,$endtime);
+        if(isset($set['status'])&&$set['status']==true){
+            return true;
+        }elseif(isset($set['msg'])){
+            $this->setError($set['msg']);
+            return false;
+        }else{
+            $this->setError('请求失败');
+            return false;
+        }
+    }
+
+    /**
+     * 网站备注修改
+     *
+     * @param [type] $ps
+     * @return void
+     */
+    public function setPs($ps){
+        $set = $this->btAction->WebSetPs($this->bt_id,$ps);
+        if(isset($set['status'])&&$set['status']==true){
+            return true;
+        }elseif(isset($set['msg'])){
+            $this->setError($set['msg']);
+            return false;
+        }else{
+            $this->setError('请求失败');
+            return false;
+        }
+    }
+
+    // 获取软件介绍
+    public function getSoftInfo($name){
+        $info = $this->btAction->GetSoftFind($name);
+        if($info){
+            return $info;
+        }
+        return false;
+    }
+
+    // 获取数据库管理地址
+    public function getphpmyadminUrl(){
+        $info = $this->getSoftInfo('phpmyadmin');
+        if($info&&isset($info['ext']['url'])&&$info['ext']['url']){
+            return $info['ext']['url'];
+        }
+        return false;
+    }
+
+    // 获取网站日志文件
+    public function getLogsFileName(){
+        $server = $this->getWebServer();
+        // if($server=='nginx'){
+        //     $file_path = '/www/server/panel/vhost/nginx/'.$this->bt_name.'.conf';
+        // }elseif($server=='apache'){
+        //     $file_path = '';
+        // }else{
+        //     $file_path = '';
+        // }
+        // if(!$file_path){
+        //     return false;
+        // }
+        
+        // $file_content = $this->btAction->GetFileBodys($file_path);
+        // 正则提取？
+        // 直接拼接？
+        if($server=='nginx'){
+            $file_path = '/www/wwwlogs/'.$this->bt_name.'.log';
+        }elseif($server=='apache'){
+            $file_path = '/www/wwwlogs/'.$this->bt_name.'-access_log';
+        }else{
+            $file_path = '';
+        }
+        if(!$file_path){
+            $this->setError('日志文件不存在');
+        }
+        $logs_list = $this->btAction->GetFileBodys($file_path);
+        if(isset($logs_list['status'])&&$logs_list['status']=='true'){
+            return $logs_list['data'];
+        }elseif(isset($logs_list['msg'])){
+            $this->setError($logs_list['msg']);
+        }else{
+            $this->setError('请求失败');
         }
         return false;
     }

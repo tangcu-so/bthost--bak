@@ -1,6 +1,6 @@
 <?php
 
-namespace app\common\model;
+namespace app\admin\model;
 
 use think\Model;
 use traits\model\SoftDelete;
@@ -28,10 +28,10 @@ class Host extends Model
 
     // 追加属性
     protected $append = [
-        // 'check_time_text',
-        // 'is_vsftpd_text',
-        // 'endtime_text',
-        // 'status_text'
+        'check_time_text',
+        'is_vsftpd_text',
+        'endtime_text',
+        'status_text'
     ];
     
 
@@ -139,10 +139,9 @@ class Host extends Model
         }
     }
 
-    // 转换IP地址
-    public function getIpAddressAttr($value,$data){
-        return $data['ip_address']?collection(model('Ipaddress')::all($data['ip_address']))->toArray():[];
-    }
+    // public function getIpAddressAttr($value,$data){
+    //     return $value?model('Ipaddress')::all($value):$value;
+    // }
 
     // 获取sql信息
     public function getSqlInfo($value, $data)
@@ -154,33 +153,5 @@ class Host extends Model
     public function getFtpInfo($value, $data)
     {
         return Ftp::get(['vhost_id' => $data['id']]);
-    }
-
-    // 转化状态
-    public function status($status){
-        switch ($status) {
-            case 'normal':
-                $status_attr = '正常';
-                break;
-            case 'stop':
-                $status_attr = '停用';
-                break;
-            case 'locked':
-                $status_attr = '锁定';
-                break;
-            case 'expired':
-                $status_attr = '到期';
-                break;
-            case 'excess':
-                $status_attr = '超量';
-                break;
-            case 'error':
-                $status_attr = '异常';
-                break;
-            default:
-                $status_attr = '异常';
-                break;
-        }
-        return $status_attr;
     }
 }

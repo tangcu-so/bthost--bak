@@ -47,6 +47,9 @@ class Vhost extends Frontend
 
     private $webRootPath = null;
 
+    // 资源超出停用面板
+    public $is_excess_stop = 0;
+
     public function _initialize()
     {
         Debug::remark('begin');
@@ -75,8 +78,31 @@ class Vhost extends Frontend
         if (time() > $this->hostInfo['endtime']) {
             $this->error('已过期');
         }
-        if ($this->hostInfo['status'] != 'normal') {
-            $this->error('主机异常');
+
+        $this->is_excess_stop = Config('site.excess_panel');
+        
+        // 状态甄别
+        switch ($this->hostInfo['status']) {
+            case 'normal':
+                break;
+            case 'stop':
+                $this->error('主机已停用','');
+                break;
+            case 'locked':
+                $this->error('主机已锁定','');
+                break;
+            case 'expired':
+                $this->error('主机已到期','');
+                break;
+            case 'excess':
+                $this->is_excess_stop?$this->error('主机超量，已被停用',''):'';
+                break;
+            case 'error':
+                $this->error('主机异常','');
+                break;
+            default:
+                $this->error('主机异常','');
+                break;
         }
 
         // 获取系统配置
@@ -106,7 +132,7 @@ class Vhost extends Frontend
         }
         // 检查资源使用量
         if(!$this->check()){
-            $this->error($this->_error);
+            $this->is_excess_stop?$this->error($this->_error,''):'';
         }
 
         $this->webRootPath = $this->btTend->webRootPath;
@@ -124,6 +150,8 @@ class Vhost extends Frontend
         $this->assign('hostInfo', $this->hostInfo);
         $this->assign('userInfo', $this->userInfo);
         $this->assign('serverConfig', $this->btTend->serverConfig);
+
+        $this->assign('phpmyadmin',Config('site.phpmyadmin'));
     }
 
     /**
@@ -155,7 +183,7 @@ class Vhost extends Frontend
         $phpVer = $this->btTend->getSitePhpVer($this->siteName);
         $siteStatus = $this->btTend->getSiteStatus($this->siteName);
         if (isset($this->hostInfo->ftp->username) && $this->hostInfo->ftp->username) {
-            $ftpInfo = $this->btTend->getFtpInfo($this->hostInfo->ftp->username);
+            $ftpInfo = $this->btTend->getFtpInfo();
             if (!$ftpInfo) {
                 $ftpInfo = false;
             }
@@ -163,10 +191,13 @@ class Vhost extends Frontend
             $ftpInfo = false;
         }
 
+        $siteStr = $this->hostModel->status($this->hostInfo['status']);
+
         $this->view->assign('title', __('Console center'));
         $this->view->assign('ftpInfo', $ftpInfo);
         $this->view->assign('phpVer', $phpVer);
         $this->view->assign('siteStatus', $siteStatus);
+        $this->view->assign('siteStr', $siteStr);
         $this->view->assign('phpversion_list', $this->btAction->GetPHPVersion());
         return $this->view->fetch();
     }
@@ -225,6 +256,27 @@ class Vhost extends Frontend
      */
     public function webStart()
     {
+        switch ($this->hostInfo['status']) {
+            case 'normal':
+                break;
+            case 'stop':
+                break;
+            case 'locked':
+                $this->error('主机已被锁定','');
+                break;
+            case 'expired':
+                $this->error('主机已到期','');
+                break;
+            case 'excess':
+                $this->error('主机超量，已被停用','');
+                break;
+            case 'error':
+                $this->error('主机异常','');
+                break;
+            default:
+                $this->error('主机异常','');
+                break;
+        }
         // 先判断站点状态，防止多次重复操作
         $set = $this->btTend->webstart();
         if(!$set){
@@ -561,7 +613,7 @@ class Vhost extends Frontend
             if (!$this->hostInfo->ftp) {
                 $this->error('当前没有开通这项业务');
             }
-            $ftpInfo = $this->btTend->getFtpInfo($this->hostInfo->ftp->username);
+            $ftpInfo = $this->btTend->getFtpInfo();
             // var_dump($ftpInfo);exit;
             if (!$ftpInfo) {
                 $this->error('当前没有开通这项业务');
@@ -2963,6 +3015,26 @@ class Vhost extends Frontend
         } else {
             $logArr = '';
         }
+        if($this->request->get('down')){
+            // 导出日志文件excel
+            $logs = $this->btTend->getLogsFileName();
+            if($logs===false){
+                $this->error($this->btTend->_error);
+            }
+            // 拆分成数组
+            // $arr = explode("\n",$logs);
+            $text = $logs;
+            header("Pragma: public");
+            header("Expires: 0");
+            header("Cache-Control:must-revalidate, post-check=0, pre-check=0");
+            header("Content-Type:application/force-download");
+            header("Content-Type:application/octet-stream");
+            header("Content-Type:application/download");
+            header('Content-Disposition:attachment;filename="'.$this->siteName.'_'.date("Y/m/d_H:i:s").'_网站日志.log"');
+            header("Content-Transfer-Encoding:binary");
+            echo $text;
+            exit;
+        }
 
         return view('sitelog', [
             'logList' => $logArr,
@@ -3144,6 +3216,27 @@ class Vhost extends Frontend
      */
     public function setSiteRunPath()
     {
+        switch ($this->hostInfo['status']) {
+            case 'normal':
+                break;
+            case 'stop':
+                break;
+            case 'locked':
+                $this->error('主机已被锁定','');
+                break;
+            case 'expired':
+                $this->error('主机已到期','');
+                break;
+            case 'excess':
+                $this->error('主机超量，已被停用','');
+                break;
+            case 'error':
+                $this->error('主机异常','');
+                break;
+            default:
+                $this->error('主机异常','');
+                break;
+        }
         if ($this->request->post()) {
             $dirs = input('post.dirs') ? preg_replace('/([\.]){2,}/', '', input('post.dirs')) : '';
             // 增加非法参数过滤
@@ -3417,7 +3510,7 @@ class Vhost extends Frontend
         // 获取防火墙插件
         $total = [];
         $waf = $this->btAction->Getwaf($isWaf);
-        if (isset($waf) && $waf['open'] == 'true') {
+        if (isset($waf['open']) && $waf['open'] == 'true') {
             $Sitewaf = $this->btAction->Sitewaf($isWaf, $this->siteName);
             if (!$Sitewaf) {
                 $this->error('意外的错误','');
@@ -3433,6 +3526,8 @@ class Vhost extends Frontend
                     }
                 }
             }
+        }elseif(isset($waf['msg'])){
+            $this->error($waf['msg'],'');
         } else {
             $this->error('当前主机不支持该插件','');
         }
@@ -3720,20 +3815,39 @@ class Vhost extends Frontend
     private function check(){
         if (Cookie('vhost_check_' . $this->hostInfo['vhost_id']) < time()) {
             $list = $this->btTend->getResourceSize();
-            $msg = '';
+            $msg = $excess = '';
             if ($this->hostInfo['flow_max'] != 0 && $list['total_size'] > $this->hostInfo['flow_max']) {
-                $msg.= '流量超出，已停止资源,';
+                $msg.= '流量';$excess = 1;
             }
             if ($this->hostInfo['site_max'] != 0 && $list['websize'] > $this->hostInfo['site_max']) {
-                $msg.= '空间大小超出，已停止资源,';
+                $msg.= '空间';$excess = 1;
             }
             if ($this->hostInfo['sql_max'] != 0 && $list['sqlsize'] > $this->hostInfo['sql_max']) {
-                $msg.= '数据库大小超出，已停止资源,';
+                $msg.= '数据库';$excess = 1;
+            }
+            $host_data = [
+                'site_size'=>$list['websize'],
+                'flow_size'=>$list['total_size'],
+                'sql_size'=>$list['sqlsize'],
+                'check_time'=>time(),
+            ];
+            if($excess){
+                $host_data['status'] = 'excess';
+            }elseif($this->hostInfo['status']=='excess'){
+                // 恢复主机状态
+                $host_data['status'] = 'normal';
             }
             
-            $this->hostModel->save(['site_size'=>$list['websize'],'flow_size'=>$list['total_size'],'sql_size'=>$list['sqlsize']],['id'=>$this->vhost_id]);
+            // 连接宝塔停用站点
+            if($excess){
+                $this->btTend->webstop();
+            }elseif($this->hostInfo['status']=='excess'){
+                // 恢复主机状态
+                $this->btTend->webstart();
+            }
+            $this->hostModel->save($host_data,['id'=>$this->vhost_id]);
             if($msg){
-                $this->_error  = $msg;
+                $this->_error  = $msg . ($excess?'超出，资源已停用':'');
                 return false;
             }
             Cookie('vhost_check_' . $this->hostInfo['vhost_id'], time() + $this->check_time, 3600);

@@ -44,7 +44,7 @@ return [
     // 是否开启多语言
     'lang_switch_on'         => true,
     // 默认全局过滤方法 用逗号分隔多个
-    'default_filter'         => '',
+    'default_filter'         => 'trim,htmlentities,htmlspecialchars,strip_tags',
     // 默认语言
     'default_lang'           => 'zh-cn',
     // 应用类库后缀
@@ -158,7 +158,7 @@ return [
     // +----------------------------------------------------------------------
     'log'                    => [
         // 日志记录方式，内置 file socket 支持扩展
-        'type'  => 'File',
+        'type'  => 'test',
         // 日志保存目录
         'path'  => LOG_PATH,
         // 日志记录级别

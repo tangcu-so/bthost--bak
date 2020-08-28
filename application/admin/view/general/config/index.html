@@ -45,9 +45,9 @@
                             <thead>
                             <tr>
                                 <th width="15%">{:__('Title')}</th>
-                                <th width="68%">{:__('Value')}</th>
+                                <th width="70%">{:__('Value')}</th>
                                 <th width="15%">{:__('Name')}</th>
-                                <th width="2%"></th>
+                                <!-- <th width="2%"></th> -->
                             </tr>
                             </thead>
                             <tbody>
@@ -146,7 +146,7 @@
 
                                 </td>
                                 <td>{php}echo "{\$site.". $item['name'] . "}";{/php}</td>
-                                <td>{if $item['id']>17}<a href="javascript:;" class="btn-delcfg text-muted" data-name="{$item.name}"><i class="fa fa-times"></i></a>{/if}</td>
+                                <!-- <td>{if $item['id']>17}<a href="javascript:;" class="btn-delcfg text-muted" data-name="{$item.name}"><i class="fa fa-times"></i></a>{/if}</td> -->
                             </tr>
                             {/foreach}
                             </tbody>

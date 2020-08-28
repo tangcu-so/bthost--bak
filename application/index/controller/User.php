@@ -80,7 +80,7 @@ class User extends Frontend
     {
         $url = $this->request->request('url', '');
         if ($this->auth->id) {
-            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('index/Vhost/index'));
+            $this->success(__('You\'ve logged in, do not login again'), $url ? $url : url('/'));
         }
         if ($this->request->isPost()) {
             $account = $this->request->post('account');

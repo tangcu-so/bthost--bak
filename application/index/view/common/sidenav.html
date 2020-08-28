@@ -13,7 +13,7 @@
             <li> <a class="multitabs {:$auth->check('vhost/rewrite')?'':'d-none'}" href="{:url('index/vhost/rewrite')}">伪静态规则</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/ssl')?'':'d-none'}" href="{:url('index/vhost/ssl')}">SSL设置</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/runPath')?'':'d-none'}" href="{:url('index/vhost/runPath')}">运行目录</a> </li>
-            <li> <a target="_blank" class="{$hostInfo.sql.console?'':'d-none'}" href="{$hostInfo.sql.console?$hostInfo.sql.console:" javascript:EchoMsg('未提供在线数据库管理')"}">数据库管理</a> </li>
+            <li> <a target="_blank" class="{$phpmyadmin?'':'d-none'}" href="{$phpmyadmin?$phpmyadmin:" javascript:EchoMsg('未提供在线数据库管理')"}">数据库管理</a> </li>
         </ul>
         </li>
         <li class="nav-item nav-item-has-subnav">

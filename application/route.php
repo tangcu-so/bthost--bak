@@ -17,6 +17,9 @@ return [
     //变量规则
     '__pattern__' => [
     ],
+    '[api]'=>[
+        // 'api/index'=>'api/vhost/index',
+    ],
     '[user]'=>[
         // 'index'=>'index/user/index',
         // 'login'=>'index/user/login',

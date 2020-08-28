@@ -334,6 +334,32 @@ class Ajax extends Backend
         return json($new_data);
     }
 
+    // 获取数据库管理地址
+    public function getphpmyadmin_url(){
+        $bt = new Btaction();
+        $url = $bt->getphpmyadminUrl();
+        if(!$url){
+            $this->error('获取失败，请在服务器中提前安装phpMyAdmin插件');
+        }
+        $this->success('请求成功','',['url'=>$url]);
+    }
+
+    // 宝塔通讯密钥连接
+    public function bt_test(){
+        $row = $this->request->post('row/a');
+        
+        if(isset($row['api_token'])&&$row['api_token']){
+            $bt = new Btaction($row['api_token']);
+            if(!$bt->test()){
+                $this->error($bt->_error);
+            }
+            $this->success('请求成功');
+        }else{
+            $this->error('密钥不能为空');
+        }
+        
+    }
+
     // 宝塔分类列表
     public function sortlist(){
         $keyValue = $this->request->post('keyValue');

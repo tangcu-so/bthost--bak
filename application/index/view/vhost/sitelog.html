@@ -4,10 +4,16 @@
 <div class="row">
 	<div class="col-md-12">
 		<div class="card">
+			<div class="card-header">
+                <header class="card-title">
+					网站日志
+				</header>
+				<a href="?down=1" class="btn btn-info float-right btn-down"><span class="mdi mdi-arrow-collapse-down"></span> 下载完整日志</a>
+            </div>
 			<div class="card-body">
 				{if $logList}
 				<div class="table-responsive">
-					<table class="table table-bordered">
+					<table class="table table-bordered table-sm">
 						<thead>
 							<tr >
 								<th>IP</th>
@@ -22,7 +28,7 @@
 						<tbody>
 							{volist name="logList" id="log"}
 							<tr >
-								<th colspan="7">{$log}</th>
+								<td colspan="7">{$log}</td>
 							</tr>
 							{/volist}
 						</tbody>
