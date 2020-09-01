@@ -17,3 +17,21 @@ function EchoMsg(msg,auto,local,time=1000){
         }
     }
 }
+
+function clear_cache(){
+    $.post('clear_cache', {
+        dirs: dirs
+    }, function (data, textStatus, xhr) {
+        if (data.code == 1) {
+            EchoMsg(data.msg, 1);
+        } else {
+            EchoMsg('error：' + data.msg, 1);
+        }
+    })
+    .fail(function () {
+        EchoMsg('请求错误，请稍候重试');
+    })
+    .always(function () {
+        
+    })
+}

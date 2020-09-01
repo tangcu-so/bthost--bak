@@ -30,7 +30,31 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden')}, formatter: Table.api.formatter.status},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
+                            buttons:[
+                                {
+                                    name: 'ajax',
+                                    text: __('复制'),
+                                    title: __('复制'),
+                                    classname: 'btn btn-xs btn-info btn-ajax',
+                                    icon: 'fa fa-magic',
+                                    url: 'plans/copy',
+                                    refresh:true,
+                                    confirm: '复制一份？',
+                                    success: function (data, ret) {
+                                        table.bootstrapTable('refresh');
+                                        // Layer.alert(ret.msg + ",返回数据：" + JSON.stringify(data));
+                                            //如果需要阻止成功提示，则必须使用return false;
+                                            //return false;
+                                    },
+                                    error: function (data, ret) {
+                                        console.log(data, ret);
+                                        Layer.alert(ret.msg);
+                                        return false;
+                                    }
+                                },
+                            ],
+                        }
                     ]
                 ]
             });

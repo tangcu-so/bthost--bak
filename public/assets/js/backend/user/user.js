@@ -26,8 +26,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'group_id', title: __('Group_id')},
-                        {field: 'username', title: __('Username')},
+                        {field: 'group.name', title: __('Group')},
+                        {
+                            field: 'username', title: __('Username'), operate: 'LIKE', formatter: function (value, row, index) { 
+                                return '<a href="./user/login/ids/' + row.id + '" target="_blank"  title="点击登录">' + row.username + '</a>';
+                        }},
                         {field: 'prevtime', title: __('Prevtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'logintime', title: __('Logintime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'loginip', title: __('Loginip')},
@@ -35,7 +38,19 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Status normal'),"hidden":__('Status hidden'),"locked":__('Status locked')}, formatter: Table.api.formatter.status},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
+                            buttons:[
+                                {
+                                    name: 'detail',
+                                    text: __('信息'),
+                                    title: __('信息'),
+                                    classname: 'btn btn-xs btn-info btn-dialog',
+                                    icon: 'fa fa-info',
+                                    url: 'user/user/info',
+                                }
+                            ],
+                            formatter: Table.api.formatter.operate
+                        }
                     ]
                 ]
             });

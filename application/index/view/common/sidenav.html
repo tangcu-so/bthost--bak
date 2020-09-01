@@ -1,48 +1,48 @@
 <nav class="sidebar-main">
     <ul class="nav-drawer">
-        <li class="nav-item active"> <a class="multitabs" href="main""><i class="mdi mdi-home"></i> <span>控制台</span></a> </li>
+        <li class="nav-item active"> <a class="multitabs" href="main""><i class="mdi mdi-home"></i> <span>{:__('Console center')}</span></a> </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-hexagon-multiple"></i> <span>基础功能</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-hexagon-multiple"></i> <span>{:__('basic')}</span></a>
         <ul class="nav nav-subnav">
-            <li> <a class="multitabs {:$auth->check('vhost/domain')?'':'d-none'}" href="{:url('index/vhost/domain')}">域名绑定</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/pass')?'':'d-none'}" href="{:url('index/vhost/pass')}">密码设置</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/speed')?'':'d-none'}" href="{:url('index/vhost/speed')}">网站限速</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/Rewrite301')?'':'d-none'}" href="{:url('index/vhost/Rewrite301')}">域名跳转</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/redir')?'':'d-none'}" href="{:url('index/vhost/redir')}">重定向</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/defaultfile')?'':'d-none'}" href="{:url('index/vhost/defaultfile')}">默认文件</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/rewrite')?'':'d-none'}" href="{:url('index/vhost/rewrite')}">伪静态规则</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/ssl')?'':'d-none'}" href="{:url('index/vhost/ssl')}">SSL设置</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/runPath')?'':'d-none'}" href="{:url('index/vhost/runPath')}">运行目录</a> </li>
-            <li> <a target="_blank" class="{$phpmyadmin?'':'d-none'}" href="{$phpmyadmin?$phpmyadmin:" javascript:EchoMsg('未提供在线数据库管理')"}">数据库管理</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/domain')?'':'d-none'}" href="{:url('index/vhost/domain')}">{:__('domain')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/pass')?'':'d-none'}" href="{:url('index/vhost/pass')}">{:__('pass')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/speed')?'':'d-none'}" href="{:url('index/vhost/speed')}">{:__('speed')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/Rewrite301')?'':'d-none'}" href="{:url('index/vhost/Rewrite301')}">{:__('rewrite301')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/redir')?'':'d-none'}" href="{:url('index/vhost/redir')}">{:__('redir')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/defaultfile')?'':'d-none'}" href="{:url('index/vhost/defaultfile')}">{:__('defaultfile')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/rewrite')?'':'d-none'}" href="{:url('index/vhost/rewrite')}">{:__('rewrite')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/ssl')?'':'d-none'}" href="{:url('index/vhost/ssl')}">{:__('ssl')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/runPath')?'':'d-none'}" href="{:url('index/vhost/runPath')}">{:__('runPath')}</a> </li>
+            <li> <a target="_blank" class="{$phpmyadmin|default=''?'':'d-none'}" href="{if isset($phpmyadmin)&&$phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}">{:__('sql_console')}</a> </li>
         </ul>
         </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-format-align-justify"></i> <span>文件/备份</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-format-align-justify"></i> <span>{:__('file_back')}</span></a>
         <ul class="nav nav-subnav">
-            <li> <a class="multitabs {:$auth->check('vhost/file')?'':'d-none'}" href="{:url('index/vhost/file')}">在线文件管理</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/file_ftp')?'':'d-none'}" href="{:url('index/vhost/file_ftp')}">在线文件管理(FTP)</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/back')?'':'d-none'}" href="{:url('index/vhost/back')}">备份</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/file')?'':'d-none'}" href="{:url('index/vhost/file')}">{:__('file')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/file_ftp')?'':'d-none'}" href="{:url('index/vhost/file_ftp')}">{:__('file_ftp')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/back')?'':'d-none'}" href="{:url('index/vhost/back')}">{:__('back')}</a> </li>
         </ul>
         </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-sort-variant-lock"></i> <span>安全设置</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-sort-variant-lock"></i> <span>{:__('security_settings')}</span></a>
         <ul class="nav nav-subnav">
-            <li> <a class="multitabs {:$auth->check('vhost/protection')?'':'d-none'}" href="{:url('index/vhost/protection')}">防盗链</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/waf')?'':'d-none'}" href="{:url('index/vhost/waf')}">防火墙</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/dirauth')?'':'d-none'}" href="{:url('index/vhost/dirauth')}">目录保护</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/proof')?'':'d-none'}" href="{:url('index/vhost/proof')}">防篡改</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/protection')?'':'d-none'}" href="{:url('index/vhost/protection')}">{:__('protection')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/waf')?'':'d-none'}" href="{:url('index/vhost/waf')}">{:__('waf')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/dirauth')?'':'d-none'}" href="{:url('index/vhost/dirauth')}">{:__('dirauth')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/proof')?'':'d-none'}" href="{:url('index/vhost/proof')}">{:__('proof')}</a> </li>
         </ul>
         </li>
         <li class="nav-item nav-item-has-subnav">
-        <a href="javascript:void(0)"><i class="mdi mdi-webpack"></i> <span>高级功能</span></a>
+        <a href="javascript:void(0)"><i class="mdi mdi-webpack"></i> <span>{:__('advanced_features')}</span></a>
         <ul class="nav nav-subnav">
-            <li> <a class="multitabs {:$auth->check('vhost/sitelog')?'':'d-none'}" href="{:url('index/vhost/sitelog')}">网站日志</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/sqltools')?'':'d-none'}" href="{:url('index/vhost/sqltools')}">Mysql工具箱</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/httpauth')?'':'d-none'}" href="{:url('index/vhost/httpauth')}">HTTP认证</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/deployment')?'':'d-none'}" href="{:url('index/vhost/deployment')}">一键部署</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/deployment_new')?'':'d-none'}" href="{:url('index/vhost/deployment_new')}">一键部署(新)</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/total')?'':'d-none'}" href="{:url('index/vhost/total')}">流量报表</a> </li>
-            <li> <a class="multitabs {:$auth->check('vhost/proxy')?'':'d-none'}" href="{:url('index/vhost/proxy')}">反向代理</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/sitelog')?'':'d-none'}" href="{:url('index/vhost/sitelog')}">{:__('sitelog')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/sqltools')?'':'d-none'}" href="{:url('index/vhost/sqltools')}">{:__('sqltools')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/httpauth')?'':'d-none'}" href="{:url('index/vhost/httpauth')}">{:__('httpauth')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/deployment')?'':'d-none'}" href="{:url('index/vhost/deployment')}">{:__('deployment')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/deployment_new')?'':'d-none'}" href="{:url('index/vhost/deployment_new')}">{:__('deployment_new')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/total')?'':'d-none'}" href="{:url('index/vhost/total')}">{:__('total')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/proxy')?'':'d-none'}" href="{:url('index/vhost/proxy')}">{:__('proxy')}</a> </li>
         </ul>
         </li>
     </ul>

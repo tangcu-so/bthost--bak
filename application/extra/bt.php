@@ -109,6 +109,7 @@ return [
     'SQLToBackup'           => '/database?action=ToBackup', //创建sql备份
     'SQLDelBackup'          => '/database?action=DelBackup', //删除sql备份
     'InputSql'              => '/database?action=InputSql', //备份恢复 数据库导入
+    'AddDatabase'           => '/database?action=AddDatabase',//创建数据库
 
     # Mysql工具箱
     'ReTable'               => '/database?action=ReTable', //修复

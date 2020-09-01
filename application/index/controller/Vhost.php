@@ -12,6 +12,7 @@ use think\Validate;
 use btpanel\Btpanel;
 use think\Debug;
 use think\Db;
+use think\Cache;
 
 /**
  * 控制中心
@@ -19,7 +20,7 @@ use think\Db;
 class Vhost extends Frontend
 {
     protected $layout = 'default';
-    protected $noNeedLogin = ['login', 'register'];
+    protected $noNeedLogin = ['login', 'register','clear_cache'];
     // protected $noNeedRight = ['*']; //测试阶段无需鉴权
     protected $noNeedRight = ['logout'];
 
@@ -57,26 +58,32 @@ class Vhost extends Frontend
         $this->hostModel = model('Host');
         $this->ftpModel = model('Ftp');
         $this->sqlModel = model('Sql');
-        Cookie::set('host_id',24);
+        if(!Cookie::get('host_id')){
+            return $this->redirect('/sites');
+        }
         if(Cookie::get('host_id')){
             $host_id = Cookie::get('host_id');
             $hostInfo = $this->hostModel::get(['user_id'=>$this->auth->id,'id'=>$host_id]);
+            if(!$hostInfo){
+                $this->error('站点不存在','');
+            }
             $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'vhost_id'=>$hostInfo->id]);
             $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'vhost_id'=>$hostInfo->id]);
             $hostInfo->ftp = $ftpInfo?$ftpInfo:'';
             $hostInfo->sql = $sqlInfo?$sqlInfo:'';
-            $hostInfo->vhost_id = $host_id;
+            // $hostInfo->vhost_id = $hostInfo->id;
         }else{
             // 跳转到站点选择中心
             // return $this->redirect('User/index');
         }
+        
         // 用户信息表
         $this->userInfo = $this->auth->getUserinfo();
         // 主机信息表
         $this->hostInfo = $hostInfo;
         // 验证主机是否过期
         if (time() > $this->hostInfo['endtime']) {
-            $this->error('已过期');
+            $this->error('已过期','/sites');
         }
 
         $this->is_excess_stop = Config('site.excess_panel');
@@ -86,22 +93,22 @@ class Vhost extends Frontend
             case 'normal':
                 break;
             case 'stop':
-                $this->error('主机已停用','');
+                $this->error('主机已停用','/sites');
                 break;
             case 'locked':
-                $this->error('主机已锁定','');
+                $this->error('主机已锁定','/sites');
                 break;
             case 'expired':
-                $this->error('主机已到期','');
+                $this->error('主机已到期','/sites');
                 break;
             case 'excess':
                 $this->is_excess_stop?$this->error('主机超量，已被停用',''):'';
                 break;
             case 'error':
-                $this->error('主机异常','');
+                $this->error('主机异常','/sites');
                 break;
             default:
-                $this->error('主机异常','');
+                $this->error('主机异常','/sites');
                 break;
         }
 
@@ -123,7 +130,7 @@ class Vhost extends Frontend
         $this->btTend->bt_id = $this->bt_id = $this->hostInfo['bt_id'];
 
         // 主机ID
-        $this->vhost_id = $this->hostInfo['id'];
+        $this->vhost_id = $this->hostInfo->id;
 
         // 站点初始化
         $webInit = $this->btTend->webInit();
@@ -141,7 +148,7 @@ class Vhost extends Frontend
         // 获取等待连接耗时
         $connectTime = $this->btTend->getRequestTime();
         if (!$connectTime) {
-            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','');
+            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','/sites');
         }
         $this->assign('timeOut', $connectTime);
         // php加载时长
@@ -193,13 +200,31 @@ class Vhost extends Frontend
 
         $siteStr = $this->hostModel->status($this->hostInfo['status']);
 
+        $phpversion_list = Cache::remember('phpversion_list',function(){
+            return $this->btAction->GetPHPVersion();
+        });
+
         $this->view->assign('title', __('Console center'));
         $this->view->assign('ftpInfo', $ftpInfo);
         $this->view->assign('phpVer', $phpVer);
         $this->view->assign('siteStatus', $siteStatus);
         $this->view->assign('siteStr', $siteStr);
-        $this->view->assign('phpversion_list', $this->btAction->GetPHPVersion());
+        $this->view->assign('phpversion_list', $phpversion_list);
         return $this->view->fetch();
+    }
+
+    /**
+     * 清除缓存
+     */
+    public function clear_cache(){
+        // 清除waf类型缓存
+        Cache::rm('getWaf');
+        // 清除php版本列表缓存
+        Cache::rm('phpversion_list');
+        // 清除伪静态规则缓存
+        // Cache::rm('phpversion_list');
+
+        $this->success('清理成功','');
     }
 
     /**
@@ -301,7 +326,7 @@ class Vhost extends Frontend
         $count = count($domainList) -1 + count($dirList['binding']) + count($auditList);
         $sys = $this->hostInfo->domain_max - $count;
         
-        $this->view->assign('title', __('域名绑定'));
+        $this->view->assign('title', __('domain'));
         $this->view->assign('sys',$sys);
         $this->view->assign('count',$count);
         $this->view->assign('dirList',$dirList);
@@ -351,12 +376,12 @@ class Vhost extends Frontend
             if (count($domain_arr)-1 >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != '0') {
                 $this->error('绑定失败：已超出可用域名绑定数1');
             }
-            $domainCount = db('domain')->where('vhost_id', $this->vhost_id)->count();
+            $domainCount = model('domain')->where('vhost_id', $this->vhost_id)->count();
 
             // 计算当前传递的域名与现有的域名总和是否超出
-            if (($this->hostInfo['domain_max'] < (count($domain_arr) -1  + $domainCount)) && $this->hostInfo['domain_max'] != '0') {
-                $this->error('绑定失败：已超出可用域名绑定数2');
-            }
+            // if (($this->hostInfo['domain_max'] < (count($domain_arr) -1  + $domainCount)) && $this->hostInfo['domain_max'] != '0') {
+            //     $this->error('绑定失败：已超出可用域名绑定数2');
+            // }
 
             if ($domainCount-1  >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != 0) {
                 $this->error('绑定失败：已超出可用域名绑定数3');
@@ -408,7 +433,7 @@ class Vhost extends Frontend
                 // }
 
                 // 判断当前绑定域名是否存在数据库中
-                $domain_find = db('domain')->where('domain', $value)->find();
+                $domain_find = model('domain')->where('domain', $value)->find();
                 if ($domain_find) {
                     $this->error('当前域名已被绑定' . $value);
                 }
@@ -447,6 +472,11 @@ class Vhost extends Frontend
                     Db::rollback();
                     $this->error('添加失败，请稍候重试');
                 }
+            }
+
+            if($this->hostInfo->is_audit){
+                Db::commit();
+                $this->success('请等待审核');
             }
 
             $domain_str = str_replace("\n", ',', $post_str['domain']);
@@ -515,6 +545,7 @@ class Vhost extends Frontend
 
         // Sql账号密码
 
+        $this->view->assign('title', __('pass'));
         return $this->view->fetch();
     }
 
@@ -679,6 +710,7 @@ class Vhost extends Frontend
             }
             $viewTheme = 'speed_win';
         }
+        $this->view->assign('title', __('speed'));
 
         return $this->view->fetch($viewTheme, [
             'netInfo' => $netInfo,
@@ -763,6 +795,7 @@ class Vhost extends Frontend
     {
         $indexFile = $this->btAction->WebGetIndex($this->bt_id);
 
+        $this->view->assign('title', __('defaultfile'));
         return $this->view->fetch('defaultfile', [
             'indexfile' => $indexFile,
         ]);
@@ -808,6 +841,7 @@ class Vhost extends Frontend
         $rewriteInfo           = $this->btAction->Get301Status($this->siteName);
         $rewriteInfo['domain'] = explode(',', $rewriteInfo['domain']);
 
+        $this->view->assign('title', __('rewrite301'));
         return $this->view->fetch('rewrite301', [
             'rewriteInfo' => $rewriteInfo,
         ]);
@@ -892,7 +926,7 @@ class Vhost extends Frontend
                 }
             }
         }
-        // var_dump($RedirectList);exit;
+        $this->view->assign('title', __('redir'));
         return $this->view->fetch('redir', [
             'WebsitesList' => $WebsitesList,
             'RedirectList' => $RedirectList,
@@ -991,6 +1025,7 @@ class Vhost extends Frontend
             $rewriteInfo = $this->btAction->GetSiteRewrite($this->siteName);
         }
 
+        $this->view->assign('title', __('rewrite'));
         //获取子目录绑定信息
         $dirList = $this->btAction->GetDirBinding($this->bt_id);
         return view('rewrite', [
@@ -1009,6 +1044,11 @@ class Vhost extends Frontend
     public function rewriteGet()
     {
         $post_str = $this->request->post();
+        // 增加传值效验
+        // $rewrites = ['0.当前','EduSoho','EmpireCMS','dabr','dbshop','dedecms','default','discuz','discuzx','discuzx2','discuzx3','drupal','ecshop','emlog','laravel5','maccms','mvc','niushop','phpcms','phpwind','sablog','seacms','shopex','thinkphp','typecho','typecho2','wordpress','wp2','zblog'];
+        // if(!in_array($post_str['rewrites'],$rewrites)){
+        //     $this->error('非法请求');
+        // }
         if ($this->server_type == 'linux') {
             if (isset($post_str['rewrites']) && !empty($post_str['rewrites'])) {
                 if ($post_str['rewrites'] == '0.当前') {
@@ -1612,8 +1652,8 @@ class Vhost extends Frontend
 
         $crumbs_nav = array_filter(explode('/', $path));
 
+        $this->view->assign('title', __('file_ftp'));
         return $this->view->fetch('file_ftp', [
-            'title'          => '在线文件管理',
             'crumbs_nav'     => $crumbs_nav,
             'viewpath'       => $path == '/' ? $path : $path . '/',
             'list'           => $list,
@@ -2306,6 +2346,8 @@ class Vhost extends Frontend
                 return jsonp(['rows'=>$list,'total'=>$total],200);
             }
             $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
+
+            $this->view->assign('title', __('file'));
             return view('file', [
                 'search'         => $this->request->get('search'),
                 'viewpath'       => $path,
@@ -2386,9 +2428,9 @@ class Vhost extends Frontend
             }
         }
 
+        $this->view->assign('title', __('back'));
 
         return view('back', [
-            'title'             => '备份',
             'countback_site'    => count(@$WebBackupList['data']),
             'WebBackupList'     => $WebBackupList,
             'SqlBackupList'     => $SqlBackupList,
@@ -2510,8 +2552,8 @@ class Vhost extends Frontend
             $count = count($list);
             return jsonp(['rows'=>$list,'total'=>$count]);
         }
+        $this->view->assign('title', __('sqltools'));
         return $this->view->fetch('sqltools',[
-            'title'=>'Mysql工具箱',
             'mysql_list'=>$mysql_list,
         ]);
     }
@@ -2720,6 +2762,7 @@ class Vhost extends Frontend
         // var_dump($GetSSL);var_dump($Domains);exit;
         //获取域名绑定列表
         $domainList = $this->btAction->WebDoaminList($this->bt_id);
+        $this->view->assign('title', __('ssl'));
         return $this->view->fetch('ssl', [
             'Domains'    => $Domains,
             'domainList' => $domainList,
@@ -2945,7 +2988,8 @@ class Vhost extends Frontend
     {
 
         $GetSecurity = $this->btAction->GetSecurity($this->bt_id, $this->siteName);
-        // var_dump($GetSecurity);exit;
+
+        $this->view->assign('title', __('protection'));
 
         return view('protection', [
             'GetSecurity' => $GetSecurity,
@@ -3036,6 +3080,8 @@ class Vhost extends Frontend
             exit;
         }
 
+        $this->view->assign('title', __('sitelog'));
+
         return view('sitelog', [
             'logList' => $logArr,
         ]);
@@ -3054,6 +3100,7 @@ class Vhost extends Frontend
         $vhost_url = '/www/wwwroot/' . explode('.', $this->siteName)[0];
         $setting   = $this->btAction->GetDirUserINI($this->bt_id, $vhost_url);
 
+        $this->view->assign('title', __('httpauth'));
         return view('httpauth', [
             'pass_status' => $setting['pass'],
         ]);
@@ -3120,8 +3167,9 @@ class Vhost extends Frontend
         if ($list && isset($list['status']) && $list['status'] == false) {
             $this->error($list['msg']);
         }
+
+        $this->view->assign('title', __('dirauth'));
         return view('dirauth', [
-            'title'=>'目录保护',
             'dirAuthList' => isset($list[$this->siteName]) ? $list[$this->siteName] : '',
         ]);
     }
@@ -3201,6 +3249,7 @@ class Vhost extends Frontend
                     }
                 }
             }
+            $this->view->assign('title', __('runPath'));
             return $this->view->fetch('path', [
                 'runPath' => $path['runPath'],
             ]);
@@ -3285,8 +3334,9 @@ class Vhost extends Frontend
         //程序列表倒叙
         $deploymentList['data'] = array_reverse($deploymentList['data']);
 
+
+        $this->view->assign('title', __('deployment'));
         return view('deployment', [
-            'title'=>'一键部署',
             'deploymentList' => $deploymentList,
         ]);
     }
@@ -3343,8 +3393,8 @@ class Vhost extends Frontend
     {
         $deploymentList = $this->btAction->GetList();
 
+        $this->view->assign('title', __('deployment_new'));
         return view('deployment_new', [
-            'title'=>'一键部署(新版)',
             'deploymentList' => $deploymentList,
         ]);
     }
@@ -3372,6 +3422,7 @@ class Vhost extends Frontend
         } else {
             $this->error('当前主机不支持该插件','');
         }
+        $this->view->assign('title', __('proof'));
         return $this->view->fetch('proof', [
             'proofInfo' => $proofInfo,
         ]);
@@ -3485,6 +3536,7 @@ class Vhost extends Frontend
             return ['network' => $Network, 'spider' => $Spider, 'client' => $Client];
         }
 
+        $this->view->assign('title', __('total'));
         return $this->view->fetch('total', [
             'day'       => $day,
             'Client'    => $Client,
@@ -3502,8 +3554,11 @@ class Vhost extends Frontend
     public function Waf()
     {
         // 获取防火墙类型
-        $isWaf = $this->btTend->getWaf();
-        // var_dump($isWaf);exit;
+        
+        
+        $isWaf = Cache::remember('getWaf',function(){
+            return $this->btTend->getWaf();
+        });
         if (!$isWaf) {
             $this->error('当前主机不支持该插件','');
         }
@@ -3526,7 +3581,7 @@ class Vhost extends Frontend
                     }
                 }
             }
-        }elseif(isset($waf['msg'])){
+        }elseif(isset($waf['msg'])&&Config('app_debug')){
             $this->error($waf['msg'],'');
         } else {
             $this->error('当前主机不支持该插件','');
@@ -3534,16 +3589,14 @@ class Vhost extends Frontend
         
         // 获取四层防御状态
         $ip_stop = $isWaf!='free_waf'?$this->btTend->getIpstopStatus($isWaf):false;
-
-        // $Getcnip = $this->btAction->Getwafcnip($isWaf);
-        // $GetCms  = $this->btAction->GetwafCms($isWaf);
         $GetLog  = $this->btAction->GetwafLog($isWaf, $this->siteName, date('Y-m-d', time()));
 
+        $this->view->assign('title', __('waf'));
+        
         return $this->view->fetch('waf', [
             'waf_type'=> $isWaf,
             'ip_stop' => $ip_stop,
             'GetLog'  => $GetLog,
-            // 'Getcnip' => $Getcnip,
             'Sitewaf' => $Sitewaf,
             'total'   => $total,
         ]);
@@ -3700,6 +3753,8 @@ class Vhost extends Frontend
                 $viewTheme = 'proxy_win';
             }
 
+            $this->view->assign('title', __('proxy'));
+
             return $this->view->fetch($viewTheme, [
                 'domainList' => $domainList,
                 'proxyList'  => $proxyList,
@@ -3813,7 +3868,7 @@ class Vhost extends Frontend
     
     // 资源检查并记录
     private function check(){
-        if (Cookie('vhost_check_' . $this->hostInfo['vhost_id']) < time()) {
+        if (Cookie('vhost_check_' . $this->vhost_id) < time()) {
             $list = $this->btTend->getResourceSize();
             $msg = $excess = '';
             if ($this->hostInfo['flow_max'] != 0 && $list['total_size'] > $this->hostInfo['flow_max']) {
@@ -3850,7 +3905,7 @@ class Vhost extends Frontend
                 $this->_error  = $msg . ($excess?'超出，资源已停用':'');
                 return false;
             }
-            Cookie('vhost_check_' . $this->hostInfo['vhost_id'], time() + $this->check_time, 3600);
+            Cookie('vhost_check_' . $this->vhost_id, time() + $this->check_time, 3600);
             
         }
         return true;

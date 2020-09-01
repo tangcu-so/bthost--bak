@@ -26,19 +26,40 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'domain', title: __('Domain')},
-                        {field: 'host_id', title: __('Host_id')},
-                        {field: 'user_id', title: __('User_id')},
-                        {field: 'domainlist_id', title: __('Domainlist_id')},
+                        {field: 'domain', title: __('Domain'),formatter: function (value, row, index) { 
+                            return '<a href="http://'+row.domain+'" target="_blank"  title="点击访问">' + row.domain + '</a>';
+                    }},
+                        {field: 'vhost.bt_name', title: __('Host_id')},
+                        {field: 'domainlist.domain', title: __('Domainlist_id')},
                         {field: 'dnspod_record', title: __('Dnspod_record')},
-                        {field: 'dnspod_record_id', title: __('Dnspod_record_id')},
-                        {field: 'dnspod_domain_id', title: __('Dnspod_domain_id')},
+                        // {field: 'dnspod_record_id', title: __('Dnspod_record_id')},
+                        // {field: 'dnspod_domain_id', title: __('Dnspod_domain_id')},
                         {field: 'dir', title: __('Dir')},
                         {field: 'audit', title: __('Audit'), searchList: {"0":__('Audit 0'),"1":__('Audit 1'),"2":__('Audit 2')}, formatter: Table.api.formatter.normal},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden')}, formatter: Table.api.formatter.status},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
+                        buttons:[
+                            {
+                                name: 'ajax',
+                                text: __('审核'),
+                                title: __('审核'),
+                                classname: 'btn btn-xs btn-info btn-ajax',
+                                icon: 'fa fa-magic',
+                                url: 'domain/audit',
+                                refresh:true,
+                                confirm: '审核并绑定该域名？',
+                                success: function (data, ret) {
+                                    table.bootstrapTable('refresh');
+                                },
+                                error: function (data, ret) {
+                                    console.log(data, ret);
+                                    Layer.alert(ret.msg);
+                                    return false;
+                                }
+                            },
+                        ]}
                     ]
                 ]
             });

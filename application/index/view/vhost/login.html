@@ -141,7 +141,7 @@
             data = $('#login_form').serializeArray();
             $.post('{:url("vhost/login/index")}', data, function (res) {
                     if (res.code == 1) {
-                        EchoMsg('登录成功', 0, '{:url("index/vhost/index")}');
+                        EchoMsg('登录成功', 0, '{:url("/")}');
                     } else {
                         $('input[name="__token__"]').val(res['data']['token']);
                         $('#verify').attr('src', '/index.php?s=/captcha&t=' + Math.random());

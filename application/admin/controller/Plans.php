@@ -127,7 +127,6 @@ class Plans extends Backend
             }
             
             $valueArr = json_decode($groupInfo->value,1);
-
             foreach ($this->productModel->all() as $k => $v) {
                 
                 $value = $v->toArray();
@@ -140,6 +139,8 @@ class Plans extends Backend
                 $value['tip'] = htmlspecialchars($value['tip']);
                 
                 $value['value'] = isset($valueArr[$value['name']]) ? $valueArr[$value['name']] : '';
+
+                $value['extend_html'] = $this->productModel->ExtendHtml($value);
                 $siteList[$v['group']]['list'][] = $value;
             }
             $index = 0;
@@ -150,6 +151,7 @@ class Plans extends Backend
 
             $this->view->assign('groupName', $groupInfo->name);
             $this->view->assign('siteList', $siteList);
+            // var_dump($siteList);exit;
             $this->view->assign('typeList', $this->productModel::getTypeList());
             $this->view->assign('ruleList', $this->productModel::getRegexList());
             $this->view->assign('groupList', $this->productModel::getGroupList());

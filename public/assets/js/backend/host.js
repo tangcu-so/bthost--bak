@@ -27,25 +27,23 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {checkbox: true},
                         // {field: 'id', title: __('Id')},
                         {field: 'user.username', title: __('User_id')},
-                        {field: 'sort_id', title: __('Sort_id')},
-                        {field: 'bt_id', title: __('Bt_id')},
+                        // {field: 'sort_id', title: __('Sort_id')},
+                        // {field: 'bt_id', title: __('Bt_id')},
                         {field: 'bt_name', title: __('Bt_name')},
-                        {field: 'site_size', title: __('Site'), formatter: function (value, row, index) { 
-                            return row.site_max==0?'无限制':'<progress value="'+row.site_size+'" max="'+row.site_max+'" title="'+row.site_size+'/'+row.site_max+'"></progress>';
+                        {field: 'site_size', title: __('站点/流量/数据库'), formatter: function (value, row, index) { 
+                            str = '';
+                            str+=row.site_max==0?'无限制<br/>':'<progress value="'+row.site_size+'" max="'+row.site_max+'" title="'+row.site_size+'/'+row.site_max+'"></progress><br/>';
+                            str+=row.flow_max==0?'无限制<br/>':'<progress value="'+row.flow_size+'" max="'+row.flow_max+'" title="'+row.flow_size+'/'+row.flow_max+'"></progress><br/>';
+                            str+=row.sql_max==0?'无限制<br/>':'<progress value="'+row.sql_size+'" max="'+row.sql_max+'" title="'+row.sql_size+'/'+row.sql_max+'"></progress><br/>';
+                            return  str;
                         }},
-                        {field: 'flow_size', title: __('Flow'), formatter: function (value, row, index) { 
-                            return row.flow_max==0?'无限制':'<progress value="'+row.flow_size+'" max="'+row.flow_max+'" title="'+row.flow_size+'/'+row.flow_max+'"></progress>';
-                        }},
-                        {field: 'sql_size', title: __('Sql'), formatter: function (value, row, index) { 
-                            return row.sql_max==0?'无限制':'<progress value="'+row.sql_size+'" max="'+row.sql_max+'" title="'+row.sql_size+'/'+row.sql_max+'"></progress>';
-                        }},
-                        {field: 'ip_address', title: __('Ip_address')},
-                        {field: 'domain_max', title: __('Domain_max')},
-                        {field: 'default_analysis', title: __('Default_analysis')},
+                        // {field: 'ip_address', title: __('Ip_address')},
+                        // {field: 'domain_max', title: __('Domain_max')},
+                        // {field: 'default_analysis', title: __('Default_analysis')},
                         {field: 'is_audit', title: __('Is_audit'), searchList: {"0":__('Audit 0'),"1":__('Audit 1')}, formatter: Table.api.formatter.normal},
-                        {field: 'analysis_type', title: __('Analysis_type')},
-                        {field: 'web_back_num', title: __('Web_back_num')},
-                        {field: 'sql_back_num', title: __('Sql_back_num')},
+                        // {field: 'analysis_type', title: __('Analysis_type')},
+                        // {field: 'web_back_num', title: __('Web_back_num')},
+                        // {field: 'sql_back_num', title: __('Sql_back_num')},
                         {field: 'is_vsftpd', title: __('Is_vsftpd'), searchList: {"0":__('Is_vsftpd 0'),"1":__('Is_vsftpd 1')}, formatter: Table.api.formatter.normal},
                         {field: 'check_time', title: __('Check_time'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},

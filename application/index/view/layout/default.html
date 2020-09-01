@@ -2,12 +2,23 @@
 <html>
     <head>
         {include file="common/meta" /}
-        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/materialdesignicons.min.css">
-        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/js/bootstrap-multitabs/multitabs.min.css">
-        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/animate.min.css">
-        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/style.min.css">
-        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/js/jquery-confirm/jquery-confirm.min.css">
+        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/materialdesignicons.min.css?v={$Think.config.site.version}">
+        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/bootstrap.min.css?v={$Think.config.site.version}">
+        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/js/bootstrap-multitabs/multitabs.min.css?v={$Think.config.site.version}">
+        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/animate.min.css?v={$Think.config.site.version}">
+        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/css/style.min.css?v={$Think.config.site.version}">
+        <link rel="stylesheet" type="text/css" href="__STATIC__/Light-Year/js/jquery-confirm/jquery-confirm.min.css?v={$Think.config.site.version}">
+        
+        <!-- 自定义页眉 -->
+        {$site.console_head}
+        
+        <!-- 自定义样式 -->
+        {$site.console_css}
+
+        <script>
+            //将Config渲染到全局
+            window.Config = require.config;
+        </script>
     </head>
 
     <body>
@@ -18,7 +29,7 @@
             
             <!-- logo -->
             <div id="logo" class="sidebar-header">
-                <a href="{:url('index/user/index')}"><img src="/logo.png" title="LightYear" alt="LightYear" /></a>
+                <a href="{:url('/')}"><img src="/logo.png" title="LightYear" alt="LightYear" /></a>
             </div>
             <div class="lyear-layout-sidebar-info lyear-scroll"> 
                 
@@ -187,7 +198,10 @@
                         <a class="multitabs dropdown-item" data-url="{:url('index/vhost/pass')}" href="javascript:void(0)"><i class="mdi mdi-lock-outline"></i> 修改密码</a>
                         </li>
                         <li>
-                        <a class="dropdown-item" href="javascript:void(0)"><i class="mdi mdi-delete"></i> 清空缓存</a>
+                            <a class="multitabs dropdown-item" data-url="{:url('index/user/index')}" href="javascript:void(0)"><i class="mdi mdi-camera-switch"></i> 切换网站</a>
+                        </li>
+                        <li>
+                        <a class="multitabs dropdown-item" data-url="{:url('index/vhost/clear_cache')}" href="javascript:void(0)"><i class="mdi mdi-delete"></i> 清空缓存</a>
                         </li>
                         <li class="dropdown-divider"></li>
                         <li>
@@ -214,6 +228,9 @@
         <!-- 引入js -->
         {include file="common/script" /}
         {block name="script"}{/block}
+        <!-- 自定义页脚 -->
+        {$site.console_foot}
+
     </body>
 
 </html>

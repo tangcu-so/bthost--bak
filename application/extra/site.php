@@ -44,4 +44,10 @@ return array (
   'main_left_notice' => '',
   'main_right_notice' => '',
   'public_head_notice' => '',
+  'iframe_cache' => 'true',
+  'console_css' => '',
+  'console_head' => '',
+  'console_foot' => '',
+  'ftp_server' => '192.168.191.129',
+  'ftp_port' => '21',
 );

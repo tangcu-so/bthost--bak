@@ -6,7 +6,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Table.api.init({
                 extend: {
                     index_url: 'ftp/index' + location.search,
-                    add_url: 'ftp/add',
+                    // add_url: 'ftp/add',
                     edit_url: 'ftp/edit',
                     del_url: 'ftp/del',
                     multi_url: 'ftp/multi',
@@ -26,7 +26,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'user_id', title: __('User_id')},
+                        {field: 'vhost.bt_name', title: __('Vhost_id')},
                         {field: 'username', title: __('Username')},
                         {field: 'password', title: __('Password')},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},

@@ -58,6 +58,13 @@ class Domain extends Model
     }
 
 
+    public function vhost()
+    {
+        return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
 
+    public function domainlist(){
+        return $this->belongsTo('Domainlist', 'domainlist_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
 
 }

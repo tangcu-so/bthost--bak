@@ -140,7 +140,7 @@ class Host extends Backend
                     if(!is_array($domain_jx)){
                         $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$plansInfo['ip'],$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
                     }
-                    $dnspod_record = $domain_jx['domain'];
+                    $dnspod_record = $sub_domain;
                     $dnspod_record_id = $domain_jx['id'];
                     $dnspod_domain_id = $domain_jx['domain_id'];
                 }else{

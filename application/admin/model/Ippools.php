@@ -25,7 +25,8 @@ class Ippools extends Model
 
     // 追加属性
     protected $append = [
-        'status_text'
+        'status_text',
+        'count',
     ];
     
 
@@ -43,7 +44,7 @@ class Ippools extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
-
-
-
+    public function getCountAttr($value,$data){
+        return model('Ipaddress')->where('ippools_id',$data['id'])->count();
+    }
 }

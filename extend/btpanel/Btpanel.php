@@ -796,6 +796,37 @@ class Btpanel
     }
 
     /**
+     * 创建数据库
+     *
+     * @param [type] $name          数据库名称
+     * @param [type] $db_user       数据库账号
+     * @param [type] $password      数据库密码
+     * @param string $dtype         数据库类型MySQL、SQLServer
+     * @param string $codeing       数据库编码utf-8、utf8mb4、gbk、big5
+     * @param string $dataAccess    数据库认证：内部=127.0.0.1,开放所有=%,指定IP='ip'
+     * @param string $address       数据库访问权限：内部=127.0.0.1,开放所有=%,指定IP=ip地址
+     * @param string $ps            数据库备注
+     * @return void
+     */
+    public function AddDatabase($name,$db_user,$password,$dtype='MySQL',$codeing = 'utf8',$dataAccess = '127.0.0.1',$address = '127.0.0.1',$ps=''){
+        $url = $this->BT_PANEL . config("bt.AddDatabase");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['name'] = $name;
+        $p_data['codeing'] = $codeing;
+        $p_data['db_user'] = $db_user;
+        $p_data['password'] = $password;
+        $p_data['dtype'] = $dtype;
+        $p_data['dataAccess'] = $dataAccess;
+        $p_data['address'] = $address;
+        $p_data['ps'] = $ps?$ps:$name;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
      * 获取网站域名列表
      * @param [type]  $id   网站ID
      * @param boolean $list 固定传true

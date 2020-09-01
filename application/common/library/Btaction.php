@@ -692,18 +692,22 @@ class Btaction
      * @param    [type]     $siteName   站点名（为目录是填写目录名）
      * @param    integer    $is_dir     是否为目录
      */
-    public function addDomain($domain_str, $btId, $siteName, $is_dir = 0)
+    public function addDomain($domain_str, $siteName, $is_dir = 0)
     {
         // 绑定网站
         if ($is_dir) {
-            $add = $this->btAction->AddDirBinding($btId, $domain_str, $siteName);
+            $add = $this->btAction->AddDirBinding($this->bt_id, $domain_str, $siteName);
         } else {
             // 绑定目录
-            $add = $this->btAction->WebAddDomain($btId, $siteName, $domain_str);
+            $add = $this->btAction->WebAddDomain($this->bt_id, $siteName, $domain_str);
         }
-        if ($add) {
+        if (isset($add['status'])&&$add['status']==true) {
             return $add;
+        }elseif(isset($add['msg'])){
+            $this->setError($add['msg']);
+            return false;
         } else {
+            $this->setError('请求失败');
             return false;
         }
     }
@@ -777,16 +781,18 @@ class Btaction
         $list = $this->btAction->GetSoftList('php是');
         if($list&&isset($list['list']['data'])&&$list['list']['data']){
             $arr = [];
-            $arr[]['id'] = '00';
-            $arr[]['name'] = '纯静态';
+            $arr[0]['id'] = '00';
+            $arr[0]['name'] = '纯静态';
             // 将数据处理成合适的数组
+            $i = 1;
             foreach ($list['list']['data'] as $key => $value) {
                 // 判断是否安装
                 if($value['setup']||$is_all){
                     $number = preg_replace('/[^\d]*/','',$value['name']);
                     if($number){
-                        $arr[]['id'] = $number;
-                        $arr[]['name'] = $number;
+                        $arr[$i]['id'] = $number;
+                        $arr[$i]['name'] = $number;
+                        $i++;
                     }else{
                         continue;
                     }
@@ -1185,6 +1191,102 @@ class Btaction
             $this->setError('请求失败');
         }
         return false;
+    }
+
+    /**
+     * 是否为专业版
+     * ===true为专业版永久
+     * 返回数字为专业版到期时间
+     *
+     * @return boolean
+     */
+    public function isPro(){
+        $list = $this->btAction->GetSoftList();
+        if($list&&isset($list['pro'])){
+            switch ($list['pro']) {
+                case '-1':
+                    return false;
+                    break;
+                case '1':
+                    return $list['pro'];
+                case '0':
+                    return true;
+                default:
+                    return is_numeric($list['pro'])?$list['pro']:false;
+                    break;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 宝塔面板付费版本
+     * 返回0 = 永久
+     * 返回数字时间戳 = 到期时间
+     *
+     * @return void
+     */
+    public function paidVer(){
+        $list = $this->btAction->GetSoftList();
+        if($list){
+            if($list['pro']>=0){
+                return ['type'=>'pro','time'=>$list['pro']];
+            }
+            if($list['ltd']>=0){
+                return ['type'=>'ltd','time'=>$list['ltd']];
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 是否为企业版
+     * ===true为专业版永久
+     * 返回数字为企业版到期时间
+     *
+     * @return boolean
+     */
+    public function isLtd(){
+        $list = $this->btAction->GetSoftList();
+        if($list&&isset($list['ltd'])){
+            switch ($list['ltd']) {
+                case '-1':
+                    return false;
+                    break;
+                case '1':
+                    return $list['ltd'];
+                case '0':
+                    return true;
+                default:
+                    return is_numeric($list['ltd'])?$list['ltd']:false;
+                    break;
+            }
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * 创建数据库
+     *
+     * @param [type] $username      数据库用户名
+     * @param [type] $database      数据库名
+     * @param [type] $password      数据库密码
+     * @param string $type          数据库类型MySQL、SQLServer
+     * @return void
+     */
+    public function buildSql($username,$database,$password,$type='MySQL'){
+        $set = $this->btAction->AddDatabase($database,$username,$password,$type);
+        if($set&&isset($set['status'])&&$set['status']==true){
+            return true;
+        }elseif(isset($set['msg'])){
+            $this->setError($set['msg']);
+            return false;
+        }else{
+            $this->setError('请求错误');
+            return false;
+        }
     }
 
     /**

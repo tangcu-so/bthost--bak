@@ -15,7 +15,7 @@ use think\Validate;
 class User extends Frontend
 {
     protected $layout = 'default';
-    protected $noNeedLogin = ['login', 'register'];
+    protected $noNeedLogin = ['login'];
     protected $noNeedRight = ['*'];
 
     public function _initialize()
@@ -32,14 +32,6 @@ class User extends Frontend
             $expire = input('post.keeplogin') ? 30 * 86400 : 0;
             Cookie::set('uid', $user->id, $expire);
             Cookie::set('token', $auth->getToken(), $expire);
-        });
-        Hook::add('user_register_successed', function ($user) use ($auth) {
-            Cookie::set('uid', $user->id);
-            Cookie::set('token', $auth->getToken());
-        });
-        Hook::add('user_delete_successed', function ($user) use ($auth) {
-            Cookie::delete('uid');
-            Cookie::delete('token');
         });
         Hook::add('user_logout_successed', function ($user) use ($auth) {
             Cookie::delete('uid');
@@ -58,20 +50,27 @@ class User extends Frontend
         foreach ($data as $index => $datum) {
             $this->view->assign($datum);
         }
-        return $this->view->fetch('user/' . $name);
+        return $this->view->fetch($name);
     }
 
     public function index(){
-        if(Cookie::get('host_id')){
-            // 跳转到vhost控制中心
-            return $this->redirect('index/Vhost/index');
-        }else{
-            // 站点选择页
-            $this->view->assign('title', __('站点选择'));
-            return $this->view->fetch();
-        }        
+        if($this->request->get('host_id/d')){
+            Cookie::set('host_id',$this->request->get('host_id/d'));
+            return $this->redirect('/');
+        }
+        // 站点列表
+        $list = model('Host')::all();
+        if($list){
+            foreach ($list as $value) {
+                $value->domain = model('Domain')->where(['status'=>'normal','vhost_id'=>$value->id])->select();
+                $value->statusStr = model('Host')->status($value->status);
+            }
+        }
+        $this->view->assign('list',$list);
+        // 站点选择页
+        $this->view->assign('title', __('站点选择'));
+        return $this->view->fetch();     
     }
-
 
     /**
      * 会员登录
@@ -111,7 +110,7 @@ class User extends Frontend
                 return false;
             }
             if ($this->auth->login($account, $password)) {
-                $this->success(__('Logged in successful'), $url ? $url : url('index/vhost/index'));
+                $this->success(__('Logged in successful'), $url ? $url : url('/'));
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
             }
@@ -134,63 +133,6 @@ class User extends Frontend
     {
         //注销本站
         $this->auth->logout();
-        $this->success(__('Logout successful'), url('index/Vhost/index'));
-    }
-
-    /**
-     * 个人信息
-     */
-    public function profile()
-    {
-        $this->view->assign('title', __('Profile'));
-        return $this->view->fetch();
-    }
-
-    /**
-     * 修改密码
-     */
-    public function changepwd()
-    {
-        if ($this->request->isPost()) {
-            $oldpassword = $this->request->post("oldpassword");
-            $newpassword = $this->request->post("newpassword");
-            $renewpassword = $this->request->post("renewpassword");
-            $token = $this->request->post('__token__');
-            $rule = [
-                'oldpassword'   => 'require|length:6,30',
-                'newpassword'   => 'require|length:6,30',
-                'renewpassword' => 'require|length:6,30|confirm:newpassword',
-                '__token__'     => 'token',
-            ];
-
-            $msg = [
-            ];
-            $data = [
-                'oldpassword'   => $oldpassword,
-                'newpassword'   => $newpassword,
-                'renewpassword' => $renewpassword,
-                '__token__'     => $token,
-            ];
-            $field = [
-                'oldpassword'   => __('Old password'),
-                'newpassword'   => __('New password'),
-                'renewpassword' => __('Renew password')
-            ];
-            $validate = new Validate($rule, $msg, $field);
-            $result = $validate->check($data);
-            if (!$result) {
-                $this->error(__($validate->getError()), null, ['token' => $this->request->token()]);
-                return false;
-            }
-
-            $ret = $this->auth->changepwd($newpassword, $oldpassword);
-            if ($ret) {
-                $this->success(__('Reset password successful'), url('user/login'));
-            } else {
-                $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
-            }
-        }
-        $this->view->assign('title', __('Change password'));
-        return $this->view->fetch();
+        $this->success(__('Logout successful'), url('/'));
     }
 }

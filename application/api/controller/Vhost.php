@@ -167,7 +167,7 @@ class Vhost extends Api
 
     // 数据库详情
     public function sql_info(){
-        $id = $this->request->post('id/d');
+        $id = $this->request->post('sql_id/d');
         if(!$id){
             $this->error('错误的请求');
         }
@@ -175,14 +175,113 @@ class Vhost extends Api
         $this->success('请求成功',$info);
     }
 
+    // 创建数据库
+    public function sql_build(){
+        $id = $this->request->post('id/d');
+        if(!$id){
+            $this->error('错误的请求');
+        }
+        
+        $username = $this->request->post('username',Random::alnum(8));
+        $database = $this->request->post('database');
+        $password = $this->request->post('password',Random::alnum(8));
+        $console = $this->request->post('console');
+        $type = $this->request->post('type','bt');
+
+        if (!preg_match("/^[A-Za-z0-9]+$/", $username)) {
+            $this->error('账号格式不正确');
+        }
+
+        $info = $this->hostModel::get($id);
+        if(!$info){
+            $this->error('主机不存在');
+        }
+        // 添加宝塔数据库
+        if($type=='bt'){
+            $bt = new Btaction();
+            $database = $database?$database:$username;
+            $set = $bt->buildSql($username,$database,$password);
+            if(!$set){
+                $this->error($bt->_error);
+            }
+        }
+        
+        $sqlData = [
+            'vhost_id'  => $info->id,
+            'username'  => $username,
+            'database'  => $database,
+            'password'  => $password,
+            'console'   => $console,
+            'type'   => $type=='bt'?'bt':'custom',
+        ];
+        $create = $this->sqlModel::create($sqlData);
+        $sqlData['id'] = $create->id;
+        $this->success('创建成功',$sqlData);
+    }
+
+    // 数据库密码修改
+    public function sql_pass(){
+        $id = $this->request->post('sql_id/d');
+        if(!$id){
+            $this->error('错误的请求');
+        }
+        $password = $this->request->post('password',Random::alnum(8));
+        
+        $info = $this->sqlModel::get($id);
+        if($info->type=='bt'){
+            $bt = new Btaction();
+            $bt->sql_name = $info->database;
+            $set = $bt->resetSqlPass($info->database,$password);
+            if(!$set){
+                $this->error($bt->_error);
+            }
+        }
+        
+        $info->password = $password;
+        $info->save();
+        $this->success('修改成功',$info);
+    }
+
     // FTP详情
     public function ftp_info(){
-        $id = $this->request->post('id/d');
+        $id = $this->request->post('ftp_id/d');
         if(!$id){
             $this->error('错误的请求');
         }
         $info = $this->ftpModel::get($id);
         $this->success('请求成功',$info);
+    }
+
+    // FTP密码修改
+    public function ftp_pass(){
+        $id = $this->request->post('ftp_id/d');
+        $password = $this->request->post('password',Random::alnum(8));
+        if(!$id){
+            $this->error('请求错误');
+        }
+        $info = $this->ftpModel::get($id);
+        if(!$info){
+            $this->error('ftp不存在');
+        }
+        $bt = new Btaction();
+        $bt->ftp_name = $info->username;
+        $set = $bt->resetFtpPass($info->username,$password);
+        if(!$set){
+            $this->error($bt->_error);
+        }
+        $info->password = $password;
+        $info->save();
+        $this->success('修改成功',$info);
+    }
+
+    // FTP启用
+    public function ftp_start(){
+
+    }
+
+    // FTP停用
+    public function ftp_stop(){
+
     }
 
     // 主机列表
@@ -269,7 +368,7 @@ class Vhost extends Api
 
         Db::startTrans();
 
-        // 获取信息后存入数据库
+        // 获取信息后存入
         $site_data = [
             'user_id'               => $user_id,
             'sort_id'               => $sort_id,
@@ -345,6 +444,12 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $info = $this->hostModel::get($id);
+        $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
+        $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
+        $info->domain = model('Domain')::all(['vhost_id'=>$id]);
+        if(!$info){
+            $this->error('主机不存在');
+        }
         $this->success('请求成功',$info);
     }
 
@@ -403,19 +508,6 @@ class Vhost extends Api
         }
         $bt = new Btaction();
         
-        if($type=='sql'||$type=='all'){
-            $sqlFind = $this->sqlModel::get(['vhost_id'=>$id]);
-            $bt->sql_name = $sqlFind->username;
-            if(!$sqlFind){
-                $this->error('无数据库');
-            }
-            $set = $bt->resetSqlPass($sqlFind->username,$password);
-            if(!$set){
-                $this->error($bt->_error);
-            }
-            $sqlFind->password = $password;
-            $sqlFind->save();
-        }
         if($type=='ftp'||$type=='all'){
             $ftpFind = $this->ftpModel::get(['vhost_id'=>$id]);
             $bt->ftp_name = $ftpFind->username;

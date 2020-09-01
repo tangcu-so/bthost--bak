@@ -13,7 +13,9 @@ class Product extends Model
     // 表名,不含前缀
     protected $name = 'product';
     // 追加属性
-    protected $append = [];
+    protected $append = [
+        // 'extend_html',
+    ];
 
     /**
      * 读取配置类型
@@ -117,6 +119,26 @@ class Product extends Model
             }
         }
         return $arr;
+    }
+
+    public function getExtendHtmlAttr($value, $data)
+    {
+        // var_dump($value,$data);exit;
+        $result = preg_replace_callback("/\{([a-zA-Z]+)\}/", function ($matches) use ($data) {
+            if (isset($data[$matches[1]])) {
+                return $data[$matches[1]];
+            }
+        }, $data['extend']);
+        return $result;
+    }
+
+    public function ExtendHtml($data){
+        $result = preg_replace_callback("/\{([a-zA-Z]+)\}/", function ($matches) use ($data) {
+            if (isset($data[$matches[1]])) {
+                return $data[$matches[1]];
+            }
+        }, $data['extend']);
+        return $result;
     }
 
     /**

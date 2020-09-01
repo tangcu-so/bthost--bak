@@ -49,8 +49,8 @@
                                     <td>
                                         <div class="row">
                                             <div class="col-sm-8 col-xs-12">
-                                                <input type="text" name="row[name]" value="{$groupName}" class="form-control"
-                                                    data-rule="required" />
+                                                <input type="text" name="row[name]" value="{$groupName}"
+                                                    class="form-control" data-rule="required" />
                                                 <small class="text-info">用户组名，必填</small>
                                             </div>
                                         </div>
@@ -219,7 +219,7 @@
                                                         {/case}
                                                         <small class="text-info">{$item.tip}</small>
                                                         {case custom}
-                                                        {$item.extend}
+                                                        {$item.extend_html}
                                                         <small class="text-info">{$item.tip}</small>
                                                         {/case}
                                                         {/switch}

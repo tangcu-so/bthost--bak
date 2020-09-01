@@ -44,6 +44,9 @@ class Sql extends Model
     }
 
 
-
+    public function vhost()
+    {
+        return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT');
+    }
 
 }

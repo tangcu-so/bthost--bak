@@ -297,20 +297,32 @@ class Ajax extends Backend
         // 获取服务器一键部署内容
         $bt = new Btaction();
         $name = $this->request->post('name');
-        $new_data['list'] = $bt->getdeploymentlist($name);
+        $keyValue = $this->request->post('keyValue');
+        $search = $name?$name:$keyValue;
+        $new_data['list'] = $bt->getdeploymentlist($search);
         $new_data['total'] = count($new_data['list']);
         return json($new_data);
     }
 
     // 宝塔已安装php列表
     public function phplist(){
-
+        $keyValue = $this->request->post('keyValue');
         // 获取服务器安装的php版本列表(由于官方的存在很大的数据变动)
         $bt = new Btaction();
         $list = $bt->getphplist();
         if($list){
             // 处理一下数据
-            $new_data['list'] = $list;
+            if($keyValue){
+                foreach ($list as $key => $value) {
+                    // var_dump($keyValue,$value['id']);
+                    if($keyValue==$value['id']){
+                        $new_data['list'] = [$value];
+                        break;
+                    }
+                }
+            }else{
+                $new_data['list'] = $list;
+            }
         }else{
             $new_data['list'] = [];
         }
@@ -336,6 +348,9 @@ class Ajax extends Backend
 
     // 获取数据库管理地址
     public function getphpmyadmin_url(){
+        if(!Config('site.api_token')){
+            $this->error('请先配置宝塔面板接口密钥');
+        }
         $bt = new Btaction();
         $url = $bt->getphpmyadminUrl();
         if(!$url){
