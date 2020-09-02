@@ -1,5 +1,85 @@
 define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echarts-theme', 'template'], function ($, undefined, Backend, Datatable, Table, Echarts, undefined, Template) {
+    var server = {};
+    server.toPercent = function(point){
+        // 转百分数
+    	if (point==0) {
+    		return 0;
+    	}
+    	var str=Number(point*100).toFixed();
+    	str+="%";
+    	return str;
+    }
+    server.change = function(limit){
+        //流量单位换算
+    	var size = "";
+    	if(limit < 0.1 * 1024){
+    		size = limit.toFixed(2) + "B"
+    	}else if(limit < 0.1 * 1024 * 1024){
+    		size = (limit/1024).toFixed(2) + "KB"
+    	}else if(limit < 0.1 * 1024 * 1024 * 1024){
+    		size = (limit/(1024 * 1024)).toFixed(2) + "MB"
+    	}else{
+    		size = (limit/(1024 * 1024 * 1024)).toFixed(2) + "GB"
+    	}
 
+    	var sizeStr = size + "";
+    	var index = sizeStr.indexOf(".")
+    	var dou = sizeStr.substr(index + 1 ,2)
+    	if(dou == "00"){              
+    		return sizeStr.substring(0, index) + sizeStr.substr(index + 3, 2)
+    	}
+    	return size;
+    }
+    server.getfile = function(file){
+        $.post('', {type: 'getfile',file:file}, function(data, textStatus, xhr) {
+            if(data.code!='200'){
+                Toastr.error(data.msg);
+                return false;
+            }
+            layer.msg('获取成功');
+            layer.open({
+                title: '在线编辑',
+                closeBtn:1,
+                content: '<textarea class="form-control editor" id="fileBodys" rows="10" cols="20">'+data.fileBody.data+'</textarea>'
+                ,btn: ['保存', '取消', '预览（请先保存）']
+                ,yes: function(index, layero){
+                    //按钮【按钮一】的回调
+                    layer.msg('提交中……');
+                    server.saveFile(file,$('#fileBodys').val());
+                }
+                ,btn2: function(index, layero){
+                    //按钮【按钮二】的回调
+                    
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+                ,btn3: function(index, layero){
+                    //按钮【按钮三】的回调
+                    layer.open({
+                        skin: 'layui-layer-rim',
+                        content: $('#fileBodys').val()
+                    });
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+                ,cancel: function(){ 
+                    //右上角关闭回调
+                    
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+                // btn: ['确认', '取消', '预览（请先保存）'],
+                // btn3: function(index){
+                    
+                // }
+            });
+        });
+    }
+    server.saveFile = function(file,va){
+        Fast.api.ajax({
+            url: "",
+            data: {type: 'savefile',value:va,file:file}
+            }, function(data, ret){
+            Layer.closeAll();
+        });
+    }
     var Controller = {
         index: function () {
             // 基于准备好的dom，初始化echarts实例
@@ -15,7 +95,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     trigger: 'axis'
                 },
                 legend: {
-                    data: [__('Sales'), __('Orders')]
+                    data: [__('Net up'), __('Net down')]
                 },
                 toolbox: {
                     show: false,
@@ -37,7 +117,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     bottom: 30
                 }],
                 series: [{
-                    name: __('Sales'),
+                    name: __('Net up'),
                     type: 'line',
                     smooth: true,
                     areaStyle: {
@@ -51,7 +131,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     data: Orderdata.paydata
                 },
                     {
-                        name: __('Orders'),
+                        name: __('Net down'),
                         type: 'line',
                         smooth: true,
                         areaStyle: {
@@ -71,30 +151,53 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
 
             //动态添加数据，可以通过Ajax获取数据然后填充
             setInterval(function () {
-                Orderdata.column.push((new Date()).toLocaleTimeString().replace(/^\D*/, ''));
-                var amount = Math.floor(Math.random() * 200) + 20;
-                Orderdata.createdata.push(amount);
-                Orderdata.paydata.push(Math.floor(Math.random() * amount) + 1);
 
-                //按自己需求可以取消这个限制
-                if (Orderdata.column.length >= 20) {
-                    //移除最开始的一条数据
-                    Orderdata.column.shift();
-                    Orderdata.paydata.shift();
-                    Orderdata.createdata.shift();
-                }
-                myChart.setOption({
-                    xAxis: {
-                        data: Orderdata.column
-                    },
-                    series: [{
-                        name: __('Sales'),
-                        data: Orderdata.paydata
-                    },
-                        {
-                            name: __('Orders'),
-                            data: Orderdata.createdata
-                        }]
+                $.post('ajax/getNet', {type: 'getGetNetWork'}, function(data, textStatus, xhr) {
+                    if(data){
+                        $('#loadOne').html(server.toPercent(data.load.one));
+                        if(data.load.one<0.5){
+                            $('#loadStatus').html('运行流畅');
+                        }else if(data.load.one<0.8){
+                            $('#loadStatus').html('运行缓慢');
+                        }else if(data.load.one<1){
+                            $('#loadStatus').html('运行堵塞');
+                        }
+                        $('#memBfb').html(server.toPercent(data.mem.memRealUsed/data.mem.memTotal));
+                        $('#netUp').html(data.up+'kb');
+                        $('#netDown').html(data.down+'kb');
+                        $('#downTotal').html(server.change(data.downTotal));
+                        $('#upTotal').html(server.change(data.upTotal));
+                        $('#mem').html(data.mem.memRealUsed+'/'+data.mem.memTotal+'(MB)');
+                        $('#cpu0').html(data.cpu['0']+'%');
+                        $('#cpu1').html(data.cpu['1']+'核心');
+                        Orderdata.column.push((new Date()).toLocaleTimeString().replace(/^\D*/, ''));// 时间
+                        var amount = data.up;// 下行
+                        Orderdata.createdata.push(amount);
+                        Orderdata.paydata.push(data.down);// 上行
+
+                        //按自己需求可以取消这个限制
+                        if (Orderdata.column.length >= 20) {
+                            //移除最开始的一条数据
+                            Orderdata.column.shift();
+                            Orderdata.paydata.shift();
+                            Orderdata.createdata.shift();
+                        }
+                        myChart.setOption({
+                            xAxis: {
+                                data: Orderdata.column
+                            },
+                            series: [{
+                                name: __('Net up'),
+                                data: Orderdata.paydata
+                            },
+                                {
+                                    name: __('Net down'),
+                                    data: Orderdata.createdata
+                                }]
+                        });
+                    }else{
+                        layer.msg('请求错误');
+                    }
                 });
             }, 2000);
             $(window).resize(function () {
@@ -111,6 +214,160 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 }, 0);
             });
 
+            // 节点检测
+            $(document).on("click", ".btn-testing", function () {
+                Fast.api.ajax({
+                    url: 'ajax/testing',
+                    dataType: 'json',
+                }, function (data, ret) {
+                        curl = ret.data.curl ? '<span class="text-success">支持</span>' : '<span class="text-danger">不支持</span>';
+                        ms = ret.data.ms ? '<span class="text-success">正常 '+ret.data.ms+'</span>' : '<span class="text-danger">连接异常</span>';
+                        baidu = ret.data.baidu ? '<span class="text-success">正常 '+ret.data.baidu+'</span>' : '<span class="text-danger">异常</span>';
+                    content = 'Curl：'+curl+'<br/>连接延迟：'+ms+'<br/>外网连接：'+baidu;
+                    Layer.alert(content);
+                }, function (data, ret) {
+                });
+            });
+
+            // 清空临时目录文件
+            $(document).on("click", ".btn-clearlogs", function () {
+                if ($(this).attr('disabled')) {
+                    return false;
+                } else { 
+                    $(this).attr('disabled','disabled');
+                }
+                top.window.$("[data-type=logs]").trigger("click");
+                return false;
+            });
+
+            $(document).on("click", "#default", function () {
+                var strVar = "";
+                    strVar += "<div class=\"text-center\" id=\"btAction\">\n";
+                    strVar += "<button class=\"btn btn-default default_file\" data-val=\"default\" type=\"button\">\n";
+                    strVar += "默认文档\n";
+                    strVar += "<\/button>\n";
+                    strVar += "<button class=\"btn btn-default default_file\" data-val=\"404\" type=\"button\">\n";
+                    strVar += "404错误页\n";
+                    strVar += "<\/button>\n";
+                    strVar += "<button class=\"btn btn-default default_file\" data-val=\"nosite\" type=\"button\">\n";
+                    strVar += "空白页\n";
+                    strVar += "<\/button>\n";
+                    strVar += "<button class=\"btn btn-default default_file\" data-val=\"stop\" type=\"button\">\n";
+                    strVar += "默认站点停止页\n";
+                    strVar += "<\/button>\n";
+                    strVar += "<\/div>\n";
+                    layer.open({
+                    type: 1,
+                    title: '修改默认页',
+                    skin: 'layui-layer-rim',
+                    content: strVar
+                });
+            });
+
+            $(document).on('click','.default_file',function(){
+                file = $(this).data('val');
+                server.getfile(file);
+            })
+
+            $(document).on("click", "#Recycle", function () {
+                layer.confirm('将清空回收站，且不能恢复',{
+                    btn: ['删除','取消']
+                }, function(){
+                    Fast.api.ajax({
+                        url: "",
+                        data: {type: 'Close_Recycle_bin'}
+                        }, function(data, ret){
+                        Layer.closeAll();
+                    });
+                }, function(index){
+                    layer.close(index);
+                }); 
+            });
+            $(document).on("click", "#CloseLogs", function () {
+                layer.confirm('将删除所有网站日志，且不能恢复',{
+                    btn: ['删除','取消']
+                }, function(){
+                    Fast.api.ajax({
+                        url: "",
+                        data: {type: 'CloseLogs'}
+                        }, function(data, ret){
+                        Layer.closeAll();
+                    });
+                }, function(index){
+                    layer.close(index);
+                });
+            });
+            $(document).on("click", "#update", function () {
+                Fast.api.ajax({
+                    url: "",
+                    data: {type: 'checkUp'}
+                    }, function(data, ret){
+                        if(data.code=='0'){
+                        Toastr.error(data.msg);
+                        return false;
+                        }else{
+                        layer.confirm('有新的面板版本更新，是否更新？',{
+                        title:'有新的面板版本更新，是否更新？',
+                        btn: ['更新','取消'],
+                        content:data.msg
+                        }, function(indexs){
+                        layer.close(indexs);
+            
+                        Fast.api.ajax({
+                        url: "",
+                        data: {type: 'update'}
+                        }, function(data, ret){
+                        Layer.closeAll();
+                        });
+                        }, function(index){
+                        layer.close(index);
+                        });
+                        }
+                        Layer.closeAll();
+                    });
+            });
+            $(document).on("click", "#re_panel", function () {
+                layer.confirm('将尝试校验并修复面板程序，继续吗？',{
+                    btn: ['确定','取消']
+                }, function(){
+                    Fast.api.ajax({
+                        url: "",
+                        data: {type: 're_panel'}
+                        }, function(data, ret){
+                        Layer.closeAll();
+                    });
+                }, function(index){
+                    layer.close(index);
+                });
+            });
+            $(document).on("click", "#reWeb", function () {
+                layer.confirm('即将重启面板服务，继续吗？',{
+                    btn: ['确定','取消']
+                }, function(){
+                    Fast.api.ajax({
+                        url: "",
+                        data: {type: 'reweb'}
+                        }, function(data, ret){
+                        Layer.closeAll();
+                    });
+                }, function(index){
+                    layer.close(index);
+                });
+            });
+            $(document).on("click", "#RestartServer", function () {
+                layer.confirm('即将重启服务器，继续吗？',{
+                    btn: ['确定','取消']
+                }, function(){
+                    Fast.api.ajax({
+                        url: "",
+                        data: {type: 'reboot'}
+                        }, function(data, ret){
+                        Layer.closeAll();
+                    });
+                }, function(index){
+                    layer.close(index);
+                });
+            });
         }
     };
 

@@ -45,6 +45,7 @@ class Plans extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
+    // 转化资源组
     public function getPlanInfo($id){
         $plansInfo = self::get(['status'=>'normal','id'=>$id]);
         if(!$plansInfo){
@@ -54,7 +55,7 @@ class Plans extends Model
         // var_dump($plansArr);exit;
         // 域名池，随机抽选一个域名
         if($plansArr['domainpools_id']){
-            $domainArr = model('Domainlist')->where(['domainpools_id'=>$plansArr['domainpools_id'],'status'=>'normal'])->column('id,domain,dnspod');
+            $domainArr = model('Domain')->where(['domainpools_id'=>$plansArr['domainpools_id'],'status'=>'normal'])->column('id,domain,dnspod');
         }else{
             $domainArr = false;
         }
@@ -69,9 +70,11 @@ class Plans extends Model
         // IP池，随机抽选一个IP
         $ip = '';
         if($plansArr['ippools_id']){
-            $ipArr = model('Ipaddress')->where(['ippools_id'=>$plansArr['ippools_id'],'status'=>'normal'])->column('ip');
-            $ip_key = array_rand($ipArr);
-            $ip = $ipArr[$ip_key];
+            $ipRandList = model('Ipaddress')->getRandId($plansArr['ippools_id'],10);
+            $ipArr = implode(',',$ipRandList);
+            if($ipRandList&&isset($ipRandList[0])){
+                $ip = model('Ipaddress')->where('id',$ipRandList[0])->value('ip');
+            }
         }else{
             $ipArr = false;
         }
@@ -82,11 +85,10 @@ class Plans extends Model
         
 
         $plansArr['domain'] = $domain;
+        $plansArr['ipArr'] = $ipArr;
         $plansArr['ip'] = $ip;
         $plansArr['domainlist_id'] = $domain_key;
         $plansArr['dnspod'] = $domainArr[$domain_key]['dnspod'];
         return $plansArr;
     }
-
-
 }

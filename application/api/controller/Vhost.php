@@ -111,7 +111,7 @@ class Vhost extends Api
         if(!$domainpools_id){
             $this->error('请求错误');
         }
-        $list = model('Domainlist')::all(['domainpools_id'=>$domainpools_id]);
+        $list = model('Domain')::all(['domainpools_id'=>$domainpools_id]);
         $this->success('请求成功',$list);
     }
 
@@ -121,7 +121,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('请求错误');
         }
-        $info = model('Domainlist')::get($id);
+        $info = model('Domain')::get($id);
         $this->success('请求成功',$info);
     }
 
@@ -430,7 +430,7 @@ class Vhost extends Api
             'dnspod_domain_id'=>$dnspod_domain_id,
             'dir'=>'/',
         ];
-        model('domain')::create($domain_data);
+        model('Domainlist')::create($domain_data);
 
         Db::commit();
 
@@ -446,7 +446,7 @@ class Vhost extends Api
         $info = $this->hostModel::get($id);
         $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
         $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
-        $info->domain = model('Domain')::all(['vhost_id'=>$id]);
+        $info->domain = model('Domainlist')::all(['vhost_id'=>$id]);
         if(!$info){
             $this->error('主机不存在');
         }

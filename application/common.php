@@ -885,3 +885,49 @@ function isMobile()
     }
     return false;
 }
+
+/**
+ * 目录删除
+ *
+ * @param [type] $dirname
+ * @return void
+ */
+function delFiles($dirname)
+{
+    $hand = dir($dirname);
+    while (($file = $hand->read()) != false) {
+        $smallfile = $hand->path . '\\' . $file;
+        if (is_dir($smallfile) && $file != '.' && $file != '..') {
+            if (@rmdir($smallfile) == false) {
+                delFiles($smallfile);
+            }
+        } elseif (@is_file($smallfile)) {
+            @unlink($smallfile);
+        }
+    }
+}
+
+/**
+ * 获取服务器连接时间
+ *
+ * @param [type] $url
+ * @param string $data
+ * @param integer $timeout
+ * @param integer $time
+ * @return void
+ */
+function getRequestTimes($url, $timeout = 60)
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+    curl_setopt($ch, CURLOPT_POST, 1);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_exec($ch);
+    $request = curl_getinfo($ch);
+    curl_close($ch);
+    return isset($request['total_time']) ? $request['total_time'] : false;
+}

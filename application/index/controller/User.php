@@ -62,7 +62,7 @@ class User extends Frontend
         $list = model('Host')::all();
         if($list){
             foreach ($list as $value) {
-                $value->domain = model('Domain')->where(['status'=>'normal','vhost_id'=>$value->id])->select();
+                $value->domain = model('Domainlist')->where(['status'=>'normal','vhost_id'=>$value->id])->select();
                 $value->statusStr = model('Host')->status($value->status);
             }
         }

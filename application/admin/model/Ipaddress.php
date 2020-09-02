@@ -49,4 +49,17 @@ class Ipaddress extends Model
         return $this->belongsTo('Ippools', 'ippools_id', 'id', [], 'LEFT');
     }
 
+    /**
+     * 随机抽选IP数
+     *
+     * @param [type] $ippools_id
+     * @return void
+     */
+    public function getRandId($ippools_id,$num = 1){
+        $list = $this->where(['ippools_id'=>$ippools_id,'status'=>'normal'])->column('id,ip');
+        $list_rand = array_rand($list,$num);
+        $ip_id_list = array_values($list_rand);
+        return $list_rand;
+    }
+
 }

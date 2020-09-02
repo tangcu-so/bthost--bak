@@ -1048,7 +1048,7 @@ class Btaction
         }
     }
 
-    // 宝塔面板日志
+    // 宝塔面板日志列表
     public function panelLogs(){
         $los = $this->btAction->getPanelLogs();
         if(!$los){

@@ -150,6 +150,81 @@
         padding: 30px 0;
     }
 </style>
+<style type="text/css">
+    .ico-centos{
+		background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAPCAMAAADjyg5GAAAAA3NCSVQICAjb4U/gAAAASFBMVEX///9mZmZmZmZiYmJaWlpYWFhmZmZiYmJgYGBmZmZgYGBmZmZiYmJmZmZiYmJmZmZiYmJmZmZmZmZmZmZmZmZmZmZmZmZmZmbwNFvuAAAAGHRSTlMAESIiIiIzMzNERFVVZmZ3d4iZqrvM3f93YyfbAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAFnRFWHRDcmVhdGlvbiBUaW1lADA4LzE3LzE4mkUBfQAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAAB6SURBVAiZVY5ZEsIwDEMdUpYQghIv9f1vWpNCp/hH1oz1LKI5if5G5ezuzLff7ibO7KK+H2LaBp1WDMLcYDNf3A31CXMvRCy995rSK0SExhjAkh/XEK5E2YOCN5r75RNGUJgtZJLXoMQjw/ot2LR3baJHSbN8Ll3LrhtQxAfrvVHLpQAAAABJRU5ErkJggg==);
+	    background-repeat: no-repeat;
+	    padding-left: 20px;
+	    /*vertical-align:middle;*/
+	}
+    .ico-windows{
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAA3NCSVQICAjb4U/gAAAALVBMVEX///+ZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZny8jBSAAAAD3RSTlMAESIzRFVmd4iZqrvM7v/Y8bBbAAAACXBIWXMAAA7DAAAOwwHHb6hkAAAAFnRFWHRDcmVhdGlvbiBUaW1lADA4LzE2LzE4IvlmGAAAABx0RVh0U29mdHdhcmUAQWRvYmUgRmlyZXdvcmtzIENTNui8sowAAABGSURBVAiZY2AAAkbTqrMMDEJuHvfevXvHcPbdu+53IMY7Ihi7d+9O7QACBiB2BTOAol0wNbgY59696wQzGFQqw8GWwpwBAGURWs03JAEWAAAAAElFTkSuQmCC);
+        background-repeat: no-repeat;
+        /* background-position: 0 2px; */
+        padding-left: 20px;
+    }
+	#btAction span{
+		margin: 0 10px;
+
+	}
+	#btAction button{
+		margin-bottom: 5px;
+	}
+	ul.webInfo-list{
+		display: inline-block;
+	    padding-left: 0;
+	    width: 100%;
+	    margin-bottom: 0;
+	}
+	ul.webInfo-list > li{
+		width: 32% !important;
+		border-right: 1px solid #eaeaea;
+		display: inline-block;
+		text-align: center;
+		list-style: none;
+	}
+    .serverNet{
+        padding-bottom: 10px;
+    }
+	ul.serverNet-list{
+		display: inline-block;
+	    padding-left: 0;
+	    width: 100%;
+	    margin-bottom: 0;
+	}
+	ul.serverNet-list > li{
+		width: 23% !important;
+		/* border-right: 1px solid #eaeaea; */
+		display: inline-block;
+		text-align: center;
+		list-style: none;
+	}
+	.webInfo{
+		margin-bottom: 20px;
+	}
+	.serverInfo p{
+		font-size: 16px;
+	}
+    .ispro{
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADsAAAAUCAMAAAAEAbViAAAAA3NCSVQICAjb4U/gAAABXFBMVEX///+7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAC7jAD////+/fv+/fr8+vX8+vP69uv38eD28N3179v07NXz69Lz6tHz6c/x6Mzv48Pu48Hr3rX74jnq27D54Djp2av43zfo16fo2Kj33TX33Tbm1aLl1Z/12Tbl057z1zLk0Znj0Jfx1DDizpPu0DPv0S7fyIbqzCroyC/cxH3oySjawXXZv3DkwyTYvWzivyzXu2jWumXevCDUtVzctinathzSslXSs1bRsVHRsVLWsBjVrSbNqkPTrBXLqD3PpCLJozTOphHIozLIojDIoS/HoCzKoQ7GninGnyrFnifJnB/FnCTFnSbEmiDEmyLFmQnCmBvBlxjBlhbBlRXAlRPCkhy/kxDAkwW+kQq9kAi9jwa9jwK9jQC8jgS8jQO8ihm7jAC2gRWweBKpbw+jZgydXgnhk9RtAAAAdHRSTlMAESIzRFVmd4iZqrvM3e7//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wol0KMAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAWdEVYdENyZWF0aW9uIFRpbWUAMDUvMzEvMTikOWwBAAAAHHRFWHRTb2Z0d2FyZQBBZG9iZSBGaXJld29ya3MgQ1M26LyyjAAAAg5JREFUOI2dlGlz0zAQhhUHJ45jST2gXKUVR4BijmKKCwX1CKcKLoVQcCmFYgcSjqiy8/9nWCtOJvlEwusZe3Q80rurlRFCyLDsSi7bMtAkKlSlU602W61o+3VDvrnOxlTGliUxkdFcfRjN0aWm3ByXBdgglaqN7N2pmb2t6edba0e3xmctBxWxjecoPfPh2afTtPGkN+J6/2SLxC6ajrQvLC4uPJXvLs6/aC7rkZD35/Awb8RMMc5FGAc9FktMiJS42W5HX+SP6Nv+n13GlFJdlWmEVfCkYcD9fF9MTNO0iHX15o3aRnTncq0W7WcDQvQmeEHO1rlm1ZBnw6lAvrBJQY+3s9fOPSbCMA21BEvdHnvssa7qCm3Hz3N1gpQRsu1ZSk8drFC60nrAmM/DmGv5LAg06yVM75mF0fFyFpWkiUrEoHTx6wKt/d7U/R2hUZjkppoFBxCrYCrkfd9ZcVSkUcAlOrW+Q8+3X13S/SIzHHeFXiZjlctYwiFevwNrDdgCdsD09OzbtZmPh9d6/QFQbiJGzsgFksM5Zcv0WVSUlumcPHdwdv3Xcp5DF5KVowMWvioW7nHKh1gIuYznlxq35aOhshFJCBvEaqC4ztKkntQ9FQ+xEDK5u3r08+Vo0dVHm3Ayvu9nhr1htuDIvc/y/RU2ifqX2MBSHo59g0ZZZJLv9/8ThXyZE/1tQH8B/ly2lqVFKXEAAAAASUVORK5CYII=");
+        background-repeat:no-repeat;
+        padding:2px 0 2px 64px;
+        margin-right:5px;
+        cursor:pointer;
+    }
+    .notpro{
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADsAAAAUCAMAAAAEAbViAAAAA3NCSVQICAjb4U/gAAAA51BMVEX////6+vr4+Pj29vbx8fHu7u7r6+vp6eno6Ojl5eXk5OTj4+Pi4uLf39/e3t7d3d3b29vU1NTT09PNzc3Ly8vIyMjFxcXDw8PAwMC+vr67u7u6urq5ubm4uLi3t7e2tra0tLSzs7OysrKxsbGvr6+srKyrq6upqamoqKikpKSjo6OgoKCfn5+enp6dnZ2cnJybm5uampqZmZmYmJiXl5eWlpaVlZWTk5OSkpKQkJCPj4+NjY2MjIyLi4uKioqIiIiHh4eGhoaFhYWDg4OCgoKBgYGAgIB/f39+fn59fX14eHh0dHT///9HdDDXAAAATXRSTlP/////////////////////////////////////////////////////////////////////////////////////////////////////ANNqEYAAAAAJcEhZcwAADpwAAA6cAQeUU90AAAAcdEVYdFNvZnR3YXJlAEFkb2JlIEZpcmV3b3JrcyBDUzbovLKMAAAAFnRFWHRDcmVhdGlvbiBUaW1lADA1LzMxLzE4pDlsAQAAAeZJREFUOI2VlH1XmzAUxjNbZutxL2hnXeiGA1kiNdspbJlEC9FmLtD7/T/PkkC78tfw4Rw4IfeXPDf3AgIALyBRJxJ4MFgIYLTU+XJZbTYluVnp4jMeKMvOtfTBq84/lAAnlV4OZTECT0ZLAoQB5AuIFhcPX4azQQ5TQYQxgLKrnwhWq3YmjP/LTiWZ+rkmr8bjoyv93UNR1UKc7mIo7wYFVphSxousZYUWUmotKqVKoZ/Kkj8zjJVSW2XVY5W5Gp7RpNtXSN/3Axkcn55OPpZvX08mJbcTjLUBcdaxKXWsOvDs5ZGpsPBtwebE3m6vMeO84U4MN2HLPsZ4q7bM2Um6s3on5wDEUnB3BnC2IRgnlBfUKcFZ5ti4xm5Pm8Y67liYaR9m0vTT+P4IJr/b+q6ZQ01Q2DjWODC5Mqw43fk2LETaG4kZwOUtQoov3HtmDRdb5paxrAoxrqnJN1lT/o8didyZ/naBflRdS2aGCmvWq1FoSGrqZJfZsTDVgZ8DukOXf3YNEZrD6tA9a56qYOFjQw9Yk/JcoJPVG31z0Das5maDQu1VpLip0zqNVXHAmpTl+/OH57zfdGl/aCqTJIk1HB+yo1znv/T9J/wSdazpDq2rwV9QnwVfbr6+DIU9CzN/+N+m1V+TNr+ixpmAWwAAAABJRU5ErkJggg==");
+        background-repeat:no-repeat;
+        padding:2px 0 2px 64px;
+        margin-right:5px;
+        cursor:pointer;
+    }
+
+    .webInfo-list li{
+        border-radius: 70px;
+        padding-bottom: 10px;
+    }
+</style>
 <div class="panel panel-default panel-intro">
     <div class="panel-heading">
         {:build_heading(null, false)}
@@ -161,210 +236,339 @@
     <div class="panel-body">
         <div id="myTabContent" class="tab-content">
             <div class="tab-pane fade active in" id="one">
-
                 <div class="row">
-                    <div class="col-sm-3 col-xs-6">
-                        <div class="sm-st clearfix">
-                            <span class="sm-st-icon st-red"><i class="fa fa-users"></i></span>
-                            <div class="sm-st-info">
-                                <span>{$totaluser}</span>
-                                {:__('Total user')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-6">
-                        <div class="sm-st clearfix">
-                            <span class="sm-st-icon st-violet"><i class="fa fa-book"></i></span>
-                            <div class="sm-st-info">
-                                <span>{$totalviews}</span>
-                                {:__('Total view')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-6">
-                        <div class="sm-st clearfix">
-                            <span class="sm-st-icon st-blue"><i class="fa fa-shopping-bag"></i></span>
-                            <div class="sm-st-info">
-                                <span>{$totalorder}</span>
-                                {:__('Total order')}
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-3 col-xs-6">
-                        <div class="sm-st clearfix">
-                            <span class="sm-st-icon st-green"><i class="fa fa-cny"></i></span>
-                            <div class="sm-st-info">
-                                <span>{$totalorderamount}</span>
-                                {:__('Total order amount')}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-lg-8">
-                        <div id="echart" class="btn-refresh" style="height:200px;width:100%;"></div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="card sameheight-item stats">
-                            <div class="card-block">
-                                <div class="row row-sm stats-container">
-                                    <div class="col-xs-6 stat-col">
-                                        <div class="stat-icon"><i class="fa fa-rocket"></i></div>
-                                        <div class="stat">
-                                            <div class="value"> {$todayusersignup}</div>
-                                            <div class="name"> {:__('Today user signup')}</div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-success" style="width: 30%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6 stat-col">
-                                        <div class="stat-icon"><i class="fa fa-shopping-cart"></i></div>
-                                        <div class="stat">
-                                            <div class="value"> {$todayuserlogin}</div>
-                                            <div class="name"> {:__('Today user login')}</div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-success" style="width: 25%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6  stat-col">
-                                        <div class="stat-icon"><i class="fa fa-line-chart"></i></div>
-                                        <div class="stat">
-                                            <div class="value"> {$todayorder}</div>
-                                            <div class="name"> {:__('Today order')}</div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-success" style="width: 25%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6  stat-col">
-                                        <div class="stat-icon"><i class="fa fa-users"></i></div>
-                                        <div class="stat">
-                                            <div class="value"> {$unsettleorder}</div>
-                                            <div class="name"> {:__('Unsettle order')}</div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-success" style="width: 25%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6  stat-col">
-                                        <div class="stat-icon"><i class="fa fa-list-alt"></i></div>
-                                        <div class="stat">
-                                            <div class="value"> {$sevendnu}</div>
-                                            <div class="name"> {:__('Seven dnu')}</div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-success" style="width: 25%"></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-xs-6 stat-col">
-                                        <div class="stat-icon"><i class="fa fa-dollar"></i></div>
-                                        <div class="stat">
-                                            <div class="value"> {$sevendau}</div>
-                                            <div class="name"> {:__('Seven dau')}</div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar progress-bar-success" style="width: 25%"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row" style="margin-top:15px;">
-
-                    <div class="col-lg-12">
-                    </div>
-                    <div class="col-xs-6 col-md-3">
+                    <div class="col-sm-6 col-lg-3">
                         <div class="panel bg-blue">
                             <div class="panel-body">
                                 <div class="panel-title">
-                                    <span class="label label-success pull-right">{:__('Real time')}</span>
-                                    <h5>{:__('Category count')}</h5>
+                                    <span class="label label-success pull-right">实时</span>
+                                    <h5>负载状态</h5>
                                 </div>
                                 <div class="panel-content">
-                                    <h1 class="no-margins">1234</h1>
-                                    <div class="stat-percent font-bold text-gray"><i class="fa fa-commenting"></i> 1234</div>
-                                    <small>{:__('Category count tips')}</small>
+                                    <h1 class="no-margins" id="loadOne">Loading……</h1>
+                                    <small id="loadStatus">Loading……</small>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xs-6 col-md-3">
-                        <div class="panel bg-aqua-gradient">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="panel bg-teal-gradient">
                             <div class="panel-body">
-                                <div class="ibox-title">
-                                    <span class="label label-info pull-right">{:__('Real time')}</span>
-                                    <h5>{:__('Attachment count')}</h5>
+                                <div class="panel-title">
+                                    <span class="label label-success pull-right">实时</span>
+                                    <h5>CPU使用率</h5>
                                 </div>
-                                <div class="ibox-content">
-                                    <h1 class="no-margins">1043</h1>
-                                    <div class="stat-percent font-bold text-gray"><i class="fa fa-modx"></i> 2592</div>
-                                    <small>{:__('Attachment count tips')}</small>
+                                <div class="panel-content">
+                                    <h1 class="no-margins" id="cpu1">{$GetSystemTotal.cpuNum}核心</h1>
+                                    <small id="cpu0">Loading……</small>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-xs-6 col-md-3">
+                    <div class="col-sm-6 col-lg-3">
                         <div class="panel bg-purple-gradient">
                             <div class="panel-body">
-                                <div class="ibox-title">
-                                    <span class="label label-primary pull-right">{:__('Real time')}</span>
-                                    <h5>{:__('Article count')}</h5>
+                                <div class="panel-title">
+                                    <span class="label label-success pull-right">实时</span>
+                                    <h5>内存使用率</h5>
                                 </div>
-                                <div class="ibox-content">
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h1 class="no-margins">1234</h1>
-                                            <div class="font-bold"><i class="fa fa-commenting"></i>
-                                                <small>{:__('Comment count')}</small>
+                                <div class="panel-content">
+                                    <h1 class="no-margins" id="mem">Loading……</h1>
+                                    <small id="memBfb">Loading……</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {volist name="GetDiskInfo" id="disk"}
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="panel bg-red-gradient">
+                            <div class="panel-body">
+                                <div class="panel-title">
+                                    <span class="label label-success pull-right">实时</span>
+                                    <h5>{$disk.path}</h5>
+                                </div>
+                                <div class="panel-content">
+                                    <h1 class="no-margins">{$disk.size['1']}/{$disk.size['0']}</h1>
+                                    <small id="memBfb">{$disk.size['3']}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/volist}
+                </div>
+                <div class="row">
+                    <div class="panel">
+                        <div class="panel-heading">
+                            <h6>
+                                {if $isWindows}<span class="ico-windows"></span>{else/}<span class="ico-centos"></span>{/if}
+                                {$GetSystemTotal.system} (Bt.Ver:{$GetSystemTotal.version}) {if isset($GetSoftList.pro)&&$GetSoftList.pro!='-1'}<span class="ispro">到期时间：<span style="color: #fc6d26;font-weight: bold;margin-right:5px">{if $GetSoftList.pro=='0'}永久授权{else/}{$GetSoftList.pro|date="Y-m-d",###}{/if}</span></span>{else/}<span class="notpro">免费版</span>{/if}
+                                <span>不间断运行：{$GetSystemTotal.time}</span>
+                            </h6>
+                        </div>
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="row">
+                                    <div class="col-sm-3 col-xs-6">
+                                        <div class="sm-st clearfix">
+                                            <span class="sm-st-icon st-red"><i class="fa fa-users"></i></span>
+                                            <div class="sm-st-info">
+                                                <span>{$totaluser|default="0"}</span>
+                                                {:__('Total user')}
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <h1 class="no-margins">6754</h1>
-                                            <div class="font-bold"><i class="fa fa-heart"></i>
-                                                <small>{:__('Like count')}</small>
+                                    </div>
+                                    <div class="col-sm-3 col-xs-6">
+                                        <div class="sm-st clearfix">
+                                            <span class="sm-st-icon st-violet"><i class="fa fa-book"></i></span>
+                                            <div class="sm-st-info">
+                                                <span>{$hostCount|default="0"}</span>
+                                                {:__('Total web')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-xs-6">
+                                        <div class="sm-st clearfix">
+                                            <span class="sm-st-icon st-blue"><i class="fa fa-shopping-bag"></i></span>
+                                            <div class="sm-st-info">
+                                                <span>{$ftpCount|default="0"}</span>
+                                                {:__('Total ftp')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-3 col-xs-6">
+                                        <div class="sm-st clearfix">
+                                            <span class="sm-st-icon st-green"><i class="fa fa-cny"></i></span>
+                                            <div class="sm-st-info">
+                                                <span>{$sqlCount|default="0"}</span>
+                                                {:__('Total sql')}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                            
+                            <div class="text-center" id="btAction">
+                                <button class="btn btn-default" id="default" type="button">
+                                    修改默认页
+                                </button>
+                                <button class="btn btn-default" id="Recycle" type="button">
+                                    回收站清理
+                                </button>
+                                <!-- <button class="btn btn-default" id="CloseLogs" type="button">
+                                    日志删除
+                                </button> -->
+                                <button class="btn btn-default" id="update"  type="button">
+                                    更新面板
+                                </button>
+                                <button class="btn btn-default" id="re_panel" type="button">
+                                    修复面板
+                                </button>
+                                <button class="btn btn-default" id="reWeb"  type="button">
+                                    重启面板
+                                </button>
+                                <button class="btn btn-default" id="RestartServer" type="button">
+                                    重启服务器
+                                </button>
                             </div>
                         </div>
                     </div>
-                    <div class="col-xs-6 col-md-3">
-                        <div class="panel bg-green-gradient">
-                            <div class="panel-body">
-                                <div class="ibox-title">
-                                    <span class="label label-primary pull-right">{:__('Real time')}</span>
-                                    <h5>{:__('News count')}</h5>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="serverNet">
+                        <ul class="serverNet-list">
+                            <li>
+                                <a href="javascript:;">
+                                    <h6 id="netUp">21.43kb</h6>
+                                    <span>
+                                        {:__('Net up')}
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:;">
+                                    <h6 id="netDown">2.04kb</h6>
+                                    <span>
+                                        {:__('Net down')}
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:;">
+                                    <h6 id="downTotal">4.74MB</h6>
+                                    <span>
+                                        总发送
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="javascript:;">
+                                    <h6 id="upTotal">42.22MB</h6>
+                                    <span>
+                                        总接收
+                                    </span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div id="echart" class="btn-refresh" style="height:200px;width:100%;"></div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card sameheight-item stats">
+                        <div class="card-block">
+                            <div class="row row-sm stats-container">
+                                <div class="col-xs-6 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> {$todayusersignup}</div>
+                                        <div class="name"> {:__('Today user login')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
+                                    </div>
                                 </div>
-                                <div class="ibox-content">
-
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h1 class="no-margins">5302</h1>
-                                            <div class="font-bold"><i class="fa fa-commenting"></i>
-                                                <small>{:__('Comment count')}</small>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h1 class="no-margins">8205</h1>
-                                            <div class="font-bold"><i class="fa fa-user"></i>
-                                                <small>{:__('Like count')}</small>
-                                            </div>
-                                        </div>
+                                <div class="col-xs-6 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> {$auditCount}</div>
+                                        <div class="name"> {:__('Total audit')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-warning" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> {$endtime7Count}</div>
+                                        <div class="name"> {:__('Total endtime 7')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-6 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> {$endCount}</div>
+                                        <div class="name"> {:__('Total endtime')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="box box-danger">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">{:__('公告')}</h3>
+                            <!-- <div class="box-tools pull-right">
+                                <a href="https://bbs.btye.net" target="_blank" class="text-info">更多内容 <i
+                                        class="fa fa-plus"></i> </a>
+                            </div> -->
+                        </div>
+                        <div class="box-body">
+                            广而告之
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="box box-warning">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">面板操作日志</h3>
+                        </div>
+                        <div class="box-body">
+                            <div class="table-responsive">
+                                <table class="table table-condensed table-striped table-hover table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>用户</th>
+                                            <th>类型</th>
+                                            <th>详情</th>
+                                            <th>操作时间</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {volist name="logsList" id="log"}
+                                        <tr>
+                                            <td>{$log.username}</td>
+                                            <td>{$log.type}</td>
+                                            <td>{$log.log}</td>
+                                            <td>{$log.addtime}</td>
+                                        </tr>
+                                        {/volist}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="box box-info">
+                        <div class="box-header">
+                            <h3 class="box-title">{:__('Server info')}</h3>
+                        </div>
+                        <div class="box-body" style="padding-top:0;">
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td>{:__('系统版本')}</td>
+                                        <td>{$btyversion|default=""} <a href="javascript:;"
+                                                class="btn btn-xs btn-checkversion">检查最新版</a> | <a
+                                                href="javascript:;" class="btn btn-xs btn-testing">节点检测</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td width="140">{:__('FastAdmin version')}</td>
+                                        <td>{$Think.config.fastadmin.version}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Thinkphp version')}</td>
+                                        <td>{:THINK_VERSION}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Logs file')}</td>
+                                        <td>{:formatBytes($logsSize)} <a href="javascript:;"
+                                                class="btn btn-xs btn-clearlogs">{:__('Wipe logs')}</a></td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Debug mode')}</td>
+                                        <td>{$Think.config.app_debug?__('Yes'):__('No')}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Software')}</td>
+                                        <td>{$Think.server.SERVER_SOFTWARE}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Upload mode')}</td>
+                                        <td>{$uploadmode}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Upload url')}</td>
+                                        <td>{$config.upload.uploadurl}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Timezone')}</td>
+                                        <td>{:date_default_timezone_get()}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Cdn url')}</td>
+                                        <td>__CDN__</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('Language')}</td>
+                                        <td>{$config.language}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
             </div>
             <div class="tab-pane fade" id="two">
                 <div class="row">

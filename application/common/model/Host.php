@@ -120,7 +120,7 @@ class Host extends Model
      * @return void
      */
     public function doamin_analysis($domain,$value,$sub_domain){
-        $domain_find = model('Domainlist')->where(['domain'=>$domain,'status'=>'normal'])->find();
+        $domain_find = model('Domain')->where(['domain'=>$domain,'status'=>'normal'])->find();
         if(!$domain_find){
             return '域名不存在';
         }

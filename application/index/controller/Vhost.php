@@ -321,7 +321,7 @@ class Vhost extends Frontend
         // 剩余可绑定数
 
         // 获取未审核的域名
-        $auditList = model('domain')->where(['audit'=>0])->select();
+        $auditList = model('Domainlist')->where(['audit'=>0])->select();
 
         $count = count($domainList) -1 + count($dirList['binding']) + count($auditList);
         $sys = $this->hostInfo->domain_max - $count;
@@ -347,7 +347,7 @@ class Vhost extends Frontend
             $domain_list = trim($post_str['domain']);
             $domain_arr  = explode("\n", $domain_list);
 
-            $block = model('domain')->where(['status' => 'normal'])->select();
+            $block = model('Domainlist')->where(['status' => 'normal'])->select();
             if ($block) {
                 foreach ($domain_arr as $k1 => $v1) {
                     foreach ($block as $k2 => $v2) {
@@ -376,7 +376,7 @@ class Vhost extends Frontend
             if (count($domain_arr)-1 >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != '0') {
                 $this->error('绑定失败：已超出可用域名绑定数1');
             }
-            $domainCount = model('domain')->where('vhost_id', $this->vhost_id)->count();
+            $domainCount = model('Domainlist')->where('vhost_id', $this->vhost_id)->count();
 
             // 计算当前传递的域名与现有的域名总和是否超出
             // if (($this->hostInfo['domain_max'] < (count($domain_arr) -1  + $domainCount)) && $this->hostInfo['domain_max'] != '0') {
@@ -433,7 +433,7 @@ class Vhost extends Frontend
                 // }
 
                 // 判断当前绑定域名是否存在数据库中
-                $domain_find = model('domain')->where('domain', $value)->find();
+                $domain_find = model('Domainlist')->where('domain', $value)->find();
                 if ($domain_find) {
                     $this->error('当前域名已被绑定' . $value);
                 }
@@ -467,7 +467,7 @@ class Vhost extends Frontend
                     'dir'         => $post_str['dirs'],
                     'audit'       => $this->hostInfo->is_audit?0:1,
                 ];
-                $add = model('domain')::create($data);
+                $add = model('Domainlist')::create($data);
                 if (!$add) {
                     Db::rollback();
                     $this->error('添加失败，请稍候重试');
@@ -1244,7 +1244,7 @@ class Vhost extends Frontend
         // 上传文件
         if ($type == 'uploadfile') {
             $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
-            if ($this->hostInfo['site_max'] != '0.00' && $websize > $this->hostInfo['site_max']) {
+            if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
                 $this->error('空间大小超出，已停止资源');
             }
 
@@ -2018,7 +2018,13 @@ class Vhost extends Frontend
             // 新版分片上传
             if ($files = request()->file('blob')) {
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
-                if ($this->hostInfo['site_max'] != '0.00' && $websize > $this->hostInfo['site_max']) {
+                $this->hostModel->save([
+                    'site_size'=>$websize,
+                ],['id'=>$this->hostInfo->id]);
+                if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
+                    $this->hostModel->save([
+                        'status'=>'excess',
+                    ],['id'=>$this->hostInfo->id]);
                     $this->error('空间大小超出，已停止资源');
                 }
                 $path     = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '') : '/';
@@ -2135,6 +2141,7 @@ class Vhost extends Frontend
                 return json(['image'=>$images]);
                 // print_r($images);exit;
             }
+            // 批量操作
             if ($type == 'batch') {
                 $path  = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '/';
                 $data  = input('post.data');
@@ -2229,6 +2236,7 @@ class Vhost extends Frontend
                     $this->error('失败');
                 }
             }
+            // 远程下载
             if ($type == 'DownloadFile') {
                 $path      = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '';
                 $mUrl      = input('post.mUrl') ? preg_replace('/([\.]){2,}/', '', input('post.mUrl') . '') : '';
@@ -2241,6 +2249,16 @@ class Vhost extends Frontend
                 }
                 if (!$this->path_root_check($WebGetKey . $path, $WebGetKey)) {
                     $this->error('非法操作');
+                }
+                $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
+                $this->hostModel->save([
+                    'site_size'=>$websize,
+                ],['id'=>$this->hostInfo->id]);
+                if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
+                    $this->hostModel->save([
+                        'status'=>'excess',
+                    ],['id'=>$this->hostInfo->id]);
+                    $this->error('空间大小超出，已停止资源');
                 }
                 $down = $this->btAction->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
                 if ($down && isset($down['status']) && $down['status'] == 'true') {

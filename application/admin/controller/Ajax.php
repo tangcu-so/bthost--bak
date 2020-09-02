@@ -202,6 +202,11 @@ class Ajax extends Backend
                 if ($type == 'addons') {
                     break;
                 }
+            case 'logs':
+                rmdirs(ROOT_PATH . 'logs/', false);
+                if ($type == 'logs') {
+                    break;
+                }
         }
 
         \think\Hook::listen("wipecache_after");
@@ -399,5 +404,25 @@ class Ajax extends Backend
         
         $new_data['total'] = count($new_data['list']);
         return json($new_data);
+    }
+
+    // 获取服务器网络信息
+    public function getNet(){
+        $bt = new Btaction();
+        return $bt->btAction->GetNetWork();
+    }
+
+    // 测试
+    public function testing(){
+        // 检测是否支持curl
+        // 检测对外网络访问
+        // 检测延迟
+        $auths = $auths_back = $ms = 0;
+        if(!extension_loaded('curl')){
+            $curl = 0;
+        }else{
+            $curl = 1;
+        }
+        $this->success('请求成功','',['url'=>Config::get('bty.api_url'),'curl'=>$curl,'ms'=>'0.1ms','baidu'=>getRequestTimes('https://www.baidu.com')]);
     }
 }

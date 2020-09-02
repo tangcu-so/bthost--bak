@@ -50,7 +50,101 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'endtime', title: __('Endtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Status normal'),"stop":__('Status stop'),"locked":__('Status locked'),"expired":__('Status expired'),"excess":__('Status excess'),"error":__('Status error')}, formatter: Table.api.formatter.status},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
+                            buttons: [
+                                {
+                                    name: 'check',
+                                    title: __('检查'),
+                                    text: __('检查'),
+                                    classname: 'btn btn-xs btn-info btn-ajax',
+                                    icon: 'fa fa-exchange',
+                                    url: 'vhostbt/repair',
+                                    confirm: '此操作将会与宝塔面板数据进行同步！',
+                                    success: function (data) {
+                                        console.log(data);
+                                        if (data['btid']['0'] !== data['btid']['1']) {
+                                            console.log(data)
+                                            layer.msg('本地宝塔ID稽核不平，是否修改本地宝塔ID？<br/>云端'+data['btid']['1']+'->本地'+data['btid']['0'], {
+                                                time: 0
+                                                ,btn: ['同步', '取消']
+                                                ,yes: function(index){
+                                                    layer.close(index);
+                                                    layer.load('2');
+                                                    $.post(data.collback_url, { btid: '1'}, function(data, textStatus, xhr) {
+                                                        layer.closeAll('loading');
+                                                        if(data.code==1){
+                                                            layer.msg(data.msg);
+                                                        }else{
+                                                            layer.msg('error:'+data.msg);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }else if(data['edate']['0']!=data['edate']['1']){
+                                            layer.msg('云端主机到期时间不平，是否修改云端主机到期时间？<br/>本地'+data['edate']['0']+'->云端'+data['edate']['1'], {
+                                                time: 0
+                                                ,btn: ['同步', '取消']
+                                                ,yes: function(index){
+                                                    layer.close(index);
+                                                    layer.load('2');
+                                                    $.post(data.collback_url, {edate:'1'}, function(data, textStatus, xhr) {
+                                                        layer.closeAll('loading');
+                                                        if(data.code==1){
+                                                            layer.msg(data.msg);
+                                                        }else{
+                                                            layer.msg('error:'+data.msg);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }else if(data['status']['0']!=data['status']['1']){
+                                            layer.msg('本地主机状态不正确，是否更新本地主机状态？<br/>云端'+data['status']['1']+'->本地'+data['status']['0'], {
+                                                time: 0
+                                                ,btn: ['同步', '取消']
+                                                ,yes: function(index){
+                                                    layer.close(index);
+                                                    layer.load('2');
+                                                    $.post(data.collback_url, {status:'1'}, function(data, textStatus, xhr) {
+                                                        layer.closeAll('loading');
+                                                        if(data.code==1){
+                                                            layer.msg(data.msg);
+                                                        }else{
+                                                            layer.msg('error:'+data.msg);
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }else{
+                                            layer.msg('当前站点与云端一致');
+                                            return false;
+                                        }
+                                    }
+                                },
+                                {
+                                    name: 'check',
+                                    title: __('稽核'),
+                                    text: __('稽核'),
+                                    classname: 'btn btn-xs btn-primary btn-ajax',
+                                    icon: 'fa fa-exchange',
+                                    url: 'vhostbt/repair?websize=1',
+                                    confirm: '该操作将获取该主机在云端使用的主机大小、数据库大小、流量信息（月）',
+                                    success: function (data) {
+                                        table.bootstrapTable('refresh');
+                                        console.log(data);
+                                    },
+                                },
+                                {
+                                    name: 'addtabs',
+                                    text: __('登录'),
+                                    title: __('登录'),
+                                    classname: 'btn btn-xs btn-warning',
+                                    icon: 'fa fa-gears',
+                                    url: 'host/login',
+                                    extend:' target="_blank"'
+                                }
+                            ],
+                            formatter: Table.api.formatter.operate
+                        }
                     ]
                 ]
             });

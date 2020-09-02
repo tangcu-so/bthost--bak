@@ -54,7 +54,7 @@ class Plans extends Model
         // var_dump($plansArr);exit;
         // 域名池，随机抽选一个域名
         if($plansArr['domainpools_id']){
-            $domainArr = model('Domainlist')->where(['domainpools_id'=>$plansArr['domainpools_id'],'status'=>'normal'])->column('id,domain,dnspod');
+            $domainArr = model('Domain')->where(['domainpools_id'=>$plansArr['domainpools_id'],'status'=>'normal'])->column('id,domain,dnspod');
         }else{
             $domainArr = false;
         }

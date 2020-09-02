@@ -26,42 +26,55 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
-                        {field: 'domain', title: __('Domain'),formatter: function (value, row, index) { 
-                            return '<a href="http://'+row.domain+'" target="_blank"  title="点击访问">' + row.domain + '</a>';
-                    }},
-                        {field: 'vhost.bt_name', title: __('Host_id')},
-                        {field: 'domainlist.domain', title: __('Domainlist_id')},
-                        {field: 'dnspod_record', title: __('Dnspod_record')},
-                        // {field: 'dnspod_record_id', title: __('Dnspod_record_id')},
-                        // {field: 'dnspod_domain_id', title: __('Dnspod_domain_id')},
-                        {field: 'dir', title: __('Dir')},
-                        {field: 'audit', title: __('Audit'), searchList: {"0":__('Audit 0'),"1":__('Audit 1'),"2":__('Audit 2')}, formatter: Table.api.formatter.normal},
+                        {field: 'domain', title: __('Domain')},
+                        {field: 'domainpools_id', title: __('Domainpools_id')},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
-                        {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden')}, formatter: Table.api.formatter.status},
+                        {field: 'dnspod', title: __('Dnspod'), searchList: {"0":__('Dnspod 0'),"1":__('Dnspod 1')}, formatter: Table.api.formatter.normal},
+                        {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden'),"locked":__('Locked')}, formatter: Table.api.formatter.status},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
-                        buttons:[
+                            buttons: [
                             {
-                                name: 'ajax',
-                                text: __('审核'),
-                                title: __('审核'),
-                                classname: 'btn btn-xs btn-info btn-ajax',
-                                icon: 'fa fa-magic',
-                                url: 'domain/audit',
-                                refresh:true,
-                                confirm: '审核并绑定该域名？',
-                                success: function (data, ret) {
-                                    table.bootstrapTable('refresh');
+                                name: 'detail',
+                                title: __('域名信息'),
+                                text: __('域名信息'),
+                                classname: 'btn btn-xs btn-primary btn-dialog',
+                                icon: 'fa fa-list',
+                                url: 'domain/detail?info=1',
+                                callback: function (data) {
+                                    Layer.alert("接收到回传数据：" + JSON.stringify(data), {title: "回传数据"});
                                 },
-                                error: function (data, ret) {
-                                    console.log(data, ret);
-                                    Layer.alert(ret.msg);
-                                    return false;
+                                visible: function (row) {
+                                    // console.log(row);
+                                    //返回true时按钮显示,返回false隐藏
+                                    return row.dnspod=='1'?true:false;
                                 }
                             },
-                        ]}
+                            {
+                                name: 'detail',
+                                title: __('域名日志'),
+                                text: __('域名日志'),
+                                classname: 'btn btn-xs btn-info btn-dialog',
+                                icon: 'fa fa-book',
+                                url: 'domain/detail?log=1',
+                                callback: function (data) {
+                                    Layer.alert("接收到回传数据：" + JSON.stringify(data), {title: "回传数据"});
+                                },
+                                visible: function (row) {
+                                    console.log(row.dnspod);
+                                    //返回true时按钮显示,返回false隐藏
+                                    return row.dnspod=='1'?true:false;
+                                }
+                            }],
+                            formatter: Table.api.formatter.operate
+                        }
                     ]
                 ]
+            });
+
+            $(document).on("click", ".btn-config", function () {
+                top.Fast.api.open("domain/config", "dnspod配置"); 
+                // Fast.api.close()
             });
 
             // 为表格绑定事件
@@ -130,6 +143,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Controller.api.bindevent();
         },
         edit: function () {
+            Controller.api.bindevent();
+        },
+        detail: function () {
+            Controller.api.bindevent();
+        },
+        config: function () {
             Controller.api.bindevent();
         },
         api: {

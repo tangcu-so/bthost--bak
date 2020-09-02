@@ -25,27 +25,27 @@ class Domain extends Model
 
     // 追加属性
     protected $append = [
-        'audit_text',
+        'dnspod_text',
         'status_text'
     ];
     
 
     
-    public function getAuditList()
+    public function getDnspodList()
     {
-        return ['0' => __('Audit 0'), '1' => __('Audit 1'), '2' => __('Audit 2')];
+        return ['0' => __('Dnspod 0'), '1' => __('Dnspod 1')];
     }
 
     public function getStatusList()
     {
-        return ['normal' => __('Normal'), 'hidden' => __('Hidden')];
+        return ['normal' => __('Normal'), 'hidden' => __('Hidden'), 'locked' => __('Locked')];
     }
 
 
-    public function getAuditTextAttr($value, $data)
+    public function getDnspodTextAttr($value, $data)
     {
-        $value = $value ? $value : (isset($data['audit']) ? $data['audit'] : '');
-        $list = $this->getAuditList();
+        $value = $value ? $value : (isset($data['dnspod']) ? $data['dnspod'] : '');
+        $list = $this->getDnspodList();
         return isset($list[$value]) ? $list[$value] : '';
     }
 

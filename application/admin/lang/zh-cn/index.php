@@ -38,6 +38,7 @@ return [
     'Wipe content cache'                                         => '清空内容缓存',
     'Wipe template cache'                                        => '清除模板缓存',
     'Wipe addons cache'                                          => '清除插件缓存',
+    'Wipe logs'                                                  => '清除临时目录文件',
     'Check for updates'                                          => '检测更新',
     'Discover new version'                                       => '发现新版本',
     'Go to download'                                             => '去下载更新',

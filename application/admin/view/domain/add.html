@@ -7,48 +7,18 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Host_id')}:</label>
+        <label class="control-label col-xs-12 col-sm-2">{:__('Domainpools_id')}:</label>
         <div class="col-xs-12 col-sm-8">
-            <input id="c-host_id" data-rule="required" data-source="host/index" class="form-control selectpage" name="row[host_id]" type="text" value="">
+            <input id="c-domainpools_id" data-rule="required" data-source="domainpools/index" class="form-control selectpage" name="row[domainpools_id]" type="text" value="">
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Domainlist_id')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-domainlist_id" data-rule="required" data-source="domainlist/index" data-field="domain" class="form-control selectpage" name="row[domainlist_id]" type="text" value="">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod_record')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-dnspod_record" class="form-control" name="row[dnspod_record]" type="text">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod_record_id')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-dnspod_record_id" data-rule="" class="form-control" name="row[dnspod_record_id]" type="number" value="">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod_domain_id')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-dnspod_domain_id" data-rule="" class="form-control" name="row[dnspod_domain_id]" type="number" value="">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Dir')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-dir" class="form-control" name="row[dir]" type="text">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Audit')}:</label>
+        <label class="control-label col-xs-12 col-sm-2">{:__('Dnspod')}:</label>
         <div class="col-xs-12 col-sm-8">
                         
-            <select  id="c-audit" data-rule="required" class="form-control selectpicker" name="row[audit]">
-                {foreach name="auditList" item="vo"}
-                    <option value="{$key}" {in name="key" value="1"}selected{/in}>{$vo}</option>
+            <select  id="c-dnspod" data-rule="required" class="form-control selectpicker" name="row[dnspod]">
+                {foreach name="dnspodList" item="vo"}
+                    <option value="{$key}" {in name="key" value="0"}selected{/in}>{$vo}</option>
                 {/foreach}
             </select>
 

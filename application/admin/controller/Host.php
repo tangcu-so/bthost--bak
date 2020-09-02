@@ -7,6 +7,7 @@ use app\common\library\Btaction;
 use dnspod\Dnspod;
 use fast\Random;
 use think\Db;
+use think\Cookie;
 
 /**
  * 主机管理
@@ -88,7 +89,7 @@ class Host extends Backend
                 if(!$plansInfo){
                     $this->error(model('Plans')->msg);
                 }
-                // var_dump($plansInfo);exit;
+                
                 $bt = new Btaction();
                 
                 $hostSetInfo = $bt->setInfo($params,$plansInfo);
@@ -98,8 +99,7 @@ class Host extends Backend
                     $this->error($bt->_error);
                 }
                 $bt->bt_id = $btId = $btInfo['siteId'];
-                $btName = $hostSetInfo['bt_name'];
-                
+                $btName = $hostSetInfo['bt_name'];                
 
                 Db::startTrans();
 
@@ -133,26 +133,39 @@ class Host extends Backend
                 }
                 
                 // dnspod智能解析
-                if($plansInfo['dnspod']){
-                    // var_dump($plansInfo['ip']);exit;
-                    $sub_domain = $hostSetInfo['domain'];
-                    $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$plansInfo['ip'],$sub_domain);
-                    if(!is_array($domain_jx)){
-                        $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$plansInfo['ip'],$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
-                    }
-                    $dnspod_record = $sub_domain;
-                    $dnspod_record_id = $domain_jx['id'];
-                    $dnspod_domain_id = $domain_jx['domain_id'];
-                }else{
-                    $dnspod_record = '';
-                    $dnspod_record_id = '';
-                    $dnspod_domain_id = '';
-                }
+                // 这里应该不由资源组控制，由资源组中给的域名进行控制
+                // 如果给的是dnspod智能解析 的域名那么就走智能解析
+                // 如果没有走智能解析，那么直接绑定即可
+                // if($plansInfo['dnspod']){
+                //     // 优先解析到系统赠送的域名中，仅限非泛解析
+                //     // 其次解析到指定解析地址，没有指定解析地址
+                //     // 最后是赠送的IP地址，如果没有赠送的IP地址
+                //     // 那么域名不能被智能解析
+                //     if(isset($plansInfo['default_analysis'])&&$plansInfo['default_analysis']){
+                //         $record_type = 'CNAME';
+                //         $analysis = $plansInfo['default_analysis'];
+                //     }else{
+                //         $record_type = 'A';
+                //         $analysis = $plansInfo['ip'];
+                //     }
+                //     $sub_domain = $hostSetInfo['domain'];
+                //     $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$analysis,$sub_domain,$record_type);
+                //     if(!is_array($domain_jx)){
+                //         $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$analysis,$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
+                //     }
+                //     $dnspod_record = $sub_domain;
+                //     $dnspod_record_id = $domain_jx['id'];
+                //     $dnspod_domain_id = $domain_jx['domain_id'];
+                // }else{
+                //     $dnspod_record = '';
+                //     $dnspod_record_id = '';
+                //     $dnspod_domain_id = '';
+                // }
                 
                 // 绑定多ip
                 
                 // 获取信息后存入数据库
-                $inc = model('Host')::create([
+                $host_data = [
                     'user_id'               => $params['user_id'],
                     'sort_id'               => $params['sort_id'],
                     'bt_id'                 => $btId,
@@ -167,11 +180,10 @@ class Host extends Backend
                     'domain_max'            => $plansInfo['domain_num'],
                     'web_back_num'          => $plansInfo['web_back_num'],
                     'sql_back_num'          => $plansInfo['sql_back_num'],
-                    'ip_address'            => $plansInfo['ip'],
+                    'ip_address'            => isset($plansInfo['ipArr'])?$plansInfo['ipArr']:'',
                     'endtime'               => $params['endtime'],
-                ]);
-
-                
+                ];
+                $inc = model('Host')::create($host_data);                
 
                 $vhost_id = $inc->id;
                 if(!$vhost_id){
@@ -191,15 +203,14 @@ class Host extends Backend
                     // 存储sql
                     $sql = model('Sql')::create([
                         'vhost_id'=>$vhost_id,
+                        'database'=>$btInfo['databaseUser'],
                         'username'=>$btInfo['databaseUser'],
                         'password'=>$btInfo['databasePass'],
                     ]);
                 }
-
-                // IP池地址占用
-                model('Ipaddress')->where(['ip'=>$plansInfo['ip'],'ippools_id'=>$plansInfo['ippools_id']])->update(['vhost_id'=>$vhost_id]);
+                
                 // 存入域名信息
-                model('domain')::create([
+                model('Domainlist')::create([
                     'domain'=>$btName,
                     'vhost_id'=>$vhost_id,
                     'domainlist_id'=>$plansInfo['domainlist_id'],
@@ -246,5 +257,24 @@ class Host extends Backend
         // 连接数据库删除相关数据
         
         parent::destroy($ids);
+    }
+
+    // 一键登录主机
+    public function login($ids=null){
+        $hostInfo = $this->model::get($ids);
+        if(!$hostInfo){
+            $this->error('没有找到当前主机');
+        }
+        // 登录用户
+        $userAuth = new \app\common\library\Auth();
+        if(!$userAuth->direct($hostInfo->user_id)){
+            $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
+        }
+        Cookie::set('uid', $userAuth->id);
+        Cookie::set('token', $userAuth->getToken());
+        // cookie切换到主机id
+        Cookie::set('host_id',$hostInfo->id);
+        // 跳转首页控制台
+        return $this->redirect('/');
     }
 }
