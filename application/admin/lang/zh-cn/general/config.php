@@ -70,7 +70,7 @@ return [
     'bt_token'                    => '宝塔密钥',
     'bt_os'                       => '宝塔环境',
     'access_token'                => 'API通信密钥',
-    'que_key'                     => '监控密钥',
+    'queue_key'                   => '监控密钥',
     'api_returnip'                => 'IP允许名单',
     'expire_action'               => '到期动作',
     'recycle_delete'              => '回收站清理',

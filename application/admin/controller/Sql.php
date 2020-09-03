@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use app\common\controller\Backend;
+use app\common\library\Btaction;
 
 /**
  * 数据库
@@ -63,6 +64,22 @@ class Sql extends Backend
     {
         parent::import();
     }
+
+    // 真实删除
+    public function destroy($ids = null){
+        $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
+        if(!$info){
+            $this->error('不存在');
+        }
+        $bt = new Btaction();
+        $bt->sql_name = $info->username;
+        $del = $bt->SqlDelete();
+        if(!$del){
+            $this->error($bt->_error);
+        }
+        parent::destroy($ids);
+    }
+
 
     /**
      * 默认生成的控制器所继承的父类中有index/add/edit/del/multi五个基础方法、destroy/restore/recyclebin三个回收站方法

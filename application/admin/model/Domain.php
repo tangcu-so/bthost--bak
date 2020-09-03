@@ -26,7 +26,8 @@ class Domain extends Model
     // 追加属性
     protected $append = [
         'dnspod_text',
-        'status_text'
+        'status_text',
+        'domain_info',
     ];
     
 
@@ -57,7 +58,8 @@ class Domain extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
-
-
+    public function getDomainInfoAttr($value,$data){
+        return $data['domain']?$data['domain']:'';
+    }
 
 }

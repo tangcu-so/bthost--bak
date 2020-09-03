@@ -1,0 +1,37 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>{:__('执行时间')}</th>
+            <th>{:__('运行时间')}</th>
+            <th>{:__('操作')}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {volist name="row" id="vo" key="k1"}
+        <tr class="info row_tr_click" id="row_tr_{$k1}">
+            <td>{$vo.createtime|date="Y-m-d H:i:s",###}</td>
+            <td>{$vo.call_time}s</td>
+            <td>展开</td>
+        </tr>
+        <thead class="row_tr_{$k1}" style="display: none;">
+            <tr class=" success">
+                <th>{:__('任务名')}</th>
+                <th>{:__('成功')}</th>
+                <th>{:__('失败')}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {volist name="vo['logs']" id="v2"}
+                <tr class="row_tr_{$k1}" style="display: none;">
+                    <td>{:__($key)}</td>
+                    {volist name="v2" id="v3"}
+                    <td>{:json_encode($v3, JSON_UNESCAPED_UNICODE)}</td>
+                    {/volist}
+                </tr>
+            {/volist}
+            </tbody>
+        {/volist}
+    </tbody>
+</table>
+<center>总计{$count|default="0"}条</center>
+<center>{$row->render()}</center>

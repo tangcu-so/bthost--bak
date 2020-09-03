@@ -99,6 +99,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
+                        {field: 'domain_info', title: __('Domain')},
+                        {field: 'dnspod', title: __('dnspod'), searchList: {"0":__('Dnspod 0'),"1":__('Dnspod 1')}, formatter: Table.api.formatter.normal},
                         {
                             field: 'deletetime',
                             title: __('Deletetime'),

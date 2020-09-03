@@ -77,7 +77,7 @@ return [
     'rewrite301'                            => '域名跳转',
     'redir'                                 => '重定向',
     'defaultfile'                           => '默认文件',
-    'rewrite'                               => '伪静态规则',
+    'rewrite'                               => '伪静态',
     'ssl'                                   => 'SSL设置',
     'runPath'                               => '运行目录',
     'sql_console'                           => '数据库管理',

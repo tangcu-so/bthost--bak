@@ -97,6 +97,24 @@ class Domainlist extends Backend
         parent::import();
     }
 
+    // 真实删除
+    public function destroy($ids = null){
+        $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
+        if(!$info){
+            $this->error('不存在');
+        }
+        $hostInfo = model('Host')::get($info->vhost_id);
+        if(!$hostInfo){
+            $this->error('主机不存在');
+        }
+        $bt = new Btaction();
+        $del = $bt->delDomain($hostInfo->bt_id,$hostInfo->bt_name,$info->domain);
+        if(!$del){
+            $this->error($bt->_error);
+        }
+        parent::destroy($ids);
+    }
+
     /**
      * 默认生成的控制器所继承的父类中有index/add/edit/del/multi五个基础方法、destroy/restore/recyclebin三个回收站方法
      * 因此在当前控制器中可不用编写增删改查的代码,除非需要自己控制这部分逻辑

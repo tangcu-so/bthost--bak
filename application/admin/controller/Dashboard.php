@@ -42,8 +42,14 @@ class Dashboard extends Backend
         // 已到期
         $endCount = Model('Host')->where('endtime','<=',time())->count();
 
+        if(empty(Config::get('site.api_token'))||Config::get('site.api_token')==''){
+            $this->error(__('System not initialize'),'');
+        }
 
         $btpanel = new Btaction();
+        if(!$btpanel->test()){
+            $this->error($btpanel->_error,'');
+        }
         $type    = $this->request->post('type');
 
         if ($type == 'clearlogs') {

@@ -54,4 +54,5 @@ return [
     'Total endtime'           => '已到期主机',
     'Logs file'               => '临时文件',
     'Wipe logs'               => '清除临时目录文件',
+    'System not initialize'   => '请先完成系统初始化配置',
 ];

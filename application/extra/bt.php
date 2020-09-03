@@ -102,6 +102,7 @@ return [
     'WebFtpList'            => '/data?action=getData&table=ftps', //获取FTP信息列表
     'SetUserPassword'       => '/ftp?action=SetUserPassword', //修改FTP账号密码
     'SetStatus'             => '/ftp?action=SetStatus', //启用/禁用FTP
+    'DeleteUser'            => '/ftp?action=DeleteUser', //删除FTP
 
     # Sql管理
     'WebSqlList'            => '/data?action=getData&table=databases', //获取SQL信息列表
@@ -110,6 +111,7 @@ return [
     'SQLDelBackup'          => '/database?action=DelBackup', //删除sql备份
     'InputSql'              => '/database?action=InputSql', //备份恢复 数据库导入
     'AddDatabase'           => '/database?action=AddDatabase',//创建数据库
+    'DeleteDatabase'        => '/database?action=DeleteDatabase',//删除数据库
 
     # Mysql工具箱
     'ReTable'               => '/database?action=ReTable', //修复

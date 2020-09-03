@@ -3,6 +3,7 @@
 namespace app\admin\controller;
 
 use app\common\controller\Backend;
+use app\common\library\Btaction;
 
 /**
  * FTP
@@ -62,6 +63,21 @@ class Ftp extends Backend
     public function import()
     {
         parent::import();
+    }
+
+    // 真实删除
+    public function destroy($ids = null){
+        $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
+        if(!$info){
+            $this->error('不存在');
+        }
+        $bt = new Btaction();
+        $bt->ftp_name = $info->username;
+        $del = $bt->FtpDelete();
+        if(!$del){
+            $this->error($bt->_error);
+        }
+        parent::destroy($ids);
     }
 
     /**

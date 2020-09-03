@@ -47,6 +47,42 @@
   .row-flush .m0 {
     color: rgba(255, 255, 255, 0.74);
   }
+  .dis_contents{
+    display:contents;
+  }
+  #v-pills-tabContent i{
+    text-align: center;
+    margin: 0;
+    vertical-align: middle;
+    font-size: 24px;
+    border: 1px solid #eceeef;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    margin-right: 12px;
+    color: rgba(43, 61, 81, 0.7);
+    border-radius: 3px;
+    display: inline-block;
+    transition:all 0.5s ease-out;
+    box-shadow: 2px 2px 1px #f5f8fa;
+  }
+  .div_margin{
+    -webkit-border-radius: 3px;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    background-clip: padding-box;
+    margin-bottom: 10px;
+  }
+  #v-pills-tabContent a:hover i {
+    transition:all 0.5s ease-out;
+    color:#64b0f2;
+    box-shadow: 2px 2px 1px rgba(167, 182, 194, 0.6);
+  }
+  @media screen and (max-width: 500px) {
+    .card .tab-content{
+      padding: unset;
+    }
+  }
 </style>
 {/block}
 {block name="content"}
@@ -212,6 +248,60 @@
             <div class="tab-content" id="v-pills-tabContent">
               <div class="tab-pane fade show active" id="home-pills">
                 <div class="row">
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/domain')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('domain')}" data-url="{:url('index/vhost/domain')}">
+                      <i class="mdi mdi-web"></i> <span style="color:#333333;">{:__('domain')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/pass')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('pass')}" data-url="{:url('index/vhost/pass')}">
+                      <i class="mdi mdi-lock-reset"></i> <span style="color:#333333;">{:__('pass')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/speed')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('speed')}" data-url="{:url('index/vhost/speed')}">
+                      <i class="mdi mdi-rocket"></i> <span style="color:#333333;">{:__('speed')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/rewrite301')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite301')}" data-url="{:url('index/vhost/rewrite301')}">
+                      <i class="mdi mdi-undo-variant"></i> <span style="color:#333333;">{:__('rewrite301')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/redir')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('redir')}" data-url="{:url('index/vhost/redir')}">
+                      <i class="mdi mdi-umbraco"></i> <span style="color:#333333;">{:__('redir')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/defaultfile')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('defaultfile')}" data-url="{:url('index/vhost/defaultfile')}">
+                      <i class="mdi mdi-home"></i> <span style="color:#333333;">{:__('defaultfile')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/rewrite')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite')}" data-url="{:url('index/vhost/rewrite')}">
+                      <i class="mdi mdi-tree"></i> <span style="color:#333333;">{:__('rewrite')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/ssl')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('ssl')}" data-url="{:url('index/vhost/ssl')}">
+                      <i class="mdi mdi-send"></i> <span style="color:#333333;">{:__('ssl')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/runPath')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('runPath')}" data-url="{:url('index/vhost/runPath')}">
+                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('runPath')}</span>
+                    </a>
+                  </div>
+                  {notempty name="hostInfo.sql.username"}
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin">
+                    <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}" {if $phpmyadmin}target="_blank"{/if}>
+                      <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('sql_console')}</span>
+                    </a>
+                  </div>
+                  {/notempty}
+                </div>
+                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/domain')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('domain')}" data-url="{:url('index/vhost/domain')}">
                       <div class="box-placeholder" align="center">
@@ -295,10 +385,27 @@
                     </a>
                   </div>
                   {/notempty}
-                </div>
+                </div> -->
               </div>
               <div class="tab-pane fade" id="files-pills">
                 <div class="row">
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/file')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('file')}" data-url="{:url('index/vhost/file')}">
+                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('file')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/file_ftp')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('file_ftp')}" data-url="{:url('index/vhost/file_ftp')}">
+                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('file_ftp')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/back')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('back')}" data-url="{:url('index/vhost/back')}">
+                      <i class="mdi mdi-clipboard-flow"></i> <span style="color:#333333;">{:__('back')}</span>
+                    </a>
+                  </div>
+                </div>
+                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/file')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('file')}" data-url="{:url('index/vhost/file')}" >
                       <div class="box-placeholder" align="center">
@@ -325,10 +432,32 @@
                       </div>
                     </a>
                   </div>
-                </div>
+                </div> -->
               </div>
               <div class="tab-pane fade" id="security-pills">
                 <div class="row">
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/protection')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('protection')}" data-url="{:url('index/vhost/protection')}">
+                      <i class="mdi mdi-minus-network"></i> <span style="color:#333333;">{:__('protection')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/waf')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('waf')}" data-url="{:url('index/vhost/waf')}">
+                      <i class="mdi mdi-wall"></i> <span style="color:#333333;">{:__('waf')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/dirauth')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('dirauth')}" data-url="{:url('index/vhost/dirauth')}">
+                      <i class="mdi mdi-file-lock-outline"></i> <span style="color:#333333;">{:__('dirauth')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/proof')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('proof')}" data-url="{:url('index/vhost/proof')}">
+                      <i class="mdi mdi-webcam"></i> <span style="color:#333333;">{:__('proof')}</span>
+                    </a>
+                  </div>
+                </div>
+                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/protection')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('protection')}" data-url="{:url('index/vhost/protection')}" >
                       <div class="box-placeholder" align="center">
@@ -361,10 +490,47 @@
                       </div>
                     </a>
                   </div>
-                </div>
+                </div> -->
               </div>
               <div class="tab-pane fade" id="expert-pills">
                 <div class="row">
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/sitelog')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}" data-url="{:url('index/vhost/sitelog')}">
+                      <i class="mdi mdi-chart-bar-stacked"></i> <span style="color:#333333;">{:__('sitelog')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/sitelog')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}" data-url="{:url('index/vhost/sitelog')}">
+                      <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('sitelog')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/httpauth')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('httpauth')}" data-url="{:url('index/vhost/httpauth')}">
+                      <i class="mdi mdi-wan"></i> <span style="color:#333333;">{:__('httpauth')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/deployment')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('deployment')}" data-url="{:url('index/vhost/deployment')}">
+                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('deployment')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/deployment_new')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('deployment_new')}" data-url="{:url('index/vhost/deployment_new')}">
+                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('deployment_new')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/total')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('total')}" data-url="{:url('index/vhost/total')}">
+                      <i class="mdi mdi-chart-pie"></i> <span style="color:#333333;">{:__('total')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/proxy')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('proxy')}" data-url="{:url('index/vhost/proxy')}">
+                      <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('proxy')}</span>
+                    </a>
+                  </div>
+                </div>
+                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/sitelog')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}" data-url="{:url('index/vhost/sitelog')}" >
                       <div class="box-placeholder" align="center">
@@ -421,7 +587,7 @@
                       </div>
                     </a>
                   </div>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -436,36 +602,37 @@
   <!-- START dashboard sidebar-->
   <div class="col-md-3">
     <!-- START activity-->
-    <div class="card card-default">
-      <header class="card-header">
-        <div class="card-title">主机信息</div>
-      </header>
-      <!-- START list group-->
-      <div class="list-group">
-        {notempty name="hostInfo.ip_address"}
-        <div class="list-group-item">
-          <div class="media">
-            <div class="media-body clearfix">
-              <div class="media-heading text-success m0">IP
-                <!-- <a class="float-right badge badge-brown" data-toggle="collapse" href="#ip_list" role="button" aria-expanded="true" aria-controls="ip_list">隐藏</a> -->
-              </div>
-              <div class="collapse multi-collapse show" id="ip_list">
-                {volist name="hostInfo.ip_address" id="ip"}
-                  <span class="badge badge-info">{$ip.ip}</span>
+      {notempty name="hostInfo.ip_address"}
+      <div class="card card-default">
+        <header class="card-header">
+          <div class="card-title">IP</div>
+        </header>
+        <div class="list-group">
+          <div class="list-group-item">
+            <div class="media">
+              <div class="media-body clearfix">
+                <div class="collapse multi-collapse show" id="ip_list">
+                  {volist name="hostInfo.ip_address" id="ip"}
+                    <span class="badge badge-info">{$ip.ip}</span>
                   {/volist}
+                </div>
               </div>
-              
             </div>
           </div>
         </div>
-        {/notempty}
-        <!-- START list group item-->
-        {notempty name="hostInfo.ftp.username"}
+      </div>
+      {/notempty}
+      {notempty name="hostInfo.ftp.username"}
+      <div class="card card-default">
+        <header class="card-header">
+          <div class="card-title dis_contents">
+            FTP 
+            <a href="#!" data-title="在线文件管理" data-url="{:url('index/vhost/file')}" class="badge badge-purple text-white float-right">在线文件管理器</a>
+          </div>
+        </header>
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-purple m0">FTP <a href="#!" data-title="在线文件管理" data-url="{:url('index/vhost/file')}"
-                  class="float-right badge badge-purple js-create-tab">在线文件管理器</a></div>
               <p class="m0">
                 <small>FTP地址：{$Think.config.site.ftp_server|default="请使用IP地址"}</small>
                 <br><small>FTP端口：{$Think.config.site.ftp_port|default="21"}</small>
@@ -479,53 +646,69 @@
             </div>
           </div>
         </div>
-        {/notempty}
-        <!-- END list group item-->
-        <!-- START list group item-->
-        {notempty name="hostInfo.sql.username"}
+      </div>
+      {/notempty}
+      {notempty name="hostInfo.sql.username"}
+      <div class="card card-default">
+        <header class="card-header">
+          <div class="card-title dis_contents">数据库 
+            <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}" class="badge badge-info text-white float-right" target="_blank">phpMyAdmin</a>
+          </div>
+        </header>
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-info m0">数据库 <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}" class="float-right badge badge-info" target="_blank">phpMyAdmin</a>
-              </div>
               <p class="m0">
                 <small>数据库地址：localhost</small><br><small>数据库端口：3306</small><br><small>数据库名：{$hostInfo.sql.database}</small><br><small>数据库用户名：{$hostInfo.sql.username}</small><br><small>数据库密码：<a
-                    onclick="$(this).html($(this).attr('val'))" val="{$hostInfo.sql.password}">*******</a></small> </p>
+                    onclick="$(this).html($(this).attr('val'))" val="{$hostInfo.sql.password}">*******</a></small>
+              </p>
             </div>
           </div>
         </div>
-        {/notempty}
-        <!-- END list group item-->
-        <!-- START list group item-->
+      </div>
+      {/notempty}
+      <div class="card card-default">
+        <header class="card-header">
+          <div class="card-title">主机信息</div>
+        </header>
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
-              <div class="media-heading text-success m0">其他</div>
               <p class="m0">
                 <small>到期时间：{if $hostInfo.endtime}{$hostInfo.endtime|date="Y-m-d H:i",###}{else/}数据有误{/if}</small>
                 <br /><small>环境：{$hostInfo.server_os} + {$serverConfig.webserver|default=""}</small>
                 <br /><small>响应：{:debug('begin','end',6).'s'}</small>
               </p>
               <form action="{:url('index/vhost/phpSet')}" method="POST">
-                <div class="form-inline">
-                  <div class="form-group">
-                    <small for="phpSet">php版本：</small>
-                    <select name="v" id="phpSet" class="form-control form-control-sm">
+                <div class="form-row">
+                  <div class="col-auto my-1">
+                    <div class="custom-control custom-checkbox mr-sm-2">
+                      php版本：
+                    </div>
+                  </div>
+                  <div class="col-auto my-1">
+                    <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Preference</label>
+                    <select name="v" id="phpSet" class="form-control form-control-sm mr-sm-2 custom-select">
                       {volist name="phpversion_list" id="php"}
                       <option value="{$php.version}" id="php_{$php.version}" {$php.version==$phpVer? 'selected' :''}>
                         {$php.name}</option>
                       {/volist}
                     </select>
                   </div>
-                  <div class="form-group">
+                  <div class="col-auto my-1">
                     <input onclick="setPhpVer()" type="button" class="btn btn-outline-warning btn-sm" value="切换" />
                   </div>
-                </div>
-                
+                </div>                
               </form>
             </div>
           </div>
         </div>
+      </div>
+      {notempty name="Think.config.site.main_right_notice"}
+      <div class="card card-default">
+        <header class="card-header">
+          <div class="card-title"></div>
+        </header>
         <div class="list-group-item">
           <div class="media">
             <div class="media-body clearfix">
@@ -533,15 +716,13 @@
             </div>
           </div>
         </div>
-        <!-- END list group item-->
       </div>
+      {/notempty}
       <!-- END list group-->
       <!-- START card footer-->
-      <div class="card-footer clearfix">
-      </div>
+      <!-- <div class="card-footer clearfix"></div> -->
       <!-- END card-footer-->
     </div>
-  </div>
   <!-- END dashboard sidebar-->
 </div>
 {/block}

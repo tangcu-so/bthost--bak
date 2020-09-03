@@ -41,4 +41,7 @@ return [
     'Status error'     => '异常',
     'Audit 0'          => '无需',
     'Audit 1'          => '需要',
+    'Notice'           => '备注',
+    'Resource size'    => '资源使用量(M)',
+    'Resource max'     => '资源大小',
 ];

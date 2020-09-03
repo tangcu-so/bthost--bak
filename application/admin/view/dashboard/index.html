@@ -220,6 +220,14 @@
         cursor:pointer;
     }
 
+    .isltd{
+        background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADsAAAAUCAMAAAAEAbViAAAAA3NCSVQICAjb4U/gAAACB1BMVEVHR0WTgGDNvKBmZmbSrGVSUVDv6uJnTB+WlZVxcHCAakWxlmTf07+3pIRybF5dXVxlUC7pvGmEcVHVzsNra2rHpGWtoIhNTUt8dGijjGL4+PhSRzZYV1aiknjn493gtmltXD97aUtsZFdgYF/ArpBzc3NKSkidh1zz8e1kTimKe1/Lw7W3mmN/bE6gjGy4rJjVr2liXld0WzKIeV3XybJ2cmzFomNNRjtwaVvftWhPT05cSixoVTXj2MbRq2TCuKdVVFOplXVbWllycnKThGhzcGnp4NJoZl+Sfl6qj12BdmFmTCBubW2Pe1v29fNgYFx9cl3Fs5ZiYmG9oGmBeW2gil+LfGGqlGrz8Ou9q42okmizoIBnVDR6cmWEdVne2dCKfmqahmVqWDpWSDJjSySMeFa0l2GDc1fg1MFyYEN3cGPIpmddWldaVlDluWh1alTv7elnYFKvk2K0mmmHe2iTf1xhTClnY12ZmZnTrmdlTyqXhWh0bmDHtplmZmbq4tXPv6RuZlj39vZlTSXVsWi6p4eii2Hi18RoVjl2dXVmTCKLeFhlYVpZSS+yl2ZmUjClj2V/d2p8akzKp2ifiF7Zy7TRrWTTrWdUSDTk2smDeGPp4dO4m2RfW1RORjjGo2SUgV61mGJ3d3VkYmBoVDRoVjZlTyxmTSXgtmppTSCzmWZqVjjLqWg716w8AAAArXRSTlP//////////////////////////////////wD//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////wtcAh4AAAAJcEhZcwAACxIAAAsSAdLdfvwAAAAcdEVYdFNvZnR3YXJlAEFkb2JlIEZpcmV3b3JrcyBDUzbovLKMAAAAFnRFWHRDcmVhdGlvbiBUaW1lADAyLzExLzIwPqjaHgAAAnFJREFUOI2VlPlT00AUx4MNrkYkLoGKz6QIQSFUaYiAFKuEDOIBRFtEQAW1WpWKtXggoTiCjFVQAa/xGMWzXuMf6dse+IMzTvm87+zue/O+M9nsznIAEPcp7iyKLw55wwHYCRJJJDRkZFuKPOHyZM5GbxsxJIhr9ee0TqjWyPKOPPnMQdxwJxRQwnZtoMSuLCmY3JwvHPgi4BEUoRPgTerZ105IbW1Nc2l/a479abFa62E2XR27NoYT5zEUjxQhysvp6cZdJLymqFIrZAzT5ouFWWhaCI9R4+f55pphzDiBCIZBiMD+1SYyOzsb6AqbpnmLvjc/fcCFWWWaNC2Ex3hRZWbhBEOSJJ/hCw4OBh9pG+8Eg1pAHuV5WW6Q++huWY7JMs1oVPbP+Bv6Ps4gMsLFI248YUFiB3ZohA1h6zpNWlYLb1mP+TKr7JhFLVTdTsuKJZN1SZ5PJmMtlmVxcMZoA1CUAYC7i+0A7d9FsVi8jcMrETkqnngnUhHlLxZFVtqCBVYRRTxfL5HAa+B9mv7WCMH5ZRVxptQp6jjOQVX9QlWqqnTKwTJ1NqhLuDpyhTWhF9wkbgtesHvCcHn+fIjhRENRJ5RhKURDIboQZWWMhejSW4clIea1hQh+tD3wsKD29LgrjT7kGtJdOWhayHOXjuGK/UpnzAse4pMiax8s7uv5me3Wy13l/3pvnkRnhatDr+hY8eKW24Si6tR9sqeU8ZSu0K//Xeu9Z0v1G/16b+mBH7+xLePFLRun6ie7Xnf/lyZUU/fxXJr12hESCJC961dF1ou3g5Dx7atiXc4LknFhYm41TNxb8YJXyv+1yfAHY17eGQOJv3UAAAAASUVORK5CYII=");
+        background-repeat:no-repeat;
+        padding:2px 0 2px 64px;
+        margin-right:5px;
+        cursor:pointer;
+    }
+
     .webInfo-list li{
         border-radius: 70px;
         padding-bottom: 10px;
@@ -259,7 +267,7 @@
                                     <h5>CPU使用率</h5>
                                 </div>
                                 <div class="panel-content">
-                                    <h1 class="no-margins" id="cpu1">{$GetSystemTotal.cpuNum}核心</h1>
+                                    <h1 class="no-margins" id="cpu1">{$GetSystemTotal.cpuNum|default="加载中"}核心</h1>
                                     <small id="cpu0">Loading……</small>
                                 </div>
                             </div>
@@ -285,7 +293,7 @@
                             <div class="panel-body">
                                 <div class="panel-title">
                                     <span class="label label-success pull-right">实时</span>
-                                    <h5>{$disk.path}</h5>
+                                    <h5>{$disk.path|default="--"}</h5>
                                 </div>
                                 <div class="panel-content">
                                     <h1 class="no-margins">{$disk.size['1']}/{$disk.size['0']}</h1>
@@ -301,7 +309,28 @@
                         <div class="panel-heading">
                             <h6>
                                 {if $isWindows}<span class="ico-windows"></span>{else/}<span class="ico-centos"></span>{/if}
-                                {$GetSystemTotal.system} (Bt.Ver:{$GetSystemTotal.version}) {if isset($GetSoftList.pro)&&$GetSoftList.pro!='-1'}<span class="ispro">到期时间：<span style="color: #fc6d26;font-weight: bold;margin-right:5px">{if $GetSoftList.pro=='0'}永久授权{else/}{$GetSoftList.pro|date="Y-m-d",###}{/if}</span></span>{else/}<span class="notpro">免费版</span>{/if}
+                                {$GetSystemTotal.system} (Bt.Ver:{$GetSystemTotal.version}) 
+                                {if isset($GetSoftList.pro)&&$GetSoftList.pro!='-1'}
+                                <span class="ispro">到期时间：
+                                    <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
+                                        {if $GetSoftList.pro=='0'}永久授权
+                                        {else/}
+                                        {$GetSoftList.pro|date="Y-m-d",###}
+                                        {/if}
+                                    </span>
+                                </span>
+                                {elseif isset($GetSoftList.ltd)&&$GetSoftList.ltd!='-1'}
+                                <span class="isltd">到期时间：
+                                    <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
+                                        {if $GetSoftList.ltd=='0'}永久授权
+                                        {else/}
+                                        {$GetSoftList.ltd|date="Y-m-d",###}
+                                        {/if}
+                                    </span>
+                                </span>
+                                {else/}
+                                <span class="notpro">免费版</span>
+                                {/if}
                                 <span>不间断运行：{$GetSystemTotal.time}</span>
                             </h6>
                         </div>

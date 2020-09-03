@@ -77,6 +77,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     [
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
+                        {field: 'username', title: __('Username')},
                         {
                             field: 'deletetime',
                             title: __('Deletetime'),

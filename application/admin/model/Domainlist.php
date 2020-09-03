@@ -26,7 +26,8 @@ class Domainlist extends Model
     // 追加属性
     protected $append = [
         'audit_text',
-        'status_text'
+        'status_text',
+        'vhost',
     ];
     
 
@@ -65,6 +66,10 @@ class Domainlist extends Model
 
     public function doma(){
         return $this->belongsTo('Domain', 'domain_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
+
+    public function getVhostAttr($value,$data){
+        return $data['vhost_id']?$this->vhost():$data['vhost_id'];
     }
 
 }

@@ -827,6 +827,25 @@ class Btpanel
     }
 
     /**
+     * 删除数据库
+     *
+     * @param [type] $id        数据库ID
+     * @param [type] $name      数据库名
+     * @return void
+     */
+    public function DeleteDatabase($id,$name){
+        $url = $this->BT_PANEL . config("bt.DeleteDatabase");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id']   = $id;
+        $p_data['name'] = $name;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
      * 获取网站域名列表
      * @param [type]  $id   网站ID
      * @param boolean $list 固定传true
@@ -1669,6 +1688,25 @@ class Btpanel
         $p_data['id']       = $id;
         $p_data['username'] = $username;
         $p_data['status']   = $status;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 删除FTP账号
+     *
+     * @param [type] $id            FTP——ID
+     * @param [type] $username      FTP用户名
+     * @return void
+     */
+    public function DeleteUser($id,$username){
+        $url = $this->BT_PANEL . config("bt.DeleteUser");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id']       = $id;
+        $p_data['username'] = $username;
         $result             = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);

@@ -69,8 +69,9 @@ class Plans extends Model
 
         // IP池，随机抽选一个IP
         $ip = '';
-        if($plansArr['ippools_id']){
-            $ipRandList = model('Ipaddress')->getRandId($plansArr['ippools_id'],10);
+        $ip_num = isset($plansArr['ip_num'])?$plansArr['ip_num']:0;
+        if($plansArr['ippools_id']&&$ip_num){
+            $ipRandList = model('Ipaddress')->getRandId($plansArr['ippools_id'],$ip_num);
             $ipArr = implode(',',$ipRandList);
             if($ipRandList&&isset($ipRandList[0])){
                 $ip = model('Ipaddress')->where('id',$ipRandList[0])->value('ip');
@@ -78,12 +79,10 @@ class Plans extends Model
         }else{
             $ipArr = false;
         }
-        if(!$ipArr){
-            $this->msg = 'IP池中无可用IP';
-            return false;
-        }
-        
 
+        // TODO 获取IP列表用于域名解析
+        model('Ipaddress')::all($ipArr);
+        
         $plansArr['domain'] = $domain;
         $plansArr['ipArr'] = $ipArr;
         $plansArr['ip'] = $ip;

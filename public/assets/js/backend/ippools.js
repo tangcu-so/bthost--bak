@@ -60,6 +60,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
                         {field: 'name', title: __('Name'), align: 'left'},
+                        {field: 'tag', title: __('Tag'), align: 'left'},
+                        {field: 'count', title: __('Count'), align: 'left'},
                         {
                             field: 'deletetime',
                             title: __('Deletetime'),

@@ -82,6 +82,7 @@ class Host extends Backend
     public function add(){
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
+            
             // try {
                 // 读取资源组
                 // 资源组信息转化
@@ -133,9 +134,7 @@ class Host extends Backend
                 }
                 
                 // dnspod智能解析
-                // 这里应该不由资源组控制，由资源组中给的域名进行控制
-                // 如果给的是dnspod智能解析 的域名那么就走智能解析
-                // 如果没有走智能解析，那么直接绑定即可
+                // TODO Dnspod智能解析
                 // if($plansInfo['dnspod']){
                 //     // 优先解析到系统赠送的域名中，仅限非泛解析
                 //     // 其次解析到指定解析地址，没有指定解析地址
@@ -174,7 +173,8 @@ class Host extends Backend
                     'sql_max'               => $plansInfo['sql_max'],
                     'flow_max'              => $plansInfo['flow_max'],
                     'analysis_type'         => $plansInfo['analysis_type'],
-                    'default_analysis'      => $plansInfo['default_analysis'],
+                    // 默认解析地址，如果没有，就指定到赠送的域名
+                    'default_analysis'      => $plansInfo['default_analysis']?$plansInfo['default_analysis']:$hostSetInfo['bt_name'],
                     'is_audit'              => $plansInfo['domain_audit'],
                     'is_vsftpd'             => $plansInfo['vsftpd'],
                     'domain_max'            => $plansInfo['domain_num'],
@@ -210,15 +210,16 @@ class Host extends Backend
                 }
                 
                 // 存入域名信息
-                model('Domainlist')::create([
-                    'domain'=>$btName,
-                    'vhost_id'=>$vhost_id,
-                    'domainlist_id'=>$plansInfo['domainlist_id'],
-                    'dnspod_record'=>$dnspod_record,
-                    'dnspod_record_id'=>$dnspod_record_id,
-                    'dnspod_domain_id'=>$dnspod_domain_id,
-                    'dir'=>'/',
-                ]);
+                // TODO 存放域名信息
+                // model('Domainlist')::create([
+                //     'domain'=>$btName,
+                //     'vhost_id'=>$vhost_id,
+                //     'domainlist_id'=>$plansInfo['domainlist_id'],
+                //     'dnspod_record'=>$dnspod_record,
+                //     'dnspod_record_id'=>$dnspod_record_id,
+                //     'dnspod_domain_id'=>$dnspod_domain_id,
+                //     'dir'=>'/',
+                // ]);
                 
                 Db::commit();
             // } catch (\Exception $ex) {
@@ -234,27 +235,32 @@ class Host extends Backend
 
     // 真实删除
     public function destroy($ids = null){
-        // 获取数据信息
-        $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
-        if(!$info){
-            $this->error('数据不存在');
+        $test = $this->model->destroy_delete($ids);
+        if(!$test){
+            $this->error('销毁失败');
         }
-        if($info->bt_id&&$info->bt_name){
-            // 连接服务器删除站点
-            $bt = new Btaction();
-            $del = $bt->siteDelete($info->bt_id,$info->bt_name);
-            if(!$del){
-                $this->error($bt->_error);
-            }
-        }
-        if($info->is_vsftpd){
-            // 如果有开通vsftpd，也删除
-            // 暂时没有api，后续更新
-        }
-        if($info->user_id){
-            model('User')->where('id',$info->user_id)->delete(true);
-        }
-        // 连接数据库删除相关数据
+        $this->success('销毁成功');
+        // // 获取数据信息
+        // $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
+        // if(!$info){
+        //     $this->error('数据不存在');
+        // }
+        // if($info->bt_id&&$info->bt_name){
+        //     // 连接服务器删除站点
+        //     $bt = new Btaction();
+        //     $del = $bt->siteDelete($info->bt_id,$info->bt_name);
+        //     if(!$del){
+        //         $this->error($bt->_error);
+        //     }
+        // }
+        // if($info->is_vsftpd){
+        //     // 如果有开通vsftpd，也删除
+        //     // 暂时没有api，后续更新
+        // }
+        // // 删除数据库
+        // model('Sql')->where('vhost_id',$info->id)->delete(true);
+        // // 删除FTP
+        // model('Ftp')->where('vhost_id',$info->id)->delete(true);
         
         parent::destroy($ids);
     }

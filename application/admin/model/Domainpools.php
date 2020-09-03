@@ -25,7 +25,8 @@ class Domainpools extends Model
 
     // 追加属性
     protected $append = [
-        'status_text'
+        'status_text',
+        'count',
     ];
     
 
@@ -43,7 +44,8 @@ class Domainpools extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
-
-
+    public function getCountAttr($value,$data){
+        return $data['id']?model('Domain')->where('domainpools_id',$data['id'])->count():0;
+    }
 
 }

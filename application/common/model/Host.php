@@ -10,10 +10,7 @@ use dnspod\Dnspod;
 
 class Host extends Model
 {
-
     use SoftDelete;
-
-    
 
     // 表名
     protected $name = 'host';

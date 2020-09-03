@@ -271,6 +271,29 @@ class Btaction
     }
 
     /**
+     * FTP删除
+     *
+     * @return void
+     */
+    public function FtpDelete(){
+        $id = $this->getFtpInfo('id');
+        if(!$id){
+            $this->setError('id获取有误');
+            return false;
+        }
+        $del = $this->btAction->DeleteUser($id,$this->ftp_name);
+        if(isset($del['status'])&&$del['status']==true){
+            return true;
+        }elseif(isset($del['msg'])){
+            $this->setError($del['msg']);
+            return false;
+        }else{
+            $this->setError('请求失败');
+            return false;
+        }
+    }
+
+    /**
      * 新建网站
      *
      * @param [type] $hostSetInfo
@@ -594,6 +617,29 @@ class Btaction
     }
 
     /**
+     * FTP删除
+     *
+     * @return void
+     */
+    public function SqlDelete(){
+        $id = $this->getSqlInfo('id');
+        if(!$id){
+            $this->setError('id获取有误');
+            return false;
+        }
+        $del = $this->btAction->DeleteDatabase($id,$this->sql_name);
+        if(isset($del['status'])&&$del['status']==true){
+            return true;
+        }elseif(isset($del['msg'])){
+            $this->setError($del['msg']);
+            return false;
+        }else{
+            $this->setError('请求失败');
+            return false;
+        }
+    }
+
+    /**
      * 获取站点信息
      * @Author   Youngxj
      * @DateTime 2019-04-18
@@ -722,12 +768,16 @@ class Btaction
      * @param    [type]     $port    端口
      * @return   [type]              [description]
      */
-    public function delDomain($btId, $webname, $domain, $port)
+    public function delDomain($btId, $webname, $domain, $port='80')
     {
         $del = $this->btAction->WebDelDomain($btId, $webname, $domain, $port);
-        if ($del) {
-            return $del;
+        if (isset($del['status'])&&$del['status']=='true') {
+            return true;
+        }elseif(isset($del['msg'])){
+            $this->setError($del['msg']);
+            return false;
         } else {
+            $this->setError('请求失败');
             return false;
         }
     }

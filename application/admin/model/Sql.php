@@ -25,7 +25,8 @@ class Sql extends Model
 
     // 追加属性
     protected $append = [
-        'status_text'
+        'status_text',
+        'vhost',
     ];
     
 
@@ -47,6 +48,10 @@ class Sql extends Model
     public function vhost()
     {
         return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT');
+    }
+
+    public function getVhostAttr($value,$data){
+        return $data['vhost_id']?$this->vhost():$data['vhost_id'];
     }
 
 }

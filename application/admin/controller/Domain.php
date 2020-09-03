@@ -138,7 +138,7 @@ class Domain extends Backend
         }
         
         if(!$info){
-            $this->error($dnspod->msg);
+            $this->error($dnspod->msg,'');
         }
         
         $this->view->assign("info", $info);

@@ -25,7 +25,8 @@ class Ipaddress extends Model
 
     // 追加属性
     protected $append = [
-        'status_text'
+        'status_text',
+        'ippools'
     ];
     
 
@@ -60,6 +61,10 @@ class Ipaddress extends Model
         $list_rand = array_rand($list,$num);
         $ip_id_list = array_values($list_rand);
         return $list_rand;
+    }
+
+    public function getIppoolsAttr($value, $data){
+        return $data['ippools_id']?model('Ippools')::get($data['ippools_id']):$data['ippools_id'];
     }
 
 }

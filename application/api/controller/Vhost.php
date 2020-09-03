@@ -859,13 +859,14 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->hostModel::get($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $set = $bt->setPs($notice);
-        if(!$set){
-            $this->error($bt->_error);
-        }
+        // 不修改宝塔备注
+        // $bt = new Btaction();
+        // $bt->bt_name = $hostFind->bt_name;
+        // $bt->bt_id = $hostFind->bt_id;
+        // $set = $bt->setPs($notice);
+        // if(!$set){
+        //     $this->error($bt->_error);
+        // }
         $hostFind->notice = $notice;
         $hostFind->save();
         $this->success('修改成功');

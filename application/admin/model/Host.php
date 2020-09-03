@@ -31,7 +31,8 @@ class Host extends Model
         'check_time_text',
         'is_vsftpd_text',
         'endtime_text',
-        'status_text'
+        'status_text',
+        'user',
     ];
     
 
@@ -111,6 +112,10 @@ class Host extends Model
         return $this->belongsTo('User', 'user_id', 'id', [], 'LEFT');
     }
 
+    public function getUserAttr($value,$data){
+        return $data['user_id']?$this->user():$data['user_id'];
+    }
+
     /**
      * 域名解析
      *
@@ -154,5 +159,37 @@ class Host extends Model
     public function getFtpInfo($value, $data)
     {
         return Ftp::get(['vhost_id' => $data['id']]);
+    }
+
+    /**
+     * 主机删除
+     *
+     * 删除FTP、SQL记录
+     * @param [type] $id        主机ID
+     * @return void
+     */
+    public function destroy_delete($id){
+        $info = $this::onlyTrashed()->where(['id'=>$id])->find();
+        if(!$info){
+            return false;
+        }
+        if($info->bt_id&&$info->bt_name){
+            $bt = new Btaction();
+            $del = $bt->siteDelete($info->bt_id,$info->bt_name);
+            if(!$del){
+                return false;
+            }
+        }
+        if($info->is_vsftpd){
+            // 如果有开通vsftpd，也删除
+            // 暂时没有api，后续更新
+        }
+        $info->delete(true);
+        // 删除数据库
+        model('Sql')->where('vhost_id',$info->id)->delete(true);
+        // 删除FTP
+        model('Ftp')->where('vhost_id',$info->id)->delete(true);
+        
+        return true;
     }
 }
