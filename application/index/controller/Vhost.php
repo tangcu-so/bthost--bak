@@ -1602,6 +1602,7 @@ class Vhost extends Frontend
         }
         // 文件下载FTP
         if (input('get.downfile')) {
+            // TODO 下载文件出现乱码
             $file = input('get.downfile');
 
             $arr = explode('/', $file);
@@ -2017,6 +2018,7 @@ class Vhost extends Frontend
             }
             // 新版分片上传
             if ($files = request()->file('blob')) {
+                // TODO 中文上传失败
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
                 $this->hostModel->save([
                     'site_size'=>$websize,
@@ -2238,6 +2240,7 @@ class Vhost extends Frontend
             }
             // 远程下载
             if ($type == 'DownloadFile') {
+                // TODO 下载后文件权限为root，可能存在安全隐患
                 $path      = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '';
                 $mUrl      = input('post.mUrl') ? preg_replace('/([\.]){2,}/', '', input('post.mUrl') . '') : '';
                 $dfilename = input('post.dfilename') ? preg_replace('/([\.]){2,}/', '', input('post.dfilename') . '') : '';

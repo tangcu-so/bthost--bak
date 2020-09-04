@@ -27,13 +27,15 @@
                         <input type="button" value="增加" class="btn btn-warning" onclick="incDomain()">
                     </div>
                     <small class="text-muted">
-                        <span style="color:red">！</span> {notempty
-                        name="hostInfo.analysis_type"}{$hostInfo.analysis_type}{else/}增加域名绑定，域名在添加绑定之前请先解析域名解析指向{/notempty}
-                        {if $hostInfo.default_analysis}{$hostInfo.default_analysis}{else/}IP地址{/if} <br>
-                        <span class="text-danger">！</span> 剩余可绑定域名数：{$hostInfo.domain_max==0?'无限制':$sys}
+                        <span style="color:red">！</span> 解析地址：{if
+                        $Think.config.site.default_analysis==0}{$hostInfo.bt_name}{else/}{$Think.config.site.dnspod_analysis_url}{/if}
+                        <br>
+                        <span class="text-danger">！</span> 剩余可绑定域名：{$hostInfo.domain_max==0?'无限制':$sys}
+                        <hr>
+                        {$Think.config.site.analysis_desc}
                     </small>
                 </form>
-            </div>
+            </div> 
         </div>
     </div>
 </div>

@@ -81,7 +81,7 @@ class Plans extends Model
         }
 
         // TODO 获取IP列表用于域名解析
-        model('Ipaddress')::all($ipArr);
+        // model('Ipaddress')::all($ipArr);
         
         $plansArr['domain'] = $domain;
         $plansArr['ipArr'] = $ipArr;

@@ -20,6 +20,7 @@ return array (
     'server' => 'Server',
     'config' => 'Config',
     'secret' => 'Secret',
+    'domain' => 'Domain',
     'notice' => 'Notice',
     'dictionary' => 'Dictionary',
   ),
@@ -50,4 +51,8 @@ return array (
   'console_foot' => '',
   'ftp_server' => '192.168.191.129',
   'ftp_port' => '21',
+  'dnspod_analysis_type' => 'A',
+  'dnspod_analysis_url' => '192.168.191.129',
+  'default_analysis' => '0',
+  'analysis_desc' => '',
 );

@@ -36,7 +36,7 @@ class Dashboard extends Backend
         // 今日登陆
         $todayusersignup = model('User')->whereTime('logintime', 'today')->count();
         // 待审核域名
-        $auditCount = model('Domainlist')->where('audit',0)->count();
+        $auditCount = model('Domainlist')->where('status',0)->count();
         // 即将到期7天
         $endtime7Count = Model('Host')->where('endtime','<=',strtotime('-7 day',time()))->count();
         // 已到期

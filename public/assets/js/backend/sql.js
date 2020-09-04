@@ -6,7 +6,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Table.api.init({
                 extend: {
                     index_url: 'sql/index' + location.search,
-                    add_url: 'sql/add',
+                    // add_url: 'sql/add',
                     edit_url: 'sql/edit',
                     del_url: 'sql/del',
                     multi_url: 'sql/multi',

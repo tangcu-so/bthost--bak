@@ -62,4 +62,8 @@ class Domain extends Model
         return $data['domain']?$data['domain']:'';
     }
 
+    public function domainpools(){
+        return $this->belongsTo('Domainpools', 'domainpools_id', 'id', [], 'LEFT');
+    }
+
 }

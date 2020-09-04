@@ -74,18 +74,6 @@
         </div>
     </div>
     <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Default_analysis')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-default_analysis" class="form-control" name="row[default_analysis]" type="text" value="{$row.default_analysis|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
-        <label class="control-label col-xs-12 col-sm-2">{:__('Analysis_type')}:</label>
-        <div class="col-xs-12 col-sm-8">
-            <input id="c-analysis_type" class="form-control" name="row[analysis_type]" type="text" value="{$row.analysis_type|htmlentities}">
-        </div>
-    </div>
-    <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Is_audit')}:</label>
         <div class="col-xs-12 col-sm-8">
             {:build_radios('row[is_audit]', ['1'=>__('需要审核'), '0'=>__('无需审核')],$row.is_audit)}

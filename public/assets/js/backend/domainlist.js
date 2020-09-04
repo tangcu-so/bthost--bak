@@ -7,7 +7,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 extend: {
                     index_url: 'domainlist/index' + location.search,
                     add_url: 'domainlist/add',
-                    edit_url: 'domainlist/edit',
+                    // edit_url: 'domainlist/edit',
                     del_url: 'domainlist/del',
                     multi_url: 'domainlist/multi',
                     import_url: 'domainlist/import',
@@ -30,15 +30,15 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                             return '<a href="http://'+row.domain+'" target="_blank"  title="点击访问">' + row.domain + '</a>';
                     }},
                         {field: 'vhost.bt_name', title: __('Host_id')},
-                        {field: 'doma.domain', title: __('Domain_id')},
-                        {field: 'dnspod_record', title: __('Dnspod_record')},
+                        // {field: 'doma.domain', title: __('Domain_id')},
+                        // {field: 'dnspod_record', title: __('Dnspod_record')},
                         // {field: 'dnspod_record_id', title: __('Dnspod_record_id')},
                         // {field: 'dnspod_domain_id', title: __('Dnspod_domain_id')},
                         {field: 'dir', title: __('Dir')},
-                        {field: 'audit', title: __('Audit'), searchList: {"0":__('Audit 0'),"1":__('Audit 1'),"2":__('Audit 2')}, formatter: Table.api.formatter.normal},
+                        // {field: 'audit', title: __('Audit'), searchList: {"0":__('Audit 0'),"1":__('Audit 1'),"2":__('Audit 2')}, formatter: Table.api.formatter.normal},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
-                        {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden')}, formatter: Table.api.formatter.status},
+                        {field: 'status', title: __('Status'), searchList: {"0":__('Status 0'),"1":__('Status 1'),"2":__('Status 2')}, formatter: Table.api.formatter.status},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
                         buttons:[
                             {
@@ -57,6 +57,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                     console.log(data, ret);
                                     Layer.alert(ret.msg);
                                     return false;
+                                },
+                                visible: function (row) {
+                                    console.log(row.dnspod);
+                                    //返回true时按钮显示,返回false隐藏
+                                    return row.status==0?true:false;
                                 }
                             },
                         ]}

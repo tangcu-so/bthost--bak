@@ -39,7 +39,7 @@ class Domainlist extends Model
 
     public function getStatusList()
     {
-        return ['normal' => __('Normal'), 'hidden' => __('Hidden')];
+        return ['0' => __('Status 0'), '1' => __('Status 1'), '2' => __('Status 2')];
     }
 
 
@@ -58,18 +58,18 @@ class Domainlist extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
-
     public function vhost()
     {
-        return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT')->setEagerlyType(0);
+        return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT');
     }
 
     public function doma(){
-        return $this->belongsTo('Domain', 'domain_id', 'id', [], 'LEFT')->setEagerlyType(0);
+        return $this->belongsTo('Domain', 'domain_id', 'id', [], 'LEFT');
     }
 
     public function getVhostAttr($value,$data){
         return $data['vhost_id']?$this->vhost():$data['vhost_id'];
     }
+
 
 }

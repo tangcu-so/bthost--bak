@@ -99,6 +99,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                     data: $(that).closest("form").serialize()
                 });
             });
+
+            // 添加域名解析提醒
+            $('#domain').prepend(__('analysis_info'));
         },
         add: function () {
             Controller.api.bindevent();

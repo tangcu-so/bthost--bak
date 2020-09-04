@@ -27,7 +27,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {checkbox: true},
                         {field: 'id', title: __('Id')},
                         {field: 'domain', title: __('Domain')},
-                        {field: 'domainpools_id', title: __('Domainpools_id')},
+                        {field: 'domainpools.name', title: __('Domainpools_id')},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'dnspod', title: __('Dnspod'), searchList: {"0":__('Dnspod 0'),"1":__('Dnspod 1')}, formatter: Table.api.formatter.normal},

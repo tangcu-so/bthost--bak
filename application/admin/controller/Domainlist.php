@@ -12,10 +12,6 @@ use app\common\library\Btaction;
  */
 class Domainlist extends Backend
 {
-    protected $relationSearch = true;
-
-    // 通用搜索
-    protected $searchFields = ['domainlist','vhost.bt_name'];
     
     /**
      * Domainlist模型对象
@@ -64,13 +60,21 @@ class Domainlist extends Backend
         return $this->view->fetch();
     }
 
+    // TODO 添加域名解析
+    public function add($ids = null){
+        if($this->request->isPost()){
+            // $this->success('添加成功');
+        }
+        return  parent::add();
+    }
+
     // 域名审核
     public function audit($ids){
         $info = $this->model::get($ids);
         if(!$info){
             $this->error('域名不存在');
         }
-        if($info->audit==1){
+        if($info->status==1){
             $this->error('域名已审核');
         }
         $hostInfo = model('Host')::get($info->vhost_id);
@@ -87,7 +91,7 @@ class Domainlist extends Backend
         if(!$set){
             $this->error($bt->_error);
         }
-        $info->audit = 1;
+        $info->status = 1;
         $info->save();
         $this->success('已审核');
     }

@@ -8,6 +8,7 @@ use dnspod\Dnspod;
 use fast\Random;
 use think\Db;
 use think\Cookie;
+use think\Config;
 
 /**
  * 主机管理
@@ -83,7 +84,7 @@ class Host extends Backend
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
             
-            // try {
+            try {
                 // 读取资源组
                 // 资源组信息转化
                 $plansInfo = model('Plans')->getPlanInfo($params['plans']);
@@ -132,34 +133,24 @@ class Host extends Backend
                         $this->error($bt->_error);
                     }
                 }
+
+                $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
                 
-                // dnspod智能解析
                 // TODO Dnspod智能解析
-                // if($plansInfo['dnspod']){
-                //     // 优先解析到系统赠送的域名中，仅限非泛解析
-                //     // 其次解析到指定解析地址，没有指定解析地址
-                //     // 最后是赠送的IP地址，如果没有赠送的IP地址
-                //     // 那么域名不能被智能解析
-                //     if(isset($plansInfo['default_analysis'])&&$plansInfo['default_analysis']){
-                //         $record_type = 'CNAME';
-                //         $analysis = $plansInfo['default_analysis'];
-                //     }else{
-                //         $record_type = 'A';
-                //         $analysis = $plansInfo['ip'];
-                //     }
-                //     $sub_domain = $hostSetInfo['domain'];
-                //     $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$analysis,$sub_domain,$record_type);
-                //     if(!is_array($domain_jx)){
-                //         $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$analysis,$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
-                //     }
-                //     $dnspod_record = $sub_domain;
-                //     $dnspod_record_id = $domain_jx['id'];
-                //     $dnspod_domain_id = $domain_jx['domain_id'];
-                // }else{
-                //     $dnspod_record = '';
-                //     $dnspod_record_id = '';
-                //     $dnspod_domain_id = '';
-                // }
+                if($plansInfo['dnspod']){
+                    // 如果域名属于dnspod智能解析
+                    $record_type = Config::get('site.dnspod_analysis_type');
+                    $analysis = Config::get('site.dnspod_analysis_url');
+                    
+                    $sub_domain = $hostSetInfo['domain'];
+                    $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$analysis,$sub_domain,$record_type);
+                    if(!is_array($domain_jx)){
+                        $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$analysis,$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
+                    }
+                    $dnspod_record = $sub_domain;
+                    $dnspod_record_id = $domain_jx['id'];
+                    $dnspod_domain_id = $domain_jx['domain_id'];
+                }
                 
                 // 绑定多ip
                 
@@ -172,9 +163,6 @@ class Host extends Backend
                     'site_max'              => $plansInfo['site_max'],
                     'sql_max'               => $plansInfo['sql_max'],
                     'flow_max'              => $plansInfo['flow_max'],
-                    'analysis_type'         => $plansInfo['analysis_type'],
-                    // 默认解析地址，如果没有，就指定到赠送的域名
-                    'default_analysis'      => $plansInfo['default_analysis']?$plansInfo['default_analysis']:$hostSetInfo['bt_name'],
                     'is_audit'              => $plansInfo['domain_audit'],
                     'is_vsftpd'             => $plansInfo['vsftpd'],
                     'domain_max'            => $plansInfo['domain_num'],
@@ -211,22 +199,22 @@ class Host extends Backend
                 
                 // 存入域名信息
                 // TODO 存放域名信息
-                // model('Domainlist')::create([
-                //     'domain'=>$btName,
-                //     'vhost_id'=>$vhost_id,
-                //     'domainlist_id'=>$plansInfo['domainlist_id'],
-                //     'dnspod_record'=>$dnspod_record,
-                //     'dnspod_record_id'=>$dnspod_record_id,
-                //     'dnspod_domain_id'=>$dnspod_domain_id,
-                //     'dir'=>'/',
-                // ]);
+                model('Domainlist')::create([
+                    'domain'=>$btName,
+                    'vhost_id'=>$vhost_id,
+                    'domain_id'=>$plansInfo['domainlist_id'],
+                    'dnspod_record'=>$dnspod_record,
+                    'dnspod_record_id'=>$dnspod_record_id,
+                    'dnspod_domain_id'=>$dnspod_domain_id,
+                    'dir'=>'/',
+                ]);
                 
                 Db::commit();
-            // } catch (\Exception $ex) {
-            //     return ['code'=>0,'msg'=>$ex->getMessage()];
-            // } catch (\Throwable $th) {
-            //     return ['code'=>0,'msg'=>$th->getMessage()];
-            // }
+            } catch (\Exception $ex) {
+                return ['code'=>0,'msg'=>$ex->getMessage()];
+            } catch (\Throwable $th) {
+                return ['code'=>0,'msg'=>$th->getMessage()];
+            }
             
             $this->success('添加成功');
         }
