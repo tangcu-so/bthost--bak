@@ -1,110 +1,11 @@
-<!-- <div id="content-container" class="container">
-    <div class="user-section login-section">
-        <div class="logon-tab clearfix"><a class="active">{:__('Sign in')}</a> <a href="{:url('user/register')}?url={$url|urlencode}">{:__('Sign up')}</a></div>
-        <div class="login-main">
-            <form name="form" id="login-form" class="form-vertical" method="POST" action="">
-                <input type="hidden" name="url" value="{$url}"/>
-                {:token()}
-                <div class="form-group">
-                    <label class="control-label" for="account">{:__('Account')}</label>
-                    <div class="controls">
-                        <input class="form-control input-lg" id="account" type="text" name="account" value="" data-rule="required" placeholder="{:__('Email/Mobile/Username')}" autocomplete="off">
-                        <div class="help-block"></div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="control-label" for="password">{:__('Password')}</label>
-                    <div class="controls">
-                        <input class="form-control input-lg" id="password" type="password" name="password" data-rule="required;password" placeholder="{:__('Password')}" autocomplete="off">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="controls">
-                        <div class="checkbox inline">
-                            <label>
-                                <input type="checkbox" name="keeplogin" checked="checked" value="1"> {:__('Keep login')}
-                            </label>
-                        </div>
-                        <div class="pull-right"><a href="javascript:;" class="btn-forgot">{:__('Forgot password')}</a></div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">{:__('Sign in')}</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div> -->
-<!-- <script type="text/html" id="resetpwdtpl">
-    <form id="resetpwd-form" class="form-horizontal form-layer" method="POST" action="{:url('api/user/resetpwd')}">
-        <div class="form-body">
-            <input type="hidden" name="action" value="resetpwd"/>
-            <div class="form-group">
-                <label class="control-label col-xs-12 col-sm-3">{:__('Type')}:</label>
-                <div class="col-xs-12 col-sm-8">
-                    <div class="radio">
-                        <label for="type-email"><input id="type-email" checked="checked" name="type" data-send-url="{:url('api/ems/send')}" data-check-url="{:url('api/validate/check_ems_correct')}" type="radio" value="email"> {:__('Reset password by email')}</label>
-                        <label for="type-mobile"><input id="type-mobile" name="type" type="radio" data-send-url="{:url('api/sms/send')}" data-check-url="{:url('api/validate/check_sms_correct')}" value="mobile"> {:__('Reset password by mobile')}</label>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group" data-type="email">
-                <label for="email" class="control-label col-xs-12 col-sm-3">{:__('Email')}:</label>
-                <div class="col-xs-12 col-sm-8">
-                    <input type="text" class="form-control" id="email" name="email" value="" data-rule="required(#type-email:checked);email;remote({:url('api/validate/check_email_exist')}, event=resetpwd, id=0)" placeholder="">
-                    <span class="msg-box"></span>
-                </div>
-            </div>
-            <div class="form-group hide" data-type="mobile">
-                <label for="mobile" class="control-label col-xs-12 col-sm-3">{:__('Mobile')}:</label>
-                <div class="col-xs-12 col-sm-8">
-                    <input type="text" class="form-control" id="mobile" name="mobile" value="" data-rule="required(#type-mobile:checked);mobile;remote({:url('api/validate/check_mobile_exist')}, event=resetpwd, id=0)" placeholder="">
-                    <span class="msg-box"></span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="captcha" class="control-label col-xs-12 col-sm-3">{:__('Captcha')}:</label>
-                <div class="col-xs-12 col-sm-8">
-                    <div class="input-group">
-                        <input type="text" name="captcha" class="form-control" data-rule="required;length(4);integer[+];remote({:url('api/validate/check_ems_correct')}, event=resetpwd, email:#email)"/>
-                        <span class="input-group-btn" style="padding:0;border:none;">
-                            <a href="javascript:;" class="btn btn-info btn-captcha" data-url="{:url('api/ems/send')}" data-type="email" data-event="resetpwd">{:__('Send verification code')}</a>
-                        </span>
-                    </div>
-                    <span class="msg-box"></span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="newpassword" class="control-label col-xs-12 col-sm-3">{:__('New password')}:</label>
-                <div class="col-xs-12 col-sm-8">
-                    <input type="password" class="form-control" id="newpassword" name="newpassword" value="" data-rule="required;password" placeholder="">
-                    <span class="msg-box"></span>
-                </div>
-            </div>
-        </div>
-        <div class="form-group form-footer">
-            <label class="control-label col-xs-12 col-sm-3"></label>
-            <div class="col-xs-12 col-sm-8">
-                <button type="submit" class="btn btn-md btn-info">{:__('Ok')}</button>
-            </div>
-        </div>
-    </form>
-</script> -->
-
 {__NOLAYOUT__}
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>登录页面 - 光年(Light Year Admin V4)后台管理系统模板</title>
-<link rel="icon" href="__CDN__/assets/img/favicon.ico" type="image/ico">
-<meta name="keywords" content="LightYear,LightYearAdmin,光年,后台模板,后台管理系统,光年HTML模板">
-<meta name="description" content="Light Year Admin V4是一个后台管理系统的HTML模板，基于Bootstrap v4.4.1。">
-<meta name="author" content="yinqi">
-<link href="__STATIC__/Light-Year/css/bootstrap.min.css" rel="stylesheet">
-<link href="__STATIC__/Light-Year/css/materialdesignicons.min.css" rel="stylesheet">
-<link href="__STATIC__/Light-Year/css/style.min.css" rel="stylesheet">
+    {include file="common/meta" /}
+<link href="__CDN____STATIC__/Light-Year/css/bootstrap.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/css/materialdesignicons.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/css/style.min.css" rel="stylesheet">
 </head>
   
 <body>
@@ -113,9 +14,9 @@
 
     <div class="d-flex vh-100">
         <div class="p-5 align-self-end">
-        <img src="__STATIC__/Light-Year/images/logo.png" alt="...">
+        <img src="__CDN__/logo.png" alt="...">
         <br><br><br>
-        <p class="text-white">Light Year Admin V4是一个后台管理系统的HTML模板，基于Bootstrap v4.4.1。</p>
+        <p class="text-white">虚拟主机管理系统，完美的解决您的需求，多种多样的使用场景</p>
         </div>
     </div>
 
@@ -124,7 +25,7 @@
     <div class="col-md-6 col-lg-5 col-xl-4 align-self-center">
     <div class="p-5">
         <div class="text-center">
-        <a href="index.html"> <img alt="light year admin" src="__STATIC__/Light-Year/images/logo-sidebar.png"> </a>
+        <a href="{:url('/')}"> <img alt="light year admin" src="__CDN__/logo.png"> </a>
         </div>
         <p class="text-center text-muted"><small>请使用您的账号登录系统</small></p>
 
@@ -157,7 +58,7 @@
     </div>
 </div>
 
-<script type="text/javascript" src="__STATIC__/Light-Year/js/jquery.min.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/jquery.min.js"></script>
 <script type="text/javascript">;</script>
 </body>
 </html>
