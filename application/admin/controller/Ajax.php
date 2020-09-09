@@ -13,6 +13,8 @@ use think\Db;
 use think\Lang;
 use think\Validate;
 use app\common\library\Btaction;
+use think\Exception;
+use think\Debug;
 
 /**
  * Ajax异步请求接口
@@ -24,6 +26,8 @@ class Ajax extends Backend
     protected $noNeedLogin = ['lang'];
     protected $noNeedRight = ['*'];
     protected $layout = '';
+
+    public static $filePath = ROOT_PATH.'Data/';
 
     public function _initialize()
     {
@@ -424,5 +428,136 @@ class Ajax extends Backend
             $curl = 1;
         }
         $this->success('请求成功','',['url'=>Config::get('bty.api_url'),'curl'=>$curl,'ms'=>'0.1ms','baidu'=>getRequestTimes('https://www.baidu.com')]);
+    }
+
+    public function phps(){
+        echo phpinfo();
+    }
+
+    /**
+     * 检查更新（阿珏版）
+     * @Author   Youngxj
+     * @DateTime 2019-03-25
+     * @return   [type]     [description]
+     */
+    public function updates()
+    {
+        Debug::remark('begin');
+        if ($this->request->param('token') == '123456789') {
+            if(!function_exists('zip_open')){
+                $this->error('不支持zip_open，请尝试切换php版本');
+            }
+            // TODO 在线升级优化方向
+            // 判断文件写入权限
+            // 逻辑判断前置
+            // 版号放置数据库(待考虑)
+            // 清除缓存
+            if(extension_loaded('Zend OPcache')){
+                opcache_reset();
+            };
+            $config_file = APP_PATH . DS . 'extra' . DS . 'bty.php';
+            if(!is_writable($config_file)){
+                $this->error('文件不可写，请检查网站目录及文件权限、网站防篡改、系统加固等问题');
+            }
+            $update                 = new \autoupdate\Autoupdate(ROOT_PATH, true);
+            $update->currentVersion = config('bty.version');
+            $update->updateUrl      = config('bty.api_url');
+            $data = http_build_query(['version' => config('bty.version'), 'domain' => config('site.domain'), 'authCode' => config('site.authCode'), 'obj' => 'bty'], '', '&');
+            $update->updateIni      = '/update_check.html?' . $data;
+            
+            Db::startTrans();
+            try {
+                $latest = $update->checkUpdate();
+                if ($latest !== false) {
+                    if (!$update->latestVersion) {
+                        $this->error('版本号错误');
+                    }
+                    // 判断是否存在更新包地址
+                    if (empty($update->latestUpdate) || $update->latestUpdate == '') {
+                        throw new Exception('更新包地址为空');
+                    }
+                    // 对比版本号
+                    if ($latest > $update->currentVersion) {
+                        // 执行数据库更新
+                        if ($update->sql_file) {
+                            // 备份数据库
+                            $sql_name = config('bty.version').'_'.date("His",time()).'.sql';
+                            if(\app\common\library\Common::sql_back($sql_name)){
+                                $data = [
+                                    'name'=>$sql_name,
+                                    'version'=>Config('bty.version'),
+                                    'filesize'=>filesize(self::$filePath.$sql_name),
+                                ];
+                                model('sqlback')->data($data)->save();
+                            }
+
+                            // $stream_opts = [
+                            //     "ssl" => [
+                            //         "verify_peer" => false,
+                            //         "verify_peer_name" => false,
+                            //     ]
+                            // ];
+                            $sql = $update->curl_request($update->sql_file);
+                            $query  = '';
+                            $prefix = Config::get("database.prefix");
+                            foreach ($sql as $value) {
+                                if (!$value || $value[0] == '#') {
+                                    continue;
+                                }
+                                $value = str_replace("__db_prefix__", $prefix, trim($value));
+                                if (preg_match("/\;$/i", $value)) {
+                                    $query .= $value;
+                                    Db::execute($query);
+                                    $query = '';
+                                } else {
+                                    $query .= $value;
+                                }
+                            }
+                        }
+
+                        // 执行文件更新
+                        if ($update->update()) {
+                            // 修改版本号
+                            $set = setconfig($config_file, ['version'], [$update->latestVersion]);
+                            if (!$set) {
+                                Db::rollback();
+                                throw new Exception('版本号更新错误');
+                            }
+                            Debug::remark('end');
+                            $desc = $update->currentVersion . "->" . $update->latestVersion . "，用时：" . Debug::getRangeTime('begin', 'end') . 's';
+                            // 数据库更新版本号
+                            Db::name('version')->insert([
+                                'version' => $update->latestVersion,
+                                'last_version' => $update->currentVersion,
+                                'desc' => $desc,
+                                'updatetime' => time(),
+                            ]);
+                        } else {
+                            Db::rollback();
+                            throw new Exception('在线更新失败，请尝试手动更新！信息：' . $update->getLastError());
+                        }
+                    } else {
+                        throw new Exception('没有发现可用的新版本！');
+                    }
+                } else {
+                    throw new Exception($update->getLastError());
+                }
+            } catch (\Exception $e) {
+                $update->log($e->getMessage());
+                Db::rollback();
+                $this->error($e->getMessage());
+            }
+
+            // 清除缓存
+            rmdirs(CACHE_PATH, false);
+            rmdirs(TEMP_PATH, false);
+            Cache::clear();
+            Service::refresh();
+
+            Db::commit();
+            $this->success('更新成功，欢迎体验最新的系统^_^');
+        } else {
+            $this->error('非法请求');
+        }
     }
 }
