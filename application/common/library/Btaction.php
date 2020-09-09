@@ -6,6 +6,7 @@ use btpanel\Btpanel;
 use think\Cache;
 use fast\Random;
 use think\Config;
+use GuzzleHttp\Client;
 
 class Btaction
 {
@@ -1385,7 +1386,7 @@ class Btaction
      * @param integer $time
      * @return void
      */
-    public function getRequestTimes($url, $timeout = 120)
+    public function getRequestTimes($url, $timeout = 60)
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
