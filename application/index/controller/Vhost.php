@@ -2015,6 +2015,7 @@ class Vhost extends Frontend
             }
             // 新版分片上传
             if ($files = request()->file('blob')) {
+                header("Content-type: text/html; charset=utf-8");
                 // TODO 中文上传失败
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
                 $this->hostModel->save([
@@ -2034,20 +2035,33 @@ class Vhost extends Frontend
                     mkdir(iconv("UTF-8", "GBK", $filePath), 0755, true);
                 }
 
-                // var_dump($filePath);
-                // var_dump($file);
-                $info = $files->move($filePath, input('post.f_name'));
+                // 获取文件扩展名
+                $temp_arr = explode(".", input('post.f_name'));
+                $file_ext = array_pop($temp_arr);
+                $file_ext = trim($file_ext);
+                $file_ext = strtolower($file_ext);
+
+                // 获取加密文件名
+                $file_name  = md5(input('post.f_name')).'.'.$file_ext;
+                // 由于中文名上传失败
+                // $info = $files->move($filePath, input('post.f_name'));
+                $info = $files->move($filePath, $file_name);
                 $data = '';
                 if ($info) {
                     $postFile = $filePath . DS . $info->getFilename();
+                    // $postFile = $filePath.DS.'1235556.png';
+                    // iconv("UTF-8","gb2312",$postFile);
+                    // var_dump($postFile);exit;
                     if (class_exists('CURLFile')) {
                         // php 5.5
                         $data = new \CURLFile(realpath($postFile));
                     } else {
                         $data = '@' . realpath($postFile);
                     }
-                    $data->postname = $info->getFilename();
-                    $fileName       = $info->getFilename();
+                    // $data->postname = $info->getFilename();
+                    // $fileName       = $info->getFilename();
+                    // 传递原始文件名到服务器中
+                    $fileName       = input('post.f_name');
                     $f_size  = input('post.f_size');
                     $f_start = input('post.f_start');
                     $up      = $this->btAction->UploadFiles($WebGetKey . $path, $fileName, $f_size, $f_start, $data);

@@ -55,4 +55,5 @@ return array (
   'dnspod_analysis_url' => '192.168.191.129',
   'default_analysis' => '0',
   'analysis_desc' => '',
+  'split_size' => '10',
 );

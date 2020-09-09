@@ -76,74 +76,74 @@
 {/block}
 {block name="content"}
 
-<link href="__CDN____STATIC/Light-Year/css/animate.min.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="/assets/libs/codemirror/lib/codemirror.css">
-<script type="text/javascript" src="/assets/libs/codemirror/lib/codemirror.js"></script>
-<script type="text/javascript" src="/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
+<link href="__CDN____STATIC__/Light-Year/css/animate.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" href="__CDN__/assets/libs/codemirror/lib/codemirror.css">
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/lib/codemirror.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
 
-<!-- <script type="text/javascript" src="/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
-<!-- <script type="text/javascript" src="/assets/libs/codemirror/mode/modeAll.js"></script> -->
+<!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
+<!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/mode/modeAll.js"></script> -->
 <!-- 引入javascript编辑器格式 -->
-<script src="/assets/libs/codemirror/mode/clike/clike.js"></script>
-<script src="/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<!-- <script src="/assets/libs/codemirror/mode/javascript/javascript.js"></script> -->
-<!-- <script src="/assets/libs/codemirror/mode/php/php.js"></script> -->
-<!-- <script src="/assets/libs/codemirror/mode/shell/shell.js"></script>
-<script src="/assets/libs/codemirror/mode/python/python.js"></script>
-<script src="/assets/libs/codemirror/mode/nginx/nginx.js"></script>
-<script src="/assets/libs/codemirror/mode/markdown/markdown.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/clike/clike.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<!-- <script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script> -->
+<!-- <script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script> -->
+<!-- <script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/python/python.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/nginx/nginx.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/markdown/markdown.js"></script>
  -->
-<script type="text/javascript" src="/assets/libs/codemirror/addon/dialog/dialog.js"></script>
-<script type="text/javascript" src="/assets/libs/codemirror/addon/search/search.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/dialog/dialog.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/search/search.js"></script>
 <!-- 各种主题配色 -->
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/monokai.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/3024-day.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/3024-night.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/abcdef.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/ambiance.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/base16-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/bespin.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/base16-light.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/blackboard.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/cobalt.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/colorforth.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/dracula.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/duotone-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/duotone-light.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/eclipse.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/elegant.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/erlang-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/hopscotch.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/icecoder.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/isotope.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/lesser-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/liquibyte.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/material.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/mbo.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/mdn-like.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/midnight.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/monokai.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/neat.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/neo.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/night.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/panda-syntax.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/paraiso-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/paraiso-light.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/pastel-on-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/railscasts.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/rubyblue.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/seti.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/solarized.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/the-matrix.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/tomorrow-night-bright.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/tomorrow-night-eighties.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/ttcn.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/twilight.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/vibrant-ink.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/xq-dark.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/xq-light.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/yeti.css">
-<link rel="stylesheet" href="/assets/libs/codemirror/theme/zenburn.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-day.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-night.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/abcdef.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/ambiance.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/base16-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/bespin.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/base16-light.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/blackboard.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/cobalt.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/colorforth.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/dracula.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/duotone-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/duotone-light.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/eclipse.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/elegant.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/erlang-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/hopscotch.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/icecoder.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/isotope.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/lesser-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/liquibyte.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/material.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/mbo.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/mdn-like.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/midnight.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/neat.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/neo.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/night.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/panda-syntax.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/paraiso-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/paraiso-light.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/pastel-on-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/railscasts.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/rubyblue.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/seti.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/solarized.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/the-matrix.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/tomorrow-night-bright.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/tomorrow-night-eighties.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/ttcn.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/twilight.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/vibrant-ink.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-dark.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-light.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/yeti.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/zenburn.css">
 <div class="row">
     <div class="col-md-12">
         <div class="card" id="loading_box">
@@ -465,8 +465,8 @@
 </div>
 {/block}
 {block name="script"}
-<script src="/assets/libs/layer/layer.js"></script>
-<script type="text/javascript" src="__CDN____STATIC/Light-Year/js/bootstrap-notify.min.js"></script>
+<script src="__CDN__/assets/libs/layer/layer.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-notify.min.js"></script>
 <script type="text/javascript">
 // 弹窗自适应宽高
 var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? '' : ''];
@@ -835,12 +835,14 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         });
     }
 
+
     /* ! 宝塔文件上传组件 License  https://www.bt.cn  By 黄文良 <287962566@qq.com> */
     var bt_upload_file = {
+        split: Config.site.split_size,
         f: null,
         f_total: 0,
         f_path: null,
-        split_size: 1024 * 1024 * 2,
+        split_size: 1024 * 1024 * Config.site.split_size,
         _files: [],
         _error: 0,
         _start_time: 0,

@@ -109,7 +109,7 @@ class Frontend extends Controller
 
         // 配置信息
         $config = [
-            'site'           => array_intersect_key($site, array_flip(['name', 'cdnurl', 'version', 'timezone', 'languages','iframe_cache'])),
+            'site'           => array_intersect_key($site, array_flip(['name', 'cdnurl', 'version', 'timezone', 'languages','iframe_cache','split_size'])),
             'upload'         => $upload,
             'modulename'     => $modulename,
             'controllername' => $controllername,
