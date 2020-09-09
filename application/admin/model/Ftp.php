@@ -28,6 +28,33 @@ class Ftp extends Model
         'status_text',
         'vhost',
     ];
+
+    protected static function init()
+    {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            // 如果有修改密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $row->password = encode($changed['password']);
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
+
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // 新建账号时加密密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $row->password = encode($changed['password']);
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
+    }
     
 
     

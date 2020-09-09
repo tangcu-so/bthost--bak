@@ -7,7 +7,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 extend: {
                     index_url: 'sql/index' + location.search,
                     // add_url: 'sql/add',
-                    edit_url: 'sql/edit',
+                    // edit_url: 'sql/edit',
                     del_url: 'sql/del',
                     multi_url: 'sql/multi',
                     import_url: 'sql/import',
@@ -28,7 +28,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'id', title: __('Id')},
                         {field: 'vhost.bt_name', title: __('Vhost_id')},
                         {field: 'username', title: __('Username')},
-                        {field: 'password', title: __('Password')},
+                        // {field: 'password', title: __('Password')},
                         {field: 'database', title: __('Database')},
                         // {field: 'console', title: __('Console'),formatter:function(value, row, index){
                         //     return row.console?'<a href="'+row.console+'" target="_blank">点击进入</a>':'--';

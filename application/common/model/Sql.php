@@ -27,6 +27,33 @@ class Sql extends Model
     protected $append = [
         'status_text'
     ];
+
+    protected static function init()
+    {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            // 如果有修改密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $row->password = encode($changed['password']);
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
+
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // 新建账号时加密密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $row->password = encode($changed['password']);
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
+    }
     
 
     
@@ -43,7 +70,9 @@ class Sql extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
-
+    public function getPasswordAttr($value,$data){
+        return $data['password']?decode($data['password']):$data['password'];
+    }
 
 
 }

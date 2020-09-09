@@ -572,7 +572,6 @@ class Vhost extends Frontend
             if (!$validate->check($data)) {
                 $this->error($validate->getError());
             }
-            // $data['password'] = getPasswordHash($data['password']);
             $update = $this->auth->changepwd($data['password'], $data['oldpass'], 0);
             if (!$update) {
                 $this->error($this->auth->getError());
@@ -612,12 +611,10 @@ class Vhost extends Frontend
             Db::startTrans();
 
             // 先修改数据库的
-            $up = Db::name('sql')
-                ->where('vhost_id', $this->vhost_id)
-                ->where('username', $this->hostInfo->sql->username)
-                ->update(['password'=>$data['password'],'updatetime'=>time()]);
+            $up = model('Sql')->save(['password'=>$data['password']],['vhost_id'=>$this->vhost_id,'username'=>$this->hostInfo->ftp->username]);
             if ($up) {
-                $modify_status = $this->btTend->resetSqlPass($sqlInfo['id'], $this->hostInfo->sql->username, $data['password']);
+                $modify_status = $this->btTend->resetSqlPass($this->hostInfo->sql->username, $data['password']);
+                // var_dump($sqlInfo['id'], $this->hostInfo->sql->username, $data['password'],$modify_status);exit;
                 if(!$modify_status){
                     Db::rollback();
                     $this->error($this->btTend->_error);
@@ -664,14 +661,10 @@ class Vhost extends Frontend
             }
             Db::startTrans();
 
-            // 先修改云端的
-            $up = Db::name('ftp')
-                ->where('vhost_id', $this->vhost_id)
-                ->where('username', $this->hostInfo->ftp->username)
-                ->update(['password'=>$data['password'],'updatetime'=>time()]);
-
+            // 先修改数据库的
+            $up = model('Ftp')->save(['password'=>$data['password']],['vhost_id'=>$this->vhost_id,'username'=>$this->hostInfo->ftp->username]);
             if ($up) {
-                $modify_status = $this->btTend->resetFtpPass($ftpInfo['id'], $this->hostInfo->ftp->username, $data['password']);
+                $modify_status = $this->btTend->resetFtpPass($this->hostInfo->ftp->username, $data['password']);
                 if(!$modify_status){
                     Db::rollback();
                     $this->error($this->btTend->_error);
@@ -1172,6 +1165,7 @@ class Vhost extends Frontend
         $port     = isset($this->hostInfo['ftp_port'])?$this->hostInfo['ftp_port']:'21';
         $username = $this->hostInfo->ftp->username;
         $password = $this->hostInfo->ftp->password;
+        // var_dump($username,$password);exit;
         if (!$host || !$port || !$username || !$password) {
             $this->error('当前不支持FTP文件管理','');
         }
@@ -1683,7 +1677,9 @@ class Vhost extends Frontend
         
         //请求路径
         $path = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '/') : '/';
-
+        // TODO 要实现的目的是屏蔽[../ ./ //]等字符
+        // TODO 搜索后文件访问路径有问题，整个在线文件管理文件及路径安全还需要全部重新做
+        // var_dump($path);exit;
         $path_arr = explode('/',$path);
         $text_arr = [];
         for ($i=0; $i < count($path_arr); $i++) { 
