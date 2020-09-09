@@ -1,4 +1,4 @@
-define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefined, Backend, Table, Form) {
+define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], function ($, undefined, Backend, Table, Form, selectPage) {
 
     var Controller = {
         index: function () {
@@ -149,6 +149,11 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                 ]
             });
 
+            $(document).on("click", ".btn-add2", function () {
+                top.Fast.api.open("host/add_local", "添加主机"); 
+                // Fast.api.close()
+            });
+
             // 为表格绑定事件
             Table.api.bindevent(table);
         },
@@ -223,6 +228,29 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             Table.api.bindevent(table);
         },
         add: function () {
+            Controller.api.bindevent();
+        },
+        add_local: function () {
+            // $('#c-bt_name').change(function(v,k){
+            //     console.log(v,k);
+            // });
+            // selectPage回调方法
+            $('#c-bt_name').selectPage({
+                eAjaxSuccess: function(data){
+                    data.list = typeof data.rows !== 'undefined' ? data.rows : (typeof data.list !== 'undefined' ? data.list : []);
+                    data.totalRow = typeof data.total !== 'undefined' ? data.total : (typeof data.totalRow !== 'undefined' ? data.totalRow : data.list.length);
+                    return data;
+                },
+                eSelect:function(data){
+                    if(data.edate!='0000-00-00'){
+                        $('#c-endtime').val(data.edate);
+                    }
+                    if(data.ps){
+                        $('#c-notice').val(data.ps);
+                    }
+                    console.log(data);
+                }
+            });
             Controller.api.bindevent();
         },
         edit: function () {

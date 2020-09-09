@@ -44,4 +44,6 @@ return [
     'Notice'           => '备注',
     'Resource size'    => '资源使用量(M)',
     'Resource max'     => '资源大小',
+    'Add New'          => '新建主机',
+    'Add Local'        => '添加主机',
 ];

@@ -136,7 +136,6 @@ class Host extends Backend
 
                 $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
                 
-                // TODO Dnspod智能解析
                 if($plansInfo['dnspod']){
                     // 如果域名属于dnspod智能解析
                     $record_type = Config::get('site.dnspod_analysis_type');
@@ -270,5 +269,153 @@ class Host extends Backend
         Cookie::set('host_id',$hostInfo->id);
         // 跳转首页控制台
         return $this->redirect('/');
+    }
+
+    public function add_local(){
+        // 考虑使用拉下选择并查找
+        if($this->request->isPost()){
+            // 需要接收参数
+            $params = $this->request->post('row/a');
+            $sort_id = isset($params['sort_id'])?$params['sort_id']:0;
+            $bt_name = isset($params['bt_name'])?$params['bt_name']:'';
+            $ftp_name = isset($params['ftp_name'])?$params['ftp_name']:'';
+            $sql_name = isset($params['sql_name'])?$params['sql_name']:'';
+            $user_id = isset($params['user_id'])?$params['user_id']:'';
+            $endtime = isset($params['endtime'])?$params['endtime']:'';
+            $notice = isset($params['notice'])?$params['notice']:'';
+            if(!$bt_name){
+                $this->error('必须填写或选择站点');
+            }
+            if(!$user_id){
+                $this->error('必须选择一个用户');
+            }
+            // 连接宝塔
+            $bt = new Btaction();
+            $bt->bt_name = $bt_name;
+            $bt->ftp_name = $ftp_name;
+            $bt->sql_name = $sql_name;
+            // 查找站点
+            $hostInfo = $bt->getSiteInfo();
+            if(!$hostInfo){
+                $this->error($bt->_error);
+            }
+            // 查找ftp
+            if($ftp_name){
+                $ftpInfo = $bt->getFtpInfo();
+                if(!$ftpInfo){
+                    $this->error($bt->_error);
+                }
+            }
+            if($sql_name){
+                $sqlInfo = $bt->getSqlInfo();
+                if(!$sqlInfo){
+                    $this->error($bt->_error);
+                }
+            }
+            // 判断站点是否已存在
+            $hostfind = model('Host')::get(['bt_name'=>$bt_name]);
+            if($hostfind){
+                $this->error('站点已存在，请勿重复添加');
+            }
+            // 判断数据库
+            $sqlfind = model('Sql')::get(['database'=>$sql_name]);
+            if($sqlfind){
+                $this->error('数据库已存在，请勿重复添加');
+            }
+            // 判断ftp
+            $sqlfind = model('Ftp')::get(['username'=>$ftp_name]);
+            if($sqlfind){
+                $this->error('数据库已存在，请勿重复添加');
+            }
+            // var_dump($hostInfo,$ftpInfo,$sqlInfo);exit;
+            // 都查找完毕后存入数据库
+            $hostInc = model('Host')::create([
+                'user_id'=>$user_id,
+                'sort_id'=>$sort_id,
+                'bt_id'=>$hostInfo['id'],
+                'bt_name'=>$hostInfo['name'],
+                'domain_max'=>0,
+                'web_back_num'=>0,
+                'sql_back_num'=>0,
+                'notice'=>$notice,
+                'endtime'=>$endtime?$endtime:$hostInfo['edate'],
+            ]);
+            $host_id = $hostInc->id;
+            if($ftp_name){
+                model('Ftp')::create([
+                    'vhost_id'=>$host_id,
+                    'username'=>$ftpInfo['name'],
+                    'password'=>$ftpInfo['password'],
+                ]);
+            }
+            if($sql_name){
+                model('Sql')::create([
+                    'vhost_id'=>$host_id,
+                    'username'=>$sqlInfo['username'],
+                    'database'=>$sqlInfo['name'],
+                    'password'=>$sqlInfo['password'],
+                ]);
+            }
+            // 都入库了就成功了
+            $this->success('添加成功');
+        }
+        return $this->view->fetch('add2');
+    }
+
+    // 站点列表
+    public function weblist(){
+        config('default_return_type','json');
+        $pageNumber = $this->request->post('pageNumber',1);
+        $pageSize = $this->request->post('pageSize',15);
+        $serch = $this->request->post('name');
+        // 搜索重置分页
+        $pageNumber = $serch?1:$pageNumber;
+        $bt = new Btaction();
+        $list = $bt->getSiteList($serch,$pageNumber,$pageSize);
+        if($list&&isset($list['data'])){
+            $row = $list['data'];
+            $total = $bt->siteCount($serch);
+            return json(['list'=>$row,'total'=>$total]);
+        }else{
+            return [];
+        }
+    }
+    
+    // ftp列表
+    public function ftplist(){
+        config('default_return_type','json');
+        $pageNumber = $this->request->post('pageNumber',1);
+        $pageSize = $this->request->post('pageSize',15);
+        $serch = $this->request->post('name');
+        // 搜索重置分页
+        $pageNumber = $serch?1:$pageNumber;
+        $bt = new Btaction();
+        $list = $bt->getFtpList($serch,$pageNumber,$pageSize);
+        if($list&&isset($list['data'])){
+            $row = $list['data'];
+            $total = $bt->siteCount($serch);
+            return json(['list'=>$row,'total'=>$total]);
+        }else{
+            return [];
+        }
+    }
+
+    // 数据库列表
+    public function sqllist(){
+        config('default_return_type','json');
+        $pageNumber = $this->request->post('pageNumber',1);
+        $pageSize = $this->request->post('pageSize',15);
+        $serch = $this->request->post('name');
+        // 搜索重置分页
+        $pageNumber = $serch?1:$pageNumber;
+        $bt = new Btaction();
+        $list = $bt->getSqlList($serch,$pageNumber,$pageSize);
+        if($list&&isset($list['data'])){
+            $row = $list['data'];
+            $total = $bt->siteCount($serch);
+            return json(['list'=>$row,'total'=>$total]);
+        }else{
+            return [];
+        }
     }
 }

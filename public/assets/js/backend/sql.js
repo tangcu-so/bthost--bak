@@ -30,9 +30,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'username', title: __('Username')},
                         {field: 'password', title: __('Password')},
                         {field: 'database', title: __('Database')},
-                        {field: 'console', title: __('Console'),formatter:function(value, row, index){
-                            return row.console?'<a href="'+row.console+'" target="_blank">点击进入</a>':'--';
-                        }},
+                        // {field: 'console', title: __('Console'),formatter:function(value, row, index){
+                        //     return row.console?'<a href="'+row.console+'" target="_blank">点击进入</a>':'--';
+                        // }},
                         {field: 'createtime', title: __('Createtime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'updatetime', title: __('Updatetime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Normal'),"hidden":__('Hidden')}, formatter: Table.api.formatter.status},

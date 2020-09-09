@@ -12,10 +12,10 @@ class Btaction
 
     public $_error = '';        //  错误信息
     public $btAction  = null;
-    protected $api_url = 'http://192.168.191.129';
+    private $api_url = 'http://192.168.191.129';
         // protected $api_url = 'http://117.50.77.190';
         // protected $api_url = 'http://139.9.222.32';
-    protected $api_token = '';
+    private $api_token = '';
         // protected $api_token = '48Gib2QOMEI21d19xbM1ntvJHvZTRE6f';
         // protected $api_token = 'RMCknu6nSiBYcif8S2beSi7ar8vN7phs';
     public $bt_id = '';         //  宝塔ID
@@ -522,6 +522,7 @@ class Btaction
         } elseif (isset($siteInfo['data']) && !empty($siteInfo['data'])) {
             $siteArr = '';
             if ($this->bt_name && $this->bt_id) {
+                // 如果站点名和站点ID都存在那么双项认证
                 foreach ($siteInfo['data'] as $value) {
                     if ($value['name'] == $this->bt_name && $value['id'] == $this->bt_id) {
                         $siteArr = $value;
@@ -529,6 +530,7 @@ class Btaction
                     }
                 }
             } elseif ($this->bt_name || $this->bt_id) {
+                // 如果站点名或站点ID存在一个那么单项验证
                 foreach ($siteInfo['data'] as $value) {
                     if ($value['name'] == $this->bt_name || $value['id'] == $this->bt_id) {
                         $siteArr = $value;
@@ -536,6 +538,9 @@ class Btaction
                     }
                 }
             } else {
+                // 如果都没有就选择查到的第一条
+                // 可能存在一些安全问题，一般查找都至少传递一个参数进行验证
+                // 此方法留作极端环境使用
                 $siteArr = $siteInfo['data'][0];
             }
             if (!$siteArr) {
@@ -590,9 +595,9 @@ class Btaction
      * @param integer $maxNum
      * @return void
      */
-    public function getSiteList($maxNum = 999)
+    public function getSiteList($search='',$p = 1,$maxNum = 999)
     {
-        $list = $this->btAction->Websites('', 1, $maxNum);
+        $list = $this->btAction->Websites($search, $p, $maxNum);
         if (isset($list['data']) && !empty($list['data'])) {
             return $list;
         } else {
@@ -606,14 +611,46 @@ class Btaction
      * @param integer $maxNum
      * @return void
      */
-    public function getSqlList($maxNum = 999)
+    public function getSqlList($search='',$p = 1,$maxNum = 999)
     {
-        $list = $this->btAction->WebSqlList('', 1, $maxNum);
+        $list = $this->btAction->WebSqlList($search, $p, $maxNum);
         if (isset($list['data']) && !empty($list['data'])) {
             return $list;
         } else {
             return false;
         }
+    }
+    
+    // 获取全部ftp列表
+    public function getFtpList($search='',$p = 1,$maxNum = 999)
+    {
+        $list = $this->btAction->WebFtpList($search, $p, $maxNum);
+        if (isset($list['data']) && !empty($list['data'])) {
+            return $list;
+        } else {
+            return false;
+        }
+    }
+
+    // 站点总数
+    public function siteCount($search=''){
+        $list = $this->getSiteList($search);
+        $s = isset($list['data'])?$list['data']:[];
+        return count($s);
+    }
+
+    // ftp总数
+    public function ftpCount($search=''){
+        $list = $this->getFtpList($search);
+        $s = isset($list['data'])?$list['data']:[];
+        return count($s);
+    }
+
+    // sql总数
+    public function sqlCount($search=''){
+        $list = $this->getSqlList($search);
+        $s = isset($list['data'])?$list['data']:[];
+        return count($s);
     }
 
     /**
