@@ -1596,7 +1596,6 @@ class Vhost extends Frontend
         }
         // 文件下载FTP
         if (input('get.downfile')) {
-            // TODO 下载文件出现乱码
             $file = input('get.downfile');
 
             $arr = explode('/', $file);
@@ -1607,7 +1606,9 @@ class Vhost extends Frontend
             // 文件名
             $downFileName = end($arr);
             try {
-                $down = $ftp->get($tempDir . $downFileName, $file, 1);
+                // 1:二进制,2:文本模式，已知windows下使用二进制下载图片出现编码错误
+                // 下载时不能开启app_trace
+                $down = $ftp->get($tempDir . $downFileName, $file,2);
             } catch (\Exception $e) {
                 $this->error('下载失败' . $e->getMessage());
             }
