@@ -1,6 +1,52 @@
 {extend name="common/base" /}
 {block name="css"}
 <style type="text/css">
+  .progress-xs {
+    height: 25px;
+  }
+
+  .mdi-2x {
+    font-size: 2em;
+  }
+
+  .card {
+    border: 1px solid #eee;
+    border-bottom: 1px solid #d1d2d3;
+  }
+
+  .box-placeholder {
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px dashed #dddddd;
+    background: #fafafa;
+    color: #444444;
+  }
+
+  .box-placeholder> :last-child {
+    margin-bottom: 0;
+  }
+
+  .box-placeholder-lg {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+
+  .box-placeholder p {
+    font-size: 20px;
+  }
+
+  .box-placeholder p:nth-child(2) {
+    font-size: 12px;
+  }
+
+  .row-flush p {
+    font-size: 14px;
+
+  }
+
+  .row-flush .m0 {
+    color: rgba(255, 255, 255, 0.74);
+  }
 
   .dis_contents {
     display: contents;
@@ -23,7 +69,6 @@
     box-shadow: 2px 2px 1px #f5f8fa;
   }
 
-  /* 功能导航 */
   .div_margin {
     -webkit-border-radius: 3px;
     border-radius: 3px;
@@ -43,166 +88,6 @@
       padding: unset;
     }
   }
-
-  /* 背景动画 */
-  .wave {
-    background-color: #f9fafb;
-    overflow: hidden;
-    position: relative;
-  }
-
-  .wave>div {
-    z-index: 1;
-  }
-
-  .wave:before {
-    content: ' ';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ffffff;
-    z-index: -1;
-  }
-
-  .wave:after {
-    content: ' ';
-    width: 1000px;
-    height: 1025px;
-    position: absolute;
-    bottom: 65%;
-    left: -250px;
-    border-radius: 35%;
-    background: white;
-    z-index: 0;
-  }
-
-  .wave:after {
-    -webkit-transform: rotate(45deg);
-    transform: rotate(45deg);
-  }
-
-  .wave-animate:after {
-    -webkit-animation: animate-wave 15s infinite linear;
-    animation: animate-wave 15s infinite linear;
-  }
-
-  .wave-animate-slower:after {
-    -webkit-animation: animate-wave 30s infinite linear;
-    animation: animate-wave 30s infinite linear;
-  }
-
-  .wave-animate-slow:after {
-    -webkit-animation: animate-wave 25s infinite linear;
-    animation: animate-wave 25s infinite linear;
-  }
-
-  .wave-animate-fast:after {
-    -webkit-animation: animate-wave 10s infinite linear;
-    animation: animate-wave 10s infinite linear;
-  }
-
-  .wave-animate-faster:after {
-    -webkit-animation: animate-wave 5s infinite linear;
-    animation: animate-wave 5s infinite linear;
-  }
-
-  .wave.wave-primary {
-    background-color: rgba(51, 202, 187, 0.1) !important;
-  }
-
-  .wave.wave-primary .svg-icon svg g [fill] {
-    fill: #33cabb;
-  }
-
-  .wave.wave-secondary {
-    background-color: rgba(77, 82, 89, 0.1) !important;
-  }
-
-  .wave.wave-secondary .svg-icon svg g [fill] {
-    fill: #4d5259;
-  }
-
-  .wave.wave-success {
-    background-color: rgba(21, 195, 119, 0.1) !important;
-  }
-
-  .wave.wave-success .svg-icon svg g [fill] {
-    fill: #15c377;
-  }
-
-  .wave.wave-info {
-    background-color: rgba(72, 176, 247, 0.1) !important;
-  }
-
-  .wave.wave-info .svg-icon svg g [fill] {
-    fill: #48b0f7;
-  }
-
-  .wave.wave-warning {
-    background-color: rgba(250, 166, 75, 0.1) !important;
-  }
-
-  .wave.wave-warning .svg-icon svg g [fill] {
-    fill: #faa64b;
-  }
-
-  .wave.wave-danger {
-    background-color: rgba(249, 104, 104, 0.1) !important;
-  }
-
-  .wave.wave-danger .svg-icon svg g [fill] {
-    fill: #f96868;
-  }
-
-  .wave.wave-light {
-    background-color: rgba(249, 250, 251, 0.1) !important;
-  }
-
-  .wave.wave-light .svg-icon svg g [fill] {
-    fill: #f9fafb;
-  }
-
-  .wave.wave-dark {
-    background-color: rgba(70, 81, 97, 0.1) !important;
-  }
-
-  .wave.wave-dark .svg-icon svg g [fill] {
-    fill: #465161;
-  }
-
-  .wave.wave-white {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .wave.wave-white .svg-icon svg g [fill] {
-    fill: #ffffff;
-  }
-
-  @-webkit-keyframes animate-wave {
-    from {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
-    }
-
-    to {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes animate-wave {
-    from {
-      -webkit-transform: rotate(0deg);
-      transform: rotate(0deg);
-    }
-
-    to {
-      -webkit-transform: rotate(360deg);
-      transform: rotate(360deg);
-    }
-  }
 </style>
 {/block}
 {block name="content"}
@@ -211,74 +96,135 @@
   <div class="col-md-9">
     <!-- START summary widgets-->
     <div class="row">
-      <div class="col-sm-6 col-md-6 col-lg-4">
-        <div class="card wave wave-animate-slow wave-primary">
-          <div class="card-body">
-            <div class="flex-box">
-              <div>
-                <span><b>网页空间</b></span>
-                <p class="text-muted m-b-10">{$hostInfo.site_size}M</p>
+      <div class="col-lg-3 col-sm-6">
+        <!-- START widget-->
+        <div class="card widget">
+          <div class="card-body bg-purple">
+            <div class="row row-table row-flush">
+              <div class="col-lg-8 col-md-8 col-8 col-sm-8">
+                <span>运行状态</span>
+                <h4 class="m0">
+                  <div class="point point-success"></div>
+                  {switch name="siteStatus"}
+                  {case value="0"}<span class="text-danger">停止</span>{/case}
+                  {case value="1"}<span class="text-success">正常</span>{/case}
+                  {case value="2"}<span class="text-warning">超量</span>{/case}
+                  {case value="3"}<span class="text-danger">过期</span>{/case}
+                  {/switch}
+                  {if $siteStr!='正常'}{$siteStr}{/if}
+                </h4>
               </div>
-              <h3 class="text-success">{$hostInfo.site_max!='0'?$hostInfo.site_max.'M':'无限制'}</h3>
+              <div class="col-lg-4 col-sm-4 col-4 col-md-4 text-center">
+                <em class="mdi mdi-power mdi-2x"></em>
+              </div>
             </div>
-            <div class="progress m-b-5" style="height: 5px;">
-              <div class="progress-bar bg-success" role="progressbar" aria-valuenow="80" aria-valuemin="0"
-                aria-valuemax="100" style="width:{if
-                $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%"></div>
+          </div>
+          <div class="card-body">
+            <!-- Bar chart-->
+            <div class="text-center">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="customSwitch2" {if $siteStatus}checked{/if}>
+                  <label class="custom-control-label" for="customSwitch2">
+                {if $siteStatus}
+                <a href="javascript:sitestop();" class="text-success" data-toggle="tooltip" data-placement="top"
+                  title="" data-original-title="点击停止网站">停止网站</a>
+                {else/}
+                <a href="javascript:sitestart();" class="text-danger" data-toggle="tooltip" data-placement="top"
+                  title="" data-original-title="点击开启网站">开启网站</a>
+                {/if}
+                </label>
+              </div>
+
             </div>
-            <div class="flex-box">
-              <p class="text-muted mb-0"><em class="mdi mdi-webpack"></em></p>
-              <p class="text-muted mb-0">{if
-                $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-3 col-sm-6">
+        <!-- START widget-->
+        <div class="card widget">
+          <div class="card-body bg-info">
+            <div class="row row-table row-flush">
+              <div class="col-lg-8 col-md-8 col-8 col-sm-8">
+                <span>网页空间</span>
+                <h4 class="m0">
+                  {$hostInfo.site_size}M / <small
+                    class="text-warning">{$hostInfo.site_max!='0.00'?$hostInfo.site_max.'M':'无限制'}</small></h4>
+              </div>
+              <div class="col-lg-4 col-sm-4 col-4 col-md-4 text-center">
+                <em class="mdi mdi-webpack mdi-2x"></em> </div>
+            </div>
+          </div>
+          <div class="card-body" id="web">
+            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success"
+              data-toggle="tooltip" data-placement="top" title="" data-html="true"
+              data-original-title="总大小：{$hostInfo.site_max!='0.00'?$hostInfo.site_max.'M':'无限制'}<br/>已使用：{$hostInfo.site_size?$hostInfo.site_size:'0'}M">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                value="{$hostInfo.site_size?$hostInfo.site_size:'0'}" max="{$hostInfo.site_max}"
+                style="width:{if $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%">
+                {if $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%
+              </div>
             </div>
           </div>
         </div>
       </div>
       {notempty name="hostInfo.sql_max"}
-      <div class="col-sm-6 col-md-6 col-lg-4">
-        <div class="card wave wave-animate wave-danger">
-          <div class="card-body">
-            <div class="flex-box">
-              <div>
-                <span><b>数据空间</b></span>
-                <p class="text-muted m-b-10">{$hostInfo.sql_size}M</p>
+      <div class="col-lg-3 col-sm-6">
+        <!-- START widget-->
+        <div class="card widget">
+          <div class="card-body bg-success">
+            <div class="row row-table row-flush">
+              <div class="col-lg-8 col-md-8 col-8 col-sm-8">
+                <span>数据空间</span>
+                <h4 class="m0">
+                  {$hostInfo.sql_size}M
+                  / <small class="text-warning">{$hostInfo.sql_max!='0.00'?$hostInfo.sql_max.'M':'无限制'}</small>
+                </h4>
               </div>
-              <h3 class="text-danger">{$hostInfo.sql_max!='0'?$hostInfo.sql_max.'M':'无限制'}</h3>
+              <div class="col-lg-4 col-sm-4 col-4 col-md-4 text-center">
+                <em class="mdi mdi-database mdi-2x"></em> </div>
             </div>
-            <div class="progress m-b-5" style="height: 5px;">
-              <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="50" aria-valuemin="0"
-                aria-valuemax="100" style="width:{if
-                $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%"></div>
-            </div>
-            <div class="flex-box">
-              <p class="text-muted mb-0"><em class="mdi mdi-database"></em></p>
-              <p class="text-muted mb-0">{if
-                $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%</p>
+          </div>
+          <div class="card-body" id="sql">
+            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success"
+              data-toggle="tooltip" data-placement="top" title="" data-html="true"
+              data-original-title="总大小：{$hostInfo.sql_max!='0.00'?$hostInfo.sql_max:'无限制'}<br/>已使用：{$hostInfo.sql_size?$hostInfo.sql_size:'0'}M">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                value="{$hostInfo.sql_size?$hostInfo.sql_size:'0'}" max="{$hostInfo.sql_max}"
+                style="width:{if $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%">
+                {if $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%
+              </div>
             </div>
           </div>
         </div>
       </div>
       {/notempty}
       {notempty name="hostInfo.flow_max"}
-      <div class="col-sm-6 col-md-6 col-lg-4">
-        <div class="card wave wave-animate-fast wave-dark">
-          <div class="card-body">
-            <div class="flex-box">
-              <div>
-                <span><b>流量</b></span>
-                <p class="text-muted m-b-10">{$hostInfo.flow_size?$hostInfo.flow_size:'0'}M</p>
+      <div class="col-lg-3 col-sm-6">
+        <!-- START widget-->
+        <div class="card widget">
+          <div class="card-body bg-brown">
+            <div class="row row-table row-flush">
+              <div class="col-lg-8 col-md-8 col-8 col-sm-8">
+                <span>流量</span>
+                <h4 class="m0">
+                  {$hostInfo.flow_size?$hostInfo.flow_size:'0'}M
+                  / <small class="text-warning">{$hostInfo.flow_max!='0.00'?$hostInfo.flow_max.'M':'无限制'}</small>
+                </h4>
               </div>
-              <h3 class="text-primary">{$hostInfo.flow_max!='0'?$hostInfo.flow_max.'M':'无限制'}</h3>
+              <div class="col-lg-4 col-sm-4 col-4 col-md-4 text-center">
+                <em class="mdi mdi-hamburger mdi-2x"></em>
+              </div>
             </div>
-            <div class="progress m-b-5" style="height: 5px;">
-              <div class="progress-bar bg-primary" role="progressbar" aria-valuenow="25" aria-valuemin="0"
-                aria-valuemax="100" style="width:{if
-                $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%"></div>
-            </div>
-            <div class="flex-box">
-              <p class="text-muted mb-0"><em class="mdi mdi-hamburger"></em></p>
-              <p class="text-muted mb-0">{if
-                $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%</p>
+          </div>
+          <div class="card-body" id="flow">
+            <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success"
+              data-toggle="tooltip" data-placement="top" title="" data-html="true"
+              data-original-title="总大小：{$hostInfo.flow_max!='0.00'?$hostInfo.flow_max:'无限制'}<br/>已使用：{$hostInfo.flow_size?$hostInfo.flow_size:'0'}M">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                value="{$hostInfo.flow_size?$hostInfo.flow_size:'0'}" max="{$hostInfo.flow_max}"
+                style="width:{if $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%">
+                {if $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%
+              </div>
             </div>
           </div>
         </div>
@@ -318,70 +264,8 @@
             </ul>
             <div class="tab-content" id="v-pills-tabContent">
               <div class="tab-pane fade show active" id="home-pills">
+                
                 <div class="row">
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/domain')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('domain')}"
-                      data-url="{:url('index/vhost/domain')}">
-                      <i class="mdi mdi-web"></i> <span style="color:#333333;">{:__('domain')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/pass')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('pass')}" data-url="{:url('index/vhost/pass')}">
-                      <i class="mdi mdi-lock-reset"></i> <span style="color:#333333;">{:__('pass')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/speed')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('speed')}"
-                      data-url="{:url('index/vhost/speed')}">
-                      <i class="mdi mdi-rocket"></i> <span style="color:#333333;">{:__('speed')}</span>
-                    </a>
-                  </div>
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/rewrite301')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite301')}"
-                      data-url="{:url('index/vhost/rewrite301')}">
-                      <i class="mdi mdi-undo-variant"></i> <span style="color:#333333;">{:__('rewrite301')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/redir')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('redir')}"
-                      data-url="{:url('index/vhost/redir')}">
-                      <i class="mdi mdi-umbraco"></i> <span style="color:#333333;">{:__('redir')}</span>
-                    </a>
-                  </div>
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/defaultfile')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('defaultfile')}"
-                      data-url="{:url('index/vhost/defaultfile')}">
-                      <i class="mdi mdi-home"></i> <span style="color:#333333;">{:__('defaultfile')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/rewrite')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite')}"
-                      data-url="{:url('index/vhost/rewrite')}">
-                      <i class="mdi mdi-tree"></i> <span style="color:#333333;">{:__('rewrite')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/ssl')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('ssl')}" data-url="{:url('index/vhost/ssl')}">
-                      <i class="mdi mdi-send"></i> <span style="color:#333333;">{:__('ssl')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/runPath')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('runPath')}"
-                      data-url="{:url('index/vhost/runPath')}">
-                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('runPath')}</span>
-                    </a>
-                  </div>
-                  {notempty name="hostInfo.sql.username"}
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin">
-                    <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}" {if $phpmyadmin}target="_blank"
-                      {/if}> <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('sql_console')}</span>
-                    </a>
-                  </div>
-                  {/notempty}
-                </div>
-                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/domain')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('domain')}" data-url="{:url('index/vhost/domain')}">
                       <div class="box-placeholder" align="center">
@@ -465,29 +349,10 @@
                     </a>
                   </div>
                   {/notempty}
-                </div> -->
+                </div>
               </div>
               <div class="tab-pane fade" id="files-pills">
                 <div class="row">
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/file')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('file')}" data-url="{:url('index/vhost/file')}">
-                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('file')}</span>
-                    </a>
-                  </div>
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/file_ftp')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('file_ftp')}"
-                      data-url="{:url('index/vhost/file_ftp')}">
-                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('file_ftp')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/back')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('back')}" data-url="{:url('index/vhost/back')}">
-                      <i class="mdi mdi-clipboard-flow"></i> <span style="color:#333333;">{:__('back')}</span>
-                    </a>
-                  </div>
-                </div>
-                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/file')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('file')}" data-url="{:url('index/vhost/file')}" >
                       <div class="box-placeholder" align="center">
@@ -514,36 +379,11 @@
                       </div>
                     </a>
                   </div>
-                </div> -->
+                </div>
               </div>
               <div class="tab-pane fade" id="security-pills">
+                
                 <div class="row">
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/protection')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('protection')}"
-                      data-url="{:url('index/vhost/protection')}">
-                      <i class="mdi mdi-minus-network"></i> <span style="color:#333333;">{:__('protection')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/waf')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('waf')}" data-url="{:url('index/vhost/waf')}">
-                      <i class="mdi mdi-wall"></i> <span style="color:#333333;">{:__('waf')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/dirauth')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('dirauth')}"
-                      data-url="{:url('index/vhost/dirauth')}">
-                      <i class="mdi mdi-file-lock-outline"></i> <span style="color:#333333;">{:__('dirauth')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/proof')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('proof')}"
-                      data-url="{:url('index/vhost/proof')}">
-                      <i class="mdi mdi-webcam"></i> <span style="color:#333333;">{:__('proof')}</span>
-                    </a>
-                  </div>
-                </div>
-                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/protection')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('protection')}" data-url="{:url('index/vhost/protection')}" >
                       <div class="box-placeholder" align="center">
@@ -576,57 +416,11 @@
                       </div>
                     </a>
                   </div>
-                </div> -->
+                </div>
               </div>
               <div class="tab-pane fade" id="expert-pills">
+                
                 <div class="row">
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/sitelog')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}"
-                      data-url="{:url('index/vhost/sitelog')}">
-                      <i class="mdi mdi-chart-bar-stacked"></i> <span style="color:#333333;">{:__('sitelog')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/sqltools')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('sqltools')}"
-                      data-url="{:url('index/vhost/sqltools')}">
-                      <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('sqltools')}</span>
-                    </a>
-                  </div>
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/httpauth')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('httpauth')}"
-                      data-url="{:url('index/vhost/httpauth')}">
-                      <i class="mdi mdi-wan"></i> <span style="color:#333333;">{:__('httpauth')}</span>
-                    </a>
-                  </div>
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/deployment')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('deployment')}"
-                      data-url="{:url('index/vhost/deployment')}">
-                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('deployment')}</span>
-                    </a>
-                  </div>
-                  <div
-                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/deployment_new')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('deployment_new')}"
-                      data-url="{:url('index/vhost/deployment_new')}">
-                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('deployment_new')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/total')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('total')}"
-                      data-url="{:url('index/vhost/total')}">
-                      <i class="mdi mdi-chart-pie"></i> <span style="color:#333333;">{:__('total')}</span>
-                    </a>
-                  </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/proxy')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('proxy')}"
-                      data-url="{:url('index/vhost/proxy')}">
-                      <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('proxy')}</span>
-                    </a>
-                  </div>
-                </div>
-                <!-- <div class="row">
                   <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/sitelog')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}" data-url="{:url('index/vhost/sitelog')}" >
                       <div class="box-placeholder" align="center">
@@ -683,7 +477,7 @@
                       </div>
                     </a>
                   </div>
-                </div> -->
+                </div>
               </div>
             </div>
           </div>
