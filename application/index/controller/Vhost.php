@@ -509,8 +509,10 @@ class Vhost extends Frontend
         Db::startTrans();
         $domainInfo = model('Domainlist')::get(['vhost_id'=>$this->vhost_id,'domain'=> $delete]);
         // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
-        $domainInfo->delete(true);
-        if($domainInfo->status!=1){
+        if($domainInfo){
+            $domainInfo->delete(true);
+        }
+        if(isset($domainInfo->status)&&$domainInfo->status!=1){
         } elseif ($type == 'domain') {
             $modify_status = $this->btTend->delDomain($this->bt_id, $this->siteName, $delete, 80);
             if (!$modify_status) {
@@ -2003,7 +2005,6 @@ class Vhost extends Frontend
             // 新版分片上传
             if ($files = request()->file('blob')) {
                 header("Content-type: text/html; charset=utf-8");
-                // TODO 中文上传失败
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
                 $this->hostModel->save([
                     'site_size'=>$websize,
@@ -2268,6 +2269,10 @@ class Vhost extends Frontend
                 } else {
                     $this->error('下载失败');
                 }
+            }
+            // TODO 获取队列（目前没有任务ID对应）
+            if($type == 'get_task_lists'){
+
             }
             
             $search = $this->request->get('search');
