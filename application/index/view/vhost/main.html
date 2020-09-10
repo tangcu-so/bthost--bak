@@ -781,7 +781,7 @@
                   title="" data-original-title="点击开启网站">开启网站</a>
                 {/if}
               </small>
-              <br /><small>到期时间：{if $hostInfo.endtime}{$hostInfo.endtime|date="Y-m-d H:i",###}{else/}数据有误{/if}</small>
+              <br /><small>到期时间：{if $hostInfo.endtime}{$hostInfo.endtime|date="Y-m-d",###}{else/}数据有误{/if}</small>
               <br /><small>环境：{$hostInfo.server_os} + {$serverConfig.webserver|default=""}</small>
               <br /><small>响应：{:debug('begin','end',6).'s'}</small>
             </p>
