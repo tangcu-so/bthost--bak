@@ -67,8 +67,8 @@ class Vhost extends Frontend
             if(!$hostInfo){
                 $this->error('站点不存在','');
             }
-            $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'vhost_id'=>$hostInfo->id]);
-            $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'vhost_id'=>$hostInfo->id]);
+            $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
+            $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
             $hostInfo->ftp = $ftpInfo?$ftpInfo:'';
             $hostInfo->sql = $sqlInfo?$sqlInfo:'';
             // $hostInfo->vhost_id = $hostInfo->id;
@@ -93,7 +93,6 @@ class Vhost extends Frontend
             case 'normal':
                 break;
             case 'stop':
-                $this->error('主机已停用','/sites');
                 break;
             case 'locked':
                 $this->error('主机已锁定','/sites');
@@ -198,8 +197,6 @@ class Vhost extends Frontend
             $ftpInfo = false;
         }
 
-        $siteStr = $this->hostModel->status($this->hostInfo['status']);
-
         $phpversion_list = Cache::remember('phpversion_list',function(){
             return $this->btAction->GetPHPVersion();
         });
@@ -208,7 +205,6 @@ class Vhost extends Frontend
         $this->view->assign('ftpInfo', $ftpInfo);
         $this->view->assign('phpVer', $phpVer);
         $this->view->assign('siteStatus', $siteStatus);
-        $this->view->assign('siteStr', $siteStr);
         $this->view->assign('phpversion_list', $phpversion_list);
         return $this->view->fetch();
     }
@@ -271,6 +267,9 @@ class Vhost extends Frontend
         if(!$set){
             $this->error($this->btTend->_error);
         }
+        $this->hostModel->save([
+            'status'=>'stop'
+        ],['id'=>$this->hostInfo->id]);
         $this->success('暂停成功');
     }
 
@@ -307,6 +306,9 @@ class Vhost extends Frontend
         if(!$set){
             $this->error($this->btTend->_error);
         }
+        $this->hostModel->save([
+            'status'=>'normal'
+        ],['id'=>$this->hostInfo->id]);
         $this->success('开启成功');
     }
 
@@ -321,7 +323,7 @@ class Vhost extends Frontend
         // 剩余可绑定数
 
         // 获取未审核的域名
-        $auditList = model('Domainlist')->where(['audit'=>0])->select();
+        $auditList = model('Domainlist')->where('status','<>',1)->select();
 
         $count = count($domainList) -1 + count($dirList['binding']) + count($auditList);
         $sys = $this->hostInfo->domain_max - $count;
@@ -463,9 +465,8 @@ class Vhost extends Frontend
                 $data = [
                     'vhost_id'    => $this->vhost_id,
                     'domain'      => $value,
-                    'status'      => 1,
                     'dir'         => $post_str['dirs'],
-                    'audit'       => $this->hostInfo->is_audit?0:1,
+                    'status'       => $this->hostInfo->is_audit?0:1,
                 ];
                 $add = model('Domainlist')::create($data);
                 if (!$add) {
@@ -502,49 +503,35 @@ class Vhost extends Frontend
      */
     public function delDomain()
     {
-        $post_str = $this->request->post() ? $this->request->post() : '';
-
-        if ($post_str['delete'] == $this->siteName) {
-            $this->error('默认域名不能删除');
-        }
+        $delete = $this->request->post('delete');
+        $type = $this->request->post('type');
+        $id = $this->request->post('id/d');
         Db::startTrans();
-        if ($post_str['type'] == 'domain') {
-            // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
-            $del = Db::name('domain')->where('vhost_id', $this->vhost_id)->where('domain', $post_str['delete'])->delete();
-            $modify_status = $this->btTend->delDomain($this->bt_id, $this->siteName, $post_str['delete'], 80);
-            if ($modify_status) {
-                Db::commit();
-                $this->success($modify_status['msg']);
-            } else {
+        $domainInfo = model('Domainlist')::get(['vhost_id'=>$this->vhost_id,'domain'=> $delete]);
+        // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
+        $domainInfo->delete(true);
+        if($domainInfo->status!=1){
+        } elseif ($type == 'domain') {
+            $modify_status = $this->btTend->delDomain($this->bt_id, $this->siteName, $delete, 80);
+            if (!$modify_status) {
                 Db::rollback();
                 $this->error('删除失败' . $modify_status['msg']);
             }
-        } else if ($post_str['type'] == 'dir') {
+        } elseif ($type == 'dir') {
             // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
-            $del = Db::name('domain')->where('vhost_id', $this->vhost_id)->where('domain', $post_str['delete'])->delete();
-            $modify_status = $this->btTend->delDomainDir($post_str['id']);
-            if ($modify_status) {
-                Db::commit();
-                $this->success($modify_status['msg']);
-            } else {
+            $modify_status = $this->btTend->delDomainDir($id);
+            if (!$modify_status) {
                 Db::rollback();
                 $this->error('删除失败' . $modify_status['msg']);
             }
-        
         }
+        Db::commit();
+        $this->success('删除成功');
     }
 
     // 密码修改
     public function pass()
     {
-        // var_dump($this->hostInfo);
-        // exit;
-        // 虚拟主机登录账号密码
-
-        // FTP账号密码
-
-        // Sql账号密码
-
         $this->view->assign('title', __('pass'));
         return $this->view->fetch();
     }
@@ -2147,6 +2134,7 @@ class Vhost extends Frontend
             }
             //查看图片
             if (input('post.type') == 'images') {
+                // TODO 中文文件名图片查看错误
                 $file = input('post.file') ? preg_replace('/([\.]){2,}|([\/\/]){2,}/', '', input('post.file')) : '';
                 // var_dump($WebGetKey . $file);exit;
                 $images = $this->btAction->images_view($WebGetKey . $file,$file);

@@ -771,16 +771,9 @@
         <div class="media">
           <div class="media-body clearfix">
             <p class="m0">
-              <small>运行状态：
-                {switch name="siteStatus"}
-                {case value="0"}<span class="text-danger">停止</span>{/case}
-                {case value="1"}<span class="text-success">正常</span>{/case}
-                {case value="2"}<span class="text-warning">超量</span>{/case}
-                {case value="3"}<span class="text-danger">过期</span>{/case}
-                {/switch}
-                {if $siteStr!='正常'}{$siteStr}{/if}
-              </small>
-              <br /><small>主机操作：{if $siteStatus}
+              <small>运行状态：<span class="text-info">{:__($hostInfo.status)}</span></small>
+              <br />
+              <small>主机操作：{if $siteStatus}
                 <a href="javascript:sitestop();" class="text-success" data-toggle="tooltip" data-placement="top"
                   title="" data-original-title="点击停止网站">停止网站</a>
                 {else/}

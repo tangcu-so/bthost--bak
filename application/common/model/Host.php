@@ -180,4 +180,31 @@ class Host extends Model
         }
         return $status_attr;
     }
+
+    public function getNumber($status){
+        switch ($status) {
+            case 'normal':
+                $vhostStatus = 1;
+                break;
+            case 'stop':
+                $vhostStatus = 0;
+                break;
+            case 'locked':
+                $vhostStatus = 2;
+                break;
+            case 'expired':
+                $vhostStatus = 3;
+                break;
+            case 'excess':
+                $vhostStatus = 4;
+                break;
+            case 'error':
+                $vhostStatus = 5;
+                break;
+            default:
+                $vhostStatus = 0;
+                break;
+        }
+        return $vhostStatus;
+    }
 }
