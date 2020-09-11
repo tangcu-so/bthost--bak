@@ -1,0 +1,10 @@
+{
+	"php_ext":"",
+	"chmod":[],
+	"success_url":"/install.php",
+	"php_versions":"72",
+	"db_config":"application/database.php",
+	"run_path":"/public",
+	"remove_file":[],
+	"enable_functions":[]
+}
