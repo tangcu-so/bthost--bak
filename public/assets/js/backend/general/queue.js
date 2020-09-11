@@ -76,7 +76,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
                         layer.close(index);
                         layer.load(2);
                         $.ajax({
-                        url: 'ajax/quelogclear',
+                        url: 'general/queue/quelogclear',
                         type: 'post',
                         dataType: 'json',
                         cache: false,

@@ -85,11 +85,11 @@ class Queue extends Api
                             $s                          = $this->btResourceTask($limit, $checkTime);
                             $s ? $n[$value['function']] = $s : '';
                             break;
-                        case 'host':
+                        case 'hosttask':
                             $s                          = $this->hostTask();
                             $s ? $n[$value['function']] = $s : '';
                             break;
-                        case 'clear':
+                        case 'hostclear':
                             $s                          = $this->hostClear();
                             $s ? $n[$value['function']] = $s : '';
                             break;

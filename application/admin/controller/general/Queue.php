@@ -38,4 +38,11 @@ class Queue extends Backend
         $this->view->assign('row', $row);
         return $this->view->fetch('queuelog');
     }
+
+    // 清空日志
+    public function quelogclear()
+    {
+        $this->model->where('id', '>', 1)->delete(true);
+        $this->success('已清空');
+    }
 }
