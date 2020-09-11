@@ -553,6 +553,10 @@ class Ajax extends Backend
             rmdirs(TEMP_PATH, false);
             Cache::clear();
             Service::refresh();
+            // 清除opcache缓存
+            if (extension_loaded('Zend OPcache')) {
+                opcache_reset();
+            }
 
             Db::commit();
             $this->success('更新成功，欢迎体验最新的系统^_^');
