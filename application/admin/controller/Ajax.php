@@ -4,17 +4,16 @@ namespace app\admin\controller;
 
 use app\common\controller\Backend;
 use app\common\exception\UploadException;
+use app\common\library\Btaction;
 use app\common\library\Upload;
-use fast\Random;
 use think\addons\Service;
 use think\Cache;
 use think\Config;
 use think\Db;
+use think\Debug;
+use think\Exception;
 use think\Lang;
 use think\Validate;
-use app\common\library\Btaction;
-use think\Exception;
-use think\Debug;
 
 /**
  * Ajax异步请求接口
@@ -25,9 +24,9 @@ class Ajax extends Backend
 
     protected $noNeedLogin = ['lang'];
     protected $noNeedRight = ['*'];
-    protected $layout = '';
+    protected $layout      = '';
 
-    public static $filePath = ROOT_PATH.'Data/';
+    public static $filePath = ROOT_PATH . 'Data/';
 
     public function _initialize()
     {
@@ -66,16 +65,16 @@ class Ajax extends Backend
             if (!Config::get('upload.chunking')) {
                 $this->error(__('Chunk file disabled'));
             }
-            $action = $this->request->post("action");
+            $action     = $this->request->post("action");
             $chunkindex = $this->request->post("chunkindex/d");
             $chunkcount = $this->request->post("chunkcount/d");
-            $filename = $this->request->post("filename");
-            $method = $this->request->method(true);
+            $filename   = $this->request->post("filename");
+            $method     = $this->request->method(true);
             if ($action == 'merge') {
                 $attachment = null;
                 //合并分片文件
                 try {
-                    $upload = new Upload();
+                    $upload     = new Upload();
                     $attachment = $upload->merge($chunkid, $chunkcount, $filename);
                 } catch (UploadException $e) {
                     $this->error($e->getMessage());
@@ -107,7 +106,7 @@ class Ajax extends Backend
             //默认普通上传文件
             $file = $this->request->file('file');
             try {
-                $upload = new Upload($file);
+                $upload     = new Upload($file);
                 $attachment = $upload->upload();
             } catch (UploadException $e) {
                 $this->error($e->getMessage());
@@ -139,17 +138,17 @@ class Ajax extends Backend
         //排序的方式
         $orderway = strtolower($this->request->post("orderway", ""));
         $orderway = $orderway == 'asc' ? 'ASC' : 'DESC';
-        $sour = $weighdata = [];
-        $ids = explode(',', $ids);
-        $prikey = $pk ? $pk : (Db::name($table)->getPk() ?: 'id');
-        $pid = $this->request->post("pid");
+        $sour     = $weighdata     = [];
+        $ids      = explode(',', $ids);
+        $prikey   = $pk ? $pk : (Db::name($table)->getPk() ?: 'id');
+        $pid      = $this->request->post("pid");
         //限制更新的字段
         $field = in_array($field, ['weigh']) ? $field : 'weigh';
 
         // 如果设定了pid的值,此时只匹配满足条件的ID,其它忽略
         if ($pid !== '') {
             $hasids = [];
-            $list = Db::name($table)->where($prikey, 'in', $ids)->where('pid', 'in', $pid)->field("{$prikey},pid")->select();
+            $list   = Db::name($table)->where($prikey, 'in', $ids)->where('pid', 'in', $pid)->field("{$prikey},pid")->select();
             foreach ($list as $k => $v) {
                 $hasids[] = $v[$prikey];
             }
@@ -158,14 +157,14 @@ class Ajax extends Backend
 
         $list = Db::name($table)->field("$prikey,$field")->where($prikey, 'in', $ids)->order($field, $orderway)->select();
         foreach ($list as $k => $v) {
-            $sour[] = $v[$prikey];
+            $sour[]                 = $v[$prikey];
             $weighdata[$v[$prikey]] = $v[$field];
         }
         $position = array_search($changeid, $ids);
-        $desc_id = $sour[$position];    //移动到目标的ID值,取出所处改变前位置的值
-        $sour_id = $changeid;
+        $desc_id  = $sour[$position]; //移动到目标的ID值,取出所处改变前位置的值
+        $sour_id  = $changeid;
         $weighids = array();
-        $temp = array_values(array_diff_assoc($ids, $sour));
+        $temp     = array_values(array_diff_assoc($ids, $sour));
         foreach ($temp as $m => $n) {
             if ($n == $sour_id) {
                 $offset = $desc_id;
@@ -222,9 +221,9 @@ class Ajax extends Backend
      */
     public function category()
     {
-        $type = $this->request->get('type');
-        $pid = $this->request->get('pid');
-        $where = ['status' => 'normal'];
+        $type         = $this->request->get('type');
+        $pid          = $this->request->get('pid');
+        $where        = ['status' => 'normal'];
         $categorylist = null;
         if ($pid !== '') {
             if ($type) {
@@ -247,21 +246,21 @@ class Ajax extends Backend
         $params = $this->request->get("row/a");
         if (!empty($params)) {
             $province = isset($params['province']) ? $params['province'] : '';
-            $city = isset($params['city']) ? $params['city'] : null;
+            $city     = isset($params['city']) ? $params['city'] : null;
         } else {
             $province = $this->request->get('province');
-            $city = $this->request->get('city');
+            $city     = $this->request->get('city');
         }
-        $where = ['pid' => 0, 'level' => 1];
+        $where        = ['pid' => 0, 'level' => 1];
         $provincelist = null;
         if ($province !== '') {
             if ($province) {
-                $where['pid'] = $province;
+                $where['pid']   = $province;
                 $where['level'] = 2;
             }
             if ($city !== '') {
                 if ($city) {
-                    $where['pid'] = $city;
+                    $where['pid']   = $city;
                     $where['level'] = 3;
                 }
                 $provincelist = Db::name('area')->where($where)->field('id as value,name')->select();
@@ -282,19 +281,20 @@ class Ajax extends Backend
         exit;
     }
 
-    public function check_username_available(){
+    public function check_username_available()
+    {
         $params = $this->request->post('row/a');
-        $event = $this->request->post('event');
-        $id = $this->request->post('id/d');
-        if(isset($params['username'])&&$params['username']){
-            
-            $where = ['username'=>$params['username']];
-            if($id){
-                $where['id'] = ['<>',$id];
+        $event  = $this->request->post('event');
+        $id     = $this->request->post('id/d');
+        if (isset($params['username']) && $params['username']) {
+
+            $where = ['username' => $params['username']];
+            if ($id) {
+                $where['id'] = ['<>', $id];
             }
             // var_dump($where);exit;
             $find = model('User')->where($where)->find();
-            if($find){
+            if ($find) {
                 $this->error('用户名已存在');
             }
         }
@@ -302,40 +302,41 @@ class Ajax extends Backend
     }
 
     // 宝塔新版一键部署列表
-    public function deployment(){
+    public function deployment()
+    {
         // 获取服务器一键部署内容
-        $bt = new Btaction();
-        $name = $this->request->post('name');
-        $keyValue = $this->request->post('keyValue');
-        $search = $name?$name:$keyValue;
-        $new_data['list'] = $bt->getdeploymentlist($search);
+        $bt                = new Btaction();
+        $name              = $this->request->post('name');
+        $keyValue          = $this->request->post('keyValue');
+        $search            = $name ? $name : $keyValue;
+        $new_data['list']  = $bt->getdeploymentlist($search);
         $new_data['total'] = count($new_data['list']);
         return json($new_data);
     }
 
     // 宝塔已安装php列表
-    public function phplist(){
+    public function phplist()
+    {
         $keyValue = $this->request->post('keyValue');
         // 获取服务器安装的php版本列表(由于官方的存在很大的数据变动)
-        $bt = new Btaction();
+        $bt   = new Btaction();
         $list = $bt->getphplist();
-        if($list){
+        if ($list) {
             // 处理一下数据
-            if($keyValue){
+            if ($keyValue) {
                 foreach ($list as $key => $value) {
-                    // var_dump($keyValue,$value['id']);
-                    if($keyValue==$value['id']){
+                    if ($keyValue == $value['id']) {
                         $new_data['list'] = [$value];
                         break;
                     }
                 }
-            }else{
+            } else {
                 $new_data['list'] = $list;
             }
-        }else{
+        } else {
             $new_data['list'] = [];
         }
-        
+
         // 写死数据
         // $new_data['list'] = [
         //     ['id'=>'00','name'=>'纯静态',],
@@ -356,81 +357,87 @@ class Ajax extends Backend
     }
 
     // 获取数据库管理地址
-    public function getphpmyadmin_url(){
-        if(!Config('site.api_token')){
+    public function getphpmyadmin_url()
+    {
+        if (!Config('site.api_token')) {
             $this->error('请先配置宝塔面板接口密钥');
         }
-        $bt = new Btaction();
+        $bt  = new Btaction();
         $url = $bt->getphpmyadminUrl();
-        if(!$url){
+        if (!$url) {
             $this->error('获取失败，请在服务器中提前安装phpMyAdmin插件');
         }
-        $this->success('请求成功','',['url'=>$url]);
+        $this->success('请求成功', '', ['url' => $url]);
     }
 
     // 宝塔通讯密钥连接
-    public function bt_test(){
+    public function bt_test()
+    {
         $row = $this->request->post('row/a');
-        
-        if(isset($row['api_token'])&&$row['api_token']){
+
+        if (isset($row['api_token']) && $row['api_token']) {
             $bt = new Btaction($row['api_token']);
-            if(!$bt->test()){
+            if (!$bt->test()) {
                 $this->error($bt->_error);
             }
             $this->success('请求成功');
-        }else{
+        } else {
             $this->error('密钥不能为空');
         }
-        
+
     }
 
     // 宝塔分类列表
-    public function sortlist(){
+    public function sortlist()
+    {
         $keyValue = $this->request->post('keyValue');
         // 获取服务器中的分类列表
-        $bt = new Btaction();
+        $bt   = new Btaction();
         $list = $bt->getsitetype();
-        if($list){
-            if($keyValue){
+        if ($list) {
+            if ($keyValue) {
                 foreach ($list as $key => $value) {
-                    if($keyValue==$value['id']){
+                    if ($keyValue == $value['id']) {
                         $new_data['list'] = $list[$key];
                         break;
                     }
                 }
-            }else{
+            } else {
                 $new_data['list'] = $list;
             }
-            
-        }else{
+
+        } else {
             $new_data['list'] = [];
         }
-        
+
         $new_data['total'] = count($new_data['list']);
         return json($new_data);
     }
 
     // 获取服务器网络信息
-    public function getNet(){
+    public function getNet()
+    {
         $bt = new Btaction();
         return $bt->btAction->GetNetWork();
     }
 
     // 测试
-    public function testing(){
+    public function testing()
+    {
         // 检测是否支持curl
         // 检测对外网络访问
         // 检测延迟
         $auths = $auths_back = $ms = 0;
-        if(!extension_loaded('curl')){
+        if (!extension_loaded('curl')) {
             $curl = 0;
-        }else{
+        } else {
             $curl = 1;
         }
-        $this->success('请求成功','',['url'=>Config::get('bty.api_url'),'curl'=>$curl,'ms'=>'0.1ms','baidu'=>getRequestTimes('https://www.baidu.com')]);
+        $this->success('请求成功', '', ['url' => Config::get('bty.api_url'), 'curl' => $curl, 'ms' => '0.1ms', 'baidu' => getRequestTimes('https://www.baidu.com')]);
     }
 
-    public function phps(){
+    public function phps()
+    {
         echo phpinfo();
     }
 
@@ -444,27 +451,23 @@ class Ajax extends Backend
     {
         Debug::remark('begin');
         if ($this->request->param('token') == '123456789') {
-            if(!function_exists('zip_open')){
+            if (!function_exists('zip_open')) {
                 $this->error('不支持zip_open，请尝试切换php版本');
             }
             // TODO 在线升级优化方向
             // 判断文件写入权限
             // 逻辑判断前置
             // 版号放置数据库(待考虑)
-            // 清除缓存
-            if(extension_loaded('Zend OPcache')){
-                opcache_reset();
-            };
             $config_file = APP_PATH . DS . 'extra' . DS . 'bty.php';
-            if(!is_writable($config_file)){
+            if (!is_writable($config_file)) {
                 $this->error('文件不可写，请检查网站目录及文件权限、网站防篡改、系统加固等问题');
             }
             $update                 = new \autoupdate\Autoupdate(ROOT_PATH, true);
             $update->currentVersion = config('bty.version');
             $update->updateUrl      = config('bty.api_url');
-            $data = http_build_query(['version' => config('bty.version'), 'domain' => config('site.domain'), 'authCode' => config('site.authCode'), 'obj' => 'bty'], '', '&');
+            $data                   = http_build_query(['version' => config('bty.version'), 'domain' => config('site.domain'), 'authCode' => config('site.authCode'), 'obj' => 'bty'], '', '&');
             $update->updateIni      = '/update_check.html?' . $data;
-            
+
             Db::startTrans();
             try {
                 $latest = $update->checkUpdate();
@@ -481,12 +484,12 @@ class Ajax extends Backend
                         // 执行数据库更新
                         if ($update->sql_file) {
                             // 备份数据库
-                            $sql_name = config('bty.version').'_'.date("His",time()).'.sql';
-                            if(\app\common\library\Common::sql_back($sql_name)){
+                            $sql_name = config('bty.version') . '_' . date("His", time()) . '.sql';
+                            if (\app\common\library\Common::sql_back($sql_name)) {
                                 $data = [
-                                    'name'=>$sql_name,
-                                    'version'=>Config('bty.version'),
-                                    'filesize'=>filesize(self::$filePath.$sql_name),
+                                    'name'     => $sql_name,
+                                    'version'  => Config('bty.version'),
+                                    'filesize' => filesize(self::$filePath . $sql_name),
                                 ];
                                 model('sqlback')->data($data)->save();
                             }
@@ -497,7 +500,7 @@ class Ajax extends Backend
                             //         "verify_peer_name" => false,
                             //     ]
                             // ];
-                            $sql = $update->curl_request($update->sql_file);
+                            $sql    = $update->curl_request($update->sql_file);
                             $query  = '';
                             $prefix = Config::get("database.prefix");
                             foreach ($sql as $value) {
@@ -527,10 +530,10 @@ class Ajax extends Backend
                             $desc = $update->currentVersion . "->" . $update->latestVersion . "，用时：" . Debug::getRangeTime('begin', 'end') . 's';
                             // 数据库更新版本号
                             Db::name('version')->insert([
-                                'version' => $update->latestVersion,
+                                'version'      => $update->latestVersion,
                                 'last_version' => $update->currentVersion,
-                                'desc' => $desc,
-                                'updatetime' => time(),
+                                'desc'         => $desc,
+                                'updatetime'   => time(),
                             ]);
                         } else {
                             Db::rollback();
@@ -563,5 +566,14 @@ class Ajax extends Backend
         } else {
             $this->error('非法请求');
         }
+    }
+
+    // 获取任务队列
+    public function getTask()
+    {
+        $bt   = new Btaction();
+        $list = $bt->btAction->get_task_lists();
+        // return $list;
+        return '[{"id": 46, "name": "下载文件", "type": "1", "shell": "https://oss.yum6.cn/video/lietome/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "other": "/www/wwwroot/oa2ttc/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "status": -1, "exectime": 1599709200, "endtime": null, "addtime": 1599709200, "log": {"name": "下载文件https://oss.yum6.cn/video/lietome/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "total": 503087100, "used": "324.90 MB", "pre": "67", "speed": "10.3M", "time": "12秒"}}]';
     }
 }
