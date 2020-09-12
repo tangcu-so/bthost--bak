@@ -191,10 +191,13 @@ class Backend extends Controller
 
         // 上传信息配置后
         Hook::listen("upload_config_init", $upload);
+        // 软件配置
+        $bty_config = Config::get('bty');
+        unset($bty_config['AUTH_KEY']);
 
         // 配置信息
         $config = [
-            'site'           => array_intersect_key($site, array_flip(['name', 'indexurl', 'cdnurl', 'version', 'timezone', 'languages'])),
+            'site'           => array_intersect_key($site, array_flip(['name', 'indexurl', 'cdnurl', 'version', 'timezone', 'languages', 'authCode'])),
             'upload'         => $upload,
             'modulename'     => $modulename,
             'controllername' => $controllername,
@@ -202,7 +205,8 @@ class Backend extends Controller
             'jsname'         => 'backend/' . str_replace('.', '/', $controllername),
             'moduleurl'      => rtrim(url("/{$modulename}", '', false), '/'),
             'language'       => $lang,
-            'referer'        => Session::get("referer")
+            'referer'        => Session::get("referer"),
+            'bty'            => $bty_config,
         ];
         $config = array_merge($config, Config::get("view_replace_str"));
 

@@ -1,6 +1,6 @@
 <?php
 // +----------------------------------------------------------------------
-// | 宝塔接口类库 By Bty5
+// | 宝塔接口类库
 // +----------------------------------------------------------------------
 // | Copyright (c) 2019-2020 rights reserved.
 // +----------------------------------------------------------------------
@@ -12,8 +12,10 @@ namespace btpanel;
 
 class Btpanel
 {
-    private $BT_KEY   = ""; //接口密钥
-    private $BT_PANEL = ""; //面板地址
+    private $BT_KEY   = ""; // 接口密钥
+    private $BT_PANEL = ""; // 面板地址
+
+    public $_error = ''; // 错误内容收集
 
     public function __construct($bt_panel = null, $bt_key = null)
     {
@@ -808,7 +810,8 @@ class Btpanel
      * @param string $ps            数据库备注
      * @return void
      */
-    public function AddDatabase($name,$db_user,$password,$dtype='MySQL',$codeing = 'utf8',$dataAccess = '127.0.0.1',$address = '127.0.0.1',$ps=''){
+    public function AddDatabase($name, $db_user, $password, $dtype = 'MySQL', $codeing = 'utf8', $dataAccess = '127.0.0.1', $address = '127.0.0.1', $ps = '')
+    {
         $url = $this->BT_PANEL . config("bt.AddDatabase");
 
         $p_data         = $this->GetKeyData();
@@ -819,7 +822,7 @@ class Btpanel
         $p_data['dtype'] = $dtype;
         $p_data['dataAccess'] = $dataAccess;
         $p_data['address'] = $address;
-        $p_data['ps'] = $ps?$ps:$name;
+        $p_data['ps'] = $ps ? $ps : $name;
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -833,7 +836,8 @@ class Btpanel
      * @param [type] $name      数据库名
      * @return void
      */
-    public function DeleteDatabase($id,$name){
+    public function DeleteDatabase($id, $name)
+    {
         $url = $this->BT_PANEL . config("bt.DeleteDatabase");
 
         $p_data         = $this->GetKeyData();
@@ -1701,7 +1705,8 @@ class Btpanel
      * @param [type] $username      FTP用户名
      * @return void
      */
-    public function DeleteUser($id,$username){
+    public function DeleteUser($id, $username)
+    {
         $url = $this->BT_PANEL . config("bt.DeleteUser");
 
         $p_data             = $this->GetKeyData();
@@ -2090,7 +2095,7 @@ class Btpanel
      */
     public function Getwaf($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.Getwaf") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.Getwaf") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2104,7 +2109,7 @@ class Btpanel
      */
     public function Setwaf($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.Setwaf") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.Setwaf") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2119,7 +2124,7 @@ class Btpanel
      */
     public function Sitewaf($wafType, $siteName)
     {
-        $url = $this->BT_PANEL . config("bt.Sitewaf") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.Sitewaf") . '&name=' . $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2136,7 +2141,7 @@ class Btpanel
      */
     public function SitewafStatus($wafType, $siteName, $obj = 'open')
     {
-        $url = $this->BT_PANEL . config("bt.SitewafStatus") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.SitewafStatus") . '&name=' . $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2160,9 +2165,9 @@ class Btpanel
      * @param [type] $cc_increase_type      增强模式下 验证方式js、code
      * 
      */
-    public function Setwafcc($wafType, $siteName, $cycle, $limit, $endtime, $increase = 0,$cc_mode = 1 ,$cc_increase_type='js',$increase_wu_heng = 0,$is_open_global = 0)
+    public function Setwafcc($wafType, $siteName, $cycle, $limit, $endtime, $increase = 0, $cc_mode = 1, $cc_increase_type = 'js', $increase_wu_heng = 0, $is_open_global = 0)
     {
-        $url = $this->BT_PANEL . config("bt.Setwafcc") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.Setwafcc") . '&name=' . $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2189,7 +2194,7 @@ class Btpanel
      */
     public function SetwafRetry($wafType, $siteName, $retry, $retry_time, $retry_cycle)
     {
-        $url = $this->BT_PANEL . config("bt.SetwafRetry") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.SetwafRetry") . '&name=' . $wafType;
 
         $p_data                = $this->GetKeyData();
         $p_data['siteName']    = $siteName;
@@ -2209,7 +2214,7 @@ class Btpanel
      */
     public function Addwafcnip($wafType, $start_ip, $end_ip)
     {
-        $url = $this->BT_PANEL . config("bt.Addwafcnip") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.Addwafcnip") . '&name=' . $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['start_ip'] = $start_ip;
@@ -2226,7 +2231,7 @@ class Btpanel
      */
     public function Getwafcnip($wafType, $ruleName = 'cn')
     {
-        $url = $this->BT_PANEL . config("bt.Getwafcnip") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.Getwafcnip") . '&name=' . $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['ruleName'] = $ruleName;
@@ -2241,7 +2246,7 @@ class Btpanel
      */
     public function GetwafCms($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.GetwafCms") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.GetwafCms") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2258,7 +2263,7 @@ class Btpanel
      */
     public function GetwafLog($wafType, $siteName, $toDate, $p = '1')
     {
-        $url = $this->BT_PANEL . config("bt.GetwafLog") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.GetwafLog") . '&name=' . $wafType;
 
         $p_data             = $this->GetKeyData();
         $p_data['siteName'] = $siteName;
@@ -2275,7 +2280,7 @@ class Btpanel
      */
     public function SitewafConfig($wafType)
     {
-        $url = $this->BT_PANEL . config("bt.SitewafConfig") .'&name='. $wafType;
+        $url = $this->BT_PANEL . config("bt.SitewafConfig") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2287,8 +2292,9 @@ class Btpanel
     /**
      * 防火墙停用四层防御
      */
-    public function SetIPStopStop($wafType){
-        $url = $this->BT_PANEL . config("bt.SetIPStopStop") .'&name='. $wafType;
+    public function SetIPStopStop($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.SetIPStopStop") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2300,8 +2306,9 @@ class Btpanel
     /**
      * 防火墙开启四层防御
      */
-    public function SetIPStop($wafType){
-        $url = $this->BT_PANEL . config("bt.SetIPStop") .'&name='. $wafType;
+    public function SetIPStop($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.SetIPStop") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2313,8 +2320,9 @@ class Btpanel
     /**
      * 防火墙获取四层防御状态
      */
-    public function GetIPStop($wafType){
-        $url = $this->BT_PANEL . config("bt.GetIPStop") .'&name='. $wafType;
+    public function GetIPStop($wafType)
+    {
+        $url = $this->BT_PANEL . config("bt.GetIPStop") . '&name=' . $wafType;
 
         $p_data = $this->GetKeyData();
         $result = $this->HttpPostCookie($url, $p_data);
@@ -2378,24 +2386,24 @@ class Btpanel
      * @param string $showRow       显示文件条数
      * @return void
      */
-    public function GetDir($path, $p = '1',$search = '',$all = '',$sort = '',$reverse = '', $tojs = 'GetFiles', $showRow = '200')
+    public function GetDir($path, $p = '1', $search = '', $all = '', $sort = '', $reverse = '', $tojs = 'GetFiles', $showRow = '200')
     {
         $url = $this->BT_PANEL . config("bt.GetDir") . '&tojs=' . $tojs . '&p=' . $p . '&showRow=' . $showRow;
 
         $p_data         = $this->GetKeyData();
-        if($search){
+        if ($search) {
             $p_data['search'] = $search;
         }
-        if($sort){
+        if ($sort) {
             $p_data['sort'] = $sort;
         }
-        if($reverse){
+        if ($reverse) {
             $p_data['reverse'] = $reverse;
         }
-        if($all){
+        if ($all) {
             $p_data['all'] = $all;
         }
-        
+
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -2712,9 +2720,9 @@ class Btpanel
             return $data;
         }
         $downUrl = $url;
-        $imageInfo = getimagesize($downUrl);
-        $base64 = "" . chunk_split(base64_encode(file_get_contents($downUrl)));
-        return 'data:' . $imageInfo['mime'] . ';base64,' . chunk_split(base64_encode(file_get_contents($downUrl)));
+        $base64 = "" . chunk_split(base64_encode(\fast\Http::get($downUrl)));
+        // return 'data:' . $imageInfo['mime'] . ';base64,' . chunk_split(base64_encode(file_get_contents($downUrl)));
+        return 'data:image/jpeg;base64,' . $base64;
     }
 
     /**
@@ -2957,15 +2965,15 @@ class Btpanel
      * @param    string     $search 搜索
      * @param    integer    $type 分类id
      */
-    public function GetList($search='',$type = 0)
+    public function GetList($search = '', $type = 0)
     {
         $url            = $this->BT_PANEL . config("bt.GetList");
         $p_data         = $this->GetKeyData();
         $p_data['type'] = $type;
-        if($search){
+        if ($search) {
             $p_data['search'] = $search;
         }
-        
+
         $result         = $this->HttpPostCookie($url, $p_data);
         $data           = json_decode($result, true);
         return $data;
@@ -4126,9 +4134,10 @@ class Btpanel
     /**
      * 站点列表、配置、统计
      *
-     * @return void
+     * @return array
      */
-    public function free_waf_site_config(){
+    public function free_waf_site_config()
+    {
         $url = $this->BT_PANEL . config("bt.free_waf_site_config");
 
         $p_data         = $this->GetKeyData();
@@ -4163,7 +4172,8 @@ class Btpanel
      * @param integer $p
      * @return void
      */
-    public function getPanelLogs($limit=10,$p = 1){
+    public function getPanelLogs($limit = 10, $p = 1)
+    {
         $url = $this->BT_PANEL . config("bt.getData");
 
         $p_data         = $this->GetKeyData();
@@ -4184,7 +4194,8 @@ class Btpanel
      *
      * @return void
      */
-    public function GetDirSize(){
+    public function GetDirSize()
+    {
         $url = $this->BT_PANEL . config("bt.GetDirSize");
 
         $p_data         = $this->GetKeyData();
@@ -4202,7 +4213,8 @@ class Btpanel
      * @param array $tables         表：["admin"]
      * @return void
      */
-    public function ReTable($db_name,$tables=[]){
+    public function ReTable($db_name, $tables = [])
+    {
         $url = $this->BT_PANEL . config("bt.ReTable");
 
         $p_data         = $this->GetKeyData();
@@ -4221,7 +4233,8 @@ class Btpanel
      * @param array $tables         表：["admin"]
      * @return void
      */
-    public function OpTable($db_name,$tables=[]){
+    public function OpTable($db_name, $tables = [])
+    {
         $url = $this->BT_PANEL . config("bt.OpTable");
 
         $p_data         = $this->GetKeyData();
@@ -4241,7 +4254,8 @@ class Btpanel
      * @param string $table_type    InnoDB/MyISAM
      * @return void
      */
-    public function AlTable($db_name,$tables=[],$table_type){
+    public function AlTable($db_name, $tables = [], $table_type)
+    {
         $url = $this->BT_PANEL . config("bt.AlTable");
 
         $p_data         = $this->GetKeyData();
@@ -4252,6 +4266,56 @@ class Btpanel
 
         $data = json_decode($result, true);
         return $data;
+    }
+
+    /**
+     * 获取session隔离状态
+     *
+     * @param [type] $id        站点ID
+     * @return void
+     */
+    public function get_php_session_path($id)
+    {
+        $url = $this->BT_PANEL . config("bt.get_php_session_path");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data == true) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 设置session隔离状态
+     *
+     * @param [type] $id        站点ID
+     * @param [type] $act       状态:1=开启,0=关闭
+     * @return void
+     */
+    public function set_php_session_path($id, $act = 1)
+    {
+        $url = $this->BT_PANEL . config("bt.set_php_session_path");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $p_data['act'] = $act;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if (isset($data['status']) && $data['status'] == true) {
+            return true;
+        } elseif (isset($data['msg'])) {
+            $msg = $data['msg'];
+        } else {
+            $msg = '请求失败';
+        }
+        $this->_error = $msg;
+        return false;
     }
 
 
@@ -4281,11 +4345,11 @@ class Btpanel
     private function HttpPostCookie($url, $data = '', $timeout = 120)
     {
         $path = ROOT_PATH . 'logs/';
-        if(!is_dir($path)){
-            mkdir($path,0777,true);
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
         }
         //定义cookie保存位置
-        $cookie_file =  $path. md5($this->BT_PANEL) . '.cookie';
+        $cookie_file =  $path . md5($this->BT_PANEL) . '.cookie';
         if (!file_exists($cookie_file)) {
             $fp = fopen($cookie_file, 'w+');
             fclose($fp);

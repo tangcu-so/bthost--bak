@@ -54,12 +54,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                             buttons: [
                                 {
                                     name: 'check',
-                                    title: __('检查'),
-                                    text: __('检查'),
+                                    title: __('同步'),
+                                        text: __('同步'),
                                     classname: 'btn btn-xs btn-info btn-ajax',
                                     icon: 'fa fa-exchange',
-                                    url: 'vhostbt/repair',
-                                    confirm: '此操作将会与宝塔面板数据进行同步！',
+                                    url: 'host/repair',
+                                        confirm: '此操作将会检查宝塔面板数据同步状态！',
                                     success: function (data) {
                                         console.log(data);
                                         if (data['btid']['0'] !== data['btid']['1']) {
@@ -98,7 +98,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                                                 }
                                             });
                                         }else if(data['status']['0']!=data['status']['1']){
-                                            layer.msg('本地主机状态不正确，是否更新本地主机状态？<br/>云端'+data['status']['1']+'->本地'+data['status']['0'], {
+                                            layer.msg('本地主机状态不正确，是否更新本地主机状态？<br/>本地' + data['status']['0'] + '->云端' + data['status']['1'], {
                                                 time: 0
                                                 ,btn: ['同步', '取消']
                                                 ,yes: function(index){
@@ -126,7 +126,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                                     text: __('稽核'),
                                     classname: 'btn btn-xs btn-primary btn-ajax',
                                     icon: 'fa fa-exchange',
-                                    url: 'vhostbt/repair?websize=1',
+                                    url: 'host/repair?websize=1',
                                     confirm: '该操作将获取该主机在云端使用的主机大小、数据库大小、流量信息（月）',
                                     success: function (data) {
                                         table.bootstrapTable('refresh');
@@ -152,6 +152,21 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
             $(document).on("click", ".btn-add2", function () {
                 top.Fast.api.open("host/add_local", "添加主机"); 
                 // Fast.api.close()
+            });
+
+            // 批量同步、稽核
+            $(document).on("click", ".btn-check,.btn-audit", function () {
+                //在table外不可以使用添加.btn-change的方法
+                //只能自己调用Table.api.multi实现
+                //如果操作全部则ids可以置为空
+                var ids = Table.api.selectedids(table);
+                console.log(ids);
+                Toastr.info('开始检查……');
+                for (j = 0, len = ids.length; j < len; j++) {
+                    // console.log(j, ids[j]);
+                    Table.api.multi("host/repair", ids[j], table, this);
+                }
+                // Table.api.multi("vhostbt/repair", ids.join(","), table, this);
             });
 
             // 为表格绑定事件
@@ -228,6 +243,15 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
             Table.api.bindevent(table);
         },
         add: function () {
+            $(document).on("change", "select[name='row[plans_type]']", function () {
+                if ($(this).val() == 1) {
+                    $('.plans_custom').show();
+                    $('.plans_list').hide();
+                } else {
+                    $('.plans_custom').hide();
+                    $('.plans_list').show();
+                }
+            });
             Controller.api.bindevent();
         },
         add_local: function () {

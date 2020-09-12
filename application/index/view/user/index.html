@@ -22,117 +22,117 @@
         <div class="container-fluid p-t-15">
             <!-- 站点选择 -->
             <div class="row">
-                {volist name="list" id="site"}
-                <div class="col-md-4">
-                    <div class="card">
-                            <header class="card-header">
-                                <div class="card-title">{$site.bt_name}</div>
-                            </header>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-lg-6 col-md-12">
-                                        <!-- START widget-->
-                                        <div class="card widget">
-                                          <div class="card-body bg-purple">
-                                            <div class="row row-table row-flush">
-                                              <div class="col-lg-12 col-md-12 col-12 col-sm-12">
-                                                <span>运行状态</span>
-                                                <h5 class="m0">
-                                                  <div class="point point-success"></div>
-                                                  <span class="text-warning">{$site.statusStr}</span>
-                                                </h5>
-                                              </div>
-                                            </div>
-                                          </div>
-                                          <div class="card-body">
-                                            <!-- Bar chart-->
-                                            <div class="text-center">
+              {volist name="list" id="site"}
+              <div class="col-md-4">
+                  <div class="card">
+                          <header class="card-header">
+                              <div class="card-title">{$site.bt_name}</div>
+                          </header>
+                          <div class="card-body">
+                              <div class="row">
+                                  <div class="col-lg-6 col-md-12">
+                                      <!-- START widget-->
+                                      <div class="card widget">
+                                        <div class="card-body bg-purple">
+                                          <div class="row row-table row-flush">
+                                            <div class="col-lg-12 col-md-12 col-12 col-sm-12">
+                                              <span>运行状态</span>
+                                              <h5 class="m0">
+                                                <div class="point point-success"></div>
                                                 <span class="text-warning">{$site.statusStr}</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    <div class="col-lg-6 col-md-12">
-                                      <!-- START widget-->
-                                      <div class="card widget">
-                                        <div class="card-body bg-info">
-                                          <div class="row row-table row-flush">
-                                            <div class="col-lg-12 col-md-12 col-12 col-sm-12">
-                                              <span>网页空间</span>
-                                              <h5 class="m0">
-                                                {$site.site_size}M / <small
-                                                  class="text-warning">{$site.site_max!='0.00'?$site.site_max.'M':'无限制'}</small></h5>
-                                            </div>
-                                          </div>
-                                        </div>
-                                        <div class="card-body" id="web">
-                                          <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$site.site_max!='0.00'?$site.site_max.'M':'无限制'}<br/>已使用：{$site.site_size?$site.site_size:'0'}M">
-                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                              value="{$site.site_size?$site.site_size:'0'}" max="{$site.site_max}"
-                                              style="width:{if $site.site_max!=0}{:getround($site.site_max,$site.site_size)}{else/}0{/if}%">
-                                              {if $site.site_max!=0}{:getround($site.site_max,$site.site_size)}{else/}0{/if}%
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div class="col-lg-6 col-md-12">
-                                      <!-- START widget-->
-                                      <div class="card widget">
-                                        <div class="card-body bg-success">
-                                          <div class="row row-table row-flush">
-                                            <div class="col-lg-12 col-md-12 col-12 col-sm-12">
-                                              <span>数据空间</span>
-                                              <h5 class="m0">
-                                                {$site.sql_size}M
-                                                / <small class="text-warning">{$site.sql_max!='0.00'?$site.sql_max.'M':'无限制'}</small>
                                               </h5>
                                             </div>
                                           </div>
                                         </div>
-                                        <div class="card-body" id="sql">
-                                          <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$site.sql_max!='0.00'?$site.sql_max:'无限制'}<br/>已使用：{$site.sql_size?$site.sql_size:'0'}M">
-                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                              value="{$site.sql_size?$site.sql_size:'0'}" max="{$site.sql_max}"
-                                              style="width:{if $site.sql_max!=0}{:getround($site.sql_max,$site.sql_size)}{else/}0{/if}%">
-                                              {if $site.sql_max!=0}{:getround($site.sql_max,$site.sql_size)}{else/}0{/if}%
-                                            </div>
+                                        <div class="card-body">
+                                          <!-- Bar chart-->
+                                          <div class="text-center">
+                                              <span class="text-warning">{$site.statusStr}</span>
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                    <div class="col-lg-6 col-md-12">
-                                      <!-- START widget-->
-                                      <div class="card widget">
-                                        <div class="card-body bg-brown">
-                                          <div class="row row-table row-flush">
-                                            <div class="col-lg-12 col-md-12 col-12 col-sm-12">
-                                              <span>流量</span>
-                                              <h5 class="m0">
-                                                {$site.flow_size?$site.flow_size:'0'}M
-                                                / <small class="text-warning">{$site.flow_max!='0.00'?$site.flow_max.'M':'无限制'}</small>
-                                              </h4>
-                                            </div>
+                                  <div class="col-lg-6 col-md-12">
+                                    <!-- START widget-->
+                                    <div class="card widget">
+                                      <div class="card-body bg-info">
+                                        <div class="row row-table row-flush">
+                                          <div class="col-lg-12 col-md-12 col-12 col-sm-12">
+                                            <span>网页空间</span>
+                                            <h5 class="m0">
+                                              {$site.site_size}M / <small
+                                                class="text-warning">{$site.site_max!='0.00'?$site.site_max.'M':'无限制'}</small></h5>
                                           </div>
                                         </div>
-                                        <div class="card-body" id="flow">
-                                          <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$site.flow_max!='0.00'?$site.flow_max:'无限制'}<br/>已使用：{$site.flow_size?$site.flow_size:'0'}M">
-                                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                                              value="{$site.flow_size?$site.flow_size:'0'}" max="{$site.flow_max}"
-                                              style="width:{if $site.flow_max!=0}{:getround($site.flow_max,$site.flow_size)}{else/}0{/if}%">
-                                              {if $site.flow_max!=0}{:getround($site.flow_max,$site.flow_size)}{else/}0{/if}%
-                                            </div>
+                                      </div>
+                                      <div class="card-body" id="web">
+                                        <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$site.site_max!='0.00'?$site.site_max.'M':'无限制'}<br/>已使用：{$site.site_size?$site.site_size:'0'}M">
+                                          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                            value="{$site.site_size?$site.site_size:'0'}" max="{$site.site_max}"
+                                            style="width:{if $site.site_max!=0}{:getround($site.site_max,$site.site_size)}{else/}0{/if}%">
+                                            {if $site.site_max!=0}{:getround($site.site_max,$site.site_size)}{else/}0{/if}%
                                           </div>
                                         </div>
                                       </div>
                                     </div>
-                                </div>
-                                <div class="notice">{$site.notice}</div>
-                                <p><a href="?host_id={$site.id}"><small class="btn btn-warning btn-block">点击管理</small></a></p>
-                            </div>
-                    </div>
-                </div>
-                {/volist}
+                                  </div>
+                                  <div class="col-lg-6 col-md-12">
+                                    <!-- START widget-->
+                                    <div class="card widget">
+                                      <div class="card-body bg-success">
+                                        <div class="row row-table row-flush">
+                                          <div class="col-lg-12 col-md-12 col-12 col-sm-12">
+                                            <span>数据空间</span>
+                                            <h5 class="m0">
+                                              {$site.sql_size}M
+                                              / <small class="text-warning">{$site.sql_max!='0.00'?$site.sql_max.'M':'无限制'}</small>
+                                            </h5>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="card-body" id="sql">
+                                        <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$site.sql_max!='0.00'?$site.sql_max:'无限制'}<br/>已使用：{$site.sql_size?$site.sql_size:'0'}M">
+                                          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                            value="{$site.sql_size?$site.sql_size:'0'}" max="{$site.sql_max}"
+                                            style="width:{if $site.sql_max!=0}{:getround($site.sql_max,$site.sql_size)}{else/}0{/if}%">
+                                            {if $site.sql_max!=0}{:getround($site.sql_max,$site.sql_size)}{else/}0{/if}%
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="col-lg-6 col-md-12">
+                                    <!-- START widget-->
+                                    <div class="card widget">
+                                      <div class="card-body bg-brown">
+                                        <div class="row row-table row-flush">
+                                          <div class="col-lg-12 col-md-12 col-12 col-sm-12">
+                                            <span>流量</span>
+                                            <h5 class="m0">
+                                              {$site.flow_size?$site.flow_size:'0'}M
+                                              / <small class="text-warning">{$site.flow_max!='0.00'?$site.flow_max.'M':'无限制'}</small>
+                                            </h4>
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div class="card-body" id="flow">
+                                        <div class="progress progress-bar-striped progress-bar-animated progress-xs progress-bar-success" data-toggle="tooltip" data-placement="top" title="" data-html="true" data-original-title="总大小：{$site.flow_max!='0.00'?$site.flow_max:'无限制'}<br/>已使用：{$site.flow_size?$site.flow_size:'0'}M">
+                                          <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                                            value="{$site.flow_size?$site.flow_size:'0'}" max="{$site.flow_max}"
+                                            style="width:{if $site.flow_max!=0}{:getround($site.flow_max,$site.flow_size)}{else/}0{/if}%">
+                                            {if $site.flow_max!=0}{:getround($site.flow_max,$site.flow_size)}{else/}0{/if}%
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                              </div>
+                              <div class="notice">{$site.notice}</div>
+                              <p><a href="?host_id={$site.id}"><small class="btn btn-warning btn-block">点击管理</small></a></p>
+                          </div>
+                  </div>
+              </div>
+              {/volist}
             </div>
         </div>
         <script type="text/javascript" src="__STATIC__/Light-Year/js/jquery.min.js?v={$Think.config.site.version}"></script>

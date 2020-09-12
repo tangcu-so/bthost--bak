@@ -106,17 +106,21 @@ class Frontend extends Controller
 
         // 上传信息配置后
         Hook::listen("upload_config_init", $upload);
+        // 软件配置
+        $bty_config = Config::get('bty');
+        unset($bty_config['AUTH_KEY']);
 
         // 配置信息
         $config = [
-            'site'           => array_intersect_key($site, array_flip(['name', 'cdnurl', 'version', 'timezone', 'languages','iframe_cache','split_size'])),
+            'site'           => array_intersect_key($site, array_flip(['name', 'cdnurl', 'version', 'timezone', 'languages', 'iframe_cache', 'split_size', 'authCode'])),
             'upload'         => $upload,
             'modulename'     => $modulename,
             'controllername' => $controllername,
             'actionname'     => $actionname,
             'jsname'         => 'frontend/' . str_replace('.', '/', $controllername),
             'moduleurl'      => rtrim(url("/{$modulename}", '', false), '/'),
-            'language'       => $lang
+            'language'       => $lang,
+            'bty'            => $bty_config,
         ];
         $config = array_merge($config, Config::get("view_replace_str"));
 

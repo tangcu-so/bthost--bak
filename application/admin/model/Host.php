@@ -34,6 +34,25 @@ class Host extends Model
         'status_text',
         'user',
     ];
+
+    protected static function init()
+    {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            // 如果有状态发生改变
+            if (isset($changed['status']) && ($changed['status'] != $row->origin['status'])) {
+                $bt = new Btaction();
+                $bt->bt_id = $row->bt_id;
+                $bt->bt_name = $row->bt_name;
+                if ($changed['status'] == 'normal') {
+                    $bt->webstart();
+                }
+                if ($changed['status'] != 'normal') {
+                    $bt->webstop();
+                }
+            }
+        });
+    }
     
 
     
@@ -218,5 +237,14 @@ class Host extends Model
                 break;
         }
         return $vhostStatus;
+    }
+
+
+    public static function plans_type()
+    {
+        return [
+            '0' => '否',
+            '1' => '是',
+        ];
     }
 }

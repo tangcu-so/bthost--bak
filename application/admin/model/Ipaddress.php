@@ -59,8 +59,17 @@ class Ipaddress extends Model
     public function getRandId($ippools_id,$num = 1){
         $list = $this->where(['ippools_id'=>$ippools_id,'status'=>'normal'])->column('id,ip');
         $list_rand = array_rand($list,$num);
-        $ip_id_list = array_values($list_rand);
-        return $list_rand;
+        $new_data = [];
+        if (!is_null($list_rand) && !is_array($list_rand)) {
+            // 如果自有一个数要给他转成数组
+            $new_data[] = $list_rand;
+        } else {
+            $new_data = $list_rand;
+        }
+        // var_dump($new_data, $list_rand, $list, $num);
+        // exit;
+        // $ip_id_list = array_values($list_rand);
+        return $new_data;
     }
 
     public function getIppoolsAttr($value, $data){

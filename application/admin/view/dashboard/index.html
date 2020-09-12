@@ -348,7 +348,7 @@
                                     </div>
                                     <div class="col-sm-3 col-xs-6">
                                         <div class="sm-st clearfix">
-                                            <span class="sm-st-icon st-violet"><i class="fa fa-book"></i></span>
+                                            <span class="sm-st-icon st-violet"><i class="fa fa-hdd-o"></i></span>
                                             <div class="sm-st-info">
                                                 <span>{$hostCount|default="0"}</span>
                                                 {:__('Total web')}
@@ -357,7 +357,7 @@
                                     </div>
                                     <div class="col-sm-3 col-xs-6">
                                         <div class="sm-st clearfix">
-                                            <span class="sm-st-icon st-blue"><i class="fa fa-shopping-bag"></i></span>
+                                            <span class="sm-st-icon st-blue"><i class="fa fa-globe"></i></span>
                                             <div class="sm-st-info">
                                                 <span>{$ftpCount|default="0"}</span>
                                                 {:__('Total ftp')}
@@ -366,7 +366,7 @@
                                     </div>
                                     <div class="col-sm-3 col-xs-6">
                                         <div class="sm-st clearfix">
-                                            <span class="sm-st-icon st-green"><i class="fa fa-cny"></i></span>
+                                            <span class="sm-st-icon st-green"><i class="fa fa-database"></i></span>
                                             <div class="sm-st-info">
                                                 <span>{$sqlCount|default="0"}</span>
                                                 {:__('Total sql')}
@@ -492,7 +492,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-4">
+                <div class="col-lg-6">
                     <div class="box box-danger">
                         <div class="box-header with-border">
                             <h3 class="box-title">{:__('公告')}</h3>
@@ -501,12 +501,12 @@
                                         class="fa fa-plus"></i> </a>
                             </div> -->
                         </div>
-                        <div class="box-body">
+                        <div class="box-body" id="notices">
                             广而告之
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-4">
+                <!-- <div class="col-lg-4">
                     <div class="box box-warning">
                         <div class="box-header with-border">
                             <h3 class="box-title">面板操作日志</h3>
@@ -536,8 +536,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-lg-4">
+                </div> -->
+                <div class="col-lg-6">
                     <div class="box box-info">
                         <div class="box-header">
                             <h3 class="box-title">{:__('Server info')}</h3>
@@ -547,7 +547,7 @@
                                 <tbody>
                                     <tr>
                                         <td>{:__('系统版本')}</td>
-                                        <td>{$btyversion|default=""} <a href="javascript:;"
+                                        <td>{$Think.config.bty.version|default=""} <a href="javascript:;"
                                                 class="btn btn-xs btn-checkversion">检查最新版</a> | <a
                                                 href="javascript:;" class="btn btn-xs btn-testing">节点检测</a></td>
                                     </tr>

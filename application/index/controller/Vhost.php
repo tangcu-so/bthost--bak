@@ -58,24 +58,19 @@ class Vhost extends Frontend
         $this->hostModel = model('Host');
         $this->ftpModel = model('Ftp');
         $this->sqlModel = model('Sql');
-        if(!Cookie::get('host_id')){
+        $host_id = Cookie::get('host_id_' . $this->auth->id);
+        if (!$host_id) {
             return $this->redirect('/sites');
         }
-        if(Cookie::get('host_id')){
-            $host_id = Cookie::get('host_id');
-            $hostInfo = $this->hostModel::get(['user_id'=>$this->auth->id,'id'=>$host_id]);
-            if(!$hostInfo){
-                $this->error('站点不存在','');
-            }
-            $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
-            $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
-            $hostInfo->ftp = $ftpInfo?$ftpInfo:'';
-            $hostInfo->sql = $sqlInfo?$sqlInfo:'';
-            // $hostInfo->vhost_id = $hostInfo->id;
-        }else{
-            // 跳转到站点选择中心
-            // return $this->redirect('User/index');
+        $hostInfo = $this->hostModel::get(['user_id'=>$this->auth->id,'id'=>$host_id]);
+        if(!$hostInfo){
+            $this->error('站点不存在','');
         }
+        $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
+        $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
+        $hostInfo->ftp = $ftpInfo?$ftpInfo:'';
+        $hostInfo->sql = $sqlInfo?$sqlInfo:'';
+        // $hostInfo->vhost_id = $hostInfo->id;
         
         // 用户信息表
         $this->userInfo = $this->auth->getUserinfo();
@@ -201,10 +196,19 @@ class Vhost extends Frontend
             return $this->btAction->GetPHPVersion();
         });
 
+        // 转换资源百分比
+        $site_getround = $this->hostInfo->site_max != 0 ? getround($this->hostInfo->site_max, $this->hostInfo->site_size) : 0;
+        $sql_getround = $this->hostInfo->sql_max != 0 ? getround($this->hostInfo->sql_max, $this->hostInfo->sql_size) : 0;
+        $flow_getround = $this->hostInfo->flow_max != 0 ? getround($this->hostInfo->flow_max, $this->hostInfo->flow_size) : 0;
+
+        $this->view->assign('userLocked', $this->btTend->userini_status);
         $this->view->assign('title', __('Console center'));
         $this->view->assign('ftpInfo', $ftpInfo);
         $this->view->assign('phpVer', $phpVer);
         $this->view->assign('siteStatus', $siteStatus);
+        $this->view->assign('site_getround', $site_getround);
+        $this->view->assign('sql_getround', $sql_getround);
+        $this->view->assign('flow_getround', $flow_getround);
         $this->view->assign('phpversion_list', $phpversion_list);
         return $this->view->fetch();
     }
@@ -2135,9 +2139,10 @@ class Vhost extends Frontend
             }
             //查看图片
             if (input('post.type') == 'images') {
-                // TODO 中文文件名图片查看错误
+                // TODO 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
                 $file = input('post.file') ? preg_replace('/([\.]){2,}|([\/\/]){2,}/', '', input('post.file')) : '';
-                // var_dump($WebGetKey . $file);exit;
+                // var_dump($WebGetKey . $file, $file);
+                // exit;
                 $images = $this->btAction->images_view($WebGetKey . $file,$file);
                 // header('Content-type: image/jpeg');
                 return json(['image'=>$images]);
@@ -2241,6 +2246,8 @@ class Vhost extends Frontend
             // 远程下载
             if ($type == 'DownloadFile') {
                 // TODO 下载后文件权限为root，可能存在安全隐患
+                // 队列ID出来之后再进行队列监控转换文件组权限
+                $this->error('该功能暂停使用');
                 $path      = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '';
                 $mUrl      = input('post.mUrl') ? preg_replace('/([\.]){2,}/', '', input('post.mUrl') . '') : '';
                 $dfilename = input('post.dfilename') ? preg_replace('/([\.]){2,}/', '', input('post.dfilename') . '') : '';
@@ -3846,18 +3853,21 @@ class Vhost extends Frontend
     {
         $names = array("./", "%", "&", "*", "^", "!", "\\", ".user.ini");
         foreach ($names as $name) {
-
             if (strpos($path, $name) !== false) {
                 return false;
             }
         }
 
         if ($this->server_type == 'windows') {
-            if (!preg_match("/^[\x7f-\xff\w\s\:\.\/~@#-]+$/i", $path)) {
+            // Windows下不能包含：< > / \ | :  * ?
+            // 记录排除规则：\:
+            if (!preg_match("/^[\x7f-\xff\w\s\.\/~@#-]+$/i", $path)) {
                 return false;
             }
         } else {
-            if (!preg_match("/^[\x7f-\xff\w\s\.\/~@#-]+$/i", $path)) {
+            // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
+            // 记录排除规则：@#-
+            if (!preg_match("/^[\x7f-\xff\w\s\.\/~,-]+$/i", $path)) {
                 return false;
             }
         }
@@ -3883,7 +3893,9 @@ class Vhost extends Frontend
         if ($root[$len - 1] === '/') {
             $root = substr($root, 0, $len - 1);
         }
-        $rep = "/^" . preg_quote($root, '/') . "\/[\x7f-\xff\w\s\.\/~@#-]*$/i";
+        // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
+        // 记录排除规则：@#-
+        $rep = "/^" . preg_quote($root, '/') . "\/[\x7f-\xff\w\s\.\/~,-]*$/i";
         if (!preg_match($rep, $path)) {
             return false;
         }

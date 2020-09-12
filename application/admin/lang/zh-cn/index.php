@@ -42,6 +42,8 @@ return [
     'Check for updates'                                          => '检测更新',
     'Discover new version'                                       => '发现新版本',
     'Go to download'                                             => '去下载更新',
+    'Go to update'                                               => '立即更新',
+    'Next update'                                                => '下次更新',
     'Currently is the latest version'                            => '当前已经是最新版本',
     'Ignore this version'                                        => '忽略此次更新',
     'Do not remind again'                                        => '不再提示',

@@ -34,6 +34,12 @@
                         </div>
 
                         <a class="btn btn-success btn-recyclebin btn-dialog {:$auth->check('host/recyclebin')?'':'hide'}" href="host/recyclebin" title="{:__('Recycle bin')}"><i class="fa fa-recycle"></i> {:__('Recycle bin')}</a>
+                        <a class="btn btn-info btn-change btn-check btn-disabled" data-params="sync"
+                            data-url="host/repair" href="javascript:;"><i class="fa fa-leaf"></i>
+                            同步</a>
+                        <a class="btn btn-info btn-change btn-audit btn-disabled" data-params="websize"
+                            data-url="host/repair" href="javascript:;"><i class="fa fa-leaf"></i>
+                            稽核</a>
                     </div>
                     <table id="table" class="table table-striped table-bordered table-hover table-nowrap"
                            data-operate-edit="{:$auth->check('host/edit')}" 

@@ -80,8 +80,51 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
             Layer.closeAll();
         });
     }
+    // 获取公告
+    server.getnotice = function (tips) {
+        Fast.api.ajax({
+            url: 'ajax/getNotice',
+            type: 'post',
+        }, function (data, ret) {
+            if (ret.data && ret.code == 1) {
+                if (ret.data.notice) {
+                    html = html2 = '';
+                    html2 = '<ul class="products-list product-list-in-box">';
+                    $.each(ret['data']['notice'], function (key, val) {
+                        // html += '<li class="text-danger">' + ret['data']['notice'][key]['note'] + '</li>\
+                        // <p class="small text-right text-info">-- ' + ret['data']['notice'][key]['time'] + '</p>';
+                        html2 += '<li class="item"><div><a >' + ret['data']['notice'][key]['title'] + '</a><span class="product-description">' + ret['data']['notice'][key]['note'] + '</span></div></li>';
+                    });
+                    html2 += '</ul>';
+                    console.log(html2);
+                    $('#notices').html('');
+                    // 公告渲染
+                    $('#notices').html(html2);
+                    if (html) {
+                        // 弹出式
+                        // var noticeIndex = Layer.open({
+                        //     title: __('Bty官网公告'),
+                        //     maxHeight: 400,
+                        //     content: '<span class="label label-danger">' + __('公告内容') + '</span><br/><div>' + html.replace(/\n/g, "<br/>") + '</div>',
+                        //     btn: [__('我已知晓')],
+                        //     yes: function (layero, index) {
+                        //         localStorage.setItem("ignorenotice", new Date().getTime() + 12 * 60 * 60 * 1000);
+                        //         layer.closeAll('dialog');
+                        //     }
+                        // });
+                    }
+                }
+            } else {
+                if (tips) {
+                    Toastr.error(__('error' + ret.msg));
+                }
+            }
+        });
+    }
     var Controller = {
         index: function () {
+            server.getnotice();
+
             // 基于准备好的dom，初始化echarts实例
             var myChart = Echarts.init(document.getElementById('echart'), 'walden');
 
@@ -220,10 +263,12 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     url: 'ajax/testing',
                     dataType: 'json',
                 }, function (data, ret) {
-                        curl = ret.data.curl ? '<span class="text-success">支持</span>' : '<span class="text-danger">不支持</span>';
-                        ms = ret.data.ms ? '<span class="text-success">正常 '+ret.data.ms+'</span>' : '<span class="text-danger">连接异常</span>';
+                        curl = ret.data.curl ? '<span class="text-success">正常</span>' : '<span class="text-danger">异常</span>';
+                        api_url1 = ret.data.api_url1 ? '<span class="text-success">正常 ' + ret.data.api_url1 + '</span>' : '<span class="text-danger">连接异常</span>';
+                        api_url2 = ret.data.api_url2 ? '<span class="text-success">正常 ' + ret.data.api_url2 + '</span>' : '<span class="text-danger">连接异常</span>';
+                        lan_url = ret.data.lan_url ? '<span class="text-success">正常 ' + ret.data.lan_url + '</span>' : '<span class="text-danger">连接异常</span>';
                         baidu = ret.data.baidu ? '<span class="text-success">正常 '+ret.data.baidu+'</span>' : '<span class="text-danger">异常</span>';
-                    content = 'Curl：'+curl+'<br/>连接延迟：'+ms+'<br/>外网连接：'+baidu;
+                    content = 'Curl：' + curl + '<br/>节点1：' + api_url1 + '<br/>节点2：' + api_url2 + '<br/>外网连接：' + baidu + '<br/>内网连接：' + lan_url;
                     Layer.alert(content);
                 }, function (data, ret) {
                 });

@@ -223,17 +223,16 @@
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-success" role="progressbar" aria-valuenow="80" aria-valuemin="0"
-                aria-valuemax="100" style="width:{if
-                $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%"></div>
+                aria-valuemax="100" style="width:{$site_getround}%"></div>
             </div>
             <div class="flex-box">
               <p class="text-muted mb-0"><em class="mdi mdi-webpack"></em></p>
-              <p class="text-muted mb-0">{if
-                $hostInfo.site_max!=0}{:getround($hostInfo.site_max,$hostInfo.site_size)}{else/}0{/if}%</p>
+              <p class="text-muted mb-0">{$site_getround}%</p>
             </div>
           </div>
         </div>
       </div>
+      {notempty name="hostInfo.sql.username"}
       <div class="col-sm-6 col-md-6 col-lg-4">
         <div class="card wave wave-animate wave-danger">
           <div class="card-body">
@@ -246,17 +245,16 @@
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="50" aria-valuemin="0"
-                aria-valuemax="100" style="width:{if
-                $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%"></div>
+                aria-valuemax="100" style="width:{$sql_getround}%"></div>
             </div>
             <div class="flex-box">
               <p class="text-muted mb-0"><em class="mdi mdi-database"></em></p>
-              <p class="text-muted mb-0">{if
-                $hostInfo.sql_max!=0}{:getround($hostInfo.sql_max,$hostInfo.sql_size)}{else/}0{/if}%</p>
+              <p class="text-muted mb-0">{$sql_getround}%</p>
             </div>
           </div>
         </div>
       </div>
+      {/notempty}
       <div class="col-sm-6 col-md-6 col-lg-4">
         <div class="card wave wave-animate-fast wave-dark">
           <div class="card-body">
@@ -269,13 +267,11 @@
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-primary" role="progressbar" aria-valuenow="25" aria-valuemin="0"
-                aria-valuemax="100" style="width:{if
-                $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%"></div>
+                aria-valuemax="100" style="width:{$flow_getround}%"></div>
             </div>
             <div class="flex-box">
               <p class="text-muted mb-0"><em class="mdi mdi-hamburger"></em></p>
-              <p class="text-muted mb-0">{if
-                $hostInfo.flow_max!=0}{:getround($hostInfo.flow_max,$hostInfo.flow_size)}{else/}0{/if}%</p>
+              <p class="text-muted mb-0">{$flow_getround}%</p>
             </div>
           </div>
         </div>
@@ -771,7 +767,13 @@
         <div class="media">
           <div class="media-body clearfix">
             <p class="m0">
-              <small>运行状态：<span class="text-info">{:__($hostInfo.status)}</span></small>
+              <small>运行状态：<span class="text-info">{:__($hostInfo.status)}</span>
+                {if $userLocked}
+                <span class="mdi mdi-lock-outline"></span>
+                {else/}
+                <span class="mdi mdi-lock-open-variant-outline"></span>
+                {/if}
+              </small>
               <br />
               <small>主机操作：{if $siteStatus}
                 <a href="javascript:sitestop();" class="text-success" data-toggle="tooltip" data-placement="top"

@@ -55,16 +55,19 @@ class User extends Frontend
 
     public function index(){
         if($this->request->get('host_id/d')){
-            Cookie::set('host_id',$this->request->get('host_id/d'));
+            Cookie::set('host_id_' . $this->auth->id, $this->request->get('host_id/d'));
             return $this->redirect('/');
         }
         // 站点列表
-        $list = model('Host')::all();
+        $list = model('Host')::all(['user_id' => $this->auth->id]);
         if($list){
             foreach ($list as $value) {
                 $value->domain = model('Domainlist')->where(['status'=>'normal','vhost_id'=>$value->id])->select();
                 $value->statusStr = model('Host')->status($value->status);
             }
+        }
+        if (!$list) {
+            $this->error('当前无可用站点<a href="' . url('index/user/logout') . '">退出登录</a>', '');
         }
         $this->view->assign('list',$list);
         // 站点选择页

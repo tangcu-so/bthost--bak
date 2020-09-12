@@ -14,6 +14,7 @@ use think\Debug;
 use think\Exception;
 use think\Lang;
 use think\Validate;
+use fast\Http;
 
 /**
  * Ajax异步请求接口
@@ -114,7 +115,6 @@ class Ajax extends Backend
 
             $this->success(__('Uploaded successful'), '', ['url' => $attachment->url]);
         }
-
     }
 
     /**
@@ -384,7 +384,6 @@ class Ajax extends Backend
         } else {
             $this->error('密钥不能为空');
         }
-
     }
 
     // 宝塔分类列表
@@ -405,7 +404,6 @@ class Ajax extends Backend
             } else {
                 $new_data['list'] = $list;
             }
-
         } else {
             $new_data['list'] = [];
         }
@@ -433,7 +431,15 @@ class Ajax extends Backend
         } else {
             $curl = 1;
         }
-        $this->success('请求成功', '', ['url' => Config::get('bty.api_url'), 'curl' => $curl, 'ms' => '0.1ms', 'baidu' => getRequestTimes('https://www.baidu.com')]);
+        $ms1 = $ms2 = $baidu = '';
+        try {
+            $ms1 = getRequestTimes(Config::get('bty.api_url'));
+            $ms2 = getRequestTimes(Config::get('bty.api_url2'));
+            $ms3 = getRequestTimes('http://127.0.0.1');
+            $baidu = getRequestTimes('https://www.baidu.com');
+        } catch (\Exception $m) {
+        }
+        $this->success('请求成功', '', ['url' => Config::get('bty.api_url'), 'curl' => $curl, 'api_url1' => $ms1, 'api_url2' => $ms2, 'lan_url' => $ms3, 'baidu' => $baidu]);
     }
 
     public function phps()
@@ -460,7 +466,7 @@ class Ajax extends Backend
             // 版号放置数据库(待考虑)
             $config_file = APP_PATH . DS . 'extra' . DS . 'bty.php';
             if (!is_writable($config_file)) {
-                $this->error('文件不可写，请检查网站目录及文件权限、网站防篡改、系统加固等问题');
+                $this->error('文件不可写，请检查网站目录及文件、权限、网站防篡改、系统加固等问题');
             }
             $update                 = new \autoupdate\Autoupdate(ROOT_PATH, true);
             $update->currentVersion = config('bty.version');
@@ -548,6 +554,16 @@ class Ajax extends Backend
             } catch (\Exception $e) {
                 $update->log($e->getMessage());
                 Db::rollback();
+
+                // 升级错误记录
+                $desc = $update->currentVersion . "->" . $update->latestVersion . "，用时：" . Debug::getRangeTime('begin', 'end') . 's';
+                Db::name('version')->insert([
+                    'version' => config('bty.version'),
+                    'last_version' => $update->currentVersion,
+                    'desc' => $desc,
+                    'updatetime' => time(),
+                    'error_msg' => $e->getMessage(),
+                ]);
                 $this->error($e->getMessage());
             }
 
@@ -571,9 +587,27 @@ class Ajax extends Backend
     // 获取任务队列
     public function getTask()
     {
-        $bt   = new Btaction();
-        $list = $bt->btAction->get_task_lists();
+        // $bt   = new Btaction();
+        // $list = $bt->btAction->get_task_lists();
         // return $list;
         return '[{"id": 46, "name": "下载文件", "type": "1", "shell": "https://oss.yum6.cn/video/lietome/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "other": "/www/wwwroot/oa2ttc/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "status": -1, "exectime": 1599709200, "endtime": null, "addtime": 1599709200, "log": {"name": "下载文件https://oss.yum6.cn/video/lietome/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "total": 503087100, "used": "324.90 MB", "pre": "67", "speed": "10.3M", "time": "12秒"}}]';
+    }
+
+    // 获取公告内容
+    public function getNotice()
+    {
+        // 缓存器
+        $curl = Cache::remember('notice', function () {
+            $url = Config::get('bty.api_url') . '/get_notice.html';
+            $data = [
+                'obj' => Config::get('bty.APP_NAME'),
+                'version' => Config::get('bty.version'),
+                'domain' => $_SERVER['HTTP_HOST'],
+                'authCode' => Config::get('site.authCode'),
+            ];
+            return http::post($url, $data);
+        });
+
+        return json_decode($curl, 1);
     }
 }

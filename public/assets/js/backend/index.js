@@ -1,4 +1,61 @@
 define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], function ($, undefined, Backend, undefined, AdminLTE, Form) {
+    var server = {};
+    //版本检测
+    server.checkupdate = function (ignoreversion, tips) {
+        Fast.api.ajax({
+            url: Config.bty.api_url + '/update_check.html',
+            type: 'post',
+            data: {
+                obj: Config.bty.APP_NAME,
+                version: Config.bty.version,
+                domain: document.domain,
+                authCode: Config.site.authCode
+            },
+        }, function (data, ret) {
+            if (ret.data && ignoreversion !== ret.data.newversion && ret.code == 1) {
+                var checkIndex = Layer.open({
+                    title: __('Discover new version'),
+                    maxHeight: 400,
+                    content: '<h5 style="background-color:#f7f7f7; font-size:14px; padding: 10px;">' + __('Your current version') + ':' + ret.data.version + '，' + __('New version') + ':' + ret.data.newversion + '</h5><span class="label label-danger">' + __('Release notes') + '</span><br/><div>' + ret.data.upgradetext.replace(/\n/g, "<br/>") + '</div>',
+                    btn: [__('Go to update'), __('Next update')],
+                    btn2: function (index, layero) {
+                        localStorage.setItem("ignoreversion", ret.data.newversion);
+                    },
+                    yes: function (layero, index) {
+                        layer.close(checkIndex);
+                        // 更新代码
+                        server.update();
+                    }
+                });
+            } else {
+                if (tips) {
+                    Toastr.error(ret.msg);
+                    return false;
+                }
+            }
+        })
+    };
+    // 授权检查
+    server.checkauth = function (callback) {
+        Fast.api.ajax({
+            url: Config.bty.api_url + '/auth_check.html',
+            data: {
+                obj: Config.bty.APP_NAME,
+                version: Config.bty.version,
+                domain: document.domain,
+                authCode: Config.site.authCode
+            },
+        }, function (data, ret) {}, callback);
+    }
+    // 版本更新
+    server.update = function () {
+        Fast.api.ajax({
+            url: 'ajax/updates',
+            data: {
+                token: '123456789'
+            },
+        });
+    }
     var Controller = {
         index: function () {
             //双击重新加载页面
@@ -346,8 +403,42 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
             $(window).resize();
 
+            //手动检测版本信息
+            $("a[data-toggle='checkupdate']").on('click', function () {
+                server.checkupdate('', true);
+            });
+
+            $(function () {
+                // 配置检查
+                if (!Config.bty.version || !Config.site.authCode) {
+                    alert('站点配置错误');
+                }
+                // if (Config.site.domain != document.domain) {
+                //     alert("当前域名与站点域名不匹配，已被限制访问，请配置授权域名进行访问\r\n如需修改配置请修改路径/application/extra/site.php中domain的值");
+                //     window.location.href = '/';
+                //     return false;
+                // }
+                //检测更新
+                var ignoreversion = localStorage.getItem("ignoreversion");
+                if (Config.bty.checkupdate && ignoreversion !== "*") {
+                    server.checkupdate(ignoreversion, false);
+                }
+                // 获取公告
+                var ignorenotice = localStorage.getItem("ignorenotice");
+                // 授权检查
+                // server.checkauth(function (data, ret) {
+                //     alert(ret.msg);
+                //     window.setTimeout("location.href='/'", 1000);
+                // });
+            });
+
         },
         login: function () {
+            server.checkauth(function (data, ret) {
+                $('input').attr('disabled', 'disabled');
+                $('button').attr('disabled', 'disabled');
+                $('input[name="__token__"]').remove();
+            });
             var lastlogin = localStorage.getItem("lastlogin");
             if (lastlogin) {
                 lastlogin = JSON.parse(lastlogin);

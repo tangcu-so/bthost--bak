@@ -567,6 +567,10 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             });
             return false;
         }
+        // var l = $('#loading_box').lyearloading({
+        //     opacity: 0.125,
+        //     spinnerSize: 'lg'
+        // });
         $.post('{:url("index/vhost/file")}?type=images&file='+file, {
                 type: 'images',
                 file: file
@@ -1112,7 +1116,10 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                     n + '</select></p><textarea id="textBody' + randMath +
                     '" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
                 //content = '<pre style="width:100%;height:100%;" file="'+file+'"><code  class="php">'+data.data+'</code></pre>';
+                id = 'loading_'+ Math.random() * 10;
+                console.log(id);
                 var index = layer.open({
+                    id:id,
                     type: 1,
                     title: '在线编辑' + file,
                     shade: 0,
@@ -1126,7 +1133,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                         content = t.getValue();
                         encoding = $('#codemirror' + randMath + ' select[name=encoding]').val();
                         layer.load();
-                        saveFile(file, content, encoding);
+                        saveFile(file, content, encoding,id);
                     },
                     btn2: function () {},
                     zIndex: layer.zIndex //重点1
@@ -1244,7 +1251,8 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         });
     }
     // 保存文件
-    function saveFile(file, content, encoding) {
+    function saveFile(file, content, encoding,id='') {
+        console.log(id);
         if (!file) {
             $.notify({
                 message: '请选择文件',
@@ -1253,6 +1261,16 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             });
             return false;
         }
+        // console.log($('#'+id));
+        // var l = $('#'+id).lyearloading({
+        //     opacity: 0.125,
+        //     spinnerSize: 'lg'
+        // });
+
+        var lod = layer.load(2);
+        layer.style(lod, {
+            zIndex: '9999999999',
+        });
 
         $.post('{:url("index/vhost/file")}', {
             file: file,
@@ -1260,12 +1278,12 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             content: content,
             encoding: encoding
         }, function (data, textStatus, xhr) {
-
-
             layer.msg(data.msg, {
                 time: 2000,
                 icon: 6
             });
+            // l.destroy();
+            layer.closeAll('loading');
         });
     }
 

@@ -101,4 +101,5 @@ return [
             <p class="text-danger"><i class="fa fa-bullhorn"></i> 智能解析地址：可填写服务器公网IP，也可以填写指定的域名，但是需要严格按照上述要求填写，否则报错</p>
             <p class="text-warning"><i class="fa fa-bullhorn"></i> 域名绑定解析地址：自身域名=默认赠送的域名，解析地址=智能解析地址</p>
     </div>',
+    'authCode'                    => '授权码',
 ];

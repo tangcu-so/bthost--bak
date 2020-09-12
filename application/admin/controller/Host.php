@@ -28,8 +28,10 @@ class Host extends Backend
     {
         parent::_initialize();
         $this->model = new \app\admin\model\Host;
+        $this->productModel = model('\app\common\model\Product');
         $this->view->assign("isVsftpdList", $this->model->getIsVsftpdList());
         $this->view->assign("statusList", $this->model->getStatusList());
+        $this->view->assign('plans_type', $this->model::plans_type());
     }
 
     public function import()
@@ -83,11 +85,25 @@ class Host extends Backend
     public function add(){
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
-            
-            try {
-                // 读取资源组
-                // 资源组信息转化
-                $plansInfo = model('Plans')->getPlanInfo($params['plans']);
+            $plans_type = isset($params['plans_type']) ? $params['plans_type'] : 0;
+            if ($plans_type == 0 && empty($params['plans'])) {
+                $this->error('请选择资源');
+            }
+            // try {
+            // 读取资源组
+            // 资源组信息转化
+            if ($plans_type == 1) {
+                // 自定义配置
+                $params['pack']['domainpools_id'] = $params['domainpools_id'];
+                $params['pack']['ippools_id'] = $params['ippools_id'];
+                $params['pack']['preset_procedure'] = $params['preset_procedure'];
+                $params['pack']['phpver'] = $params['phpver'];
+                $plansInfo = model('Plans')->getPlanInfo('', $params['pack']);
+            } else {
+                    // 资源组配置
+                    $plansInfo = model('Plans')->getPlanInfo($params['plans']);
+            }
+                
                 if(!$plansInfo){
                     $this->error(model('Plans')->msg);
                 }
@@ -123,7 +139,9 @@ class Host extends Backend
                         $this->error($bt->_error);
                     }
                 }
-                // session隔离
+            // session隔离
+            $bt->btAction->set_php_session_path($btId, 1);
+                
                 // 并发、限速设置
                 // 默认并发、网速限制
                 if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0&&isset($bt->btTend->serverConfig['webserver'])&&$bt->btTend->serverConfig['webserver']=='nginx') {
@@ -197,7 +215,6 @@ class Host extends Backend
                 }
                 
                 // 存入域名信息
-                // TODO 存放域名信息
                 model('Domainlist')::create([
                     'domain'=>$btName,
                     'vhost_id'=>$vhost_id,
@@ -209,15 +226,45 @@ class Host extends Backend
                 ]);
                 
                 Db::commit();
-            } catch (\Exception $ex) {
-                return ['code'=>0,'msg'=>$ex->getMessage()];
-            } catch (\Throwable $th) {
-                return ['code'=>0,'msg'=>$th->getMessage()];
-            }
+            // } catch (\Exception $ex) {
+            //     return ['code'=>0,'msg'=>$ex->getMessage()];
+            // } catch (\Throwable $th) {
+            //     return ['code'=>0,'msg'=>$th->getMessage()];
+            // }
             
             $this->success('添加成功');
         }
+        $siteList = [];
+
+        $groupList = $this->productModel::getGroupList();
+
+        foreach ($groupList as $k => $v) {
+            $siteList[$k]['name'] = $k;
+            $siteList[$k]['title'] = $v;
+            $siteList[$k]['list'] = [];
+        }
+        foreach ($this->productModel->all() as $k => $v) {
+            $value = $v->toArray();
+            $value['title'] = __($value['title']);
+            if (in_array($value['type'], ['select', 'selects', 'checkbox', 'radio'])) {
+                $value['value'] = explode(',', $value['value']);
+            }
+            $value['content'] = json_decode($value['content'], true);
+            $value['tip'] = htmlspecialchars($value['tip']);
+            $siteList[$v['group']]['list'][] = $value;
+        }
+        $index = 0;
+        foreach ($siteList as $k => &$v) {
+            $v['active'] = !$index ? true : false;
+            $index++;
+        }
+        $this->view->assign('siteList', $siteList);
         return $this->view->fetch();
+    }
+
+    public function edit($ids = null)
+    {
+        return parent::edit($ids);
     }
 
     // 真实删除
@@ -266,7 +313,8 @@ class Host extends Backend
         Cookie::set('uid', $userAuth->id);
         Cookie::set('token', $userAuth->getToken());
         // cookie切换到主机id
-        Cookie::set('host_id',$hostInfo->id);
+        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+        
         // 跳转首页控制台
         return $this->redirect('/');
     }
@@ -416,6 +464,221 @@ class Host extends Backend
             return json(['list'=>$row,'total'=>$total]);
         }else{
             return [];
+        }
+    }
+
+    /**
+     * 批量稽核
+     *
+     * @param [type] $ids   vhost_id
+     * @return void
+     */
+    public function repair($ids = null)
+    {
+        $arr = explode(',', $ids);
+        $params = $this->request->param('params');
+
+        foreach ($arr as $key => $value) {
+            $ids = $value;
+            $hostInfo = model('Host')::get($ids);
+            if (!$hostInfo) {
+                $this->error('主机不存在');
+            }
+            $ftpInfo = model('Ftp')::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
+            $sqlInfo = model('Sql')::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
+            $hostInfo_new = $hostInfo;
+            $hostInfo_new->ftp  = $ftpInfo ? $ftpInfo : '';
+            $hostInfo_new->sql  = $sqlInfo ? $sqlInfo : '';
+            $bt        = new Btaction();
+            $bt->bt_id = $hostInfo->bt_id;
+            $bt->sql_name = isset($hostInfo_new->sql->username) ? $hostInfo_new->sql->username : '';
+            $bt->ftp_name = isset($hostInfo_new->ftp->username) ? $hostInfo_new->ftp->username : '';
+            $bt->bt_name = $hostInfo->bt_name;
+
+            // 测试连接
+            if (!$bt->test()) {
+                $this->error($bt->getError());
+            }
+            $Websites = $bt->getSiteInfo();
+            if (!$Websites) {
+                $this->error('Site：' . $hostInfo->bt_name . '<br/>' . $bt->getError());
+            }
+            $btid   = $Websites['id'];
+            $edate  = $Websites['edate'];
+            $status = $Websites['status'];
+
+            if (input('param.sync') || $params == 'sync') {
+                // 强制同步
+                $emsg = '';
+                $emsg .= 'Site：' . $hostInfo->bt_name . '<br/>';
+                // 同步云端宝塔ID到本地
+                $hostInfo->bt_id = $btid;
+                $btidUp = $hostInfo->allowField(true)->save();
+                if ($btidUp) {
+                    $emsg .= "ID：$btid->$hostInfo->bt_id 成功<br/>";
+                } else {
+                    $emsg .= "ID：$btid->$hostInfo->bt_id 失败<br/>";
+                }
+
+                // 同步本地到期时间到云端
+                $localDate = date('Y-m-d', $hostInfo->endtime);
+                $timeSet = $bt->setEndtime($localDate);
+                if ($timeSet) {
+                    $emsg .= "Time：$localDate->$edate 成功<br/>";
+                } else {
+                    $emsg .= "Time：$localDate->$edate 失败<br/>";
+                }
+
+                // 同步云端主机状态到本地
+                // 由于本地状态多样性，导致云端和本地不可能完全同步，所以考虑是否由本地同步到云端，实现主机启停
+                if ($hostInfo->status == 'normal' && $status != 1) {
+                    $statusUp = $bt->webstart();
+                } else {
+                    $statusUp = $bt->webstop();
+                }
+
+                if ($statusUp && $timeSet && $timeSet) {
+                    $this->success($emsg);
+                } else {
+                    $this->error($emsg);
+                }
+                $this->success($emsg);
+            } elseif (input('param.btid')) {
+                // 同步云端宝塔ID到本地
+                $hostInfo->bt_id = $btid;
+                $btidUp = $hostInfo->allowField(true)->save();
+                if ($btidUp) {
+                    $this->success('同步成功');
+                } else {
+                    $this->error('同步失败');
+                }
+            } elseif (input('param.edate')) {
+                // 同步本地到期时间到云端
+                $localDate = date('Y-m-d', $hostInfo->endtime);
+                $timeSet = $bt->setEndtime($localDate);
+                if ($timeSet) {
+                    $this->success('同步成功' . date('Y-m-d', $hostInfo->getData('endtime')));
+                } else {
+                    $this->error('同步失败');
+                }
+            } elseif (input('param.status')) {
+                // 同步云端主机状态到本地
+                if ($hostInfo->status == 'normal' && $status != 1) {
+                    $statusUp = $bt->webstart();
+                } else {
+                    $statusUp = $bt->webstop();
+                }
+
+                if ($statusUp) {
+                    $this->success('同步成功');
+                } else {
+                    $this->error('同步失败');
+                }
+            } elseif (input('param.speedget')) {
+                // 获取限速
+                $speedInfo = $bt->btAction->GetLimitNet($btid);
+                // 区分linux和windows
+                if (isset($speedInfo['limit_rate']) && isset($speedInfo['perip']) && isset($speedInfo['perserver'])) {
+                    return [
+                        'code'       => 1,
+                        'msg'        => '获取成功',
+                        'perserver'  => $speedInfo['perserver'],
+                        'perip'      => $speedInfo['perip'],
+                        'limit_rate' => $speedInfo['limit_rate'],
+                    ];
+                } else {
+                    $this->error('获取失败');
+                }
+            } elseif (input('param.speed')) {
+                // 设置限速
+                $perserver  = input('param.perserver/d') ? input('param.perserver/d') : 0;
+                $perip      = input('param.perip/d') ? input('param.perip/d') : 0;
+                $limit_rate = input('param.limit_rate/d') ? input('param.limit_rate/d') : 0;
+                // 区分linux和windows
+                $modify_status = $bt->btAction->SetLimitNet($btid, $perserver, $perip, $limit_rate);
+                if (isset($modify_status) && $modify_status['status'] == 'true') {
+                    $this->success($modify_status['msg']);
+                } else {
+                    $this->error('设置失败：' . $modify_status['msg']);
+                }
+            } elseif (input('param.speedoff')) {
+                // 关闭限速
+                $modify_status = $bt->closeLimit();
+                if (!$modify_status) {
+                    $this->error($bt->_error);
+                }
+                $this->success('成功');
+            } elseif (input('param.websize') || $params == 'websize') {
+                // 资源稽核
+                $msg = $overflow = '';
+                $msg .= 'Site：' . $hostInfo->bt_name . '<br/>';
+
+                $resource = $bt->getResourceSize();
+
+                $getSqlSizes = $resource['sqlsize'];
+                $getWebSizes = $resource['websize'];
+                $total_size = $resource['total_size'];
+
+                Db::startTrans();
+
+                if ($sqlInfo) {
+                    $hostInfo->sql_size = $getSqlSizes;
+                    if ($hostInfo->sql_max != 0 && $hostInfo->sql_size > $hostInfo->sql_max) {
+                        $overflow = 1;
+                    }
+                }
+
+                $hostInfo->site_size = $getWebSizes;
+                $hostInfo->flow_size = $total_size;
+                $hostInfo->check_time = time();
+
+                // 对比资源，检查是否超出
+                if ($hostInfo->site_max != 0 && $hostInfo->site_size > $hostInfo->site_max) {
+                    $overflow = 1;
+                }
+                if ($hostInfo->flow_max != 0 && $hostInfo->flow_size > $hostInfo->flow_max) {
+                    $overflow = 1;
+                }
+
+                if ($overflow) {
+                    $hostInfo->status = 'excess';
+                    // 停止主机
+                    $bt->webstop();
+                } else {
+                    // 判断既没有过期，也处于没有超量状态，就恢复主机
+                    if ($hostInfo->endtime > time() && $hostInfo->status == 'excess') {
+                        $hostInfo->status = 'success';
+                    }
+                    $bt->webstart();
+                }
+                $hostInfo->check_time = time();
+                $save2 = $hostInfo->allowField(true)->save();
+
+                if (!$save2) {
+                    Db::rollback();
+                    $this->error($msg . '写入失败');
+                }
+                Db::commit();
+                $this->success($msg . '检查完成');
+            } else {
+                $vhostStatus = $hostInfo->status == 'normal' ? 1 : 0;
+                return $this->success('请求成功', '', [
+                    'btid'   => [
+                        $hostInfo->bt_id,
+                        $btid,
+                    ],
+                    'edate'  => [
+                        date("Y-m-d", $hostInfo->getData('endtime')),
+                        $Websites['edate'],
+                    ],
+                    'status' => [
+                        $vhostStatus, //判断状态，非normal都为0
+                        $status, // 只有0和1
+                    ],
+                    'collback_url' => $this->request->url(true),
+                    'ids' => $ids,
+                ]);
+            }
         }
     }
 }
