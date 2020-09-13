@@ -27,6 +27,8 @@ class User extends Frontend
             $this->error(__('User center already closed'));
         }
 
+        $this->isAjax = $this->request->isAjax() ? 1 : 0;
+
         //监听注册登录注销的事件
         Hook::add('user_login_successed', function ($user) use ($auth) {
             $expire = input('post.keeplogin') ? 30 * 86400 : 0;
@@ -113,7 +115,12 @@ class User extends Frontend
                 return false;
             }
             if ($this->auth->login($account, $password)) {
-                $this->success(__('Logged in successful'), $url ? $url : url('/'));
+                if ($this->isAjax) {
+                    $this->success(__('Logged in successful'), $url ? $url : url('/'));
+                } else {
+                    $this->redirect('/');
+                }
+                
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
             }
@@ -136,6 +143,11 @@ class User extends Frontend
     {
         //注销本站
         $this->auth->logout();
-        $this->success(__('Logout successful'), url('/'));
+        if ($this->isAjax) {
+            $this->success(__('Logout successful'), url('/'));
+        } else {
+            $this->redirect('index/user/login');
+        }
+        
     }
 }

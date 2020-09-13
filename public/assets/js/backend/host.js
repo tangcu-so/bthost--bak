@@ -27,14 +27,17 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                         {checkbox: true},
                         // {field: 'id', title: __('Id')},
                         {field: 'user.username', title: __('User_id'), operate: 'LIKE'},
-                        // {field: 'sort_id', title: __('Sort_id')},
+                        {
+                            field: 'sort_id',
+                            title: __('Sort_id')
+                        },
                         // {field: 'bt_id', title: __('Bt_id')},
                         {field: 'bt_name', title: __('Bt_name'), operate: 'LIKE'},
                         {field: 'site_size', title: __('站点/流量/数据库'), formatter: function (value, row, index) { 
                             str = '';
-                            str+=row.site_max==0?'无限制<br/>':'<progress value="'+row.site_size+'" max="'+row.site_max+'" title="'+row.site_size+'/'+row.site_max+'"></progress><br/>';
-                            str+=row.flow_max==0?'无限制<br/>':'<progress value="'+row.flow_size+'" max="'+row.flow_max+'" title="'+row.flow_size+'/'+row.flow_max+'"></progress><br/>';
-                            str+=row.sql_max==0?'无限制<br/>':'<progress value="'+row.sql_size+'" max="'+row.sql_max+'" title="'+row.sql_size+'/'+row.sql_max+'"></progress><br/>';
+                            str += row.site_max == 0 ? '无限制<br/>' : '<progress value="' + row.site_size + '" max="' + row.site_max + '" title="' + row.site_size + '/' + row.site_max + '"></progress><br/>';
+                            str += row.flow_max == 0 ? '无限制<br/>' : '<progress value="' + row.flow_size + '" max="' + row.flow_max + '" title="' + row.flow_size + '/' + row.flow_max + '"></progress><br/>';
+                            str += row.sql_max == 0 ? '无限制<br/>' : '<progress value="' + row.sql_size + '" max="' + row.sql_max + '" title="' + row.sql_size + '/' + row.sql_max + '"></progress><br/>';
                             return  str;
                         }},
                         // {field: 'ip_address', title: __('Ip_address')},
@@ -271,6 +274,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                     }
                     if(data.ps){
                         $('#c-notice').val(data.ps);
+                    }
+                    if (data.id) {
+                        $('#c-bt_id').val(data.id);
                     }
                     console.log(data);
                 }

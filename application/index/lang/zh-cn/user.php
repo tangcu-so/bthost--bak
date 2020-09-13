@@ -61,4 +61,5 @@ return [
     'Operation failed'                      => '操作失败',
     'Invalid parameters'                    => '参数不正确',
     'Change password failure'               => '修改密码失败',
+    'Login Tips'                            => '请使用您的账号登录系统',
 ];

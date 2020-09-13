@@ -87,6 +87,7 @@ class Host extends Model
         return $password?getPasswordHash($password):$password;
     }
 
+    // 获取宝塔主机分类
     public function sort($value){
         if($value){
             $bt = new Btaction();
@@ -153,8 +154,9 @@ class Host extends Model
         return Ftp::get(['vhost_id' => $data['id']]);
     }
 
-    // 转化状态
-    public function status($status){
+    // 转化状态码为中文（已使用语言配置文件实现）
+    public static function status($status)
+    {
         switch ($status) {
             case 'normal':
                 $status_attr = '正常';
@@ -181,7 +183,9 @@ class Host extends Model
         return $status_attr;
     }
 
-    public function getNumber($status){
+    // 转换主机状态为数字状态
+    public static function getNumber($status)
+    {
         switch ($status) {
             case 'normal':
                 $vhostStatus = 1;

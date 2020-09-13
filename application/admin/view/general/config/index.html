@@ -28,9 +28,10 @@
             {foreach $siteList as $index=>$vo}
             <li class="{$vo.active?'active':''}"><a href="#{$vo.name}" data-toggle="tab">{:__($vo.title)}</a></li>
             {/foreach}
-            <li data-toggle="tooltip" title="{:__('Add new config')}">
+            <!-- TODO 开发环境使用，线上部署禁止使用 -->
+            <!-- <li data-toggle="tooltip" title="{:__('Add new config')}">
                 <a href="#addcfg" data-toggle="tab"><i class="fa fa-plus"></i></a>
-            </li>
+            </li> -->
         </ul>
     </div>
 

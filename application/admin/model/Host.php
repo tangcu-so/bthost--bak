@@ -33,6 +33,7 @@ class Host extends Model
         'endtime_text',
         'status_text',
         'user',
+        'size_percentage',
     ];
 
     protected static function init()
@@ -50,6 +51,22 @@ class Host extends Model
                 if ($changed['status'] != 'normal') {
                     $bt->webstop();
                 }
+            }
+            // 如果分类ID发生改变
+            if (isset($changed['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
+                $bt = new Btaction();
+                // 构建数据
+                $data = json_encode([$row->bt_id]);
+                $bt->btAction->set_site_type($data, $changed['sort_id']);
+            }
+            // 如果到期时间发生改变
+            if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
+                $bt = new Btaction();
+                $bt->bt_id = $row->bt_id;
+                $bt->bt_name = $row->bt_name;
+                // 构建数据
+                $expTime = date('Y-m-d', $changed['endtime']);
+                $bt->setEndtime($expTime);
             }
         });
     }
@@ -185,22 +202,24 @@ class Host extends Model
      *
      * 删除FTP、SQL记录
      * @param [type] $id        主机ID
+     * @param [type] $dels      强制删除
      * @return void
      */
-    public function destroy_delete($id){
+    public function destroy_delete($id, $dels = 0)
+    {
         $info = $this::onlyTrashed()->where(['id'=>$id])->find();
-        if(!$info){
+        if (!$info && $dels != 1) {
             return false;
         }
         if($info->bt_id&&$info->bt_name){
             $bt = new Btaction();
             $del = $bt->siteDelete($info->bt_id,$info->bt_name);
-            if(!$del){
+            if (!$del && $dels != 1) {
                 return false;
             }
         }
         if($info->is_vsftpd){
-            // 如果有开通vsftpd，也删除
+            // TODO 如果有开通vsftpd，也删除
             // 暂时没有api，后续更新
         }
         $info->delete(true);
@@ -212,7 +231,9 @@ class Host extends Model
         return true;
     }
 
-    public function getNumber($status){
+    // 转换主机状态为数字状态
+    public static function getNumber($status)
+    {
         switch ($status) {
             case 'normal':
                 $vhostStatus = 1;
@@ -239,12 +260,25 @@ class Host extends Model
         return $vhostStatus;
     }
 
-
+    // 添加主机时资源组类型0=选择资源组,1=自定义资源配置
     public static function plans_type()
     {
         return [
             '0' => '否',
             '1' => '是',
         ];
+    }
+
+    public function getSizePercentageAttr($value, $data)
+    {
+        $site_getround = $data['site_max'] != 0 ? getround($data['site_max'], $data['site_size']) : 0;
+        $sql_getround = $data['sql_max'] != 0 ? getround($data['sql_max'], $data['sql_size']) : 0;
+        $flow_getround = $data['flow_max'] != 0 ? getround($data['flow_max'], $data['flow_size']) : 0;
+        $data = [
+            'site' => $site_getround,
+            'sql' => $sql_getround,
+            'flow' => $flow_getround,
+        ];
+        return $data;
     }
 }

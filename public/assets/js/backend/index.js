@@ -3,14 +3,8 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
     //版本检测
     server.checkupdate = function (ignoreversion, tips) {
         Fast.api.ajax({
-            url: Config.bty.api_url + '/update_check.html',
+            url: 'ajax/update_check',
             type: 'post',
-            data: {
-                obj: Config.bty.APP_NAME,
-                version: Config.bty.version,
-                domain: document.domain,
-                authCode: Config.site.authCode
-            },
         }, function (data, ret) {
             if (ret.data && ignoreversion !== ret.data.newversion && ret.code == 1) {
                 var checkIndex = Layer.open({
@@ -35,18 +29,6 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
             }
         })
     };
-    // 授权检查
-    server.checkauth = function (callback) {
-        Fast.api.ajax({
-            url: Config.bty.api_url + '/auth_check.html',
-            data: {
-                obj: Config.bty.APP_NAME,
-                version: Config.bty.version,
-                domain: document.domain,
-                authCode: Config.site.authCode
-            },
-        }, function (data, ret) {}, callback);
-    }
     // 版本更新
     server.update = function () {
         Fast.api.ajax({
@@ -410,7 +392,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
 
             $(function () {
                 // 配置检查
-                if (!Config.bty.version || !Config.site.authCode) {
+                if (!Config.bty.version) {
                     alert('站点配置错误');
                 }
                 // if (Config.site.domain != document.domain) {
@@ -425,20 +407,10 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
                 }
                 // 获取公告
                 var ignorenotice = localStorage.getItem("ignorenotice");
-                // 授权检查
-                // server.checkauth(function (data, ret) {
-                //     alert(ret.msg);
-                //     window.setTimeout("location.href='/'", 1000);
-                // });
             });
 
         },
         login: function () {
-            server.checkauth(function (data, ret) {
-                $('input').attr('disabled', 'disabled');
-                $('button').attr('disabled', 'disabled');
-                $('input[name="__token__"]').remove();
-            });
             var lastlogin = localStorage.getItem("lastlogin");
             if (lastlogin) {
                 lastlogin = JSON.parse(lastlogin);

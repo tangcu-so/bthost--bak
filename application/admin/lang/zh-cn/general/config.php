@@ -39,7 +39,7 @@ return [
     'Site name'                   => '站点名称',
     'Beian'                       => '备案号',
     'Cdn url'                     => 'CDN地址',
-    'Version'                     => '版本号',
+    'Version'                     => '静态资源版本号',
     'Timezone'                    => '时区',
     'Forbidden ip'                => '禁止IP',
     'Languages'                   => '语言',
@@ -96,10 +96,16 @@ return [
     'dnspod_analysis_url'         => '智能解析地址',
     'default_analysis'            => '域名绑定解析地址',
     'analysis_desc'               => '域名绑定页额外信息',
-    'analysis_info'               => '<div class="alert alert-info-light">
+    'Analysis Tips'               => '<div class="alert alert-info-light">
             <p class="text-success"><i class="fa fa-bullhorn"></i> 如需使用dnspod智能域名解析，请严格按照格式填写智能解析地址：选择A时填IP地址，选择CNAME时填域名地址，如不使用dnspod智能解析可使用泛域名解析到服务器IP</p>
             <p class="text-danger"><i class="fa fa-bullhorn"></i> 智能解析地址：可填写服务器公网IP，也可以填写指定的域名，但是需要严格按照上述要求填写，否则报错</p>
             <p class="text-warning"><i class="fa fa-bullhorn"></i> 域名绑定解析地址：自身域名=默认赠送的域名，解析地址=智能解析地址</p>
     </div>',
+    'Dictionary Tips'             => '<div class="alert alert-info-light">
+            <p class="text-danger"><i class="fa fa-bullhorn"></i> 请勿编辑该配置，容易出现不可逆操作</p>
+    </div>',
     'authCode'                    => '授权码',
+    'description'                 => '站点描述',
+    'login_bg'                    => '登录背景图',
+    'personalization'             => '个性化配置',
 ];

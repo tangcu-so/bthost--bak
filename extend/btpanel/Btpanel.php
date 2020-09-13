@@ -413,18 +413,16 @@ class Btpanel
      * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
      * @param string $search 搜索内容
      */
-    public function WebFtpList($search = '', $page = '1', $limit = '15', $type = '-1', $order = 'id desc', $tojs = '')
+    public function WebFtpList($search = '', $page = '1', $limit = '15', $order = 'id desc', $tojs = '')
     {
         $url = $this->BT_PANEL . config("bt.WebFtpList");
 
         $p_data           = $this->GetKeyData();
         $p_data['p']      = $page;
         $p_data['limit']  = $limit;
-        $p_data['type']   = $type;
         $p_data['order']  = $order;
         $p_data['tojs']   = $tojs;
         $p_data['search'] = $search;
-
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -471,6 +469,35 @@ class Btpanel
 
         $data = json_decode($result, true);
         return $data;
+    }
+
+    /**
+     * 修改网站分类
+     *
+     * @param [type] $site_ids  站点ID组，[179]
+     * @param [type] $id        分类ID
+     * @return void
+     */
+    public function set_site_type($site_ids, $id)
+    {
+        $url = $this->BT_PANEL . config("bt.set_site_type");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['site_ids'] = $site_ids;
+        $p_data['id']       = $id;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+
+        if ($data && isset($data['status']) && $data['status'] == true) {
+            return true;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
     }
 
     /**

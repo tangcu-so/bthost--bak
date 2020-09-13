@@ -2,17 +2,18 @@
 
 return array (
   'name' => 'btHost',
+  'description' => '虚拟主机管理系统，完美的解决您的需求，多种多样的使用场景',
+  'logo' => '/logo.png',
   'beian' => '',
+  'timezone' => 'Asia/Shanghai',
   'cdnurl' => '',
   'version' => '1.0.1',
-  'timezone' => 'Asia/Shanghai',
-  'forbiddenip' => '',
   'languages' => 
   array (
     'backend' => 'zh-cn',
     'frontend' => 'zh-cn',
   ),
-  'fixedpage' => 'dashboard',
+  'forbiddenip' => '',
   'configgroup' => 
   array (
     'basic' => 'Basic',
@@ -23,6 +24,7 @@ return array (
     'domain' => 'Domain',
     'notice' => 'Notice',
     'dictionary' => 'Dictionary',
+    'personalization' => 'Personalization',
   ),
   'mail_type' => '1',
   'mail_smtp_host' => 'smtp.qq.com',
@@ -41,14 +43,15 @@ return array (
   'api_token' => '00nL2eLQCxDfk06AQ15w1VQ93O3A94HV',
   'phpmyadmin' => 'http://192.168.191.129:888/phpmyadmin_2b42747a02485e2d',
   'excess_panel' => '0',
-  'main_center_notice' => '1',
-  'main_left_notice' => '2',
-  'main_right_notice' => '3',
-  'public_head_notice' => '4',
+  'main_center_notice' => '',
+  'main_left_notice' => '',
+  'main_right_notice' => '',
+  'public_head_notice' => '',
   'iframe_cache' => 'true',
   'console_css' => '',
   'console_head' => '',
   'console_foot' => '',
+  'login_bg' => '/static/images/login-bg1.jpg',
   'ftp_server' => '192.168.191.129',
   'ftp_port' => '21',
   'dnspod_analysis_type' => 'A',
@@ -56,5 +59,6 @@ return array (
   'default_analysis' => '0',
   'analysis_desc' => '',
   'split_size' => '10',
-  'authCode' => '3689eDFdHBG8PIn0WvOmfP1G4Uj3oALwtdjDpWiekzFgiAw',
+  'authCode' => '8969zEyQNlc0-xPTXeArN-I2asEonET_nimFI4HYM3RokqM',
+  'fixedpage' => 'dashboard',
 );

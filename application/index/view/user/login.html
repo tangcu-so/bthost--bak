@@ -6,17 +6,19 @@
 <link href="__CDN____STATIC__/Light-Year/css/bootstrap.min.css" rel="stylesheet">
 <link href="__CDN____STATIC__/Light-Year/css/materialdesignicons.min.css" rel="stylesheet">
 <link href="__CDN____STATIC__/Light-Year/css/style.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/css/style.css" rel="stylesheet">
 </head>
   
 <body>
 <div class="row no-gutters bg-white vh-100">
-    <div class="col-md-6 col-lg-7 col-xl-8 d-none d-md-block" style="background-image: url(__STATIC__/Light-Year/images/login-bg-1.jpg); background-size: cover;">
+    <div class="col-md-6 col-lg-7 col-xl-8 d-none d-md-block"
+        style="background-image: url({$Think.config.site.login_bg}); background-size: cover;">
 
     <div class="d-flex vh-100">
         <div class="p-5 align-self-end">
-        <img src="__CDN__/logo.png" alt="...">
+        <img src="{$Think.config.site.logo}" alt="...">
         <br><br><br>
-        <p class="text-white">虚拟主机管理系统，完美的解决您的需求，多种多样的使用场景</p>
+        <p class="text-white">{$site.description}</p>
         </div>
     </div>
 
@@ -25,12 +27,13 @@
     <div class="col-md-6 col-lg-5 col-xl-4 align-self-center">
     <div class="p-5">
         <div class="text-center">
-        <a href="{:url('/')}"> <img alt="light year admin" src="__CDN__/logo.png"> </a>
+        <a href="{:url('/')}">
+            <h3 class="login-logo2">控制台登录</h3> <img alt="{$site.name}" src="{$Think.config.site.logo}" class="login-logo">
+        </a>
         </div>
-        <p class="text-center text-muted"><small>请使用您的账号登录系统</small></p>
+        <p class="text-center text-muted"><small>{:__('Login Tips')}</small></p>
 
         <form name="form" id="login-form" class="form-vertical" method="POST" action="">
-            <input type="hidden" name="url" value="{$url}"/>
             {:token()}
             <div class="form-group">
                 <label for="username">{:__('Account')}</label>
@@ -43,17 +46,11 @@
             </div>
 
             <div class="form-group">
-                <div class="custom-control custom-checkbox">
-                <input type="checkbox" class="custom-control-input" id="rememberme">
-                <label class="custom-control-label not-user-select" for="rememberme">5天内自动登录</label>
-                </div>
-            </div>
-
-            <div class="form-group">
                 <button class="btn btn-block btn-primary" type="submit">立即登录</button>
             </div>
         </form>
-        <p class="text-center text-muted mt-3">Copyright © 2020 <a href="http://lyear.itshubao.com">IT书包</a>. All right reserved</p>
+        <p class="text-center text-muted mt-3">Copyright © 2020 <a href="{:url('/')}">{$site.name}</a>.
+            All right reserved {notempty name="site.beian"}<a href="https://beian.miit.gov.cn/" target="_blank">{$site.beian}</a>{/notempty}</p>
     </div>
     </div>
 </div>

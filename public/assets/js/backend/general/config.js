@@ -1,5 +1,4 @@
 define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefined, Backend, Table, Form) {
-
     var Controller = {
         index: function () {
             $("form.edit-form").data("validator-options", {
@@ -101,7 +100,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             });
 
             // 添加域名解析提醒
-            $('#domain').prepend(__('analysis_info'));
+            $('#domain').prepend(__('Analysis Tips'));
+            // 字典配置配置提醒
+            $('#dictionary').prepend(__('Dictionary Tips'));
         },
         add: function () {
             Controller.api.bindevent();

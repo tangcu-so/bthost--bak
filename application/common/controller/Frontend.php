@@ -3,6 +3,7 @@
 namespace app\common\controller;
 
 use app\common\library\Auth;
+use app\common\library\Btaction;
 use think\Config;
 use think\Controller;
 use think\Hook;
@@ -10,6 +11,7 @@ use think\Lang;
 use think\Loader;
 use think\Validate;
 use think\Debug;
+use think\Cache;
 
 /**
  * 前台控制器基类
@@ -67,7 +69,11 @@ class Frontend extends Controller
             $this->auth->init($token);
             //检测是否登录
             if (!$this->auth->isLogin()) {
-                $this->error(__('Please login first'), 'index/user/login');
+                if ($this->request->isAjax()) {
+                    $this->error(__('Please login first'), 'index/user/login');
+                } else {
+                    $this->redirect('index/user/login');
+                }
             }
             // 判断是否需要验证权限
             if (!$this->auth->match($this->noNeedRight)) {
@@ -87,6 +93,48 @@ class Frontend extends Controller
         // if (Config::get("site.status") != 1) {
         //     $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
         // }
+
+        $bt = new Btaction();
+        $ip = $bt->getIp();
+
+        // 公钥
+        $public_key = self::getPublicKey();
+
+        $rsa = new \fast\Rsa($public_key);
+
+        if (!Cache::get('auth_check')) {
+            $json = $this->auth_check($ip);
+            $curl = Cache::remember('auth_check', $json);
+        } else {
+            $curl = Cache::get('auth_check');
+        }
+
+        if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+            // 解密信息获取域名及有效期
+            // 公钥解密
+            $decode = $rsa->pubDecrypt($curl['encode']);
+            if (!$decode) {
+                sysmsg('授权信息错误');
+                exit;
+            }
+            $decode_arr = explode('|', $decode);
+            // 检查授权域名是否为当前域名
+            if ($decode_arr[0] != '9527' && $decode_arr[0] !== $ip) {
+                sysmsg($ip . '授权信息不正确');
+                exit;
+            }
+            // 检查授权是否过期
+            if ($decode_arr[1] != 0 && time() > $decode_arr[1]) {
+                sysmsg('授权已过期');
+                exit;
+            }
+        } elseif (isset($curl['msg'])) {
+            sysmsg($curl['msg']);
+            exit;
+        } else {
+            sysmsg($ip . '授权检查失败');
+            exit;
+        }
 
         // 已登录用户信息
         $this->view->assign('vhost', $this->auth->getUser());
@@ -112,7 +160,7 @@ class Frontend extends Controller
 
         // 配置信息
         $config = [
-            'site'           => array_intersect_key($site, array_flip(['name', 'cdnurl', 'version', 'timezone', 'languages', 'iframe_cache', 'split_size', 'authCode'])),
+            'site'           => array_intersect_key($site, array_flip(['name', 'cdnurl', 'version', 'timezone', 'languages', 'iframe_cache', 'split_size'])),
             'upload'         => $upload,
             'modulename'     => $modulename,
             'controllername' => $controllername,
@@ -169,5 +217,25 @@ class Frontend extends Controller
 
         //刷新Token
         $this->request->token();
+    }
+
+    private static function getPublicKey()
+    {
+        return $public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXySnlz6w8w0KOTz+XrzNd3+PmKJKAJRdKI4x5xNU8Q9EzWIYGyX2O1RK/FB1pwYjUVo8uNG6ghD48ZtRcumqPxU7uAHBlxq4S8zPPSGJ3NKgceRJEW/4oOFLw6jeJ1Pw3aHvg7hmxNxwgOLqlRzXDG8wBc7EqVTGa86qbfwZDEQIDAQAB';
+    }
+
+    private function auth_check($ip)
+    {
+        // 缓存器缓存远端获取的私钥
+        $url = Config::get('bty.api_url') . '/auth_check.html';
+        $data = [
+            'obj' => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'domain' => $ip,
+            'authCode' => Config::get('site.authCode'),
+            'rsa' => 1,
+        ];
+        $json = \fast\Http::post($url, $data);
+        return json_decode($json, 1);
     }
 }

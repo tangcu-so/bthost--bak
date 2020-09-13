@@ -584,13 +584,27 @@ class Ajax extends Backend
         }
     }
 
-    // 获取任务队列
+    // 版本检测
+    public function update_check()
+    {
+        // 缓存器
+        $url = Config::get('bty.api_url') . '/update_check.html';
+        $data = [
+            'obj' => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'domain' => $this->getIp(),
+            'authCode' => Config::get('site.authCode'),
+        ];
+        $curl = http::post($url, $data);
+
+        return json_decode($curl, 1);
+    }
+    
+
+    // TODO 获取任务队列开发中
     public function getTask()
     {
-        // $bt   = new Btaction();
-        // $list = $bt->btAction->get_task_lists();
-        // return $list;
-        return '[{"id": 46, "name": "下载文件", "type": "1", "shell": "https://oss.yum6.cn/video/lietome/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "other": "/www/wwwroot/oa2ttc/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "status": -1, "exectime": 1599709200, "endtime": null, "addtime": 1599709200, "log": {"name": "下载文件https://oss.yum6.cn/video/lietome/%E5%88%AB%E5%AF%B9%E6%88%91%E6%92%92%E8%B0%8E.Lie.To.Me.S01E10.Chi_Eng.BDrip.AC3.1024X576.x264-YYeTs%E4%BA%BA%E4%BA%BA%E5%BD%B1%E8%A7%86.mkv", "total": 503087100, "used": "324.90 MB", "pre": "67", "speed": "10.3M", "time": "12秒"}}]';
+        return '[{"id": 46, "name": "下载文件", "type": "1", "shell": "", "other": "", "status": -1, "exectime": 1599709200, "endtime": null, "addtime": 1599709200, "log": {"name": "下载文件", "total": 503087100, "used": "324.90 MB", "pre": "67", "speed": "10.3M", "time": "12秒"}}]';
     }
 
     // 获取公告内容
@@ -602,12 +616,28 @@ class Ajax extends Backend
             $data = [
                 'obj' => Config::get('bty.APP_NAME'),
                 'version' => Config::get('bty.version'),
-                'domain' => $_SERVER['HTTP_HOST'],
+                'domain' => $this->getIp(),
                 'authCode' => Config::get('site.authCode'),
             ];
             return http::post($url, $data);
         });
 
         return json_decode($curl, 1);
+    }
+
+    /**
+     * 获取服务器公网IP
+     *
+     * @return void
+     */
+    public function getIp()
+    {
+        $bt = new Btaction();
+        $ip = $bt->getIp();
+        if ($ip) {
+            return $ip;
+        } else {
+            return false;
+        }
     }
 }

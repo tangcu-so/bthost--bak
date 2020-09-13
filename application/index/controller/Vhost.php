@@ -1152,15 +1152,16 @@ class Vhost extends Frontend
         // 判断当前站点是否开通ftp
 
         $type = input('post.type');
-
+        if (!$this->hostInfo->ftp) {
+            $this->error('不支持该模块', '');
+        }
         $host     = isset($this->hostInfo['ftp_server'])?$this->hostInfo['ftp_server']:'192.168.191.129';
         $ssl     = isset($this->hostInfo['ssl'])?$this->hostInfo['ssl']:false;
         $port     = isset($this->hostInfo['ftp_port'])?$this->hostInfo['ftp_port']:'21';
         $username = $this->hostInfo->ftp->username;
         $password = $this->hostInfo->ftp->password;
-        // var_dump($username,$password);exit;
         if (!$host || !$port || !$username || !$password) {
-            $this->error('当前不支持FTP文件管理','');
+            $this->error('不支持该模块', '');
         }
 
         // 防止错误

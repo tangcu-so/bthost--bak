@@ -519,6 +519,21 @@ class Btaction
     }
 
     /**
+     * 获取服务器公网IP
+     *
+     * @return void
+     */
+    public function getIp()
+    {
+        $soft = $this->btAction->GetSoftList();
+        if ($soft && isset($soft['ip']) && $soft['ip']) {
+            return $soft['ip'];
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * 获取主机信息
      * @Author   Youngxj
      * @DateTime 2019-12-14

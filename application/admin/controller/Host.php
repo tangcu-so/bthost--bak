@@ -66,7 +66,6 @@ class Host extends Backend
             foreach ($list as $k => $v) {
                 // 关联分类
                 $v->sort_id = $this->model->sort($v->sort_id);
-                
                 $v->hidden(['user.password', 'user.salt']);
             }
             $result = array("total" => $total, "rows" => $list);
@@ -269,33 +268,11 @@ class Host extends Backend
 
     // 真实删除
     public function destroy($ids = null){
-        $test = $this->model->destroy_delete($ids);
+        $test = $this->model->destroy_delete($ids, 1);
         if(!$test){
             $this->error('销毁失败');
         }
         $this->success('销毁成功');
-        // // 获取数据信息
-        // $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
-        // if(!$info){
-        //     $this->error('数据不存在');
-        // }
-        // if($info->bt_id&&$info->bt_name){
-        //     // 连接服务器删除站点
-        //     $bt = new Btaction();
-        //     $del = $bt->siteDelete($info->bt_id,$info->bt_name);
-        //     if(!$del){
-        //         $this->error($bt->_error);
-        //     }
-        // }
-        // if($info->is_vsftpd){
-        //     // 如果有开通vsftpd，也删除
-        //     // 暂时没有api，后续更新
-        // }
-        // // 删除数据库
-        // model('Sql')->where('vhost_id',$info->id)->delete(true);
-        // // 删除FTP
-        // model('Ftp')->where('vhost_id',$info->id)->delete(true);
-        
         parent::destroy($ids);
     }
 
@@ -331,6 +308,7 @@ class Host extends Backend
             $user_id = isset($params['user_id'])?$params['user_id']:'';
             $endtime = isset($params['endtime'])?$params['endtime']:'';
             $notice = isset($params['notice'])?$params['notice']:'';
+            $bt_id = isset($params['bt_id']) ? $params['bt_id'] : '';
             if(!$bt_name){
                 $this->error('必须填写或选择站点');
             }
@@ -339,6 +317,7 @@ class Host extends Backend
             }
             // 连接宝塔
             $bt = new Btaction();
+            $bt->bt_id = $bt_id;
             $bt->bt_name = $bt_name;
             $bt->ftp_name = $ftp_name;
             $bt->sql_name = $sql_name;
@@ -374,6 +353,9 @@ class Host extends Backend
             $sqlfind = model('Ftp')::get(['username'=>$ftp_name]);
             if($sqlfind){
                 $this->error('数据库已存在，请勿重复添加');
+            }
+            if ($endtime) {
+                $bt->setEndtime($endtime);
             }
             // var_dump($hostInfo,$ftpInfo,$sqlInfo);exit;
             // 都查找完毕后存入数据库
@@ -422,7 +404,7 @@ class Host extends Backend
         $list = $bt->getSiteList($serch,$pageNumber,$pageSize);
         if($list&&isset($list['data'])){
             $row = $list['data'];
-            $total = $bt->siteCount($serch);
+            $total = $bt->sqlCount($serch);
             return json(['list'=>$row,'total'=>$total]);
         }else{
             return [];
@@ -441,7 +423,7 @@ class Host extends Backend
         $list = $bt->getFtpList($serch,$pageNumber,$pageSize);
         if($list&&isset($list['data'])){
             $row = $list['data'];
-            $total = $bt->siteCount($serch);
+            $total = $bt->ftpCount($serch);
             return json(['list'=>$row,'total'=>$total]);
         }else{
             return [];

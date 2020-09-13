@@ -27,49 +27,6 @@ class Plans extends Backend
         
     }
 
-    /**
-     * 查看
-     */
-    public function index()
-    {
-        //设置过滤方法
-        $this->request->filter(['strip_tags']);
-        if ($this->request->isAjax()) {
-            //如果发送的来源是Selectpage，则转发到Selectpage
-            if ($this->request->request('keyField')) {
-                return $this->selectpage();
-            }
-
-            list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model
-                ->where($where)
-                ->order($sort, $order)
-                ->count();
-            $list = $this->model
-                ->where($where)
-                ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
-            foreach ($list as $k => $v) {
-                // 关联分类
-                $v->sort_id = $this->model->sort($v->sort_id);
-
-                // $v->hidden(['user.password', 'user.salt']);
-            }
-            $list[] = [
-                'id' => 0,
-                'name' => '自定义',
-                'pid' => 0,
-            ];
-            var_dump($list);
-            exit;
-            $result = array("total" => $total, "rows" => $list);
-
-            return json($result);
-        }
-        return $this->view->fetch();
-    }
-
 
     public function import()
     {
