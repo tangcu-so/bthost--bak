@@ -486,8 +486,8 @@ class Vhost extends Frontend
 
             $domain_str = str_replace("\n", ',', $post_str['domain']);
             // var_dump($this->bt_id, $this->siteName, $domain_str);exit;
-            
-            $modify_status = $this->btTend->addDomain($domain_str, $this->bt_id, $name, $isdir);
+
+            $modify_status = $this->btTend->addDomain($domain_str, $name, $isdir);
 
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 Db::commit();
