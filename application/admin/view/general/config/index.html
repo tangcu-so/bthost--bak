@@ -8,7 +8,7 @@
             width: 20%;
         }
 
-        .edit-form tr th:nth-last-of-type(-n+2), .edit-form tr td:nth-last-of-type(-n+2) {
+        .edit-form tr th:nth-last-of-type(-n+1), .edit-form tr td:nth-last-of-type(-n+1) {
             display: none;
         }
     }
@@ -22,7 +22,7 @@
     }
 
     @media (max-width: 767px) {
-        .edit-form table tr th:nth-last-child(-n + 2), .edit-form table tr td:nth-last-child(-n + 2) {
+        .edit-form table tr th:nth-last-child(-n + 1), .edit-form table tr td:nth-last-child(-n + 1) {
             display: none;
         }
         .edit-form table tr td .msg-box {
@@ -38,9 +38,9 @@
             <li class="{$vo.active?'active':''}"><a href="#{$vo.name}" data-toggle="tab">{:__($vo.title)}</a></li>
             {/foreach}
             <!-- TODO 开发环境使用，线上部署禁止使用 -->
-            <!-- <li data-toggle="tooltip" title="{:__('Add new config')}">
+            <li data-toggle="tooltip" title="{:__('Add new config')}">
                 <a href="#addcfg" data-toggle="tab"><i class="fa fa-plus"></i></a>
-            </li> -->
+            </li>
         </ul>
     </div>
 
