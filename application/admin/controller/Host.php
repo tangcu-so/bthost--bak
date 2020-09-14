@@ -81,6 +81,7 @@ class Host extends Backend
      * 需要将application/admin/library/traits/Backend.php中对应的方法复制到当前控制器,然后进行修改
      */
     
+    // 创建主机
     public function add(){
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
@@ -300,6 +301,7 @@ class Host extends Backend
         return $this->redirect('/');
     }
 
+    // 添加主机
     public function add_local(){
         // 考虑使用拉下选择并查找
         if($this->request->isPost()){
@@ -454,7 +456,7 @@ class Host extends Backend
     }
 
     /**
-     * 批量稽核
+     * 批量操作
      *
      * @param [type] $ids   vhost_id
      * @return void

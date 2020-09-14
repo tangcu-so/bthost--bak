@@ -70,9 +70,16 @@ class Host extends Model
             }
         });
 
+        // TODO 主机创建前事件
         self::beforeInsert(function ($row) {
             $changed = $row->getChangedData();
-            // TODO 将主机创建事件放在这里
+            // 新建主机调用方法
+        });
+
+        // TODO 主机删除前事件
+        self::beforeDelete(function ($row) {
+            $changed = $row->getChangedData();
+            // 删除主机调用方法
         });
     }
     

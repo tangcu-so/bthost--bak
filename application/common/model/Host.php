@@ -64,10 +64,15 @@ class Host extends Model
                 $bt->setEndtime($expTime);
             }
         });
-        // TODO 考虑将创建主机放在这里
+        // TODO 主机创建前事件
         self::beforeInsert(function ($row) {
             $changed = $row->getChangedData();
             // 新建主机调用方法
+        });
+        // TODO 主机删除前事件
+        self::beforeDelete(function ($row) {
+            $changed = $row->getChangedData();
+            // 删除主机调用方法
         });
     }
     

@@ -46,6 +46,7 @@ class Ftp extends Model
                 $bt->ftp_name = $row->username;
                 $bt->resetFtpPass($row->username, $changed['password']);
             }
+            // TODO 主机超量停用ftp
         });
     }
 

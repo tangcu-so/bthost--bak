@@ -1428,6 +1428,26 @@ class Btaction
     }
 
     /**
+     * 检查任务是否存在
+     *
+     * @param [type] $name      任务名称
+     * @return void
+     */
+    public function exist_cron($name)
+    {
+        $list = $this->btAction->GetCrontab();
+        if (!$list) {
+            $this->_error = $this->btAction->_error;
+        }
+        foreach ($list as $key => $value) {
+            if (isset($value['name']) && $value['name'] == $name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 获取服务器连接时间
      *
      * @param [type] $url

@@ -4345,6 +4345,68 @@ class Btpanel
         return false;
     }
 
+    /**
+     * 添加计划任务
+     *
+     * @param array $params
+     * name=名称,sType=类型,type=周期,urladdress=url地址
+     * @return void
+     */
+    public function AddCrontab($params = [])
+    {
+        $url = $this->BT_PANEL . config("bt.AddCrontab");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['name'] = isset($params['name']) ? $params['name'] : '';
+        $p_data['type'] = isset($params['type']) ? $params['type'] : '';
+        $p_data['where1'] = isset($params['where1']) ? $params['where1'] : '';
+        $p_data['hour'] = isset($params['hour']) ? $params['hour'] : '';
+        $p_data['minute'] = isset($params['minute']) ? $params['minute'] : '';
+        $p_data['week'] = isset($params['week']) ? $params['week'] : '';
+        $p_data['sType'] = isset($params['sType']) ? $params['sType'] : '';
+        $p_data['sBody'] = isset($params['sBody']) ? $params['sBody'] : 'undefined';
+        $p_data['sName'] = isset($params['sName']) ? $params['sName'] : '';
+        $p_data['backupTo'] = isset($params['backupTo']) ? $params['backupTo'] : 'localhost';
+        $p_data['save'] = isset($params['save']) ? $params['save'] : '';
+        $p_data['urladdress'] = isset($params['urladdress']) ? $params['urladdress'] : '';
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && isset($data['status']) && $data['status'] == true) {
+            return true;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 计划任务列表
+     *
+     * @return array
+     */
+    public function GetCrontab()
+    {
+        $url = $this->BT_PANEL . config("bt.GetCrontab");
+
+        $p_data         = $this->GetKeyData();
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && !isset($data['msg'])) {
+            return $data;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
 
 
     /**

@@ -31,6 +31,8 @@ return [
     'GetSqlSize'                 => '/database?action=GetInfo', //计算数据库大小
     'getData'                    => '/data?action=getData', //查询数据库数据
     'GetDirSize'                 => '/files?action=GetDirSize', // 面板日志大小
+    'AddCrontab'                 => '/crontab?action=AddCrontab', // 添加计划任务
+    'GetCrontab'                 => '/crontab?action=GetCrontab', // 计划任务列表
 
     # 网站管理相关接口
     'Websites'                   => '/data?action=getData&table=sites', //获取网站列表
