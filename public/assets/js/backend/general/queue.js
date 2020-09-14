@@ -68,6 +68,10 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
                 }); 
             });
 
+            $(document).on("click", ".btn-deployment", function () {
+                Table.api.multi("general/queue/deployment", '', table, this);
+            });
+
             // 一键清空日志
             $('.btn-clear').click(function () { 
                 layer.confirm('清空全部日志？', {
