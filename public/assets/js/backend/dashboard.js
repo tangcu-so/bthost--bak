@@ -247,10 +247,6 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 myChart.resize();
             });
 
-            $(document).on("click", ".btn-checkversion", function () {
-                top.window.$("[data-toggle=checkupdate]").trigger("click");
-            });
-
             $(document).on("click", ".btn-refresh", function () {
                 setTimeout(function () {
                     myChart.resize();

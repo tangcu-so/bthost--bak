@@ -62,6 +62,8 @@ class Ajax extends Backend
     public function upload()
     {
         Config::set('default_return_type', 'json');
+        //必须设定cdnurl为空,否则cdnurl函数计算错误
+        Config::set('upload.cdnurl', '');
         $chunkid = $this->request->post("chunkid");
         if ($chunkid) {
             if (!Config::get('upload.chunking')) {
@@ -81,7 +83,7 @@ class Ajax extends Backend
                 } catch (UploadException $e) {
                     $this->error($e->getMessage());
                 }
-                $this->success(__('Uploaded successful'), '', ['url' => $attachment->url]);
+                $this->success(__('Uploaded successful'), '', ['url' => $attachment->url, 'fullurl' => cdnurl($attachment->url, true)]);
             } elseif ($method == 'clean') {
                 //删除冗余的分片文件
                 try {
@@ -114,7 +116,7 @@ class Ajax extends Backend
                 $this->error($e->getMessage());
             }
 
-            $this->success(__('Uploaded successful'), '', ['url' => $attachment->url]);
+            $this->success(__('Uploaded successful'), '', ['url' => $attachment->url, 'fullurl' => cdnurl($attachment->url, true)]);
         }
     }
 
@@ -175,6 +177,9 @@ class Ajax extends Backend
                 } else {
                     $offset = isset($temp[$m - 1]) ? $temp[$m - 1] : $sour_id;
                 }
+            }
+            if (!isset($weighdata[$offset])) {
+                continue;
             }
             $weighids[$n] = $weighdata[$offset];
             Db::name($table)->where($prikey, $n)->update([$field => $weighdata[$offset]]);

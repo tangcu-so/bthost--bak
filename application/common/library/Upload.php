@@ -28,6 +28,8 @@ class Upload
      */
     protected static $maxCheckNums = 10;
 
+    protected $merging = false;
+
     protected $chunkDir = null;
 
     protected $config = [];
@@ -90,13 +92,12 @@ class Upload
         $mimetypeArr = explode(',', strtolower($this->config['mimetype']));
         $typeArr = explode('/', $this->fileInfo['type']);
         //验证文件后缀
-        if ($this->config['mimetype'] !== '*' &&
-            (!in_array($this->fileInfo['suffix'], $mimetypeArr) || (stripos($typeArr[0] . '/', $this->config['mimetype']) !== false && (!in_array($this->fileInfo['type'], $mimetypeArr) && !in_array($typeArr[0] . '/*', $mimetypeArr))))
-        ) {
-            throw new UploadException(__('Uploaded file format is limited'));
-            return false;
+        if ($this->config['mimetype'] === '*'
+            || in_array($this->fileInfo['suffix'], $mimetypeArr) || in_array('.' . $this->fileInfo['suffix'], $mimetypeArr)
+            || in_array($this->fileInfo['type'], $mimetypeArr) || in_array($typeArr[0] . "/*", $mimetypeArr)) {
+            return true;
         }
-        return true;
+        throw new UploadException(__('Uploaded file format is limited'));
     }
 
     protected function checkImage($force = false)
@@ -153,7 +154,7 @@ class Upload
             '{sec}'      => date("s"),
             '{random}'   => Random::alnum(16),
             '{random32}' => Random::alnum(32),
-            '{filename}' => $filename,
+            '{filename}' => substr($filename, 0, 100),
             '{suffix}'   => $suffix,
             '{.suffix}'  => $suffix ? '.' . $suffix : '',
             '{filemd5}'  => $md5,
@@ -172,9 +173,21 @@ class Upload
     {
         $iterator = new \GlobIterator($this->chunkDir . DS . $chunkid . '-*', FilesystemIterator::KEY_AS_FILENAME);
         $array = iterator_to_array($iterator);
-        var_dump($array);
+        foreach ($array as $index => &$item) {
+            $sourceFile = $item->getRealPath() ?: $item->getPathname();
+            $item = null;
+            @unlink($sourceFile);
+        }
     }
 
+    /**
+     * 合并分片文件
+     * @param string $chunkid
+     * @param int    $chunkcount
+     * @param string $filename
+     * @return attachment|\think\Model
+     * @throws UploadException
+     */
     public function merge($chunkid, $chunkcount, $filename)
     {
         $filePath = $this->chunkDir . DS . $chunkid;
@@ -188,6 +201,7 @@ class Upload
             }
         }
         if (!$completed) {
+            $this->clean($chunkid);
             throw new UploadException(__('Chunk file info error'));
         }
 
@@ -195,6 +209,7 @@ class Upload
         $uploadPath = $filePath;
 
         if (!$destFile = @fopen($uploadPath, "wb")) {
+            $this->clean($chunkid);
             throw new UploadException(__('Chunk file merge error'));
         }
         if (flock($destFile, LOCK_EX)) { // 进行排他型锁定
@@ -222,11 +237,14 @@ class Upload
             'error'    => 0,
             'size'     => $file->getSize()
         ];
-        $file->setUploadInfo($info);
+        $file->setSaveName($filename)->setUploadInfo($info);
         $file->isTest(true);
 
         //重新设置文件
         $this->setFile($file);
+
+        unset($file);
+        $this->merging = true;
 
         //允许大文件
         $this->config['maxsize'] = "1024G";
@@ -248,6 +266,9 @@ class Upload
         $destDir = RUNTIME_PATH . 'chunks';
         $fileName = $chunkid . "-" . $chunkindex . '.part';
         $destFile = $destDir . DS . $fileName;
+        if (!is_dir($destDir)) {
+            @mkdir($destDir, 0755, true);
+        }
         if (!move_uploaded_file($this->file->getPathname(), $destFile)) {
             throw new UploadException(__('Chunk file write error'));
         }
@@ -277,20 +298,34 @@ class Upload
         $uploadDir = substr($savekey, 0, strripos($savekey, '/') + 1);
         $fileName = substr($savekey, strripos($savekey, '/') + 1);
 
-        $destDir = ROOT_PATH . 'public' . $uploadDir;
+        $destDir = ROOT_PATH . 'public' . str_replace('/', DS, $uploadDir);
 
         $sha1 = $this->file->hash();
 
-        $file = $this->file->move($destDir, $fileName);
-        if (!$file) {
-            // 上传失败获取错误信息
-            throw new UploadException($this->file->getError());
+        //如果是合并文件
+        if ($this->merging) {
+            if (!$this->file->check()) {
+                throw new UploadException($this->file->getError());
+            }
+            $destFile = $destDir . $fileName;
+            $sourceFile = $this->file->getRealPath() ?: $this->file->getPathname();
+            $info = $this->file->getInfo();
+            $this->file = null;
+            rename($sourceFile, $destFile);
+            $file = new File($destFile);
+            $file->setSaveName($fileName)->setUploadInfo($info);
+        } else {
+            $file = $this->file->move($destDir, $fileName);
+            if (!$file) {
+                // 上传失败获取错误信息
+                throw new UploadException($this->file->getError());
+            }
         }
         $this->file = $file;
         $params = array(
             'admin_id'    => (int)session('admin.id'),
             'user_id'     => (int)cookie('uid'),
-            'filename'    => htmlspecialchars(strip_tags($this->fileInfo['name'])),
+            'filename'    => substr(htmlspecialchars(strip_tags($this->fileInfo['name'])), 0, 100),
             'filesize'    => $this->fileInfo['size'],
             'imagewidth'  => $this->fileInfo['imagewidth'],
             'imageheight' => $this->fileInfo['imageheight'],

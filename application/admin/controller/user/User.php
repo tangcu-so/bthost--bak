@@ -17,7 +17,7 @@ class User extends Backend
 
     // 通用搜索
     protected $searchFields = 'id,username,nickname';
-    
+
     /**
      * User模型对象
      * @var \app\admin\model\User
@@ -37,28 +37,23 @@ class User extends Backend
     public function index()
     {
         //设置过滤方法
-        $this->request->filter(['strip_tags']);
+        $this->request->filter(['strip_tags', 'trim']);
         if ($this->request->isAjax()) {
             //如果发送的来源是Selectpage，则转发到Selectpage
             if ($this->request->request('keyField')) {
                 return $this->selectpage();
             }
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
-            $total = $this->model
-                ->with('group')
-                ->where($where)
-                ->order($sort, $order)
-                ->count();
             $list = $this->model
                 ->with('group')
                 ->where($where)
                 ->order($sort, $order)
-                ->limit($offset, $limit)
-                ->select();
+                ->paginate($limit);
             foreach ($list as $k => $v) {
+                $v->avatar = $v->avatar ? cdnurl($v->avatar, true) : letter_avatar($v->nickname);
                 $v->hidden(['password', 'salt']);
             }
-            $result = array("total" => $total, "rows" => $list);
+            $result = array("total" => $list->total(), "rows" => $list->items());
 
             return json($result);
         }
@@ -98,12 +93,31 @@ class User extends Backend
     }
 
     // 获取详细信息
-    public function info($ids = null){
+    public function info($ids = null)
+    {
         $userInfo = $this->model::get($ids);
-        if(!$userInfo){
+        if (!$userInfo) {
             $this->error('没有找到该用户');
         }
         $this->view->assign("row", $userInfo->toArray());
+        return $this->view->fetch();
+    }
+
+    /**
+     * 删除
+     */
+    public function del($ids = "")
+    {
+        if (!$this->request->isPost()) {
+            $this->error(__("Invalid parameters"));
+        }
+        $ids = $ids ? $ids : $this->request->post("ids");
+        $row = $this->model->get($ids);
+        $this->modelValidate = true;
+        if (!$row) {
+            $this->error(__('No Results were found'));
+        }
+        $this->view->assign("row", $row->toArray());
         return $this->view->fetch();
     }
 
@@ -112,6 +126,4 @@ class User extends Backend
      * 因此在当前控制器中可不用编写增删改查的代码,除非需要自己控制这部分逻辑
      * 需要将application/admin/library/traits/Backend.php中对应的方法复制到当前控制器,然后进行修改
      */
-    
-
 }

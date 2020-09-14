@@ -1,4 +1,4 @@
-define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table', 'bootstrap-table-lang', 'bootstrap-table-export', 'bootstrap-table-commonsearch', 'bootstrap-table-template', 'bootstrap-table-jumpto'], function ($, undefined, Moment) {
+define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table', 'bootstrap-table-lang', 'bootstrap-table-export', 'bootstrap-table-commonsearch', 'bootstrap-table-template', 'bootstrap-table-jumpto', 'bootstrap-table-fixed-columns'], function ($, undefined, Moment) {
     var Table = {
         list: {},
         // Bootstrap-table 基础配置
@@ -20,8 +20,8 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 fileName: 'export_' + Moment().format("YYYY-MM-DD"),
                 ignoreColumn: [0, 'operate'] //默认不导出第一列(checkbox)与操作(operate)列
             },
-            pageSize: 10,
-            pageList: [10, 25, 50, 'All'],
+            pageSize: localStorage.getItem("pagesize") || 10,
+            pageList: [10, 15, 20, 25, 50, 'All'],
             pagination: true,
             clickToSelect: true, //是否启用点击选中
             dblClickToEdit: true, //是否启用双击编辑
@@ -41,6 +41,8 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             cardView: false, //卡片视图
             checkOnInit: true, //是否在初始化时判断
             escape: true, //是否对内容进行转义
+            selectedIds: [],
+            selectedData: [],
             extend: {
                 index_url: '',
                 add_url: '',
@@ -57,7 +59,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             valign: 'middle',
         },
         config: {
-            firsttd: 'tbody>tr>td.bs-checkbox',
+            checkboxtd: 'tbody>tr>td.bs-checkbox',
             toolbar: '.toolbar',
             refreshbtn: '.btn-refresh',
             addbtn: '.btn-add',
@@ -105,6 +107,9 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 if (navigator.userAgent.match(/(iPod|iPhone|iPad)/)) {
                     Table.defaults.cardView = true;
                 }
+                $.fn.bootstrapTable.Constructor.prototype.getSelectItem = function () {
+                    return this.$selectItem;
+                };
                 // 写入bootstrap-table默认配置
                 $.extend(true, $.fn.bootstrapTable.defaults, Table.defaults, defaults);
                 // 写入bootstrap-table column配置
@@ -142,7 +147,24 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 var options = table.bootstrapTable('getOptions');
                 //Bootstrap操作区
                 var toolbar = $(options.toolbar, parenttable);
+                //跨页提示按钮
+                var tipsBtn = $(".btn-selected-tips", parenttable);
+                if (tipsBtn.size() === 0) {
+                    tipsBtn = $('<a href="javascript:" class="btn btn-warning-light btn-selected-tips hide" data-animation="false" data-toggle="tooltip" data-title="' + __("Click to uncheck all") + '"><i class="fa fa-info-circle"></i> ' + __("Multiple selection mode: %s checked", "<b>0</b>") + '</a>').appendTo(toolbar);
+                }
+                //点击提示按钮
+                tipsBtn.off("click").on("click", function (e) {
+                    table.trigger("uncheckbox");
+                    table.bootstrapTable("refresh");
+                });
                 //当刷新表格时
+                table.on('uncheckbox', function (status, res, e) {
+                    options.selectedIds = [];
+                    options.selectedData = [];
+                    tipsBtn.tooltip('hide');
+                    tipsBtn.addClass('hide');
+                });
+                //表格加载出错时
                 table.on('load-error.bs.table', function (status, res, e) {
                     if (e.status === 0) {
                         return;
@@ -159,21 +181,38 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 table.on('refresh.bs.table', function (e, settings, data) {
                     $(Table.config.refreshbtn, toolbar).find(".fa").addClass("fa-spin");
                 });
+                //当表格分页变更时
+                table.on('page-change.bs.table', function (e, page, pagesize) {
+                    if (!isNaN(pagesize)) {
+                        localStorage.setItem("pagesize", pagesize);
+                    }
+                });
+                //当执行搜索时
+                table.on('search.bs.table common-search.bs.table', function (e, settings, data) {
+                    table.trigger("uncheckbox");
+                });
                 if (options.dblClickToEdit) {
                     //当双击单元格时
                     table.on('dbl-click-row.bs.table', function (e, row, element, field) {
                         $(Table.config.editonebtn, element).trigger("click");
                     });
                 }
+                //渲染内容前
+                table.on('pre-body.bs.table', function (e, data) {
+                    if (options.maintainSelected) {
+                        $.each(data, function (i, row) {
+                            row[options.stateField] = $.inArray(row[options.pk], options.selectedIds) > -1;
+                        });
+                    }
+                });
                 //当内容渲染完成后
-                table.on('post-body.bs.table', function (e, settings, json, xhr) {
+                table.on('post-body.bs.table', function (e, data) {
                     $(Table.config.refreshbtn, toolbar).find(".fa").removeClass("fa-spin");
-                    $(Table.config.disabledbtn, toolbar).toggleClass('disabled', true);
-                    if ($(Table.config.firsttd + ":first", table).find("input[type='checkbox'][data-index]").size() > 0) {
+                    if ($(Table.config.checkboxtd + ":first", table).find("input[type='checkbox'][data-index]").size() > 0) {
                         // 拖拽选择,需要重新绑定事件
                         require(['drag', 'drop'], function () {
-                            var firsttd = $(Table.config.firsttd, table);
-                            firsttd.drag("start", function (ev, dd) {
+                            var checkboxtd = $(Table.config.checkboxtd, table);
+                            checkboxtd.drag("start", function (ev, dd) {
                                 return $('<div class="selection" />').css('opacity', .65).appendTo(document.body);
                             }).drag(function (ev, dd) {
                                 $(dd.proxy).css({
@@ -185,7 +224,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                             }).drag("end", function (ev, dd) {
                                 $(dd.proxy).remove();
                             });
-                            firsttd.drop("start", function () {
+                            checkboxtd.drop("start", function () {
                                 Table.api.toggleattr(this);
                             }).drop(function () {
                                 Table.api.toggleattr(this);
@@ -199,9 +238,32 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     }
                 });
                 // 处理选中筛选框后按钮的状态统一变更
-                table.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', function () {
-                    var ids = Table.api.selectedids(table);
-                    $(Table.config.disabledbtn, toolbar).toggleClass('disabled', !ids.length);
+                table.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table post-body.bs.table', function (e) {
+                    var allIds = table.bootstrapTable("getData").map(function (item) {
+                        return item[options.pk];
+                    });
+                    var selectedIds = Table.api.selectedids(table, true),
+                        selectedData = Table.api.selecteddata(table, true);
+                    //开启分页checkbox分页记忆
+                    if (options.maintainSelected) {
+                        options.selectedIds = options.selectedIds.filter(function (element, index, self) {
+                            return $.inArray(element, allIds) === -1;
+                        }).concat(selectedIds);
+                        options.selectedData = options.selectedData.filter(function (element, index, self) {
+                            return $.inArray(element[options.pk], allIds) === -1;
+                        }).concat(selectedData);
+                        if (options.selectedIds.length > selectedIds.length) {
+                            $("b", tipsBtn).text(options.selectedIds.length);
+                            tipsBtn.removeClass('hide');
+                        } else {
+                            tipsBtn.addClass('hide');
+                        }
+                    } else {
+                        options.selectedIds = selectedIds;
+                        options.selectedData = selectedData;
+                    }
+                    $(Table.config.disabledbtn, toolbar).toggleClass('disabled', !options.selectedIds.length);
+
                 });
                 // 绑定TAB事件
                 $('.panel-heading [data-field] a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -213,15 +275,16 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     } else {
                         object.val(value);
                     }
+                    table.trigger("uncheckbox");
                     table.bootstrapTable('refresh', {pageNumber: 1});
                     return false;
                 });
                 // 刷新按钮事件
-                $(toolbar).on('click', Table.config.refreshbtn, function () {
+                toolbar.on('click', Table.config.refreshbtn, function () {
                     table.bootstrapTable('refresh');
                 });
                 // 添加按钮事件
-                $(toolbar).on('click', Table.config.addbtn, function () {
+                toolbar.on('click', Table.config.addbtn, function () {
                     var ids = Table.api.selectedids(table);
                     var url = options.extend.add_url;
                     if (url.indexOf("{ids}") !== -1) {
@@ -237,19 +300,24 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                                 url: options.extend.import_url,
                                 data: {file: data.url},
                             }, function (data, ret) {
+                                table.trigger("uncheckbox");
                                 table.bootstrapTable('refresh');
                             });
                         });
                     });
                 }
                 // 批量编辑按钮事件
-                $(toolbar).on('click', Table.config.editbtn, function () {
+                toolbar.on('click', Table.config.editbtn, function () {
                     var that = this;
+                    var ids = Table.api.selectedids(table);
+                    if (ids.length > 10) {
+                        return;
+                    }
                     //循环弹出多个编辑框
-                    $.each(table.bootstrapTable('getSelections'), function (index, row) {
+                    $.each(Table.api.selecteddata(table), function (index, row) {
                         var url = options.extend.edit_url;
                         row = $.extend({}, row ? row : {}, {ids: row[options.pk]});
-                        var url = Table.api.replaceurl(url, row, table);
+                        url = Table.api.replaceurl(url, row, table);
                         Fast.api.open(url, __('Edit'), $(that).data() || {});
                     });
                 });
@@ -260,6 +328,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                         var url = $(that).data("url") ? $(that).data("url") : $(that).attr("href");
                         Fast.api.ajax(url, function () {
                             Layer.closeAll();
+                            table.trigger("uncheckbox");
                             table.bootstrapTable('refresh');
                         }, function () {
                             Layer.closeAll();
@@ -267,22 +336,40 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     });
                     return false;
                 });
-                //还原或删除
-                $(document).on('click', Table.config.restoreallbtn + ',' + Table.config.restoreonebtn + ',' + Table.config.destroyonebtn, function () {
+                //全部还原
+                $(document).on('click', Table.config.restoreallbtn, function () {
                     var that = this;
                     var url = $(that).data("url") ? $(that).data("url") : $(that).attr("href");
                     Fast.api.ajax(url, function () {
+                        Layer.closeAll();
+                        table.trigger("uncheckbox");
+                        table.bootstrapTable('refresh');
+                    }, function () {
+                        Layer.closeAll();
+                    });
+                    return false;
+                });
+                //销毁或删除
+                $(document).on('click', Table.config.restoreonebtn + ',' + Table.config.destroyonebtn, function () {
+                    var that = this;
+                    var url = $(that).data("url") ? $(that).data("url") : $(that).attr("href");
+                    var row = Fast.api.getrowbyindex(table, $(that).data("row-index"));
+                    Fast.api.ajax({
+                        url: url,
+                        data: {ids: row[options.pk]}
+                    }, function () {
+                        table.trigger("uncheckbox");
                         table.bootstrapTable('refresh');
                     });
                     return false;
                 });
                 // 批量操作按钮事件
-                $(toolbar).on('click', Table.config.multibtn, function () {
+                toolbar.on('click', Table.config.multibtn, function () {
                     var ids = Table.api.selectedids(table);
                     Table.api.multi($(this).data("action"), ids, table, this);
                 });
                 // 批量删除按钮事件
-                $(toolbar).on('click', Table.config.delbtn, function () {
+                toolbar.on('click', Table.config.delbtn, function () {
                     var that = this;
                     var ids = Table.api.selectedids(table);
                     Layer.confirm(
@@ -344,16 +431,25 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                         placeHolderTemplate: ""
                     });
                 });
-                $(table).on("click", "input[data-id][name='checkbox']", function (e) {
+                table.on("click", "input[data-id][name='checkbox']", function (e) {
                     var ids = $(this).data("id");
-                    var row = Table.api.getrowbyid(table, ids);
-                    table.trigger('check.bs.table', [row, this]);
+                    table.bootstrapTable($(this).prop("checked") ? 'checkBy' : 'uncheckBy', {field: options.pk, values: [ids]});
                 });
-                $(table).on("click", "[data-id].btn-change", function (e) {
+                table.on("click", "[data-id].btn-change", function (e) {
                     e.preventDefault();
-                    Table.api.multi($(this).data("action") ? $(this).data("action") : '', [$(this).data("id")], table, this);
+                    var switcher = $.proxy(function () {
+                        Table.api.multi($(this).data("action") ? $(this).data("action") : '', [$(this).data("id")], table, this);
+                    }, this);
+                    if (typeof $(this).data("confirm") !== 'undefined') {
+                        Layer.confirm($(this).data("confirm"), function (index) {
+                            switcher();
+                            Layer.close(index);
+                        });
+                    } else {
+                        switcher();
+                    }
                 });
-                $(table).on("click", "[data-id].btn-edit", function (e) {
+                table.on("click", "[data-id].btn-edit", function (e) {
                     e.preventDefault();
                     var ids = $(this).data("id");
                     var row = Table.api.getrowbyid(table, ids);
@@ -361,7 +457,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     var url = Table.api.replaceurl(options.extend.edit_url, row, table);
                     Fast.api.open(url, __('Edit'), $(this).data() || {});
                 });
-                $(table).on("click", "[data-id].btn-del", function (e) {
+                table.on("click", "[data-id].btn-del", function (e) {
                     e.preventDefault();
                     var id = $(this).data("id");
                     var that = this;
@@ -382,11 +478,12 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             multi: function (action, ids, table, element) {
                 var options = table.bootstrapTable('getOptions');
                 var data = element ? $(element).data() : {};
-                var ids = ($.isArray(ids) ? ids.join(",") : ids);
-                var url = typeof data.url !== "undefined" ? Table.api.replaceurl(data.url, {ids: ids}, table) : (action == "del" ? options.extend.del_url : options.extend.multi_url);
+                ids = ($.isArray(ids) ? ids.join(",") : ids);
+                var url = typeof data.url !== "undefined" ? data.url : (action == "del" ? options.extend.del_url : options.extend.multi_url);
                 var params = typeof data.params !== "undefined" ? (typeof data.params == 'object' ? $.param(data.params) : data.params) : '';
-                var options = {url: url, data: {action: action, ids: ids, params: params}};
+                options = {url: url, data: {action: action, ids: ids, params: params}};
                 Fast.api.ajax(options, function (data, ret) {
+                    table.trigger("uncheckbox");
                     var success = $(element).data("success") || $.noop;
                     if (typeof success === 'function') {
                         if (false === success.call(element, data, ret)) {
@@ -486,8 +583,8 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     return html.join(' ');
                 },
                 content: function (value, row, index) {
-                    var width = this.width != undefined ? this.width : 250;
-                    return "<div style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:" + width + "px;'>" + value + "</div>";
+                    var width = this.width != undefined ? (this.width.match(/^\d+$/) ? this.width + "px" : this.width) : "250px";
+                    return "<div style='white-space: nowrap; text-overflow:ellipsis; overflow: hidden; max-width:" + width + ";'>" + value + "</div>";
                 },
                 status: function (value, row, index) {
                     var custom = {normal: 'success', hidden: 'gray', deleted: 'danger', locked: 'info'};
@@ -530,12 +627,16 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                     var yes = typeof this.yes !== 'undefined' ? this.yes : 1;
                     var no = typeof this.no !== 'undefined' ? this.no : 0;
                     var url = typeof this.url !== 'undefined' ? this.url : '';
+                    var confirm = '';
                     var disable = false;
+                    if (typeof this.confirm !== "undefined") {
+                        confirm = typeof this.confirm === "function" ? this.confirm.call(this, value, row, index) : this.confirm;
+                    }
                     if (typeof this.disable !== "undefined") {
                         disable = typeof this.disable === "function" ? this.disable.call(this, value, row, index) : this.disable;
                     }
                     return "<a href='javascript:;' data-toggle='tooltip' title='" + __('Click to toggle') + "' class='btn-change " + (disable ? 'btn disabled' : '') + "' data-id='"
-                        + row[pk] + "' " + (url ? "data-url='" + url + "'" : "") + " data-params='" + this.field + "=" + (value == yes ? no : yes) + "'><i class='fa fa-toggle-on " + (value == yes ? 'text-' + color : 'fa-flip-horizontal text-gray') + " fa-2x'></i></a>";
+                        + row[pk] + "' " + (url ? "data-url='" + url + "'" : "") + (confirm ? "data-confirm='" + confirm + "'" : "") + " data-params='" + this.field + "=" + (value == yes ? no : yes) + "'><i class='fa fa-toggle-on " + (value == yes ? 'text-' + color : 'fa-flip-horizontal text-gray') + " fa-2x'></i></a>";
                 },
                 url: function (value, row, index) {
                     value = value === null ? '' : value.toString();
@@ -721,17 +822,24 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
                 return url;
             },
             // 获取选中的条目ID集合
-            selectedids: function (table) {
+            selectedids: function (table, current) {
                 var options = table.bootstrapTable('getOptions');
-                if (options.templateView) {
-                    return $.map($("input[data-id][name='checkbox']:checked"), function (dom) {
-                        return $(dom).data("id");
-                    });
-                } else {
-                    return $.map(table.bootstrapTable('getSelections'), function (row) {
-                        return row[options.pk];
-                    });
+                //如果有设置翻页记忆模式
+                if (!current && options.maintainSelected) {
+                    return options.selectedIds;
                 }
+                return $.map(table.bootstrapTable('getSelections'), function (row) {
+                    return row[options.pk];
+                });
+            },
+            //获取选中的数据
+            selecteddata: function (table, current) {
+                var options = table.bootstrapTable('getOptions');
+                //如果有设置翻页记忆模式
+                if (!current && options.maintainSelected) {
+                    return options.selectedData;
+                }
+                return table.bootstrapTable('getSelections');
             },
             // 切换复选框状态
             toggleattr: function (table) {
@@ -751,7 +859,7 @@ define(['jquery', 'bootstrap', 'moment', 'moment/locale/zh-cn', 'bootstrap-table
             getrowbyid: function (table, id) {
                 var row = {};
                 var options = table.bootstrapTable("getOptions");
-                $.each(table.bootstrapTable('getData'), function (i, j) {
+                $.each(Table.api.selecteddata(table), function (i, j) {
                     if (j[options.pk] == id) {
                         row = j;
                         return false;

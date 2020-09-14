@@ -149,6 +149,16 @@
     .item {
         padding: 30px 0;
     }
+
+
+
+    #statistics .panel {
+        min-height: 150px;
+    }
+
+    #statistics .panel h5 {
+        font-size: 13px;
+    }
 </style>
 <style type="text/css">
     .ico-centos{
@@ -609,6 +619,7 @@
         </div>
     </div>
 </div>
+<!--@formatter:off-->
 <script>
     var Orderdata = {
         column: {:json_encode(array_keys($paylist))},
@@ -616,3 +627,4 @@
         createdata: {:json_encode(array_values($createlist))},
     };
 </script>
+<!--@formatter:on-->

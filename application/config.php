@@ -270,11 +270,17 @@ return [
         //是否开启IP变动检测
         'loginip_check'         => true,
         //登录页默认背景图
-        'login_background'      => "/assets/img/loginbg.jpg",
+        'login_background'      => "",
         //是否启用多级菜单导航
         'multiplenav'           => false,
-        //自动检测更新
-        'checkupdate'           => false,
+        //是否开启多选项卡(仅在开启多级菜单时起作用)
+        'multipletab'           => true,
+        //后台皮肤,为空时表示使用skin-black-green
+        'adminskin'             => '',
+        //后台是否启用面包屑
+        'breadcrumb'            => false,
+        //允许跨域的域名,多个以,分隔
+        'cors_request_domain'   => 'localhost,127.0.0.1',
         //版本号
         'version'               => '1.2.0',
         //API接口地址

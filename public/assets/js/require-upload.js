@@ -125,7 +125,7 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                         }
                         $(this).attr("initialized", true);
                         var that = this;
-                        var id = $(this).prop("id");
+                        var id = $(this).prop("id") || $(this).prop("name") || Dropzone.uuidv4();
                         var url = $(this).data("url");
                         var maxsize = $(this).data("maxsize");
                         var maxcount = $(this).data("maxcount");
@@ -141,6 +141,8 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                         //上传URL
                         url = url ? url : Config.upload.uploadurl;
                         url = Fast.api.fixurl(url);
+                        var chunking = false, chunkSize = Config.upload.chunksize || 2097152;
+
                         //最大可上传文件大小
                         maxsize = typeof maxsize !== "undefined" ? maxsize : Config.upload.maxsize;
                         //文件类型
@@ -153,6 +155,7 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                         mimetype = mimetype.split(",").map(function (k) {
                             return k.indexOf("/") > -1 ? k : (!k || k === "*" || k.charAt(0) === "." ? k : "." + k);
                         }).join(",");
+                        mimetype = mimetype === '*' ? null : mimetype;
 
                         //最大文件限制转换成mb
                         var maxFilesize = (function (maxsize) {
@@ -165,12 +168,12 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                             return bytes / Math.pow(1024, 2);
                         }(maxsize));
 
-                        var options = $("#" + id).data() || {};
+                        var options = $(this).data() || {};
                         delete options.success;
                         delete options.url;
                         multipart = $.isArray(multipart) ? {} : multipart;
 
-                        Upload.list[id] = new Dropzone("#" + id, $.extend({
+                        Upload.list[id] = new Dropzone(this, $.extend({
                             url: url,
                             params: function (files, xhr, chunk) {
                                 var params = multipart;
@@ -190,6 +193,8 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                                 }
                                 return params;
                             },
+                            chunking: chunking,
+                            chunkSize: chunkSize,
                             maxFilesize: maxFilesize,
                             acceptedFiles: mimetype,
                             maxFiles: (maxcount && parseInt(maxcount) > 1 ? maxcount : (multiple ? null : 1)),
@@ -212,7 +217,7 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                                 this.options.elementHtml = $(this.element).html();
                             },
                             addedfiles: function (files) {
-                                if (this.options.maxFiles && this.options.maxFiles > 0 && this.options.inputId) {
+                                if (this.options.maxFiles && (!this.options.maxFiles || this.options.maxFiles > 1) && this.options.inputId) {
                                     var inputObj = $("#" + this.options.inputId);
                                     if (inputObj.size() > 0) {
                                         var value = $.trim(inputObj.val());
@@ -391,6 +396,12 @@ define(['jquery', 'bootstrap', 'dropzone', 'template'], function ($, undefined, 
                  * @deprecated Use upload instead.
                  */
                 plupload: function (element, onUploadSuccess, onUploadError, onUploadComplete) {
+                    return Upload.api.upload(element, onUploadSuccess, onUploadError, onUploadComplete);
+                },
+                /**
+                 * @deprecated Use upload instead.
+                 */
+                faupload: function (element, onUploadSuccess, onUploadError, onUploadComplete) {
                     return Upload.api.upload(element, onUploadSuccess, onUploadError, onUploadComplete);
                 },
                 // AJAX异步上传
