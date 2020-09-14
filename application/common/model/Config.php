@@ -22,6 +22,21 @@ class Config extends Model
         'extend_html'
     ];
 
+    protected static function init()
+    {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            if (isset($changed['name']) && isset($changed['value'])  && $changed['name'] == 'api_token') {
+                if ($changed['value'] == '') {
+                    unset($row->value);
+                } else {
+                    $row->value = encode($changed['value']);
+                    $changed['value'] = encode($changed['value']);
+                }
+            }
+        });
+    }
+
     /**
      * 读取配置类型
      * @return array

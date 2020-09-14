@@ -14,6 +14,7 @@ class Btaction
     public $_error = '';        //  错误信息
     public $btAction  = null;
     private $api_url = 'http://192.168.191.129';
+    private $port = 8888;
     // protected $api_url = 'http://117.50.77.190';
     // protected $api_url = 'http://139.9.222.32';
     private $api_token = '';
@@ -38,10 +39,11 @@ class Btaction
 
     public function __construct($api_token = '', $os = 'linux')
     {
-        $this->port = '8888';
+        $port = Config('site.api_port') ? Config('site.api_port') : 8888;
+        $this->port = $port;
         $this->api_url = $this->api_url . ':' . $this->port;
 
-        $apiToken_config = Config('site.api_token');
+        $apiToken_config = decode(Config('site.api_token'));
         $this->api_token = $api_token ? $api_token : $apiToken_config;
         $this->btAction = new Btpanel($this->api_url, $this->api_token);
         $this->os = $os;
@@ -254,7 +256,6 @@ class Btaction
     /**
      * 修改FTP密码
      *
-     * @param [type] $id
      * @param [type] $name
      * @param [type] $newpassword
      * @return void
