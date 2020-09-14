@@ -35,6 +35,7 @@ class Ajax extends Backend
 
         //设置过滤方法
         $this->request->filter(['strip_tags', 'htmlspecialchars']);
+        $this->auth_check_local();
     }
 
     /**

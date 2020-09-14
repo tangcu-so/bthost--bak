@@ -94,47 +94,7 @@ class Frontend extends Controller
         //     $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
         // }
 
-        $bt = new Btaction();
-        $ip = $bt->getIp();
-
-        // 公钥
-        $public_key = self::getPublicKey();
-
-        $rsa = new \fast\Rsa($public_key);
-
-        if (!Cache::get('auth_check')) {
-            $json = $this->auth_check($ip);
-            $curl = Cache::remember('auth_check', $json);
-        } else {
-            $curl = Cache::get('auth_check');
-        }
-
-        if ($curl && isset($curl['code']) && $curl['code'] == 1) {
-            // 解密信息获取域名及有效期
-            // 公钥解密
-            $decode = $rsa->pubDecrypt($curl['encode']);
-            if (!$decode) {
-                sysmsg('授权信息错误');
-                exit;
-            }
-            $decode_arr = explode('|', $decode);
-            // 检查授权域名是否为当前域名
-            if ($decode_arr[0] != '9527' && $decode_arr[0] !== $ip) {
-                sysmsg($ip . '授权信息不正确');
-                exit;
-            }
-            // 检查授权是否过期
-            if ($decode_arr[1] != 0 && time() > $decode_arr[1]) {
-                sysmsg('授权已过期');
-                exit;
-            }
-        } elseif (isset($curl['msg'])) {
-            sysmsg($curl['msg']);
-            exit;
-        } else {
-            sysmsg($ip . '授权检查失败');
-            exit;
-        }
+        $this->auth_check_local();
 
         // 已登录用户信息
         $this->view->assign('vhost', $this->auth->getUser());
@@ -224,6 +184,7 @@ class Frontend extends Controller
         return $public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXySnlz6w8w0KOTz+XrzNd3+PmKJKAJRdKI4x5xNU8Q9EzWIYGyX2O1RK/FB1pwYjUVo8uNG6ghD48ZtRcumqPxU7uAHBlxq4S8zPPSGJ3NKgceRJEW/4oOFLw6jeJ1Pw3aHvg7hmxNxwgOLqlRzXDG8wBc7EqVTGa86qbfwZDEQIDAQAB';
     }
 
+    // 远程授权验证
     private function auth_check($ip)
     {
         // 缓存器缓存远端获取的私钥
@@ -237,5 +198,54 @@ class Frontend extends Controller
         ];
         $json = \fast\Http::post($url, $data);
         return json_decode($json, 1);
+    }
+
+    // 授权验证方法
+    protected function auth_check_local()
+    {
+        // 授权判断
+        // TODO 新授权判断思路
+        // 使用授权码获取远端私钥
+        // 使用获取的远端私钥+本地公钥进行解密
+        // 解密成功后获得当前授权域名
+        // 如果当前域名全等于授权域名，则授权有效
+        $bt = new Btaction();
+        $ip = $bt->getIp();
+
+        // 公钥
+        $public_key = self::getPublicKey();
+
+        $rsa = new \fast\Rsa($public_key);
+
+        if (!Cache::get('auth_check')) {
+            $json = $this->auth_check($ip);
+            $curl = Cache::remember('auth_check', $json);
+        } else {
+            $curl = Cache::get('auth_check');
+        }
+
+        $is_ajax = $this->request->isAjax() ? 1 : 0;
+
+        if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+            // 解密信息获取域名及有效期
+            // 公钥解密
+            $decode = $rsa->pubDecrypt($curl['encode']);
+            if (!$decode) {
+                return $is_ajax ? $this->error('授权信息错误') : sysmsg('授权信息错误');
+            }
+            $decode_arr = explode('|', $decode);
+            // 检查授权域名是否为当前域名
+            if ($decode_arr[0] != '9527' && $decode_arr[0] !== $ip) {
+                return $is_ajax ? $this->error($ip . '授权信息不正确') : sysmsg($ip . '授权信息不正确');
+            }
+            // 检查授权是否过期
+            if ($decode_arr[1] != 0 && time() > $decode_arr[1]) {
+                return $is_ajax ? $this->error($ip . '授权已过期') : sysmsg($ip . '授权已过期');
+            }
+        } elseif (isset($curl['msg'])) {
+            return $is_ajax ? $this->error($ip . $curl['msg']) : sysmsg($ip . $curl['msg']);
+        } else {
+            return $is_ajax ? $this->error($ip . '授权检查失败') : sysmsg($ip . '授权检查失败');
+        }
     }
 }
