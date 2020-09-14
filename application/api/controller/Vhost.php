@@ -23,7 +23,8 @@ class Vhost extends Api
         parent::_initialize();
         $this->access_token = Config::get('site.access_token');
         if(!$this->token_check()){
-            // $this->error('签名错误');
+            // TODO 上线需要验证签名
+            $this->error('签名错误');
         }
         $this->hostModel = model('host');
         $this->sqlModel = model('sql');
@@ -33,6 +34,22 @@ class Vhost extends Api
 
     public function index(){        
         $this->success('请求成功');
+    }
+
+    // 一键部署程序列表
+    public function deployment_list()
+    {
+        $bt = new Btaction();
+        $list = $bt->getdeploymentlist();
+        $this->success('请求成功', $list);
+    }
+
+    // php列表
+    public function php_list()
+    {
+        $bt = new Btaction();
+        $list = $bt->getphplist();
+        $this->success('请求成功', $list);
     }
 
     // 云服务器状态及监控
@@ -125,7 +142,7 @@ class Vhost extends Api
         $this->success('请求成功',$info);
     }
 
-    // 账号列表
+    // 用户列表
     public function user_list(){
         $list = model('User')::all();
         if($list){
@@ -156,10 +173,7 @@ class Vhost extends Api
         if(!$host_id||!$user_id){
             $this->error('请求错误');
         }
-        $hostInfo = $this->hostModel::get($host_id);
-        if(!$hostInfo){
-            $this->error('主机不存在');
-        }
+        $hostInfo = $this->getHostInfo($host_id);
         $hostInfo->user_id = $user_id;
         $hostInfo->save();
         $this->success('转移成功');
@@ -176,7 +190,9 @@ class Vhost extends Api
     }
 
     // 创建数据库
+    // TODO 多数据库没出来之前临时停用
     public function sql_build(){
+        $this->error('接口停用');
         $id = $this->request->post('id/d');
         if(!$id){
             $this->error('错误的请求');
@@ -192,19 +208,7 @@ class Vhost extends Api
             $this->error('账号格式不正确');
         }
 
-        $info = $this->hostModel::get($id);
-        if(!$info){
-            $this->error('主机不存在');
-        }
-        // 添加宝塔数据库
-        if($type=='bt'){
-            $bt = new Btaction();
-            $database = $database?$database:$username;
-            $set = $bt->buildSql($username,$database,$password);
-            if(!$set){
-                $this->error($bt->_error);
-            }
-        }
+        $info = $this->getHostInfo($id);
         
         $sqlData = [
             'vhost_id'  => $info->id,
@@ -226,17 +230,8 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $password = $this->request->post('password',Random::alnum(8));
-        
+
         $info = $this->sqlModel::get($id);
-        if($info->type=='bt'){
-            $bt = new Btaction();
-            $bt->sql_name = $info->database;
-            $set = $bt->resetSqlPass($info->database,$password);
-            if(!$set){
-                $this->error($bt->_error);
-            }
-        }
-        
         $info->password = $password;
         $info->save();
         $this->success('修改成功',$info);
@@ -262,12 +257,6 @@ class Vhost extends Api
         $info = $this->ftpModel::get($id);
         if(!$info){
             $this->error('ftp不存在');
-        }
-        $bt = new Btaction();
-        $bt->ftp_name = $info->username;
-        $set = $bt->resetFtpPass($info->username,$password);
-        if(!$set){
-            $this->error($bt->_error);
         }
         $info->password = $password;
         $info->save();
@@ -297,8 +286,10 @@ class Vhost extends Api
         $endtime = $this->request->post('endtime');
         $user_id = $this->request->post('user_id',1);
         $sort_id = $this->request->post('sort_id',1);
+        // 自定义站点名前缀
+        $username = $this->request->post('username');
 
-        if(date('Y-m-d', strtotime($endtime)) !== $endtime){
+        if (date('Y-m-d', strtotime($endtime)) !== $endtime) {
             $this->error('时间格式错误，请严格按照Y-m-d格式传递');
         }
 
@@ -310,14 +301,17 @@ class Vhost extends Api
             if(!$plansInfo){
                 $this->error(model('Plans')->msg);
             }
-              
-            $hostSetInfo = $bt->setInfo($this->request->post(),$plansInfo);
-            // 连接宝塔进行站点开通
-            
         }else{
             // 使用用户传递参数进行构建数据
+            $pack_arr = $this->request->post('pack/a');
+            $plansInfo = model('Plans')->getPlanInfo('', $pack_arr);
+            if (!$plansInfo) {
+                $this->error(model('Plans')->msg);
+            }
         }
-
+        // 构建站点信息
+        $hostSetInfo = $bt->setInfo($this->request->post(), $plansInfo);
+        // 连接宝塔进行站点开通
         $btInfo = $bt->btBuild($hostSetInfo);
         if (!$btInfo) {
             $this->error($bt->_error);
@@ -326,24 +320,33 @@ class Vhost extends Api
         $bt->bt_id = $btId = $btInfo['siteId'];
         $btName = $hostSetInfo['bt_name'];
 
+        Db::startTrans();
+
+        // vsftpd创建
+
         // 修改到期时间
-        $timeSet = $bt->setEndtime($endtime);
-        if (!$timeSet) {
-            $this->error($bt->_error);
+        $timeSet = $bt->btAction->WebSetEdate($btId, $endtime);
+        if (!$timeSet['status']) {
+            $this->error('开通时间设置失败|' . json_encode($endtime));
         }
 
         // 预装程序
-        if($plansInfo['preset_procedure']){
+        if ($plansInfo['preset_procedure']) {
             // 程序预装
-            $defaultPhp = $hostSetInfo['version']&&$hostSetInfo['version']!='00'?$hostSetInfo['version']:'56';
+            $defaultPhp = $hostSetInfo['version'] && $hostSetInfo['version'] != '00' ? $hostSetInfo['version'] : '56';
             $setUp = $bt->presetProcedure($plansInfo['preset_procedure'], $btName, $defaultPhp);
-            if(!$setUp){
+            if (!$setUp) {
                 $this->error($bt->_error);
             }
         }
+        if ($plansInfo['session']) {
+            // session隔离
+            $bt->btAction->set_php_session_path($btId, 1);
+        }
 
+        // 并发、限速设置
         // 默认并发、网速限制
-        if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0&&isset($bt->btTend->serverConfig['webserver'])&&$bt->btTend->serverConfig['webserver']=='nginx') {
+        if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0 && isset($bt->btTend->serverConfig['webserver']) && $bt->btTend->serverConfig['webserver'] == 'nginx') {
             // 有错误，记录，防止开通被打断
             $modify_status = $bt->setLimit($plansInfo);
             if (!$modify_status) {
@@ -351,25 +354,25 @@ class Vhost extends Api
             }
         }
 
-        // dnspod智能解析
-        if($plansInfo['dnspod']){
-            // var_dump($plansInfo['ip']);exit;
+        $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
+
+        if ($plansInfo['dnspod']) {
+            // 如果域名属于dnspod智能解析
+            $record_type = Config::get('site.dnspod_analysis_type');
+            $analysis = Config::get('site.dnspod_analysis_url');
+
             $sub_domain = $hostSetInfo['domain'];
-            $domain_jx = $this->hostModel->doamin_analysis($plansInfo['domain'],$plansInfo['ip'],$sub_domain);
-            if(!is_array($domain_jx)){
-                $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$plansInfo['ip'],$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
+            $domain_jx = $this->model->doamin_analysis($plansInfo['domain'], $analysis, $sub_domain, $record_type);
+            if (!is_array($domain_jx)) {
+                $this->error('域名解析失败|' . json_encode([$plansInfo['domain'], $analysis, $sub_domain, $domain_jx], JSON_UNESCAPED_UNICODE));
             }
-            $dnspod_record = $domain_jx['domain'];
+            $dnspod_record = $sub_domain;
             $dnspod_record_id = $domain_jx['id'];
             $dnspod_domain_id = $domain_jx['domain_id'];
-        }else{
-            $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
         }
 
-        Db::startTrans();
-
-        // 获取信息后存入
-        $site_data = [
+        // 获取信息后存入数据库
+        $host_data = [
             'user_id'               => $user_id,
             'sort_id'               => $sort_id,
             'bt_id'                 => $btId,
@@ -377,64 +380,54 @@ class Vhost extends Api
             'site_max'              => $plansInfo['site_max'],
             'sql_max'               => $plansInfo['sql_max'],
             'flow_max'              => $plansInfo['flow_max'],
-            'analysis_type'         => $plansInfo['analysis_type'],
-            'default_analysis'      => $plansInfo['default_analysis'],
             'is_audit'              => $plansInfo['domain_audit'],
             'is_vsftpd'             => $plansInfo['vsftpd'],
             'domain_max'            => $plansInfo['domain_num'],
             'web_back_num'          => $plansInfo['web_back_num'],
             'sql_back_num'          => $plansInfo['sql_back_num'],
-            'ip_address'            => $plansInfo['ip'],
+            'ip_address'            => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
             'endtime'               => $endtime,
         ];
-        $inc = model('Host')::create($site_data);
+        $hostInfo = model('Host')::create($host_data);
 
-        $vhost_id = $inc->id;
-        if(!$vhost_id){
+        $vhost_id = $hostInfo->id;
+        if (!$vhost_id) {
             $this->error('主机信息存储失败');
         }
-        $site_data['id'] = $vhost_id;
 
-        $sql_data = $ftp_data = [];
-        if($btInfo['ftpStatus']==true){
+        if ($btInfo['ftpStatus'] == true) {
             // 存储ftp
-            $ftp_data = [
-                'vhost_id'=>$vhost_id,
-                'username'=>$btInfo['ftpUser'],
-                'password'=>$btInfo['ftpPass'],
-            ];
-            $ftp = $this->ftpModel::create($ftp_data);
-            $ftp_data['id'] = $ftp->id;
-        }
-        
-        if($btInfo['databaseStatus']==true){
-            // 存储sql
-            $sql_data = [
-                'vhost_id'=>$vhost_id,
-                'username'=>$btInfo['databaseUser'],
-                'password'=>$btInfo['databasePass'],
-            ];
-            $sql = $this->sqlModel::create($sql_data);
-            $sql_data['id'] = $sql->id;
+            $ftpInfo = model('Ftp')::create([
+                'vhost_id' => $vhost_id,
+                'username' => $btInfo['ftpUser'],
+                'password' => $btInfo['ftpPass'],
+            ]);
         }
 
-        // IP池地址占用
-        model('Ipaddress')->where(['ip'=>$plansInfo['ip'],'ippools_id'=>$plansInfo['ippools_id']])->update(['vhost_id'=>$vhost_id]);
+        if ($btInfo['databaseStatus'] == true) {
+            // 存储sql
+            $sqlInfo = model('Sql')::create([
+                'vhost_id' => $vhost_id,
+                'database' => $btInfo['databaseUser'],
+                'username' => $btInfo['databaseUser'],
+                'password' => $btInfo['databasePass'],
+            ]);
+        }
+
         // 存入域名信息
-        $domain_data = [
-            'domain'=>$btName,
-            'vhost_id'=>$vhost_id,
-            'domainlist_id'=>$plansInfo['domainlist_id'],
-            'dnspod_record'=>$dnspod_record,
-            'dnspod_record_id'=>$dnspod_record_id,
-            'dnspod_domain_id'=>$dnspod_domain_id,
-            'dir'=>'/',
-        ];
-        model('Domainlist')::create($domain_data);
+        $domainInfo = model('Domainlist')::create([
+            'domain' => $btName,
+            'vhost_id' => $vhost_id,
+            'domain_id' => $plansInfo['domainlist_id'],
+            'dnspod_record' => $dnspod_record,
+            'dnspod_record_id' => $dnspod_record_id,
+            'dnspod_domain_id' => $dnspod_domain_id,
+            'dir' => '/',
+        ]);
 
         Db::commit();
 
-        $this->success('创建成功',['site'=>$site_data,'domain'=>$domain_data,'sql'=>$sql_data,'ftp'=>$ftp_data]);
+        $this->success('创建成功', ['site' => $hostInfo, 'domain' => $domainInfo, 'sql' => $sqlInfo, 'ftp' => $ftpInfo]);
     }
 
     // 主机详情
@@ -443,13 +436,10 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $info = $this->hostModel::get($id);
+        $info = $this->getHostInfo($id);
         $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
         $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
-        $info->domain = model('Domainlist')::all(['vhost_id'=>$id]);
-        if(!$info){
-            $this->error('主机不存在');
-        }
+        $info->domain = model('Domainlist')::all(['vhost_id' => $id]);
         $this->success('请求成功',$info);
     }
 
@@ -459,10 +449,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('请求错误');
         }
-        $hostFind = $this->hostModel::get($id);
-        if(!$hostFind){
-            $this->error('主机不存在');
-        }
+        $hostFind = $this->getHostInfo($id);
         // 连接宝塔停用站点
         $bt = new Btaction();
         $bt->bt_id = $hostFind->bt_id;
@@ -522,17 +509,12 @@ class Vhost extends Api
             $ftpFind->save();
         }
         if($type=='host'||$type=='all'){
-            $hostFind = $this->hostModel::get($id);
-            if(!$hostFind){
-                $this->error('无此主机');
-            }
+            $hostFind = $this->getHostInfo($id);
             $userInfo = model('User')::get($hostFind->user_id);
             if(!$userInfo){
                 $this->error('无此用户');
             }
-            $salt = Random::alnum();
-            $userInfo->salt = $salt;
-            $userInfo->password = encode($password,$salt);
+            $userInfo->password = $password;
             $userInfo->save();
         }
         
@@ -545,7 +527,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
         $bt->bt_id = $hostFind->bt_id;
@@ -564,7 +546,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
         $bt->bt_id = $hostFind->bt_id;
@@ -583,7 +565,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
         $bt->bt_id = $hostFind->bt_id;
@@ -603,8 +585,10 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
+        $bt->bt_name = $hostFind->bt_name;
+        $bt->bt_id = $hostFind->bt_id;
         $hostInfo = $bt->getSiteInfo();
         if(!$hostInfo){
             $this->error($bt->_error);
@@ -621,7 +605,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
@@ -632,14 +616,21 @@ class Vhost extends Api
         $btid   = $hostInfo['id'];
         $edate  = $hostInfo['edate'];
         $status = $hostInfo['status'];
-        
-        if($btid!=$hostFind->bt_id){
+
+        $bt->bt_id = $btid;
+        if ($btid != $hostFind->bt_id) {
             // 同步宝塔ID到本地
             $hostFind->bt_id = $btid;
         }
-        
+
         // 同步状态到本地
-        $hostFind->status = $status=='1'?'normal':'stop';
+        if ($hostFind->status == 'normal' && $status != 1) {
+            $bt->webstart();
+            $status = 1;
+        } else {
+            $bt->webstop();
+            $status = 0;
+        }
 
         $hostFind->save();
 
@@ -651,18 +642,18 @@ class Vhost extends Api
                 $this->error($bt->_error);
             }
         }
-        
-        $this->success('同步成功',['bt_id'=>$btid,'endtime'=>$localDate,'status'=>$hostInfo['status']]);
+
+        $this->success('同步成功', ['bt_id' => $btid, 'endtime' => $localDate, 'status' => $status, 'hostStatus' => $hostFind->status]);
     }
 
-    // 主机资源稽核（考虑要不要判断是否超量停用）
+    // 主机资源稽核，超停
     public function host_resource(){
         // 用于返回和同步主机资源：数据库、流量、站点
         $id = $this->request->post('id/d');
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
 
         $sqlFind = $this->sqlModel::get(['vhost_id'=>$id]);
         if($sqlFind&&$sqlFind->username){
@@ -673,16 +664,43 @@ class Vhost extends Api
         
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
-        $get = $bt->resource($sql_name,1);
-        
-        $size['site'] = bytes2mb($get['site']);
-        $size['flow'] = bytes2mb($get['flow']);
-        $size['sql'] = bytes2mb($get['sql']);
-        
-        $hostFind->site_size = $size['site'];
-        $hostFind->flow_size = $size['flow'];
-        $hostFind->sql_size = $size['sql'];
-        $hostFind->save();
+        $bt->bt_id = $hostFind->bt_id;
+        $bt->sql_name = $sql_name;
+        $size = $bt->getResourceSize();
+
+        $hostFind->site_size = $size['websize'];
+        $hostFind->flow_size = $size['total_size'];
+        $hostFind->sql_size = $size['sqlsize'];
+
+
+        $overflow = 0;
+        if ($hostFind->sql_max != 0 && $hostFind->sql_size > $hostFind->sql_max) {
+            $overflow = 1;
+        }
+        if ($hostFind->site_max != 0 && $hostFind->site_size > $hostFind->site_max
+        ) {
+            $overflow = 1;
+        }
+        if ($hostFind->flow_max != 0 && $hostFind->flow_size > $hostFind->flow_max
+        ) {
+            $overflow = 1;
+        }
+
+        if ($overflow) {
+            $hostFind->status = 'excess';
+            // 停止主机
+            $bt->webstop();
+        } else {
+            // 判断既没有过期，也处于没有超量状态，就恢复主机
+            if ($hostFind->endtime > time() && $hostFind->status == 'excess'
+            ) {
+                $hostFind->status = 'success';
+            }
+            $bt->webstart();
+        }
+        $hostFind->check_time = time();
+
+        $hostFind->allowField(true)->save();
 
         $max = [
             'site'=>$hostFind->site_max,
@@ -696,6 +714,9 @@ class Vhost extends Api
     // 主机信息修改
     public function host_edit(){
         $id = $this->request->post('id/d');
+        $sort_id = $this->request->post('sort_id/d');
+        $is_audit = $this->request->post('is_audit/d');
+        $endtime = $this->request->post('endtime');
         // 传递整数型，单位M
         $site_max = $this->request->post('site_max/d');
         $flow_max = $this->request->post('flow_max/d');
@@ -710,22 +731,33 @@ class Vhost extends Api
             $this->error('请求错误');
         }
         // 修改内容包含：空间大小、数据库大小、流量大小、域名绑定数、网站备份数、数据库备份数
-        $hostInfo = $this->hostModel::get($id);
-        if(!$hostInfo){
-            $this->error('主机不存在');
-        }
+        $hostInfo = $this->getHostInfo($id);
         if($site_max){$hostInfo->site_max = $site_max;}
         if($sql_max){$hostInfo->sql_max = $sql_max;}
         if($flow_max){$hostInfo->flow_max = $flow_max;}
         if($domain_max){$hostInfo->domain_max = $domain_max;}
         if($web_back_num){$hostInfo->web_back_num = $web_back_num;}
-        if($sql_back_num){$hostInfo->sql_back_num = $sql_back_num;}
+        if ($sql_back_num) {
+            $hostInfo->sql_back_num = $sql_back_num;
+        }
+        if ($sort_id) {
+            $hostInfo->sort_id = $sort_id;
+        }
+        if ($is_audit) {
+            $hostInfo->is_audit = $is_audit;
+        }
+        if ($endtime) {
+            if (date('Y-m-d', strtotime($endtime)) !== $endtime) {
+                $this->error('时间格式错误，请严格按照Y-m-d格式传递');
+            }
+            $hostInfo->endtime = $endtime;
+        }
         
         $hostInfo->save();
         $this->success('更新成功',$hostInfo);
     }
 
-    // 主机域名绑定（暂定）
+    // TODO 主机域名绑定（暂定）
     public function host_domain(){
         $id = $this->request->post('id/d');
         if(!$id){
@@ -740,10 +772,7 @@ class Vhost extends Api
         if(!$id||!$ip_id){
             $this->error('错误的请求');
         }
-        $hostInfo = $this->hostModel::get($id);
-        if(!$hostInfo){
-            $this->error('主机不存在');
-        }
+        $hostInfo = $this->getHostInfo($id);
         $ipInfo = model('Ipaddress')::get($ip_id);
         if(!$ipInfo){
             $this->error('IP不存在');
@@ -765,10 +794,7 @@ class Vhost extends Api
     public function host_unbindip(){
         $id = $this->request->post('id/d');
         $ip_id = $this->request->post('ip_id/d');
-        $hostInfo = $this->hostModel::get($id);
-        if(!$hostInfo){
-            $this->error('主机不存在');
-        }
+        $hostInfo = $this->getHostInfo($id);
         $ipInfo = model('Ipaddress')::get($ip_id);
         if(!$ipInfo){
             $this->error('IP不存在');
@@ -795,13 +821,10 @@ class Vhost extends Api
         }
         $endtime = $this->request->post('endtime');
 
-        if(date('Y-m-d', strtotime($endtime)) !== $endtime){
+        if (date('Y-m-d', strtotime($endtime)) !== $endtime) {
             $this->error('时间格式错误，请严格按照Y-m-d格式传递');
         }
-        $hostInfo = $this->hostModel::get($id);
-        if(!$hostInfo){
-            $this->error('主机不存在');
-        }
+        $hostInfo = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_id = $hostInfo->bt_id;
         $set = $bt->setEndtime($endtime);
@@ -824,7 +847,7 @@ class Vhost extends Api
         if(!$id||!$perserver||!$limit_rate){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_id = $hostFind->bt_id;
         $data = ['perserver'=>$perserver,'limit_rate'=>$limit_rate];
@@ -841,7 +864,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_id = $hostFind->bt_id;
         $set = $bt->closeLimit();
@@ -858,7 +881,7 @@ class Vhost extends Api
         if(!$id||!$notice){
             $this->error('错误的请求');
         }
-        $hostFind = $this->hostModel::get($id);
+        $hostFind = $this->getHostInfo($id);
         // 不修改宝塔备注
         // $bt = new Btaction();
         // $bt->bt_name = $hostFind->bt_name;
@@ -870,6 +893,21 @@ class Vhost extends Api
         $hostFind->notice = $notice;
         $hostFind->save();
         $this->success('修改成功');
+    }
+
+    /**
+     * 获取主机信息
+     *
+     * @param [type] $id
+     * @return obj
+     */
+    private function getHostInfo($id)
+    {
+        $hostFind = $this->hostModel::get($id);
+        if (!$hostFind) {
+            $this->error('主机不存在');
+        }
+        return $hostFind;
     }
     
     // 签名验证

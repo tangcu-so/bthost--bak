@@ -384,11 +384,6 @@ class Vhost extends Frontend
             }
             $domainCount = model('Domainlist')->where('vhost_id', $this->vhost_id)->count();
 
-            // 计算当前传递的域名与现有的域名总和是否超出
-            // if (($this->hostInfo['domain_max'] < (count($domain_arr) -1  + $domainCount)) && $this->hostInfo['domain_max'] != '0') {
-            //     $this->error('绑定失败：已超出可用域名绑定数2');
-            // }
-
             if ($domainCount-1  >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != 0) {
                 $this->error('绑定失败：已超出可用域名绑定数3');
             }
@@ -406,11 +401,9 @@ class Vhost extends Frontend
             foreach ($domain_arr as $key => $value) {
 
                 $isnot_fjx = preg_match('/\*[a-zA-Z0-9]/', $value);
-                // var_dump($isnot_fjx);
                 if ($isnot_fjx) {
                     $this->error('域名格式不正确，请调整后重新提交' . $value);
                 }
-                // var_dump($value);
 
                 // 正则匹配法
                 $isnotall = preg_match('/\*\.([a-zA-Z0-9]+[^\.])$/', $value);
@@ -431,28 +424,13 @@ class Vhost extends Frontend
                 // }else{
                 //     var_dump(false);
                 // }
-                // var_dump($value, $defaultDomain);exit;
 
-                // 默认域名检测
-                // if (isHave($value, $defaultDomain)) {
-                //     $this->error('设置失败：不能绑定默认域名' . $value);
-                // }
 
                 // 判断当前绑定域名是否存在数据库中
                 $domain_find = model('Domainlist')->where('domain', $value)->find();
                 if ($domain_find) {
                     $this->error('当前域名已被绑定' . $value);
                 }
-                // 判断域名是否需要域名备案
-                // if($this->hostInfo['is_icp']){
-                //     // 使用接口判断域名是否备案
-
-                // }
-                // if($this->hostInfo['is_domain_white']){
-                //     // 判断域名是否存在数据库白名单中
-                //     $wlist = model('domainWlist')->where('domain',$value)->find();
-                // }
-
             }
 
             if ($post_str['dirs'] == '/') {
@@ -472,6 +450,7 @@ class Vhost extends Frontend
                     'dir'         => $post_str['dirs'],
                     'status'       => $this->hostInfo->is_audit?0:1,
                 ];
+                
                 $add = model('Domainlist')::create($data);
                 if (!$add) {
                     Db::rollback();
@@ -485,7 +464,6 @@ class Vhost extends Frontend
             }
 
             $domain_str = str_replace("\n", ',', $post_str['domain']);
-            // var_dump($this->bt_id, $this->siteName, $domain_str);exit;
 
             $modify_status = $this->btTend->addDomain($domain_str, $name, $isdir);
 
@@ -583,12 +561,15 @@ class Vhost extends Frontend
     {
 
         if (request()->post()) {
+            if (!$this->hostInfo->sql) {
+                $this->error('当前没有开通这项业务');
+            }
             // 判断是否存在这项业务
             $sqlInfo = $this->btTend->getSqlInfo();
-            // var_dump($sqlInfo);exit;
             if (!$sqlInfo) {
                 $this->error('数据库不存在');
             }
+            $sqlFind = $this->sqlModel::get($this->hostInfo->sql->id);
 
             $validate = new Validate([
                 'password' => 'require|length:6,12',
@@ -603,21 +584,10 @@ class Vhost extends Frontend
             }
             Db::startTrans();
 
-            // 先修改数据库的
-            $up = model('Sql')->save(['password'=>$data['password']],['vhost_id'=>$this->vhost_id,'username'=>$this->hostInfo->ftp->username]);
-            if ($up) {
-                $modify_status = $this->btTend->resetSqlPass($this->hostInfo->sql->username, $data['password']);
-                // var_dump($sqlInfo['id'], $this->hostInfo->sql->username, $data['password'],$modify_status);exit;
-                if(!$modify_status){
-                    Db::rollback();
-                    $this->error($this->btTend->_error);
-                }
-                Db::commit();
-                $this->success('设置成功');
-            } else {
-                Db::rollback();
-                $this->error('修改失败');
-            }
+            $sqlFind->password = $data['password'];
+            $sqlFind->save();
+            Db::commit();
+            $this->success('设置成功');
         }
     }
 
@@ -635,10 +605,11 @@ class Vhost extends Frontend
                 $this->error('当前没有开通这项业务');
             }
             $ftpInfo = $this->btTend->getFtpInfo();
-            // var_dump($ftpInfo);exit;
             if (!$ftpInfo) {
                 $this->error('当前没有开通这项业务');
             }
+
+            $ftpFind = $this->ftpModel::get($this->hostInfo->ftp->id);
 
             $validate = new Validate([
                 'password' => 'require|length:6,12',
@@ -648,26 +619,17 @@ class Vhost extends Frontend
             $data = [
                 'password' => input('post.password'),
             ];
-            // var_dump($data);exit;
+            
             if (!$validate->check($data)) {
                 $this->error($validate->getError());
             }
             Db::startTrans();
 
-            // 先修改数据库的
-            $up = model('Ftp')->save(['password'=>$data['password']],['vhost_id'=>$this->vhost_id,'username'=>$this->hostInfo->ftp->username]);
-            if ($up) {
-                $modify_status = $this->btTend->resetFtpPass($this->hostInfo->ftp->username, $data['password']);
-                if(!$modify_status){
-                    Db::rollback();
-                    $this->error($this->btTend->_error);
-                }
-                Db::commit();
-                $this->success('设置成功');
-            } else {
-                Db::rollback();
-                $this->error('修改失败');
-            }
+            $ftpFind->password = $data['password'];
+            $ftpFind->save();
+
+            Db::commit();
+            $this->success('设置成功');
         }
     }
 
@@ -3130,6 +3092,7 @@ class Vhost extends Frontend
         if($this->hostInfo->server_os=='windows'){
             $this->error('当前主机不支持该功能','');
         }
+        // TODO 获取建站目录
         $vhost_url = '/www/wwwroot/' . explode('.', $this->siteName)[0];
         $setting   = $this->btAction->GetDirUserINI($this->bt_id, $vhost_url);
 

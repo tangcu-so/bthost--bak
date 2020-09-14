@@ -88,7 +88,7 @@ class Host extends Backend
             if ($plans_type == 0 && empty($params['plans'])) {
                 $this->error('请选择资源');
             }
-            // try {
+            try {
             // 读取资源组
             // 资源组信息转化
             if ($plans_type == 1) {
@@ -138,8 +138,12 @@ class Host extends Backend
                         $this->error($bt->_error);
                     }
                 }
-            // session隔离
-            $bt->btAction->set_php_session_path($btId, 1);
+
+                if ($plansInfo['session']) {
+                // session隔离
+                $bt->btAction->set_php_session_path($btId, 1);
+                }
+                
                 
                 // 并发、限速设置
                 // 默认并发、网速限制
@@ -225,11 +229,11 @@ class Host extends Backend
                 ]);
                 
                 Db::commit();
-            // } catch (\Exception $ex) {
-            //     return ['code'=>0,'msg'=>$ex->getMessage()];
-            // } catch (\Throwable $th) {
-            //     return ['code'=>0,'msg'=>$th->getMessage()];
-            // }
+            } catch (\Exception $ex) {
+                return ['code' => 0, 'msg' => $ex->getMessage()];
+            } catch (\Throwable $th) {
+                return ['code' => 0, 'msg' => $th->getMessage()];
+            }
             
             $this->success('添加成功');
         }

@@ -40,8 +40,8 @@ return array (
   'queue_key' => 'dA0IwO',
   'expire_action' => 'recycle',
   'recycle_delete' => '7',
-  'api_token' => '00nL2eLQCxDfk06AQ15w1VQ93O3A94HV',
-  'phpmyadmin' => 'http://192.168.191.129:888/phpmyadmin_2b42747a02485e2d',
+  'api_token' => 'b816rlXz2-4N_NlGgnh4_K5Rw5AYLSgMOQrFijrSYXaqPwswyyweXwCl-uSEOpIFUaM_3_MZuKmciUumyA',
+  'api_port' => '8888',
   'excess_panel' => '0',
   'main_center_notice' => '',
   'main_left_notice' => '',
@@ -61,4 +61,5 @@ return array (
   'split_size' => '10',
   'authCode' => '8969zEyQNlc0-xPTXeArN-I2asEonET_nimFI4HYM3RokqM',
   'fixedpage' => 'dashboard',
+  'phpmyadmin' => 'http://192.168.191.129:888/phpmyadmin_2b42747a02485e2d',
 );

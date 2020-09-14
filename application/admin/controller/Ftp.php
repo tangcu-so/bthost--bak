@@ -74,9 +74,10 @@ class Ftp extends Backend
         $bt = new Btaction();
         $bt->ftp_name = $info->username;
         $del = $bt->FtpDelete();
-        if(!$del){
-            $this->error($bt->_error);
-        }
+        // 强制删除，忽略错误
+        // if(!$del){
+        //     $this->error($bt->_error);
+        // }
         parent::destroy($ids);
     }
 

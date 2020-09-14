@@ -103,6 +103,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
             $('#domain').prepend(__('Analysis Tips'));
             // 字典配置配置提醒
             $('#dictionary').prepend(__('Dictionary Tips'));
+            // 服务器配置提醒
+            $('#server').prepend(__('Server Tips'));
+            $('input[name="row[api_token]"]').val('');
         },
         add: function () {
             Controller.api.bindevent();
