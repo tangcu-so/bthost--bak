@@ -18,7 +18,32 @@ class User extends Model
     // 追加属性
     protected $append = [
         // 'url',
+        'host_count',
     ];
+
+    protected static function init()
+    {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            // 如果有修改密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $salt = \fast\Random::alnum();
+                    // $row->password = \app\common\library\Auth::instance()->getEncryptPassword($changed['password'], $salt);
+                    $row->password = encode($changed['password'], $salt);
+                    $row->salt = $salt;
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
+    }
+
+    // 持有主机总数
+    public function getHostCountAttr($value, $data)
+    {
+        return model('Host')->where(['user_id' => $data['id']])->count();
+    }
 
     /**
      * 获取个人URL

@@ -69,6 +69,11 @@ class Host extends Model
                 $bt->setEndtime($expTime);
             }
         });
+
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // TODO 将主机创建事件放在这里
+        });
     }
     
 

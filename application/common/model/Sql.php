@@ -2,6 +2,7 @@
 
 namespace app\common\model;
 
+use app\common\library\Btaction;
 use think\Model;
 use traits\model\SoftDelete;
 
@@ -33,11 +34,18 @@ class Sql extends Model
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
             // 如果有修改密码
-            if (isset($changed['password'])) {
+            if (isset($changed['password']) && isset($row->origin['password']) && ($changed['password'] != $row->origin['password'])) {
+
                 if ($changed['password']) {
                     $row->password = encode($changed['password']);
                 } else {
                     unset($row->password);
+                }
+
+                if ($row->type == 'bt') {
+                    $bt = new Btaction();
+                    $bt->sql_name = $row->username;
+                    $bt->resetSqlPass($row->username, $changed['password']);
                 }
             }
         });
@@ -51,6 +59,11 @@ class Sql extends Model
                 } else {
                     unset($row->password);
                 }
+            }
+            if ($changed['type'] == 'bt') {
+                $bt = new Btaction();
+                $database = $changed['database'] ? $changed['database'] : $changed['username'];
+                $bt->buildSql($changed['username'], $database, $changed['password']);
             }
         });
     }

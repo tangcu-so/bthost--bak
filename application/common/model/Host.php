@@ -30,6 +30,46 @@ class Host extends Model
         // 'endtime_text',
         // 'status_text'
     ];
+
+    protected static function init()
+    {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            // 如果有状态发生改变
+            if (isset($changed['status']) && isset($row->origin['status']) && ($changed['status'] != $row->origin['status'])) {
+                $bt = new Btaction();
+                $bt->bt_id = $row->bt_id;
+                $bt->bt_name = $row->bt_name;
+                if ($changed['status'] == 'normal') {
+                    $bt->webstart();
+                }
+                if ($changed['status'] != 'normal') {
+                    $bt->webstop();
+                }
+            }
+            // 如果分类ID发生改变
+            if (isset($changed['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
+                $bt = new Btaction();
+                // 构建数据
+                $data = json_encode([$row->bt_id]);
+                $bt->btAction->set_site_type($data, $changed['sort_id']);
+            }
+            // 如果到期时间发生改变
+            if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
+                $bt = new Btaction();
+                $bt->bt_id = $row->bt_id;
+                $bt->bt_name = $row->bt_name;
+                // 构建数据
+                $expTime = date('Y-m-d', $changed['endtime']);
+                $bt->setEndtime($expTime);
+            }
+        });
+        // TODO 考虑将创建主机放在这里
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // 新建主机调用方法
+        });
+    }
     
 
     

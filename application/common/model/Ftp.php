@@ -2,6 +2,7 @@
 
 namespace app\common\model;
 
+use app\common\library\Btaction;
 use think\Model;
 use traits\model\SoftDelete;
 
@@ -33,24 +34,17 @@ class Ftp extends Model
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
             // 如果有修改密码
-            if (isset($changed['password'])) {
-                if ($changed['password']) {
-                    $row->password = encode($changed['password']);
-                } else {
-                    unset($row->password);
-                }
-            }
-        });
+            if (isset($changed['password']) && isset($row->origin['password']) && ($changed['password'] != $row->origin['password'])) {
 
-        self::beforeInsert(function ($row) {
-            $changed = $row->getChangedData();
-            // 新建账号时加密密码
-            if (isset($changed['password'])) {
                 if ($changed['password']) {
                     $row->password = encode($changed['password']);
                 } else {
                     unset($row->password);
                 }
+
+                $bt = new Btaction();
+                $bt->ftp_name = $row->username;
+                $bt->resetFtpPass($row->username, $changed['password']);
             }
         });
     }
