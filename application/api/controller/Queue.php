@@ -235,33 +235,24 @@ class Queue extends Api
 
                 // 记录入库
                 // Db::startTrans();
-
+                $excess = 0;
                 if (($getSqlSizes > $value->sql_max && $value->sql_max != '0') || ($getWebSizes > $value->site_max && $value->site_max != '0') || ($total_size > $value->flow_max && $value->flow_max != '0')) {
                     // 超出停止
-                    $stop = $bt->webstop();
-                    if ($stop !== true) {
-                        $errorNum[][$value->bt_name] = isset($stop['msg']) ? $stop['msg'] : '停止失败';
-                        continue;
-                    }
                     $value->status = 'excess';
                     $value->save();
+                    $excess = 1;
                 } elseif ($value->status == 'excess') {
                     // 恢复主机
-                    $start = $bt->webstart();
-                    if ($start !== true) {
-                        $errorNum[][$value->bt_name] = isset($start['msg']) ? $start['msg'] : '开启失败';
-                        continue;
-                    }
-                    if($value->endtime>time()){
+                    if ($value->endtime > time()) {
                         $s = 'normal';
-                    }else{
+                    } else {
                         $s = 'expired';
                     }
                     $value->status = $s;
                     $value->save();
                 }
 
-                $successNum[][$value->bt_name] = ['sql_size' => $getSqlSizes, 'site_size' => $getWebSizes, 'flow_size' => $total_size];
+                $successNum[][$value->bt_name] = ['sql_size' => $getSqlSizes, 'site_size' => $getWebSizes, 'flow_size' => $total_size, 'is_excess' => $excess];
             }
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
         } else {
@@ -301,11 +292,6 @@ class Queue extends Api
 
                 switch (Config::get('site.expire_action')) {
                     case 'recycle':
-                        $stop = $bt->webstop();
-                        if ($stop !== true) {
-                            $errorNum[][$value->bt_name] = isset($stop['msg']) ? $stop['msg'] : '停止失败';
-                            break;
-                        }
                         $value->status = 'expired';
                         $value->deletetime = time();
                         $value->save();
