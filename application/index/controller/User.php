@@ -29,7 +29,7 @@ class User extends Frontend
 
         $this->isAjax = $this->request->isAjax() ? 1 : 0;
 
-        //监听注册登录注销的事件
+        //监听注册登录退出的事件
         Hook::add('user_login_successed', function ($user) use ($auth) {
             $expire = input('post.keeplogin') ? 30 * 86400 : 0;
             Cookie::set('uid', $user->id, $expire);
@@ -55,26 +55,27 @@ class User extends Frontend
         return $this->view->fetch($name);
     }
 
-    public function index(){
-        if($this->request->get('host_id/d')){
+    public function index()
+    {
+        if ($this->request->get('host_id/d')) {
             Cookie::set('host_id_' . $this->auth->id, $this->request->get('host_id/d'));
             return $this->redirect('/');
         }
         // 站点列表
         $list = model('Host')::all(['user_id' => $this->auth->id]);
-        if($list){
+        if ($list) {
             foreach ($list as $value) {
-                $value->domain = model('Domainlist')->where(['status'=>'normal','vhost_id'=>$value->id])->select();
+                $value->domain = model('Domainlist')->where(['status' => 'normal', 'vhost_id' => $value->id])->select();
                 $value->statusStr = model('Host')->status($value->status);
             }
         }
         if (!$list) {
             $this->error('当前无可用站点<a href="' . url('index/user/logout') . '">退出登录</a>', '');
         }
-        $this->view->assign('list',$list);
+        $this->view->assign('list', $list);
         // 站点选择页
         $this->view->assign('title', __('站点选择'));
-        return $this->view->fetch();     
+        return $this->view->fetch();
     }
 
     /**
@@ -120,15 +121,16 @@ class User extends Frontend
                 } else {
                     $this->redirect('/');
                 }
-                
             } else {
                 $this->error($this->auth->getError(), null, ['token' => $this->request->token()]);
             }
         }
         //判断来源
         $referer = $this->request->server('HTTP_REFERER');
-        if (!$url && (strtolower(parse_url($referer, PHP_URL_HOST)) == strtolower($this->request->host()))
-            && !preg_match("/(user\/login|user\/register|user\/logout)/i", $referer)) {
+        if (
+            !$url && (strtolower(parse_url($referer, PHP_URL_HOST)) == strtolower($this->request->host()))
+            && !preg_match("/(user\/login|user\/register|user\/logout)/i", $referer)
+        ) {
             $url = $referer;
         }
         $this->view->assign('url', $url);
@@ -137,17 +139,16 @@ class User extends Frontend
     }
 
     /**
-     * 注销登录
+     * 退出登录
      */
     public function logout()
     {
-        //注销本站
+        //退出本站
         $this->auth->logout();
         if ($this->isAjax) {
             $this->success(__('Logout successful'), url('/'));
         } else {
             $this->redirect('index/user/login');
         }
-        
     }
 }
