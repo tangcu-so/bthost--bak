@@ -24,6 +24,8 @@ class Host extends Backend
      */
     protected $model = null;
 
+    protected $searchFields = ['bt_name'];
+
     public function _initialize()
     {
         parent::_initialize();

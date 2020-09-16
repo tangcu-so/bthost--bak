@@ -19,6 +19,8 @@ class Sql extends Backend
      */
     protected $model = null;
 
+    protected $searchFields = ['username'];
+
     public function _initialize()
     {
         parent::_initialize();

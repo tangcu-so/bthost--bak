@@ -19,6 +19,8 @@ class Domainlist extends Backend
      */
     protected $model = null;
 
+    protected $searchFields = ['domain'];
+
     public function _initialize()
     {
         parent::_initialize();
