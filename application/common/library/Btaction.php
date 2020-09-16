@@ -1438,10 +1438,13 @@ class Btaction
         $list = $this->btAction->GetCrontab();
         if (!$list) {
             $this->_error = $this->btAction->_error;
+            return false;
         }
-        foreach ($list as $key => $value) {
-            if (isset($value['name']) && $value['name'] == $name) {
-                return true;
+        if ($list) {
+            foreach ($list as $key => $value) {
+                if (isset($value['name']) && $value['name'] == $name) {
+                    return true;
+                }
             }
         }
         return false;
