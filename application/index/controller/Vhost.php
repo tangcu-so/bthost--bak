@@ -64,7 +64,7 @@ class Vhost extends Frontend
         }
         $hostInfo = $this->hostModel::get(['user_id'=>$this->auth->id,'id'=>$host_id]);
         if(!$hostInfo){
-            $this->error('站点不存在','');
+            $this->error('站点不存在<a href="' . url('index/user/index') . '">切换站点</a>', '');
         }
         $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
         $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
