@@ -134,23 +134,41 @@ class Domain extends Backend
     
     // 配置dnspod修改
     public function config(){
+        // 清除opcache缓存
+        if (extension_loaded('Zend OPcache')) {
+            opcache_reset();
+        }
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
             if(!$params['id']){
                 $this->error('配置不能为空');
             }
             $file = APP_PATH . DS . 'extra' . DS . 'dnspod.php';
+            $msg = '';
             // 修改配置
-            if($params['token']){
-                try{
-                    $token = encode($params['token']);
-                    
-                    $set = setconfig($file, ['id','token'], [$params['id'],$token]);
+            $get = $set = [];
+            if ($params['token'] || $params['id']) {
+                try {
+                    if ($params['id']) {
+                        $get[] = 'id';
+                        $set[] = $params['id'];
+                    }
+                    if ($params['token']) {
+                        $get[] = 'token';
+                        $set[] = encode($params['token']);
+                    }
+                    $set = setconfig(
+                        $file,
+                        $get,
+                        $set
+                    );
                 }catch(\Exception $e){
-                    throw new \Exception('配置文件修改失败');
+                    $msg = '配置文件修改失败' . $e->getMessage();
+                }
+                if ($msg) {
+                    $this->error($msg);
                 }
             }
-            
             $this->success('修改成功');
         }
         $this->view->assign("row", Config('dnspod'));
