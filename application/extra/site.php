@@ -47,7 +47,7 @@ return array (
   'main_left_notice' => '',
   'main_right_notice' => '',
   'public_head_notice' => '',
-  'iframe_cache' => 'true',
+  'iframe_cache' => 'false',
   'console_css' => '',
   'console_head' => '',
   'console_foot' => '',
