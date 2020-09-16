@@ -198,6 +198,12 @@ class Ajax extends Backend
             case 'content':
                 rmdirs(CACHE_PATH, false);
                 Cache::clear();
+
+                // 清除opcache缓存
+                if (extension_loaded('Zend OPcache')) {
+                    opcache_reset();
+                }
+
                 if ($type == 'content') {
                     break;
                 }
