@@ -29,6 +29,7 @@ class Config extends Model
     {
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
+            \app\common\library\Common::clear_cache();
             if (isset($changed['name']) && isset($changed['value'])  && $changed['name'] == 'api_token') {
                 if ($changed['value'] == '') {
                     unset($row->value);

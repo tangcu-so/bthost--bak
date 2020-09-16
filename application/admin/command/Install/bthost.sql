@@ -397,7 +397,7 @@ INSERT INTO `bth_config` VALUES ('29', 'main_center_notice', 'notice', 'main_cen
 INSERT INTO `bth_config` VALUES ('30', 'main_left_notice', 'notice', 'main_left_notice', '支持html', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('31', 'main_right_notice', 'notice', 'main_right_notice', '支持html', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('32', 'public_head_notice', 'notice', 'public_head_notice', '支持html', 'text', '', '', '', '', '');
-INSERT INTO `bth_config` VALUES ('33', 'iframe_cache', 'personalization', 'iframe_cache', '控制台iframe标签缓存', 'select', 'true', '{\"false\":\"不缓存\",\"true\":\"缓存\"}', '', '', '');
+INSERT INTO `bth_config` VALUES ('33', 'iframe_cache', 'personalization', 'iframe_cache', '控制台iframe标签缓存', 'select', 'false', '{\"false\":\"不缓存\",\"true\":\"缓存\"}', '', '', '');
 INSERT INTO `bth_config` VALUES ('34', 'console_css', 'personalization', 'console_css', '添加 LESS/CSS 代码以自定义控制台外观样式，此设置将覆盖 btHots 默认样式，不需要带style标签', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('35', 'console_head', 'personalization', 'console_head', '添加显示于页面顶部、位于 控制台 默认页眉上方的 HTML 代码。', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('36', 'console_foot', 'personalization', 'console_foot', '添加显示于页面底部的 HTML 代码。', 'text', '', '', '', '', '');
@@ -663,7 +663,7 @@ INSERT INTO `bth_product` VALUES ('16', '1', 'flow_max', 'btpanel', '流量大�
 INSERT INTO `bth_product` VALUES ('19', '1', 'domain_audit', 'btpanel', '域名绑定审核', '用户绑定是否需要管理员手动审核，或加入机房白名单', 'radio', '0', '{\"1\":\"需要\",\"0\":\"不需要\"}', '', '');
 INSERT INTO `bth_product` VALUES ('20', '1', 'session', 'btpanel', 'session隔离', '开启后将会把session文件存放到独立文件夹独立文件夹，不与其他站点公用存储位置\r\n若您在PHP配置中将session保存到memcache/redis等缓存器时，请不要开启此选项', 'radio', '0', '{\"1\":\"开启\",\"0\":\"不开启\"}', '', '');
 INSERT INTO `bth_product` VALUES ('21', '1', 'vsftpd', 'btpanel', 'vsftpd插件', '请在面板中安装vsftpd后开启，用于强制限制站点大小，详情查看https://bbs.btye.net/d/93', 'radio', '0', '{\"1\":\"开启\",\"0\":\"不开启\"}', '', '');
-INSERT INTO `bth_product` VALUES ('22', '1', 'sites_path', 'btpanel', '建站目录', '网站搭建目录，为空则系统默认，Linux默认/www/wwwroot，WIndows默认C:/wwwroot，Windows和Linux的建站目录请勿混用', 'string', '/www/wwwroot', '', '', '');
+INSERT INTO `bth_product` VALUES ('22', '1', 'sites_path', 'btpanel', '建站目录', '网站搭建目录，为空则系统默认，Linux默认/www/wwwroot，WIndows默认C:/wwwroot，Windows和Linux的建站目录请勿混用', 'string', '', '', '', '');
 
 -- ----------------------------
 -- Table structure for bth_queue

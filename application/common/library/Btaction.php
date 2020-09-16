@@ -1281,7 +1281,12 @@ class Btaction
     {
         $info = $this->getSoftInfo('phpmyadmin');
         if ($info && isset($info['ext']['url']) && $info['ext']['url']) {
-            return $info['ext']['url'];
+            $ip = $this->getIp();
+            $url = $info['ext']['url'];
+            if ($ip) {
+                $url = str_replace('127.0.0.1', $ip, $info['ext']['url']);
+            }
+            return $url;
         }
         return false;
     }
@@ -1436,10 +1441,13 @@ class Btaction
         $list = $this->btAction->GetCrontab();
         if (!$list) {
             $this->_error = $this->btAction->_error;
+            return false;
         }
-        foreach ($list as $key => $value) {
-            if (isset($value['name']) && $value['name'] == $name) {
-                return true;
+        if ($list) {
+            foreach ($list as $key => $value) {
+                if (isset($value['name']) && $value['name'] == $name) {
+                    return true;
+                }
             }
         }
         return false;

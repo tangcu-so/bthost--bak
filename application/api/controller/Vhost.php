@@ -700,15 +700,12 @@ class Vhost extends Api
 
         if ($overflow) {
             $hostFind->status = 'excess';
-            // 停止主机
-            $bt->webstop();
         } else {
             // 判断既没有过期，也处于没有超量状态，就恢复主机
             if ($hostFind->endtime > time() && $hostFind->status == 'excess'
             ) {
-                $hostFind->status = 'success';
+                $hostFind->status = 'normal';
             }
-            $bt->webstart();
         }
         $hostFind->check_time = time();
 

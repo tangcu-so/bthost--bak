@@ -636,14 +636,11 @@ class Host extends Backend
 
                 if ($overflow) {
                     $hostInfo->status = 'excess';
-                    // 停止主机
-                    $bt->webstop();
                 } else {
                     // 判断既没有过期，也处于没有超量状态，就恢复主机
                     if ($hostInfo->endtime > time() && $hostInfo->status == 'excess') {
-                        $hostInfo->status = 'success';
+                        $hostInfo->status = 'normal';
                     }
-                    $bt->webstart();
                 }
                 $hostInfo->check_time = time();
                 $save2 = $hostInfo->allowField(true)->save();

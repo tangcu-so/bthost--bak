@@ -198,6 +198,8 @@ class Ajax extends Backend
             case 'content':
                 rmdirs(CACHE_PATH, false);
                 Cache::clear();
+                \app\common\library\Common::clear_cache();
+
                 if ($type == 'content') {
                     break;
                 }
@@ -448,11 +450,6 @@ class Ajax extends Backend
         $this->success('请求成功', '', ['url' => Config::get('bty.api_url'), 'curl' => $curl, 'api_url1' => $ms1, 'api_url2' => $ms2, 'lan_url' => $ms3, 'baidu' => $baidu]);
     }
 
-    public function phps()
-    {
-        echo phpinfo();
-    }
-
     /**
      * 检查更新（阿珏版）
      * @Author   Youngxj
@@ -463,6 +460,7 @@ class Ajax extends Backend
     {
         Debug::remark('begin');
         if ($this->request->param('token') == '123456789') {
+            \app\common\library\Common::clear_cache();
             if (!function_exists('zip_open')) {
                 $this->error('不支持zip_open，请尝试切换php版本');
             }
@@ -578,10 +576,7 @@ class Ajax extends Backend
             rmdirs(TEMP_PATH, false);
             Cache::clear();
             Service::refresh();
-            // 清除opcache缓存
-            if (extension_loaded('Zend OPcache')) {
-                opcache_reset();
-            }
+            \app\common\library\Common::clear_cache();
 
             Db::commit();
             $this->success('更新成功，欢迎体验最新的系统^_^');
