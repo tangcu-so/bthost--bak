@@ -373,91 +373,6 @@
                   </div>
                   {/notempty}
                 </div>
-                <!-- <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/domain')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('domain')}" data-url="{:url('index/vhost/domain')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-web"></p>
-                        <p>{:__('domain')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/pass')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('pass')}" data-url="{:url('index/vhost/pass')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-lock-reset"></p>
-                        <p>{:__('pass')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/speed')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('speed')}" data-url="{:url('index/vhost/speed')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-rocket"></p>
-                        <p>{:__('speed')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/Rewrite301')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite301')}" data-url="{:url('index/vhost/Rewrite301')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-undo-variant"></p>
-                        <p>{:__('rewrite301')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/redir')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('redir')}" data-url="{:url('index/vhost/redir')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-umbraco"></p>
-                        <p>{:__('redir')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/defaultfile')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('defaultfile')}" data-url="{:url('index/vhost/defaultfile')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-home"></p>
-                        <p>{:__('defaultfile')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/rewrite')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite')}" data-url="{:url('index/vhost/rewrite')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-tree"></p>
-                        <p>{:__('rewrite')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/ssl')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('ssl')}" data-url="{:url('index/vhost/ssl')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-send"></p>
-                        <p>{:__('ssl')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/runPath')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('runPath')}" data-url="{:url('index/vhost/runPath')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-folder-account"></p>
-                        <p>{:__('runPath')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  {notempty name="hostInfo.sql.console"}
-                  <div class="col-lg-3 col-sm-6 col-6">
-                    <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}"
-                      {if $phpmyadmin}target="_blank"{/if}>
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-database"></p>
-                        <p>{:__('sql_console')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  {/notempty}
-                </div> -->
               </div>
               <div class="tab-pane fade" id="files-pills">
                 <div class="row">
@@ -479,34 +394,6 @@
                     </a>
                   </div>
                 </div>
-                <!-- <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/file')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('file')}" data-url="{:url('index/vhost/file')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-folder-account"></p>
-                        <p>{:__('file')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  {notempty name="hostInfo.ftp.username"}
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/file_ftp')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('file_ftp')}" data-url="{:url('index/vhost/file_ftp')}">
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-folder-account"></p>
-                        <p>{:__('file_ftp')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  {/notempty}
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/back')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('back')}" data-url="{:url('index/vhost/back')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-clipboard-flow"></p>
-                        <p>{:__('back')}</p>
-                      </div>
-                    </a>
-                  </div>
-                </div> -->
               </div>
               <div class="tab-pane fade" id="security-pills">
                 <div class="row">
@@ -535,40 +422,6 @@
                     </a>
                   </div>
                 </div>
-                <!-- <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/protection')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('protection')}" data-url="{:url('index/vhost/protection')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-minus-network"></p>
-                        <p>{:__('protection')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/waf')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('waf')}" data-url="{:url('index/vhost/waf')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-wall"></p>
-                        <p>{:__('waf')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/dirauth')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('dirauth')}" data-url="{:url('index/vhost/dirauth')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-file-lock-outline"></p>
-                        <p>{:__('dirauth')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/proof')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('proof')}" data-url="{:url('index/vhost/proof')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-webcam"></p>
-                        <p>{:__('proof')}</p>
-                      </div>
-                    </a>
-                  </div>
-                </div> -->
               </div>
               <div class="tab-pane fade" id="expert-pills">
                 <div class="row">
@@ -618,64 +471,6 @@
                     </a>
                   </div>
                 </div>
-                <!-- <div class="row">
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/sitelog')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}" data-url="{:url('index/vhost/sitelog')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-chart-bar-stacked"></p>
-                        <p>{:__('sitelog')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/sitelog')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('sqltools')}" data-url="{:url('index/vhost/sitelog')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-database"></p>
-                        <p>{:__('sqltools')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/httpauth')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('httpauth')}" data-url="{:url('index/vhost/httpauth')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-wan"></p>
-                        <p>{:__('httpauth')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/deployment')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('deployment')}" data-url="{:url('index/vhost/deployment')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-puzzle"></p>
-                        <p>{:__('deployment')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/deployment_new')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('deployment_new')}" data-url="{:url('index/vhost/deployment_new')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-puzzle"></p>
-                        <p>{:__('deployment_new')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/total')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('total')}" data-url="{:url('index/vhost/total')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-chart-pie"></p>
-                        <p>{:__('total')}</p>
-                      </div>
-                    </a>
-                  </div>
-                  <div class="col-lg-3 col-sm-6 col-6 {:$auth->check('vhost/proxy')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('proxy')}" data-url="{:url('index/vhost/proxy')}" >
-                      <div class="box-placeholder" align="center">
-                        <p class="mdi mdi-harddisk"></p>
-                        <p>{:__('proxy')}</p>
-                      </div>
-                    </a>
-                  </div>
-                </div> -->
               </div>
             </div>
           </div>
@@ -715,8 +510,10 @@
       <header class="card-header">
         <div class="card-title dis_contents">
           FTP
-          <a href="#!" data-title="在线文件管理" data-url="{:url('index/vhost/file')}"
-            class="badge badge-purple text-white float-right">在线文件管理器</a>
+          <a href="#!" data-title="在线文件管理" data-title="{:__('file')}"
+            data-url="{:url('vhost/file')}"
+            class="js-create-tab badge badge-purple text-white float-right
+            {:$auth->check('vhost/file')?'':'d-none'}">在线文件管理器</a>
         </div>
       </header>
       <div class="list-group-item">
