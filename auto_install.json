@@ -2,7 +2,7 @@
 	"php_ext":"",
 	"chmod":[],
 	"success_url":"/install.php",
-	"php_versions":"72",
+	"php_versions": "70,71,72,73,74",
 	"db_config":"application/database.php",
 	"run_path":"/public",
 	"remove_file":[],
