@@ -1283,7 +1283,12 @@ class Btaction
     {
         $info = $this->getSoftInfo('phpmyadmin');
         if ($info && isset($info['ext']['url']) && $info['ext']['url']) {
-            return $info['ext']['url'];
+            $ip = $this->getIp();
+            $url = $info['ext']['url'];
+            if ($ip) {
+                $url = str_replace('127.0.0.1', $ip, $info['ext']['url']);
+            }
+            return $url;
         }
         return false;
     }
