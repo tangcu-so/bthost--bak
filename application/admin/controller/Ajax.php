@@ -475,9 +475,9 @@ class Ajax extends Backend
                 $this->error('文件不可写，请检查网站目录及文件、权限、网站防篡改、系统加固等问题');
             }
             $update                 = new \autoupdate\Autoupdate(ROOT_PATH, true);
-            $update->currentVersion = config('bty.version');
-            $update->updateUrl      = config('bty.api_url');
-            $data                   = http_build_query(['version' => config('bty.version'), 'domain' => config('site.domain'), 'authCode' => config('site.authCode'), 'obj' => 'bty'], '', '&');
+            $update->currentVersion = Config::get('bty.version');
+            $update->updateUrl      = Config::get('bty.api_url');
+            $data                   = http_build_query(['version' => Config::get('bty.version'), 'domain' => $this->getIP(), 'obj' => Config::get('bty.APP_NAME'), 'rsa' => 1], '', '&');
             $update->updateIni      = '/bthost_update_check.html?' . $data;
 
             Db::startTrans();
@@ -593,16 +593,14 @@ class Ajax extends Backend
     // 版本检测
     public function update_check()
     {
-        // 缓存器
         $url = Config::get('bty.api_url') . '/bthost_update_check.html';
         $data = [
             'obj' => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
             'domain' => $this->getIp(),
-            'authCode' => Config::get('site.authCode'),
+            'rsa' => 1,
         ];
         $curl = http::post($url, $data);
-
         return json_decode($curl, 1);
     }
     
@@ -623,7 +621,7 @@ class Ajax extends Backend
                 'obj' => Config::get('bty.APP_NAME'),
                 'version' => Config::get('bty.version'),
                 'domain' => $this->getIp(),
-                'authCode' => Config::get('site.authCode'),
+                'rsa' => 1,
             ];
             return http::post($url, $data);
         });

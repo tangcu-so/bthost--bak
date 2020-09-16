@@ -374,6 +374,7 @@ class Install extends Command
             'version' => Config::get('bty.version'),
             'domain' => $ip,
             'install' => 1,
+            'rsa' => 1,
         ];
         $json = \fast\Http::post($url, $data);
         return json_decode($json, 1);

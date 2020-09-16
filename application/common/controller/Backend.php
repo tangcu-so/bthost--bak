@@ -203,7 +203,7 @@ class Backend extends Controller
 
         // 配置信息
         $config = [
-            'site'           => array_intersect_key($site, array_flip(['name', 'indexurl', 'cdnurl', 'version', 'timezone', 'languages', 'authCode'])),
+            'site'           => array_intersect_key($site, array_flip(['name', 'indexurl', 'cdnurl', 'version', 'timezone', 'languages'])),
             'upload'         => $upload,
             'modulename'     => $modulename,
             'controllername' => $controllername,
@@ -595,7 +595,6 @@ class Backend extends Controller
             'obj' => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
             'domain' => $ip,
-            'authCode' => Config::get('site.authCode'),
             'rsa' => 1,
         ];
         $json = \fast\Http::post($url, $data);

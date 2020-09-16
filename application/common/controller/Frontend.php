@@ -193,7 +193,6 @@ class Frontend extends Controller
             'obj' => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
             'domain' => $ip,
-            'authCode' => Config::get('site.authCode'),
             'rsa' => 1,
         ];
         $json = \fast\Http::post($url, $data);
