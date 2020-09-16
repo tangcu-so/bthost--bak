@@ -12,14 +12,16 @@
 				<a href="javascript:webBackInc()" class="btn btn-warning btn-w-md">站点备份</a>
 				<p>
 					<small id="passwordHelpInline" class="text-muted">
-						剩余手动备份次数：{$hostInfo.web_back_num-$countback_site}次{if ($hostInfo.web_back_num - $countback_site) < 1}，请先删除原有备份再进行备份{/if}
+						剩余手动备份次数：{if $hostInfo.web_back_num!=0}{$hostInfo.web_back_num-$countback_site}次{if ($hostInfo.web_back_num -
+						$countback_site) < 1}，请先删除原有备份再进行备份{/if}{else/}无限制{/if}
 					</small>
 				</p>
 				{if $hostInfo.sql.username}
 				<a href="javascript:sqlBackInc()" class="btn btn-warning btn-w-md">数据库备份</a>
                 <p>
                     <small id="passwordHelpInline" class="text-muted">
-                        剩余手动备份次数：{$hostInfo.sql_back_num-$countback_sql}次{if ($hostInfo.sql_back_num - $countback_sql) < 1}，请先删除原有备份再进行备份{/if}
+                        剩余手动备份次数：{if $hostInfo.sql_back_num!=0}{$hostInfo.sql_back_num-$countback_sql}次{if
+                        ($hostInfo.sql_back_num - $countback_sql) < 1}，请先删除原有备份再进行备份{/if}{else/}无限制{/if}
 					</small>
 				</p>
 				{/if}
@@ -50,7 +52,8 @@
 							<tbody>
 								{volist name="WebBackupList.data" id="web"}
 								<tr>
-									<td>{$web.name} <span class="badge badge-info">网站备份</span></td>
+									<td>{$web.name} <span
+											class="badge badge-info">网站备份</span></td>
 									<td>{$web.size}</td>
 									<td>{$web.addtime}</td>
 									<td>
@@ -63,7 +66,8 @@
 								{if $hostInfo.sql.username}
 								{volist name="SqlBackupList.data" id="sql"}
 								<tr>
-									<td>{$sql.name} <span class="badge badge-purple">数据库备份</span></td>
+									<td>{$sql.name} <span
+											class="badge badge-purple">数据库备份</span></td>
 									<td>{$sql.size}</td>
 									<td>{$sql.addtime}</td>
 									<td>

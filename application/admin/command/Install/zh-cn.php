@@ -1,7 +1,7 @@
 <?php
 return [
     'Warning'                                                                                               => '温馨提示',
-    'Installing FastAdmin'                                                                                  => '安装FastAdmin',
+    'Installing btHost'                                                                                     => '安装btHost',
     'Mysql Hostname'                                                                                        => 'MySQL 数据库地址',
     'Mysql Database'                                                                                        => 'MySQL 数据库名',
     'Mysql Username'                                                                                        => 'MySQL 用户名',
@@ -31,4 +31,12 @@ return [
     'The current permissions are insufficient to write the file %s'                                         => '当前权限不足，无法写入文件%s',
     'Please go to the official website to download the full package or resource package and try to install' => '当前代码仅包含核心代码，请前往官网下载完整包或资源包覆盖后再尝试安装',
     'The system has been installed. If you need to reinstall, please remove %s first'                       => '当前已经安装成功，如果需要重新安装，请手动移除%s文件',
+    'api_token'                                                                                             => '宝塔API密钥',
+    'api_port'                                                                                              => '宝塔面板端口',
+    'security_code'                                                                                         => '效验码',
+    'security_code_tips'                                                                                    => '由系统自动生成，无需填写',
+    'Help Tips'                                                                                             => '若你在安装中遇到麻烦可点击',
+    'Install DOc'                                                                                           => '安装文档',
+    'Auth Query'                                                                                            => '授权查询',
+    'Webs'                                                                                                  => '官网',
 ];

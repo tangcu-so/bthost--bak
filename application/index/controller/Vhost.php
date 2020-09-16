@@ -1117,9 +1117,10 @@ class Vhost extends Frontend
         if (!$this->hostInfo->ftp) {
             $this->error('不支持该模块', '');
         }
-        $host     = isset($this->hostInfo['ftp_server'])?$this->hostInfo['ftp_server']:'192.168.191.129';
-        $ssl     = isset($this->hostInfo['ssl'])?$this->hostInfo['ssl']:false;
-        $port     = isset($this->hostInfo['ftp_port'])?$this->hostInfo['ftp_port']:'21';
+        $host     = Config::get('site.ftp_server') ? Config::get('site.ftp_server') : '127.0.0.1';
+        $ssl     = Config::get('site.ftp_ssl') == true ? true : false;
+        $port     = Config::get('site.ftp_port') ? Config::get('site.ftp_port') : '21';
+
         $username = $this->hostInfo->ftp->username;
         $password = $this->hostInfo->ftp->password;
         if (!$host || !$port || !$username || !$password) {
@@ -1141,7 +1142,7 @@ class Vhost extends Frontend
                     $this->error('FTP服务器连接失败','');
                     break;
                 default:
-                    // $this->error('FTP连接失败');
+                    $this->error('FTP连接失败');
                     break;
             }
         }
@@ -2450,7 +2451,7 @@ class Vhost extends Frontend
         $post_str = $this->request->post();
         if (isset($post_str['to']) && $post_str['to'] == 'back') {
             $back_num = isset($this->hostInfo['web_back_num']) ? $this->hostInfo['web_back_num'] : 5;
-            if (count($WebBackupList['data']) < $back_num) {
+            if ($back_num == 0 || count($WebBackupList['data']) < $back_num) {
                 if ($modify_status = $this->btAction->WebToBackup($this->bt_id)) {
                     $this->success($modify_status['msg']);
                 } else {
@@ -2627,7 +2628,7 @@ class Vhost extends Frontend
         $post_str = $this->request->post();
         if (isset($post_str['to']) && $post_str['to'] == 'back') {
             $back_num = isset($this->hostInfo['sql_back_num']) ? $this->hostInfo['sql_back_num'] : 5;
-            if (count($WebBackupList['data']) < $back_num) {
+            if ($back_num == 0 || count($WebBackupList['data']) < $back_num) {
                 if ($modify_status = $this->btAction->SQLToBackup($WebSqlList['data'][0]['id'])) {
                     $this->success($modify_status['msg']);
                 } else {
@@ -3092,8 +3093,7 @@ class Vhost extends Frontend
         if($this->hostInfo->server_os=='windows'){
             $this->error('当前主机不支持该功能','');
         }
-        // TODO 获取建站目录
-        $vhost_url = '/www/wwwroot/' . explode('.', $this->siteName)[0];
+        $vhost_url = $this->webRootPath;
         $setting   = $this->btAction->GetDirUserINI($this->bt_id, $vhost_url);
 
         $this->view->assign('title', __('httpauth'));
@@ -3265,6 +3265,7 @@ class Vhost extends Frontend
             case 'normal':
                 break;
             case 'stop':
+                $this->error('主机停止', '');
                 break;
             case 'locked':
                 $this->error('主机已被锁定','');

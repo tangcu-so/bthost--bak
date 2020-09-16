@@ -2,6 +2,7 @@
 
 namespace app\admin\command;
 
+use app\common\library\Btaction;
 use fast\Random;
 use PDO;
 use think\Config;
@@ -14,6 +15,7 @@ use think\Exception;
 use think\Lang;
 use think\Request;
 use think\View;
+use think\Cache;
 
 class Install extends Command
 {
@@ -66,7 +68,7 @@ class Install extends Command
         $adminUsername = 'admin';
         $adminPassword = Random::alnum(10);
         $adminEmail = 'admin@admin.com';
-        $siteName = __('My Website');
+        $siteName = __('btHost');
 
         $adminName = $this->installation($hostname, $hostport, $database, $username, $password, $prefix, $adminUsername, $adminPassword, $adminEmail, $siteName);
         if ($adminName) {
@@ -103,6 +105,22 @@ class Install extends Command
         };
 
         if ($this->request->isPost()) {
+            try {
+                $check = $this->auth_check_local();
+            } catch (\PDOException $e) {
+                throw new Exception($e->getMessage());
+            } catch (\Exception $e) {
+                return $output(0, $e->getMessage());
+            }
+
+            if (is_array($check)) {
+                if ($this->request->param('is_check')) {
+                    return $output(1, $check['msg'], null, ['encode' => $check['encode']]);
+                }
+            } else {
+                return $output(0, $check, null);
+            }
+
             $mysqlHostname = $this->request->post('mysqlHostname', '127.0.0.1');
             $mysqlHostport = $this->request->post('mysqlHostport', '3306');
             $hostArr = explode(':', $mysqlHostname);
@@ -113,12 +131,15 @@ class Install extends Command
             $mysqlUsername = $this->request->post('mysqlUsername', 'root');
             $mysqlPassword = $this->request->post('mysqlPassword', '');
             $mysqlDatabase = $this->request->post('mysqlDatabase', '');
-            $mysqlPrefix = $this->request->post('mysqlPrefix', 'fa_');
+            $mysqlPrefix = $this->request->post('mysqlPrefix', 'bth_');
             $adminUsername = $this->request->post('adminUsername', 'admin');
             $adminPassword = $this->request->post('adminPassword', '');
             $adminPasswordConfirmation = $this->request->post('adminPasswordConfirmation', '');
             $adminEmail = $this->request->post('adminEmail', 'admin@admin.com');
-            $siteName = $this->request->post('siteName', __('My Website'));
+            $siteName = $this->request->post('siteName', __('btHost'));
+            $api_token = $this->request->post('api_token');
+            $api_port = $this->request->post('api_port', 8888);
+            $security_code = $this->request->post('security_code');
 
             if ($adminPassword !== $adminPasswordConfirmation) {
                 return $output(0, __('The two passwords you entered did not match'));
@@ -126,7 +147,7 @@ class Install extends Command
 
             $adminName = '';
             try {
-                $adminName = $this->installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail, $siteName);
+                $adminName = $this->installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail, $siteName, $api_token, $api_port, $security_code);
             } catch (\PDOException $e) {
                 throw new Exception($e->getMessage());
             } catch (\Exception $e) {
@@ -140,13 +161,22 @@ class Install extends Command
         } catch (\Exception $e) {
             $errInfo = $e->getMessage();
         }
-        return $this->view->fetch(INSTALL_PATH . "install.html", ['errInfo' => $errInfo]);
+
+        return $this->view->fetch(INSTALL_PATH . "install.html", ['errInfo' => $errInfo, 'link' => [
+            'qqun' => "https://shang.qq.com/wpa/qunwpa?idkey=e0b8001e495453616e79c90bd5123aef1b0505693755c1242ac9f099ace77ca2",
+            'web' => 'https://btai.cc',
+            'bbs' => 'https://bbs.btye.net',
+            'blog' => 'https://www.youngxj.cn',
+            'auths' => 'https://auths.yum6.cn/auth.html',
+            'qq' => 'https://wpa.qq.com/msgrd?v=3&uin=1170535111&site=qq&menu=yes',
+            'install' => 'https://www.kancloud.cn/youngxj/bthost_manual/程序安装.md',
+        ]]);
     }
 
     /**
      * 执行安装
      */
-    protected function installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail = null, $siteName = null)
+    protected function installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail = null, $siteName = null, $api_token, $api_port, $security_code)
     {
         $this->checkenv();
 
@@ -163,9 +193,9 @@ class Install extends Command
             throw new Exception(__('Please input correct website'));
         }
 
-        $sql = file_get_contents(INSTALL_PATH . 'fastadmin.sql');
+        $sql = file_get_contents(INSTALL_PATH . 'bthost.sql');
 
-        $sql = str_replace("`fa_", "`{$mysqlPrefix}", $sql);
+        $sql = str_replace("`bth_", "`{$mysqlPrefix}", $sql);
 
         // 先尝试能否自动创建数据库
         $config = Config::get('database');
@@ -230,7 +260,7 @@ class Install extends Command
         }
 
         //修改站点名称
-        if ($siteName != __('My Website')) {
+        if ($siteName != __('btHost')) {
             $instance->name('config')->where('name', 'name')->update(['value' => $siteName]);
             $configFile = APP_PATH . 'extra' . DS . 'site.php';
             $config = include $configFile;
@@ -245,6 +275,44 @@ class Install extends Command
                 $config[$value['name']] = $value['value'];
             }
             $config['name'] = $siteName;
+            file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
+        }
+
+        // 记录api密钥、端口
+        if ($api_token != '' && $api_token != 8888) {
+            $api_token_encode = encode($api_token);
+            $instance->name('config')->where('name', 'api_token')->update(['value' => $api_token_encode]);
+            $configFile = APP_PATH . 'extra' . DS . 'site.php';
+            $config = include $configFile;
+            $configList = $instance->name("config")->select();
+            foreach ($configList as $k => $value) {
+                if (in_array($value['type'], ['selects', 'checkbox', 'images', 'files'])) {
+                    $value['value'] = explode(',', $value['value']);
+                }
+                if ($value['type'] == 'array') {
+                    $value['value'] = (array) json_decode($value['value'], true);
+                }
+                $config[$value['name']] = $value['value'];
+            }
+            $config['api_token'] = $api_token_encode;
+            file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
+        }
+
+        if ($api_port != '') {
+            $instance->name('config')->where('name', 'api_port')->update(['value' => $api_port]);
+            $configFile = APP_PATH . 'extra' . DS . 'site.php';
+            $config = include $configFile;
+            $configList = $instance->name("config")->select();
+            foreach ($configList as $k => $value) {
+                if (in_array($value['type'], ['selects', 'checkbox', 'images', 'files'])) {
+                    $value['value'] = explode(',', $value['value']);
+                }
+                if ($value['type'] == 'array') {
+                    $value['value'] = (array) json_decode($value['value'], true);
+                }
+                $config[$value['name']] = $value['value'];
+            }
+            $config['api_port'] = $api_port;
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
@@ -289,5 +357,80 @@ class Install extends Command
             }
         }
         return true;
+    }
+
+    private static function getPublicKey()
+    {
+        return $public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXySnlz6w8w0KOTz+XrzNd3+PmKJKAJRdKI4x5xNU8Q9EzWIYGyX2O1RK/FB1pwYjUVo8uNG6ghD48ZtRcumqPxU7uAHBlxq4S8zPPSGJ3NKgceRJEW/4oOFLw6jeJ1Pw3aHvg7hmxNxwgOLqlRzXDG8wBc7EqVTGa86qbfwZDEQIDAQAB';
+    }
+
+    // 远程授权验证
+    private function auth_check($ip)
+    {
+        // 缓存器缓存远端获取的私钥
+        $url = Config::get('bty.api_url') . '/bthost_auth_check.html';
+        $data = [
+            'obj' => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'domain' => $ip,
+            'install' => 1,
+        ];
+        $json = \fast\Http::post($url, $data);
+        return json_decode($json, 1);
+    }
+
+    // 授权验证方法
+    protected function auth_check_local()
+    {
+        // 授权判断
+        $api_token = $this->request->post('api_token');
+        $api_port = $this->request->post('api_port');
+        if (!$api_token || !$api_port) {
+            return '请填写完整' . __('api_token') . '|' . __('api_port');
+        }
+        $bt = new Btaction($api_token, $api_port);
+        if (!$bt->test()) {
+            return $bt->_error;
+        }
+        $ip = $bt->getIp();
+        if (!$ip) {
+            return 'IP获取失败，请确保你的面板有公网能力';
+        }
+
+        // 公钥
+        $public_key = self::getPublicKey();
+
+        $rsa = new \fast\Rsa($public_key);
+
+        $curl = $this->auth_check($ip);
+
+        $is_ajax = $this->request->isAjax() ? 1 : 0;
+
+        if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+            // 解密信息获取域名及有效期
+            // 公钥解密
+            $decode = $rsa->pubDecrypt($curl['encode']);
+            if (!$decode) {
+                return '授权信息错误';
+            }
+            $decode_arr = explode('|', $decode);
+            if (!isset($decode_arr[0]) || !isset($decode_arr[1])) {
+                return '授权信息错误';
+            }
+            // 检查授权域名是否为当前域名
+            if ($decode_arr[0] != '9527' && $decode_arr[0] !== $ip) {
+                return $ip . '授权信息不正确';
+            }
+            // 检查授权是否过期
+            if ($decode_arr[1] != 0 && time() > $decode_arr[1]) {
+                return $ip . '授权已过期';
+            }
+            $exp = isset($decode_arr[1]) && $decode_arr[1] != 0 ? date('Y-m-d', $decode_arr[1]) : '永久';
+            return ['encode' => $curl['encode'], 'msg' => $curl['msg'] . ' | 授权IP：' . $decode_arr[0] . ' | 有效期：' . $exp];
+        } elseif (isset($curl['msg'])) {
+            return $ip . $curl['msg'];
+        } else {
+            return $ip . '授权检查失败';
+        }
     }
 }

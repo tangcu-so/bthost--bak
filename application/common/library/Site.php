@@ -37,7 +37,7 @@ class Site
         }
 
         //Debug模式
-        if (Config::get('site.debug')) {
+        if (Config::get('site.debug') == 1) {
             config('app_debug', true);
             config('show_error_msg', true);
         }

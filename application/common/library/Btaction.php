@@ -37,10 +37,10 @@ class Btaction
     public $os = 'linux';
 
 
-    public function __construct($api_token = '', $os = 'linux')
+    public function __construct($api_token = '', $port = 8888, $os = 'linux')
     {
-        $port = Config('site.api_port') ? Config('site.api_port') : 8888;
-        $this->port = $port;
+        $port_config = Config('site.api_port') ? Config('site.api_port') : 8888;
+        $this->port = $port ? $port : $port_config;
         $this->api_url = $this->api_url . ':' . $this->port;
 
         $apiToken_config = decode(Config('site.api_token'));

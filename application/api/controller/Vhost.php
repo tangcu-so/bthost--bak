@@ -30,6 +30,15 @@ class Vhost extends Api
         $this->sqlModel = model('sql');
         $this->ftpModel = model('ftp');
 
+        // IP白名单效验
+        $ip = request()->ip();
+        $forbiddenip = Config::get('site.api_returnip');
+        if ($forbiddenip != '') {
+            $black_arr = explode("\r\n", $forbiddenip);
+            if (in_array($ip, $black_arr)) {
+                $this->error('非白名单IP不允许请求');
+            }
+        }
     }
 
     public function index(){        
@@ -294,6 +303,9 @@ class Vhost extends Api
         }
 
         $bt = new Btaction();
+        if (!$bt->test()) {
+            $this->error($bt->_error);
+        }
         if($plans_id){
             // 如果传递资源组ID，使用资源组配置构建数据
             // 查询该资源组ID是否正确
@@ -346,7 +358,7 @@ class Vhost extends Api
 
         // 并发、限速设置
         // 默认并发、网速限制
-        if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0 && isset($bt->btTend->serverConfig['webserver']) && $bt->btTend->serverConfig['webserver'] == 'nginx') {
+        if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0 && isset($bt->serverConfig['webserver']) && $bt->serverConfig['webserver'] == 'nginx') {
             // 有错误，记录，防止开通被打断
             $modify_status = $bt->setLimit($plansInfo);
             if (!$modify_status) {

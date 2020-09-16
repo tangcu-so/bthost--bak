@@ -90,9 +90,9 @@ class Frontend extends Controller
         }
 
         // 网站维护
-        // if (Config::get("site.status") != 1) {
-        //     $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
-        // }
+        if (Config::get("site.status") == 1) {
+            $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
+        }
 
         $this->auth_check_local();
 

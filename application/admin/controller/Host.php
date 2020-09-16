@@ -104,12 +104,16 @@ class Host extends Backend
                     $plansInfo = model('Plans')->getPlanInfo($params['plans']);
             }
                 
+                
                 if(!$plansInfo){
                     $this->error(model('Plans')->msg);
                 }
                 
                 $bt = new Btaction();
-                
+                if (!$bt->test()) {
+                    $this->error($bt->_error);
+                }
+
                 $hostSetInfo = $bt->setInfo($params,$plansInfo);
                 // 连接宝塔进行站点开通
                 $btInfo = $bt->btBuild($hostSetInfo);
@@ -117,7 +121,7 @@ class Host extends Backend
                     $this->error($bt->_error);
                 }
                 $bt->bt_id = $btId = $btInfo['siteId'];
-                $btName = $hostSetInfo['bt_name'];                
+                $btName = $hostSetInfo['bt_name'];    
 
                 Db::startTrans();
 
@@ -144,11 +148,11 @@ class Host extends Backend
                 // session隔离
                 $bt->btAction->set_php_session_path($btId, 1);
                 }
-                
-                
+
+
                 // 并发、限速设置
                 // 默认并发、网速限制
-                if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0&&isset($bt->btTend->serverConfig['webserver'])&&$bt->btTend->serverConfig['webserver']=='nginx') {
+                if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0 && isset($bt->serverConfig['webserver']) && $bt->serverConfig['webserver'] == 'nginx') {
                     // 有错误，记录，防止开通被打断
                     $modify_status = $bt->setLimit($plansInfo);
                     if (!$modify_status) {
