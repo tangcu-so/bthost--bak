@@ -83,4 +83,13 @@ class Common
 
         return true;
     }
+
+    // 清除缓存
+    public static function clear_cache()
+    {
+        // 清除opcache缓存
+        if (extension_loaded('Zend OPcache')) {
+            opcache_reset();
+        }
+    }
 }

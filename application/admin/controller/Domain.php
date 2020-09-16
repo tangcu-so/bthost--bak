@@ -134,10 +134,7 @@ class Domain extends Backend
     
     // 配置dnspod修改
     public function config(){
-        // 清除opcache缓存
-        if (extension_loaded('Zend OPcache')) {
-            opcache_reset();
-        }
+        \app\common\library\Common::clear_cache();
         if($this->request->isPost()){
             $params = $this->request->post('row/a');
             if(!$params['id']){
