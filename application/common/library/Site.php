@@ -10,9 +10,9 @@ class Site
     public function run()
     {
         // PHP版本检测
-        if (PHP_VERSION < '7.2') {
+        if (version_compare(PHP_VERSION, '7.0', '<')) {
             header('Content-Type:text/html; charset=utf-8');
-            return sysmsg('您服务器PHP的版本太低，程序要求PHP版本不小于7.2');
+            return sysmsg(__("当前版本 %s 太低，请使用 PHP 7.0 或更高版本", PHP_VERSION));
         }
         if (!extension_loaded('curl')) {
             header('Content-Type:text/html; charset=utf-8');
@@ -25,7 +25,7 @@ class Site
         // }
 
         //错误显示信息,非调试模式有效
-        Config::set('error_message', '你所浏览的页面暂时无法访问');
+        Config::set('error_message', '你所浏览的页面暂时无法访问<br/>如果你是站长，请打开调试模式查看具体错误');
         //跳转页面对应的模板文件
         Config::set('dispatch_success_tmpl', APP_PATH . DS . 'common' . DS . 'view' . DS . 'tpl' . DS . 'dispatch_jump.tpl');
         Config::set('dispatch_error_tmpl', APP_PATH . DS . 'common' . DS . 'view' . DS . 'tpl' . DS . 'dispatch_jump.tpl');
@@ -33,7 +33,7 @@ class Site
 
         // 获取网站配置
         if (!Config::get('site')) {
-            return sysmsg('网站配置获取失败，请联系管理员');
+            return sysmsg('网站配置获取失败，请稍候重试！');
         }
 
         //Debug模式
