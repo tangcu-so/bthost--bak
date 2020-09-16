@@ -397,7 +397,7 @@ INSERT INTO `bth_config` VALUES ('29', 'main_center_notice', 'notice', 'main_cen
 INSERT INTO `bth_config` VALUES ('30', 'main_left_notice', 'notice', 'main_left_notice', '支持html', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('31', 'main_right_notice', 'notice', 'main_right_notice', '支持html', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('32', 'public_head_notice', 'notice', 'public_head_notice', '支持html', 'text', '', '', '', '', '');
-INSERT INTO `bth_config` VALUES ('33', 'iframe_cache', 'personalization', 'iframe_cache', '控制台iframe标签缓存', 'select', 'true', '{\"false\":\"不缓存\",\"true\":\"缓存\"}', '', '', '');
+INSERT INTO `bth_config` VALUES ('33', 'iframe_cache', 'personalization', 'iframe_cache', '控制台iframe标签缓存', 'select', 'false', '{\"false\":\"不缓存\",\"true\":\"缓存\"}', '', '', '');
 INSERT INTO `bth_config` VALUES ('34', 'console_css', 'personalization', 'console_css', '添加 LESS/CSS 代码以自定义控制台外观样式，此设置将覆盖 btHots 默认样式，不需要带style标签', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('35', 'console_head', 'personalization', 'console_head', '添加显示于页面顶部、位于 控制台 默认页眉上方的 HTML 代码。', 'text', '', '', '', '', '');
 INSERT INTO `bth_config` VALUES ('36', 'console_foot', 'personalization', 'console_foot', '添加显示于页面底部的 HTML 代码。', 'text', '', '', '', '', '');
