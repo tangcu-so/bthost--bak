@@ -13,10 +13,8 @@ class Btaction
 
     public $_error = '';        //  错误信息
     public $btAction  = null;
-    // 开发模式
-    private $api_url = 'http://192.168.191.129';
     // 线上模式
-    // private $api_url = 'http://127.0.0.1';
+    private $api_url = 'http://127.0.0.1';
     private $port = 8888;
     private $api_token = '';
     public $bt_id = '';         //  宝塔ID
