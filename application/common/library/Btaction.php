@@ -13,7 +13,10 @@ class Btaction
 
     public $_error = '';        //  错误信息
     public $btAction  = null;
-    private $api_url = 'http://127.0.0.1';
+    // 开发模式
+    private $api_url = 'http://192.168.191.129';
+    // 线上模式
+    // private $api_url = 'http://127.0.0.1';
     private $port = 8888;
     private $api_token = '';
     public $bt_id = '';         //  宝塔ID
@@ -43,7 +46,8 @@ class Btaction
         $this->api_token = $api_token ? $api_token : $apiToken_config;
         $this->btAction = new Btpanel($this->api_url, $this->api_token);
         // TODO 正式环境下切换到自动获取服务器操作系统类型
-        $this->os = $os ? $os : getOs();
+        // $this->os = 'linux';
+        // $this->os = $os ? $os : getOs();
         
     }
 
