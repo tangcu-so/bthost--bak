@@ -188,7 +188,7 @@ class Frontend extends Controller
     private function auth_check($ip)
     {
         // 缓存器缓存远端获取的私钥
-        $url = Config::get('bty.api_url') . '/auth_check.html';
+        $url = Config::get('bty.api_url') . '/bthost_auth_check.html';
         $data = [
             'obj' => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),

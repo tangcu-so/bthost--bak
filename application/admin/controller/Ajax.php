@@ -478,7 +478,7 @@ class Ajax extends Backend
             $update->currentVersion = config('bty.version');
             $update->updateUrl      = config('bty.api_url');
             $data                   = http_build_query(['version' => config('bty.version'), 'domain' => config('site.domain'), 'authCode' => config('site.authCode'), 'obj' => 'bty'], '', '&');
-            $update->updateIni      = '/update_check.html?' . $data;
+            $update->updateIni      = '/bthost_update_check.html?' . $data;
 
             Db::startTrans();
             try {
@@ -594,7 +594,7 @@ class Ajax extends Backend
     public function update_check()
     {
         // 缓存器
-        $url = Config::get('bty.api_url') . '/update_check.html';
+        $url = Config::get('bty.api_url') . '/bthost_update_check.html';
         $data = [
             'obj' => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
@@ -618,7 +618,7 @@ class Ajax extends Backend
     {
         // 缓存器
         $curl = Cache::remember('notice', function () {
-            $url = Config::get('bty.api_url') . '/get_notice.html';
+            $url = Config::get('bty.api_url') . '/bthost_get_notice.html';
             $data = [
                 'obj' => Config::get('bty.APP_NAME'),
                 'version' => Config::get('bty.version'),
