@@ -448,11 +448,6 @@ class Ajax extends Backend
         $this->success('请求成功', '', ['url' => Config::get('bty.api_url'), 'curl' => $curl, 'api_url1' => $ms1, 'api_url2' => $ms2, 'lan_url' => $ms3, 'baidu' => $baidu]);
     }
 
-    public function phps()
-    {
-        echo phpinfo();
-    }
-
     /**
      * 检查更新（阿珏版）
      * @Author   Youngxj
