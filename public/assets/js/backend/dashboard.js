@@ -252,6 +252,16 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     myChart.resize();
                 }, 0);
             });
+            
+            // 版本检测
+            $(document).on("click", ".btn-checkversion", function () {
+                if ($(this).attr('disabled')) {
+                    return false;
+                } else {
+                    $(this).attr('disabled', 'disabled');
+                }
+                top.window.$("[data-toggle=checkupdate]").trigger("click");
+            });
 
             // 节点检测
             $(document).on("click", ".btn-testing", function () {
