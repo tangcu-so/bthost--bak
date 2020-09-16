@@ -111,8 +111,7 @@ class Vhost extends Frontend
 
         $this->btTend   = new Btaction();
         $this->btAction = $this->btTend->btAction;
-        // $os = getOs();
-        $os = 'linux';
+        $os = getOs();
         $this->hostInfo->server_os = $this->btTend->os = $this->server_type = $os;
         
         // 信息初始化

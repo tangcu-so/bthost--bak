@@ -211,6 +211,11 @@ class Frontend extends Controller
         $bt = new Btaction();
         $ip = $bt->getIp();
 
+        $is_ajax = $this->request->isAjax() ? 1 : 0;
+        if (!$ip) {
+            return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确');
+        }
+
         // 公钥
         $public_key = self::getPublicKey();
 
@@ -222,8 +227,6 @@ class Frontend extends Controller
         } else {
             $curl = Cache::get('auth_check');
         }
-
-        $is_ajax = $this->request->isAjax() ? 1 : 0;
 
         if ($curl && isset($curl['code']) && $curl['code'] == 1) {
             // 解密信息获取域名及有效期

@@ -13,13 +13,9 @@ class Btaction
 
     public $_error = '';        //  错误信息
     public $btAction  = null;
-    private $api_url = 'http://192.168.191.129';
+    private $api_url = 'http://127.0.0.1';
     private $port = 8888;
-    // protected $api_url = 'http://117.50.77.190';
-    // protected $api_url = 'http://139.9.222.32';
     private $api_token = '';
-    // protected $api_token = '48Gib2QOMEI21d19xbM1ntvJHvZTRE6f';
-    // protected $api_token = 'RMCknu6nSiBYcif8S2beSi7ar8vN7phs';
     public $bt_id = '';         //  宝塔ID
     public $bt_name = '';       //  站点名
     public $ftp_name = '';      //  ftp名
@@ -46,9 +42,9 @@ class Btaction
         $apiToken_config = decode(Config('site.api_token'));
         $this->api_token = $api_token ? $api_token : $apiToken_config;
         $this->btAction = new Btpanel($this->api_url, $this->api_token);
-        $this->os = $os;
         // TODO 正式环境下切换到自动获取服务器操作系统类型
-        // $this->os = getOs();
+        $this->os = $os ? $os : getOs();
+        
     }
 
     // 测试入口
