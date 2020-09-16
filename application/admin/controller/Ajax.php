@@ -329,6 +329,7 @@ class Ajax extends Backend
         // 获取服务器安装的php版本列表(由于官方的存在很大的数据变动)
         $bt   = new Btaction();
         $list = $bt->getphplist();
+        $new_data = [];
         if ($list) {
             // 处理一下数据
             if ($keyValue) {
