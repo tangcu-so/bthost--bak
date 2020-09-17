@@ -526,12 +526,31 @@ class Btaction
      */
     public function getIp()
     {
-        $soft = $this->btAction->GetSoftList();
-        if ($soft && isset($soft['ip']) && $soft['ip']) {
-            return $soft['ip'];
-        } else {
-            return false;
+        if ($this->os != 'windows') {
+            $soft = $this->btAction->GetSoftList();
+            if ($soft && isset($soft['ip']) && $soft['ip']) {
+                return $soft['ip'];
+            }
         }
+        // 使用API获取公网IP，备用方案
+        $url = config('bty.api_url') . '/bthost_get_ip.html';
+        $domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'null';
+        $data = [
+            'obj' => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'domain' => $domain,
+            'rsa' => 1,
+        ];
+        $post = \fast\Http::post($url, $data);
+        $post = json_decode($post, 1);
+        if ($post && isset($post['data']['ip'])) {
+            return $post['data']['ip'];
+        } elseif (isset($post['msg'])) {
+            $this->_error = $post['msg'];
+        } else {
+            $this->_error = '请求失败';
+        }
+        return false;
     }
 
     /**
