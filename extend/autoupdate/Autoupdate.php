@@ -186,7 +186,7 @@ class Autoupdate
 	{
 		$this->log('正在下载更新...');
 
-		$update = file_get_contents($updateUrl, false, stream_context_create($arrContextOptions));
+		$update = file_get_contents($updateUrl, false, stream_context_create($this->arrContextOptions));
 
 		if ($update === false) {
 			$this->log('无法下载更新 -->' . $updateUrl);
