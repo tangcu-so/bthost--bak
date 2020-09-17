@@ -36,7 +36,7 @@ class Btaction
     public $os = 'linux';
 
 
-    public function __construct($api_token = '', $port = 8888, $os = 'linux')
+    public function __construct($api_token = '', $port = 8888, $os = '')
     {
         $port_config = Config('site.api_port') ? Config('site.api_port') : 8888;
         $this->port = $port ? $port : $port_config;
@@ -46,7 +46,7 @@ class Btaction
         $this->api_token = $api_token ? $api_token : $apiToken_config;
         $this->btAction = new Btpanel($this->api_url, $this->api_token);
         // TODO 正式环境下切换到自动获取服务器操作系统类型
-        // $this->os = 'linux';
+        $this->os = 'linux';
         // $this->os = $os ? $os : getOs();
         
     }
