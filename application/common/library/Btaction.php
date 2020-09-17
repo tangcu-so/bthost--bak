@@ -1006,7 +1006,7 @@ class Btaction
         if ($fx && isset($fx['status']) && $fx['status'] == false) {
             $this->setError($fx['msg']);
             return false;
-        } elseif ($fx) {
+        } elseif ($fx || is_array($fx)) {
             return $fx;
         } else {
             return false;
