@@ -64,4 +64,5 @@ return array (
   'phpmyadmin' => 'http://192.168.191.129:888/phpmyadmin_2b42747a02485e2d',
   'debug' => '0',
   'status' => '0',
+  'http' => 'http://',
 );

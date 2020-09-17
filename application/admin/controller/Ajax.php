@@ -383,9 +383,11 @@ class Ajax extends Backend
     public function bt_test()
     {
         $row = $this->request->post('row/a');
-
-        if (isset($row['api_token']) && $row['api_token']) {
-            $bt = new Btaction($row['api_token']);
+        $api_token = isset($row['api_token']) ? $row['api_token'] : '';
+        $api_port = isset($row['api_port']) ? $row['api_port'] : '';
+        $http = isset($row['http']) ? $row['http'] : '';
+        if ($api_token) {
+            $bt = new Btaction($api_token, $api_port, $http);
             if (!$bt->test()) {
                 $this->error($bt->_error);
             }

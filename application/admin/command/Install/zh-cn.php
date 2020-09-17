@@ -39,4 +39,5 @@ return [
     'Install DOc'                                                                                           => '安装文档',
     'Auth Query'                                                                                            => '授权查询',
     'Webs'                                                                                                  => '官网',
+    'http'                                                                                                  => '宝塔面板url协议',
 ];

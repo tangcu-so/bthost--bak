@@ -140,6 +140,7 @@ class Install extends Command
             $api_token = $this->request->post('api_token');
             $api_port = $this->request->post('api_port', 8888);
             $security_code = $this->request->post('security_code');
+            $http = $this->request->post('http', 'http://');
 
             if ($adminPassword !== $adminPasswordConfirmation) {
                 return $output(0, __('The two passwords you entered did not match'));
@@ -147,7 +148,7 @@ class Install extends Command
 
             $adminName = '';
             try {
-                $adminName = $this->installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail, $siteName, $api_token, $api_port, $security_code);
+                $adminName = $this->installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail, $siteName, $api_token, $api_port, $security_code, $http);
             } catch (\PDOException $e) {
                 throw new Exception($e->getMessage());
             } catch (\Exception $e) {
@@ -176,7 +177,7 @@ class Install extends Command
     /**
      * 执行安装
      */
-    protected function installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail = null, $siteName = null, $api_token, $api_port, $security_code)
+    protected function installation($mysqlHostname, $mysqlHostport, $mysqlDatabase, $mysqlUsername, $mysqlPassword, $mysqlPrefix, $adminUsername, $adminPassword, $adminEmail = null, $siteName = null, $api_token, $api_port, $security_code, $http)
     {
         $this->checkenv();
 
@@ -279,7 +280,7 @@ class Install extends Command
         }
 
         // 记录api密钥、端口
-        if ($api_token != '' && $api_token != 8888) {
+        if ($api_token != '') {
             $api_token_encode = encode($api_token);
             $instance->name('config')->where('name', 'api_token')->update(['value' => $api_token_encode]);
             $configFile = APP_PATH . 'extra' . DS . 'site.php';
@@ -298,7 +299,7 @@ class Install extends Command
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
-        if ($api_port != '') {
+        if ($api_port != '' && $api_port != 8888) {
             $instance->name('config')->where('name', 'api_port')->update(['value' => $api_port]);
             $configFile = APP_PATH . 'extra' . DS . 'site.php';
             $config = include $configFile;
@@ -313,6 +314,24 @@ class Install extends Command
                 $config[$value['name']] = $value['value'];
             }
             $config['api_port'] = $api_port;
+            file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
+        }
+
+        if ($http != '' && $http != 'http://') {
+            $instance->name('config')->where('name', 'http')->update(['value' => $http]);
+            $configFile = APP_PATH . 'extra' . DS . 'site.php';
+            $config = include $configFile;
+            $configList = $instance->name("config")->select();
+            foreach ($configList as $k => $value) {
+                if (in_array($value['type'], ['selects', 'checkbox', 'images', 'files'])) {
+                    $value['value'] = explode(',', $value['value']);
+                }
+                if ($value['type'] == 'array') {
+                    $value['value'] = (array) json_decode($value['value'], true);
+                }
+                $config[$value['name']] = $value['value'];
+            }
+            $config['http'] = $http;
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
@@ -386,10 +405,11 @@ class Install extends Command
         // 授权判断
         $api_token = $this->request->post('api_token');
         $api_port = $this->request->post('api_port');
+        $http = $this->request->post('http');
         if (!$api_token || !$api_port) {
             return '请填写完整' . __('api_token') . '|' . __('api_port');
         }
-        $bt = new Btaction($api_token, $api_port);
+        $bt = new Btaction($api_token, $api_port, $http);
         if (!$bt->test()) {
             return $bt->_error;
         }

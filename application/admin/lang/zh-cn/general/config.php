@@ -108,4 +108,5 @@ return [
     'debug'                       => '调试模式',
     'status'                      => '网站维护',
     'ftp_type'                    => 'FTP协议',
+    'http'                        => '宝塔面板url协议',
 ];

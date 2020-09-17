@@ -80,7 +80,24 @@
             box-sizing: border-box;
         }
 
+        .form-field select {
+            background: #EDF2F7;
+            margin: 0 0 1px;
+            border: 2px solid transparent;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            width: 100%;
+            padding: 15px 15px 15px 180px;
+            box-sizing: border-box;
+        }
+
         .form-field input:focus {
+            border-color: #18bc9c;
+            background: #fff;
+            color: #444;
+            outline: none;
+        }
+
+        .form-field select:focus {
             border-color: #18bc9c;
             background: #fff;
             color: #444;
@@ -218,6 +235,13 @@
             </div>
 
             <div class="form-group">
+                <div class="form-field">
+                    <label>{:__('http')}</label>
+                    <select name="http" id="">
+                        <option value="http://">http</option>
+                        <option value="https://">https</option>
+                    </select>
+                </div>
                 <div class="form-field">
                     <label>{:__('api_token')}</label>
                     <input name="api_token" placeholder="" required="">
