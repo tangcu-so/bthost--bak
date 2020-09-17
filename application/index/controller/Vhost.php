@@ -111,11 +111,7 @@ class Vhost extends Frontend
 
         $this->btTend   = new Btaction();
         $this->btAction = $this->btTend->btAction;
-        // 开发模式
-        $os = 'linux';
-        // 线上模式
-        // $os = getOs();
-        $this->hostInfo->server_os = $this->btTend->os = $this->server_type = $os;
+        $this->hostInfo->server_os = $this->server_type = $this->btTend->os;
         
         // 信息初始化
         $this->btTend->ftp_name = isset($hostInfo->ftp->username)?$hostInfo->ftp->username:'';
@@ -152,6 +148,7 @@ class Vhost extends Frontend
         
         $this->assign('hostInfo', $this->hostInfo);
         $this->assign('userInfo', $this->userInfo);
+        // TODO webserver环境获取失败
         $this->assign('serverConfig', $this->btTend->serverConfig);
 
         $this->assign('phpmyadmin',Config('site.phpmyadmin'));
@@ -3738,8 +3735,11 @@ class Vhost extends Frontend
             }
         } else {
             if ($this->server_type == 'windows') {
+                // 如果是iis需要判断是否安装插件
                 $proxyList = $this->btTend->GetProxy($this->siteName);
-
+                if ($proxyList === false) {
+                    $this->error($this->btTend->_error, '');
+                }
                 // 可选域名列表
                 $domainList = $this->btAction->Websitess($this->bt_id, 'domain');
             } else {
@@ -3828,7 +3828,7 @@ class Vhost extends Frontend
         if ($this->server_type == 'windows') {
             // Windows下不能包含：< > / \ | :  * ?
             // 记录排除规则：\:
-            if (!preg_match("/^[\x7f-\xff\w\s\.\/~@#-]+$/i", $path)) {
+            if (!preg_match("/^[\x7f-\xff\w\s\.\/~,@#-]+$/i", $path)) {
                 return false;
             }
         } else {
