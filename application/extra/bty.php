@@ -12,7 +12,7 @@ return [
     // 项目名
     'APP_NAME'      => 'bthost',
     // 版本号
-    'version'       => '1.0.0+20200917',
+    'version'       => '1.0.1+20200917',
     // API接口地址
     'api_url'       => 'https://auths.yum6.cn',
     'api_url2'      => 'https://auths.apip.wang',
