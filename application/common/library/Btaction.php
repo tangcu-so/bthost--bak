@@ -36,7 +36,7 @@ class Btaction
     public $os = 'linux';
 
 
-    public function __construct($api_token = '', $port = 8888, $os = '')
+    public function __construct($api_token = '', $port = '', $os = '')
     {
         $port_config = Config('site.api_port') ? Config('site.api_port') : 8888;
         $this->port = $port ? $port : $port_config;
