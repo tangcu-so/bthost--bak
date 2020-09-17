@@ -21,7 +21,7 @@ class Common
         }
 
         // 数据库名
-        $db_name = Config::get('database');
+        $db_name = Config::get('database.database');
 
         $info = '-- Online Database Management SQL Dump' . PHP_EOL;
         $info .= '-- 数据库名: ' . $db_name . PHP_EOL;

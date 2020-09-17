@@ -497,34 +497,37 @@ class Ajax extends Backend
                             // 备份数据库
                             $sql_name = config('bty.version') . '_' . date("His", time()) . '.sql';
                             if (\app\common\library\Common::sql_back($sql_name)) {
-                                $data = [
-                                    'name'     => $sql_name,
-                                    'version'  => Config('bty.version'),
-                                    'filesize' => filesize(self::$filePath . $sql_name),
-                                ];
-                                model('sqlback')->data($data)->save();
+                                // TODO 数据库备份记录
+                                // $data = [
+                                //     'name'     => $sql_name,
+                                //     'version'  => Config('bty.version'),
+                                //     'filesize' => filesize(self::$filePath . $sql_name),
+                                // ];
+                                // model('sqlback')->data($data)->save();
                             }
 
-                            // $stream_opts = [
-                            //     "ssl" => [
-                            //         "verify_peer" => false,
-                            //         "verify_peer_name" => false,
-                            //     ]
-                            // ];
-                            $sql    = $update->curl_request($update->sql_file);
+                            $stream_opts = [
+                                "ssl" => [
+                                    "verify_peer" => false,
+                                    "verify_peer_name" => false,
+                                ]
+                            ];
+                            $sql = file($update->sql_file, false, stream_context_create($stream_opts));
                             $query  = '';
                             $prefix = Config::get("database.prefix");
-                            foreach ($sql as $value) {
-                                if (!$value || $value[0] == '#') {
-                                    continue;
-                                }
-                                $value = str_replace("__db_prefix__", $prefix, trim($value));
-                                if (preg_match("/\;$/i", $value)) {
-                                    $query .= $value;
-                                    Db::execute($query);
-                                    $query = '';
-                                } else {
-                                    $query .= $value;
+                            if ($sql) {
+                                foreach ($sql as $value) {
+                                    if (!$value || $value[0] == '#') {
+                                        continue;
+                                    }
+                                    $value = str_replace("__db_prefix__", $prefix, trim($value));
+                                    if (preg_match("/\;$/i", $value)) {
+                                        $query .= $value;
+                                        Db::execute($query);
+                                        $query = '';
+                                    } else {
+                                        $query .= $value;
+                                    }
                                 }
                             }
                         }
