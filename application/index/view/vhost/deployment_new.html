@@ -76,7 +76,8 @@
 							spinnerSize: 'lg'
 						});
 						$.post('{:url("index/vhost/deploymentSet")}', {
-							dep: dep
+							dep: dep,
+							is_new:1
 						}, function (res) {
 							EchoMsg(res.msg,1);
 						})
