@@ -2740,7 +2740,7 @@ class Btpanel
     {
         error_reporting(0);
         $p_data = $this->GetKeyData();
-        $url    = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
+        $url    = $this->BT_PANEL . config("bt.download") . urlencode($file) . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $result = $this->HttpPostCookie($url);
         if ($result && isset($result['status']) && $result['status'] == 'false') {
             $data = json_decode($result, true);

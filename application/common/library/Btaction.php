@@ -34,7 +34,7 @@ class Btaction
     public $os = 'linux';
 
 
-    public function __construct($api_token = '', $port = 8888, $os = 'linux')
+    public function __construct($api_token = '', $port = 8888, $os = '')
     {
         $port_config = Config('site.api_port') ? Config('site.api_port') : 8888;
         $this->port = $port ? $port : $port_config;
@@ -45,7 +45,7 @@ class Btaction
         $this->btAction = new Btpanel($this->api_url, $this->api_token);
         // TODO 正式环境下切换到自动获取服务器操作系统类型
         // $this->os = 'linux';
-        // $this->os = $os ? $os : getOs();
+        $this->os = $os ? $os : getOs();
         
     }
 
@@ -524,12 +524,31 @@ class Btaction
      */
     public function getIp()
     {
-        $soft = $this->btAction->GetSoftList();
-        if ($soft && isset($soft['ip']) && $soft['ip']) {
-            return $soft['ip'];
-        } else {
-            return false;
+        if ($this->os != 'windows') {
+            $soft = $this->btAction->GetSoftList();
+            if ($soft && isset($soft['ip']) && $soft['ip']) {
+                return $soft['ip'];
+            }
         }
+        // 使用API获取公网IP，备用方案
+        $url = config('bty.api_url') . '/bthost_get_ip.html';
+        $domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'null';
+        $data = [
+            'obj' => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'domain' => $domain,
+            'rsa' => 1,
+        ];
+        $post = \fast\Http::post($url, $data);
+        $post = json_decode($post, 1);
+        if ($post && isset($post['data']['ip'])) {
+            return $post['data']['ip'];
+        } elseif (isset($post['msg'])) {
+            $this->_error = $post['msg'];
+        } else {
+            $this->_error = '请求失败';
+        }
+        return false;
     }
 
     /**
@@ -1004,7 +1023,7 @@ class Btaction
         if ($fx && isset($fx['status']) && $fx['status'] == false) {
             $this->setError($fx['msg']);
             return false;
-        } elseif ($fx) {
+        } elseif ($fx || is_array($fx)) {
             return $fx;
         } else {
             return false;

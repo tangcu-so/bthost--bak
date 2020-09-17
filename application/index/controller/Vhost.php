@@ -20,7 +20,7 @@ use think\Cache;
 class Vhost extends Frontend
 {
     protected $layout = 'default';
-    protected $noNeedLogin = ['login', 'register','clear_cache'];
+    protected $noNeedLogin = ['login', 'register', 'clear_cache'];
     // protected $noNeedRight = ['*']; //测试阶段无需鉴权
     protected $noNeedRight = ['logout'];
 
@@ -62,27 +62,27 @@ class Vhost extends Frontend
         if (!$host_id) {
             return $this->redirect('/sites');
         }
-        $hostInfo = $this->hostModel::get(['user_id'=>$this->auth->id,'id'=>$host_id]);
-        if(!$hostInfo){
+        $hostInfo = $this->hostModel::get(['user_id' => $this->auth->id, 'id' => $host_id]);
+        if (!$hostInfo) {
             $this->error('站点不存在<a href="' . url('index/user/index') . '">切换站点</a>', '');
         }
-        $ftpInfo = $this->ftpModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
-        $sqlInfo = $this->sqlModel::get(['vhost_id'=>$hostInfo->id,'status'=>'normal']);
-        $hostInfo->ftp = $ftpInfo?$ftpInfo:'';
-        $hostInfo->sql = $sqlInfo?$sqlInfo:'';
+        $ftpInfo = $this->ftpModel::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
+        $sqlInfo = $this->sqlModel::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
+        $hostInfo->ftp = $ftpInfo ? $ftpInfo : '';
+        $hostInfo->sql = $sqlInfo ? $sqlInfo : '';
         // $hostInfo->vhost_id = $hostInfo->id;
-        
+
         // 用户信息表
         $this->userInfo = $this->auth->getUserinfo();
         // 主机信息表
         $this->hostInfo = $hostInfo;
         // 验证主机是否过期
         if (time() > $this->hostInfo['endtime']) {
-            $this->error('已过期','/sites');
+            $this->error('已过期', '/sites');
         }
 
         $this->is_excess_stop = Config('site.excess_panel');
-        
+
         // 状态甄别
         switch ($this->hostInfo['status']) {
             case 'normal':
@@ -90,19 +90,19 @@ class Vhost extends Frontend
             case 'stop':
                 break;
             case 'locked':
-                $this->error('主机已锁定','/sites');
+                $this->error('主机已锁定', '/sites');
                 break;
             case 'expired':
-                $this->error('主机已到期','/sites');
+                $this->error('主机已到期', '/sites');
                 break;
             case 'excess':
-                $this->is_excess_stop?$this->error('主机超量，已被停用',''):'';
+                $this->is_excess_stop ? $this->error('主机超量，已被停用', '') : '';
                 break;
             case 'error':
-                $this->error('主机异常','/sites');
+                $this->error('主机异常', '/sites');
                 break;
             default:
-                $this->error('主机异常','/sites');
+                $this->error('主机异常', '/sites');
                 break;
         }
 
@@ -111,13 +111,11 @@ class Vhost extends Frontend
 
         $this->btTend   = new Btaction();
         $this->btAction = $this->btTend->btAction;
-        // 线上模式
-        $os = getOs();
-        $this->hostInfo->server_os = $this->btTend->os = $this->server_type = $os;
-        
+        $this->hostInfo->server_os = $this->server_type = $this->btTend->os;
+
         // 信息初始化
-        $this->btTend->ftp_name = isset($hostInfo->ftp->username)?$hostInfo->ftp->username:'';
-        $this->btTend->sql_name = isset($hostInfo->sql->username)?$hostInfo->sql->username:'';
+        $this->btTend->ftp_name = isset($hostInfo->ftp->username) ? $hostInfo->ftp->username : '';
+        $this->btTend->sql_name = isset($hostInfo->sql->username) ? $hostInfo->sql->username : '';
         // 站点名
         $this->btTend->bt_name = $this->siteName = $this->hostInfo['bt_name'];
         // 宝塔站点id
@@ -128,12 +126,12 @@ class Vhost extends Frontend
 
         // 站点初始化
         $webInit = $this->btTend->webInit();
-        if(!$webInit){
+        if (!$webInit) {
             $this->error($this->btTend->_error);
         }
         // 检查资源使用量
-        if(!$this->check()){
-            $this->is_excess_stop?$this->error($this->_error,''):'';
+        if (!$this->check()) {
+            $this->is_excess_stop ? $this->error($this->_error, '') : '';
         }
 
         $this->webRootPath = $this->btTend->webRootPath;
@@ -142,17 +140,18 @@ class Vhost extends Frontend
         // 获取等待连接耗时
         $connectTime = $this->btTend->getRequestTime();
         if (!$connectTime) {
-            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','/sites');
+            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常', '/sites');
         }
         $this->assign('timeOut', $connectTime);
         // php加载时长
-        $this->assign('rangeTime', Debug::getRangeTime('begin','end',6).'s');
-        
+        $this->assign('rangeTime', Debug::getRangeTime('begin', 'end', 6) . 's');
+
         $this->assign('hostInfo', $this->hostInfo);
         $this->assign('userInfo', $this->userInfo);
+        // TODO webserver环境获取失败
         $this->assign('serverConfig', $this->btTend->serverConfig);
 
-        $this->assign('phpmyadmin',Config('site.phpmyadmin'));
+        $this->assign('phpmyadmin', Config('site.phpmyadmin'));
     }
 
     /**
@@ -168,7 +167,7 @@ class Vhost extends Frontend
     //     }
     //     return $this->view->fetch('user/' . $name);
     // }
-    
+
     /**
      * 首页
      */
@@ -192,7 +191,7 @@ class Vhost extends Frontend
             $ftpInfo = false;
         }
 
-        $phpversion_list = Cache::remember('phpversion_list',function(){
+        $phpversion_list = Cache::remember('phpversion_list', function () {
             return $this->btAction->GetPHPVersion();
         });
 
@@ -216,7 +215,8 @@ class Vhost extends Frontend
     /**
      * 清除缓存
      */
-    public function clear_cache(){
+    public function clear_cache()
+    {
         // 清除waf类型缓存
         Cache::rm('getWaf');
         // 清除php版本列表缓存
@@ -224,7 +224,7 @@ class Vhost extends Frontend
         // 清除伪静态规则缓存
         // Cache::rm('phpversion_list');
 
-        $this->success('清理成功','');
+        $this->success('清理成功', '');
     }
 
     /**
@@ -253,7 +253,7 @@ class Vhost extends Frontend
         }
 
         $setPHP = $this->btTend->setPhpVer($phpVer);
-        if(!$setPHP){
+        if (!$setPHP) {
             $this->error($this->btTend->_error);
         }
         $this->success('修改成功');
@@ -268,12 +268,12 @@ class Vhost extends Frontend
     {
         // 先判断站点状态，防止多次重复操作
         $set = $this->btTend->webstop();
-        if(!$set){
+        if (!$set) {
             $this->error($this->btTend->_error);
         }
         $this->hostModel->save([
-            'status'=>'stop'
-        ],['id'=>$this->hostInfo->id]);
+            'status' => 'stop'
+        ], ['id' => $this->hostInfo->id]);
         $this->success('暂停成功');
     }
 
@@ -290,57 +290,58 @@ class Vhost extends Frontend
             case 'stop':
                 break;
             case 'locked':
-                $this->error('主机已被锁定','');
+                $this->error('主机已被锁定', '');
                 break;
             case 'expired':
-                $this->error('主机已到期','');
+                $this->error('主机已到期', '');
                 break;
             case 'excess':
-                $this->error('主机超量，已被停用','');
+                $this->error('主机超量，已被停用', '');
                 break;
             case 'error':
-                $this->error('主机异常','');
+                $this->error('主机异常', '');
                 break;
             default:
-                $this->error('主机异常','');
+                $this->error('主机异常', '');
                 break;
         }
         // 先判断站点状态，防止多次重复操作
         $set = $this->btTend->webstart();
-        if(!$set){
+        if (!$set) {
             $this->error($this->btTend->_error);
         }
         $this->hostModel->save([
-            'status'=>'normal'
-        ],['id'=>$this->hostInfo->id]);
+            'status' => 'normal'
+        ], ['id' => $this->hostInfo->id]);
         $this->success('开启成功');
     }
 
     // 域名绑定
-    public function domain(){
+    public function domain()
+    {
         //获取域名绑定列表
         $domainList = $this->btTend->getSiteDomain();
         //获取子目录绑定信息
         $dirList = $this->btTend->getSiteDirBinding();
 
-        
+
         // 剩余可绑定数
 
         // 获取未审核的域名
-        $auditList = model('Domainlist')->where('status','<>',1)->select();
+        $auditList = model('Domainlist')->where('status', '<>', 1)->select();
 
-        $count = count($domainList) -1 + count($dirList['binding']) + count($auditList);
+        $count = count($domainList) - 1 + count($dirList['binding']) + count($auditList);
         $sys = $this->hostInfo->domain_max - $count;
-        
+
         $this->view->assign('title', __('domain'));
-        $this->view->assign('sys',$sys);
-        $this->view->assign('count',$count);
-        $this->view->assign('dirList',$dirList);
-        $this->view->assign('domainList',$domainList);
-        $this->view->assign('auditList',$auditList);
+        $this->view->assign('sys', $sys);
+        $this->view->assign('count', $count);
+        $this->view->assign('dirList', $dirList);
+        $this->view->assign('domainList', $domainList);
+        $this->view->assign('auditList', $auditList);
         return $this->view->fetch();
     }
-    
+
     /**
      * 增加域名绑定
      * @return [type] [description]
@@ -379,12 +380,12 @@ class Vhost extends Frontend
                 $this->error('非法参数');
             }
 
-            if (count($domain_arr)-1 >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != '0') {
+            if (count($domain_arr) - 1 >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != '0') {
                 $this->error('绑定失败：已超出可用域名绑定数1');
             }
             $domainCount = model('Domainlist')->where('vhost_id', $this->vhost_id)->count();
 
-            if ($domainCount-1  >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != 0) {
+            if ($domainCount - 1  >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != 0) {
                 $this->error('绑定失败：已超出可用域名绑定数3');
             }
 
@@ -448,9 +449,9 @@ class Vhost extends Frontend
                     'vhost_id'    => $this->vhost_id,
                     'domain'      => $value,
                     'dir'         => $post_str['dirs'],
-                    'status'       => $this->hostInfo->is_audit?0:1,
+                    'status'       => $this->hostInfo->is_audit ? 0 : 1,
                 ];
-                
+
                 $add = model('Domainlist')::create($data);
                 if (!$add) {
                     Db::rollback();
@@ -458,7 +459,7 @@ class Vhost extends Frontend
                 }
             }
 
-            if($this->hostInfo->is_audit){
+            if ($this->hostInfo->is_audit) {
                 Db::commit();
                 $this->success('请等待审核');
             }
@@ -489,12 +490,12 @@ class Vhost extends Frontend
         $type = $this->request->post('type');
         $id = $this->request->post('id/d');
         Db::startTrans();
-        $domainInfo = model('Domainlist')::get(['vhost_id'=>$this->vhost_id,'domain'=> $delete]);
+        $domainInfo = model('Domainlist')::get(['vhost_id' => $this->vhost_id, 'domain' => $delete]);
         // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
-        if($domainInfo){
+        if ($domainInfo) {
             $domainInfo->delete(true);
         }
-        if(isset($domainInfo->status)&&$domainInfo->status!=1){
+        if (isset($domainInfo->status) && $domainInfo->status != 1) {
         } elseif ($type == 'domain') {
             $modify_status = $this->btTend->delDomain($this->bt_id, $this->siteName, $delete, 80);
             if (!$modify_status) {
@@ -619,7 +620,7 @@ class Vhost extends Frontend
             $data = [
                 'password' => input('post.password'),
             ];
-            
+
             if (!$validate->check($data)) {
                 $this->error($validate->getError());
             }
@@ -783,7 +784,7 @@ class Vhost extends Frontend
     public function Rewrite301()
     {
         if ($this->hostInfo->server_os == 'windows') {
-            $this->error('当前不支持该模块','');
+            $this->error('当前不支持该模块', '');
         }
 
         $rewriteInfo           = $this->btAction->Get301Status($this->siteName);
@@ -860,7 +861,7 @@ class Vhost extends Frontend
     public function redir()
     {
         if ($this->btTend->serverConfig['webserver'] != 'nginx') {
-            $this->error('当前不支持该模块','');
+            $this->error('当前不支持该模块', '');
         }
         // 获取网站下的域名列表
         $WebsitesList = $this->btAction->Websitess($this->bt_id, 'domain');
@@ -1108,7 +1109,7 @@ class Vhost extends Frontend
     public function file_ftp()
     {
         if (!extension_loaded('ftp')) {
-            $this->error('未开启FTP扩展','');
+            $this->error('未开启FTP扩展', '');
         }
 
         // 判断当前站点是否开通ftp
@@ -1130,16 +1131,16 @@ class Vhost extends Frontend
         // 防止错误
         try {
             $ftp = new \FtpClient\MyFtpClient();
-            $ftp->connect($host,$ssl,$port,30);
+            $ftp->connect($host, $ssl, $port, 30);
             $ftp->login($username, $password);
         } catch (\Exception $e) {
             $excMsg = $e->getMessage();
             switch ($excMsg) {
                 case 'Login incorrect':
-                    $this->error('账号或密码错误','');
+                    $this->error('账号或密码错误', '');
                     break;
                 case 'Unable to connect':
-                    $this->error('FTP服务器连接失败','');
+                    $this->error('FTP服务器连接失败', '');
                     break;
                 default:
                     $this->error('FTP连接失败');
@@ -1160,21 +1161,20 @@ class Vhost extends Frontend
 
         $path = $ftp->pwd();
 
-        $path_arr = explode('/',$path);
+        $path_arr = explode('/', $path);
         $text_arr = [];
-        for ($i=0; $i < count($path_arr); $i++) { 
-            if($path_arr[$i]){
-                if(isset($text_arr[$i-1]['url'])&&$text_arr[$i-1]['url']){
-                    $str = $text_arr[$i-1]['url'];
-                }else{
+        for ($i = 0; $i < count($path_arr); $i++) {
+            if ($path_arr[$i]) {
+                if (isset($text_arr[$i - 1]['url']) && $text_arr[$i - 1]['url']) {
+                    $str = $text_arr[$i - 1]['url'];
+                } else {
                     $str = '';
                 }
                 $text_arr[$i]['path'] = $path_arr[$i];
-                $text_arr[$i]['url'] = $str.'/'.$path_arr[$i];
+                $text_arr[$i]['url'] = $str . '/' . $path_arr[$i];
             }
-            
         }
-        $this->view->assign('paths',$text_arr);
+        $this->view->assign('paths', $text_arr);
 
         // 新文件夹
         if ($type == 'newdir') {
@@ -1565,7 +1565,7 @@ class Vhost extends Frontend
             try {
                 // 1:二进制,2:文本模式，已知windows下使用二进制下载图片出现编码错误
                 // 下载时不能开启app_trace
-                $down = $ftp->get($tempDir . $downFileName, $file,2);
+                $down = $ftp->get($tempDir . $downFileName, $file, 2);
             } catch (\Exception $e) {
                 $this->error('下载失败' . $e->getMessage());
             }
@@ -1598,7 +1598,7 @@ class Vhost extends Frontend
         try {
             $list = $ftp->get_rawlist($path);
         } catch (\Exception $e) {
-            $this->error('文件获取失败' . $e->getMessage(),'');
+            $this->error('文件获取失败' . $e->getMessage(), '');
         }
 
         $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
@@ -1625,34 +1625,33 @@ class Vhost extends Frontend
         //获取网站根目录
         $WebGetKey = $this->webRootPath;
         if (!$WebGetKey) {
-            $this->error('获取网站根目录失败','');
+            $this->error('获取网站根目录失败', '');
         }
         // 获取跨域信息
         $getini = $this->dirUserIni;
         if (!$getini) {
-            $this->error('意外的错误','');
+            $this->error('意外的错误', '');
         }
-        
+
         //请求路径
         $path = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '/') : '/';
         // TODO 要实现的目的是屏蔽[../ ./ //]等字符
         // TODO 搜索后文件访问路径有问题，整个在线文件管理文件及路径安全还需要全部重新做
         // var_dump($path);exit;
-        $path_arr = explode('/',$path);
+        $path_arr = explode('/', $path);
         $text_arr = [];
-        for ($i=0; $i < count($path_arr); $i++) { 
-            if($path_arr[$i]){
-                if(isset($text_arr[$i-1]['url'])&&$text_arr[$i-1]['url']){
-                    $str = $text_arr[$i-1]['url'];
-                }else{
+        for ($i = 0; $i < count($path_arr); $i++) {
+            if ($path_arr[$i]) {
+                if (isset($text_arr[$i - 1]['url']) && $text_arr[$i - 1]['url']) {
+                    $str = $text_arr[$i - 1]['url'];
+                } else {
                     $str = '';
                 }
                 $text_arr[$i]['path'] = $path_arr[$i];
-                $text_arr[$i]['url'] = $str.'/'.$path_arr[$i];
+                $text_arr[$i]['url'] = $str . '/' . $path_arr[$i];
             }
-            
         }
-        $this->view->assign('paths',$text_arr);
+        $this->view->assign('paths', $text_arr);
         // var_dump($path);exit;
         //var_dump($path);
         //请求文件
@@ -1664,7 +1663,7 @@ class Vhost extends Frontend
         //     $this->error('非法请求');
         // }
         if (preg_match($this->reg_file, $file)) {
-            $this->error('非法请求','');
+            $this->error('非法请求', '');
         }
 
         if ($WebGetKey) {
@@ -1975,12 +1974,12 @@ class Vhost extends Frontend
                 header("Content-type: text/html; charset=utf-8");
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
                 $this->hostModel->save([
-                    'site_size'=>$websize,
-                ],['id'=>$this->hostInfo->id]);
+                    'site_size' => $websize,
+                ], ['id' => $this->hostInfo->id]);
                 if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
                     $this->hostModel->save([
-                        'status'=>'excess',
-                    ],['id'=>$this->hostInfo->id]);
+                        'status' => 'excess',
+                    ], ['id' => $this->hostInfo->id]);
                     $this->error('空间大小超出，已停止资源');
                 }
                 $path     = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '') : '/';
@@ -1998,7 +1997,7 @@ class Vhost extends Frontend
                 $file_ext = strtolower($file_ext);
 
                 // 获取加密文件名
-                $file_name  = md5(input('post.f_name')).'.'.$file_ext;
+                $file_name  = md5(input('post.f_name')) . '.' . $file_ext;
                 // 由于中文名上传失败
                 // $info = $files->move($filePath, input('post.f_name'));
                 $info = $files->move($filePath, $file_name);
@@ -2076,7 +2075,7 @@ class Vhost extends Frontend
                 $fileContent = $this->btAction->GetFileBodys($WebGetKey . $file);
                 if ($fileContent && isset($fileContent['status']) && $fileContent['status'] == 'true') {
                     return ['code' => 1, 'msg' => '获取成功', 'data' => $fileContent['data'], 'encoding' => $fileContent['encoding']];
-                }elseif($fileContent && isset($fileContent['msg'])){
+                } elseif ($fileContent && isset($fileContent['msg'])) {
                     return ['code' => 0, 'msg' => $fileContent['msg']];
                 } else {
                     $this->error('获取失败');
@@ -2103,13 +2102,15 @@ class Vhost extends Frontend
             }
             //查看图片
             if (input('post.type') == 'images') {
-                // TODO 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
+                // XXX 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
+                // XXX WIndows下查看中文图片失败，原因带空格
+                // 经过urlencode编码后双系统使用正常
                 $file = input('post.file') ? preg_replace('/([\.]){2,}|([\/\/]){2,}/', '', input('post.file')) : '';
                 // var_dump($WebGetKey . $file, $file);
                 // exit;
-                $images = $this->btAction->images_view($WebGetKey . $file,$file);
+                $images = $this->btAction->images_view($WebGetKey . $file, $file);
                 // header('Content-type: image/jpeg');
-                return json(['image'=>$images]);
+                return json(['image' => $images]);
                 // print_r($images);exit;
             }
             // 批量操作
@@ -2226,12 +2227,12 @@ class Vhost extends Frontend
                 }
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
                 $this->hostModel->save([
-                    'site_size'=>$websize,
-                ],['id'=>$this->hostInfo->id]);
+                    'site_size' => $websize,
+                ], ['id' => $this->hostInfo->id]);
                 if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
                     $this->hostModel->save([
-                        'status'=>'excess',
-                    ],['id'=>$this->hostInfo->id]);
+                        'status' => 'excess',
+                    ], ['id' => $this->hostInfo->id]);
                     $this->error('空间大小超出，已停止资源');
                 }
                 $down = $this->btAction->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
@@ -2242,16 +2243,15 @@ class Vhost extends Frontend
                 }
             }
             // TODO 获取队列（目前没有任务ID对应）
-            if($type == 'get_task_lists'){
-
+            if ($type == 'get_task_lists') {
             }
-            
+
             $search = $this->request->get('search');
             // 目前子目录搜索有问题
             // $all = $this->request->get('all')?'True':'';
-            $dirList = $this->btAction->GetDir($Webpath,1,$search);
+            $dirList = $this->btAction->GetDir($Webpath, 1, $search);
             if (isset($dirList['status']) && $dirList['status'] != 'true') {
-                $this->error('请求目录不存在','');
+                $this->error('请求目录不存在', '');
             }
 
             //文件夹
@@ -2276,13 +2276,13 @@ class Vhost extends Frontend
                 }
             }
             // api文件接口
-            if($this->request->get('callback')){
+            if ($this->request->get('callback')) {
                 // 处理目录与文件数据
                 $path_file_arr_paths = $path_file_arr_files = $list = [];
                 foreach ($dirList['DIR'] as $key => $value) {
-                    if( 1||$value['4']!='root'){
+                    if (1 || $value['4'] != 'root') {
                         foreach ($value as $key2 => $value2) {
-                            if(in_array($value2,['.well-known','web_config','../','..'])){
+                            if (in_array($value2, ['.well-known', 'web_config', '../', '..'])) {
                                 break;
                             }
                             switch ($key2) {
@@ -2293,7 +2293,7 @@ class Vhost extends Frontend
                                     $path_file_arr_paths[$key]['size'] = $value2;
                                     break;
                                 case '2':
-                                    $path_file_arr_paths[$key]['time'] = $value2?date("Y-m-d",$value2):$value2;
+                                    $path_file_arr_paths[$key]['time'] = $value2 ? date("Y-m-d", $value2) : $value2;
                                     break;
                                 case '3':
                                     $path_file_arr_paths[$key]['auths'] = $value2;
@@ -2310,7 +2310,7 @@ class Vhost extends Frontend
                 }
                 foreach ($dirList['FILES'] as $key => $value) {
                     foreach ($value as $key2 => $value2) {
-                        if(in_array($value2,['.user.ini'])){
+                        if (in_array($value2, ['.user.ini'])) {
                             break;
                         }
                         switch ($key2) {
@@ -2318,10 +2318,10 @@ class Vhost extends Frontend
                                 $path_file_arr_files[$key]['name'] = $value2;
                                 break;
                             case '1':
-                                $path_file_arr_files[$key]['size'] = $value2&&is_numeric($value2)?formatBytes($value2):$value2;
+                                $path_file_arr_files[$key]['size'] = $value2 && is_numeric($value2) ? formatBytes($value2) : $value2;
                                 break;
                             case '2':
-                                $path_file_arr_files[$key]['time'] = $value2&&is_numeric($value2)?date("Y-m-d",$value2):$value2;
+                                $path_file_arr_files[$key]['time'] = $value2 && is_numeric($value2) ? date("Y-m-d", $value2) : $value2;
                                 break;
                             case '3':
                                 $path_file_arr_files[$key]['auths'] = $value2;
@@ -2336,10 +2336,10 @@ class Vhost extends Frontend
                     }
                 }
 
-                $list = array_merge($path_file_arr_paths,$path_file_arr_files);
+                $list = array_merge($path_file_arr_paths, $path_file_arr_files);
 
                 $total = count($list);
-                return jsonp(['rows'=>$list,'total'=>$total],200);
+                return jsonp(['rows' => $list, 'total' => $total], 200);
             }
             $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
 
@@ -2351,7 +2351,7 @@ class Vhost extends Frontend
                 'php_upload_max' => $php_upload_max,
             ]);
         } else {
-            $this->error('读取网站根目录出错','');
+            $this->error('读取网站根目录出错', '');
         }
     }
 
@@ -2402,7 +2402,7 @@ class Vhost extends Frontend
             if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
                 $SqlBackupList['data'] = [];
                 // $this->error('没有找到数据库','');
-            }else{
+            } else {
                 //获取数据库备份列表
                 $SqlBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
@@ -2531,26 +2531,27 @@ class Vhost extends Frontend
      *
      * @return void
      */
-    public function sqlTools(){
-        if($this->hostInfo->server_os=='windows'){
-            $this->error('当前主机不支持该功能','');
+    public function sqlTools()
+    {
+        if ($this->hostInfo->server_os == 'windows') {
+            $this->error('当前主机不支持该功能', '');
         }
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
-            $this->error('没有开通该项业务','');
+            $this->error('没有开通该项业务', '');
         }
         $sqlInfo = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$sqlInfo || !isset($sqlInfo['data']['0'])) {
-            $this->error('没有开通这项业务','');
+            $this->error('没有开通这项业务', '');
         }
         $mysql_list = $this->btAction->GetSqlSize($this->hostInfo->sql->username);
-        if($this->request->get('callback')){
+        if ($this->request->get('callback')) {
             $list = $mysql_list['tables'];
             $count = count($list);
-            return jsonp(['rows'=>$list,'total'=>$count]);
+            return jsonp(['rows' => $list, 'total' => $count]);
         }
         $this->view->assign('title', __('sqltools'));
-        return $this->view->fetch('sqltools',[
-            'mysql_list'=>$mysql_list,
+        return $this->view->fetch('sqltools', [
+            'mysql_list' => $mysql_list,
         ]);
     }
 
@@ -2559,45 +2560,46 @@ class Vhost extends Frontend
      *
      * @return void
      */
-    public function sqlToolsAction(){
+    public function sqlToolsAction()
+    {
         $type = $this->request->post('type');
         $tables = $this->request->post('tables');
-        if(!$tables){
+        if (!$tables) {
             $this->error('请选择表名');
         }
-        $tables = array_filter(explode(',',$tables));
-        if($type=='retable'){
+        $tables = array_filter(explode(',', $tables));
+        if ($type == 'retable') {
             // 修复表
-            $re = $this->btAction->ReTable($this->hostInfo->sql->username,json_encode($tables));
-            if($re&&isset($re['status'])&&$re['status']=='true'){
+            $re = $this->btAction->ReTable($this->hostInfo->sql->username, json_encode($tables));
+            if ($re && isset($re['status']) && $re['status'] == 'true') {
                 $this->success($re['msg']);
-            }elseif($re&&isset($re['msg'])){
+            } elseif ($re && isset($re['msg'])) {
                 $this->error($re['msg']);
-            }else{
+            } else {
                 $this->error('失败');
             }
-        }elseif($type=='optable'){
+        } elseif ($type == 'optable') {
             // 优化表
-            $op = $this->btAction->OpTable($this->hostInfo->sql->username,json_encode($tables));
-            if($op&&isset($op['status'])&&$op['status']=='true'){
+            $op = $this->btAction->OpTable($this->hostInfo->sql->username, json_encode($tables));
+            if ($op && isset($op['status']) && $op['status'] == 'true') {
                 $this->success($op['msg']);
-            }elseif($op&&isset($op['msg'])){
+            } elseif ($op && isset($op['msg'])) {
                 $this->error($op['msg']);
-            }else{
+            } else {
                 $this->error('失败');
             }
-        }elseif($type=='aitable'||$type=='InnoDB'||$type=='MyISAM'){
+        } elseif ($type == 'aitable' || $type == 'InnoDB' || $type == 'MyISAM') {
             // 转换类型
-            $table_type = $this->request->post('table_type')=='MyISAM'?'MyISAM':'InnoDB';
-            $al = $this->btAction->AlTable($this->hostInfo->sql->username,json_encode($tables),$table_type);
-            if($al&&isset($al['status'])&&$al['status']=='true'){
+            $table_type = $this->request->post('table_type') == 'MyISAM' ? 'MyISAM' : 'InnoDB';
+            $al = $this->btAction->AlTable($this->hostInfo->sql->username, json_encode($tables), $table_type);
+            if ($al && isset($al['status']) && $al['status'] == 'true') {
                 $this->success($al['msg']);
-            }elseif($al&&isset($al['msg'])){
+            } elseif ($al && isset($al['msg'])) {
                 $this->error($al['msg']);
-            }else{
+            } else {
                 $this->error('失败');
             }
-        }else{
+        } else {
             $this->error('请求类型错误');
         }
     }
@@ -2611,7 +2613,7 @@ class Vhost extends Frontend
     public function sqlBackInc()
     {
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
-            $this->error('没有开通该项业务','');
+            $this->error('没有开通该项业务', '');
         }
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
@@ -2651,7 +2653,7 @@ class Vhost extends Frontend
     public function sqlBackDel()
     {
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
-            $this->error('没有开通该项业务','');
+            $this->error('没有开通该项业务', '');
         }
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
@@ -2686,7 +2688,7 @@ class Vhost extends Frontend
     public function sqlBackDown()
     {
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
-            $this->error('没有开通该项业务','');
+            $this->error('没有开通该项业务', '');
         }
 
         //获取数据库ID
@@ -2725,7 +2727,7 @@ class Vhost extends Frontend
         //获取数据库ID
         $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
-            $this->error('没有开通这项业务','');
+            $this->error('没有开通这项业务', '');
         }
         //获取数据库备份列表
         $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
@@ -2741,7 +2743,7 @@ class Vhost extends Frontend
                     }
                 }
             }
-        }else{
+        } else {
             $this->error('文件错误，请重试！');
         }
     }
@@ -3004,10 +3006,10 @@ class Vhost extends Frontend
             if (preg_match($this->reg, $post_str['sec_fix']) || preg_match($this->reg, $post_str['sec_domains'])) {
                 $this->error('非法参数');
             }
-            
+
             $modify_status = $this->btAction->SetSecurity($this->bt_id, $this->siteName, $post_str['sec_fix'], $post_str['sec_domains']);
 
-            
+
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
@@ -3055,10 +3057,10 @@ class Vhost extends Frontend
         } else {
             $logArr = '';
         }
-        if($this->request->get('down')){
+        if ($this->request->get('down')) {
             // 导出日志文件excel
             $logs = $this->btTend->getLogsFileName();
-            if($logs===false){
+            if ($logs === false) {
                 $this->error($this->btTend->_error);
             }
             // 拆分成数组
@@ -3070,7 +3072,7 @@ class Vhost extends Frontend
             header("Content-Type:application/force-download");
             header("Content-Type:application/octet-stream");
             header("Content-Type:application/download");
-            header('Content-Disposition:attachment;filename="'.$this->siteName.'_'.date("Y/m/d_H:i:s").'_网站日志.log"');
+            header('Content-Disposition:attachment;filename="' . $this->siteName . '_' . date("Y/m/d_H:i:s") . '_网站日志.log"');
             header("Content-Transfer-Encoding:binary");
             echo $text;
             exit;
@@ -3090,8 +3092,8 @@ class Vhost extends Frontend
      */
     public function Httpauth()
     {
-        if($this->hostInfo->server_os=='windows'){
-            $this->error('当前主机不支持该功能','');
+        if ($this->hostInfo->server_os == 'windows') {
+            $this->error('当前主机不支持该功能', '');
         }
         $vhost_url = $this->webRootPath;
         $setting   = $this->btAction->GetDirUserINI($this->bt_id, $vhost_url);
@@ -3110,8 +3112,8 @@ class Vhost extends Frontend
      */
     public function httpauthSet()
     {
-        if($this->hostInfo->server_os=='windows'){
-            $this->error('当前主机不支持该功能','');
+        if ($this->hostInfo->server_os == 'windows') {
+            $this->error('当前主机不支持该功能', '');
         }
         $post_str = $this->request->post();
         if (!empty($post_str['username']) && !empty($post_str['password'])) {
@@ -3137,8 +3139,8 @@ class Vhost extends Frontend
      */
     public function httpauthOff()
     {
-        if($this->hostInfo->server_os=='windows'){
-            $this->error('当前主机不支持该功能','');
+        if ($this->hostInfo->server_os == 'windows') {
+            $this->error('当前主机不支持该功能', '');
         }
         $post_str = $this->request->post();
         if (isset($post_str['auth']) && $post_str['auth'] == 'off') {
@@ -3240,7 +3242,7 @@ class Vhost extends Frontend
                     if ($value == '/web_config') {
                         unset($path['runPath']['dirs'][$key]);
                     }
-                    if($value == '/.well-known'){
+                    if ($value == '/.well-known') {
                         unset($path['runPath']['dirs'][$key]);
                     }
                 }
@@ -3268,19 +3270,19 @@ class Vhost extends Frontend
                 $this->error('主机停止', '');
                 break;
             case 'locked':
-                $this->error('主机已被锁定','');
+                $this->error('主机已被锁定', '');
                 break;
             case 'expired':
-                $this->error('主机已到期','');
+                $this->error('主机已到期', '');
                 break;
             case 'excess':
-                $this->error('主机超量，已被停用','');
+                $this->error('主机超量，已被停用', '');
                 break;
             case 'error':
-                $this->error('主机异常','');
+                $this->error('主机异常', '');
                 break;
             default:
-                $this->error('主机异常','');
+                $this->error('主机异常', '');
                 break;
         }
         if ($this->request->post()) {
@@ -3298,8 +3300,8 @@ class Vhost extends Frontend
                 './/',
                 '..//',
             ];
-            
-            if(in_array($dirs,$dir_arr)){
+
+            if (in_array($dirs, $dir_arr)) {
                 $this->error('该目录被禁止使用');
             }
 
@@ -3326,7 +3328,7 @@ class Vhost extends Frontend
 
         $deploymentList = $this->btAction->deployment();
         if (!$deploymentList || isset($deploymentList['status']) && $deploymentList['status'] == false) {
-            $this->error('暂不支持该功能','');
+            $this->error('暂不支持该功能', '');
         }
         //程序列表倒叙
         $deploymentList['data'] = array_reverse($deploymentList['data']);
@@ -3417,7 +3419,7 @@ class Vhost extends Frontend
                 $this->error('没有找到该站点');
             }
         } else {
-            $this->error('当前主机不支持该插件','');
+            $this->error('当前主机不支持该插件', '');
         }
         $this->view->assign('title', __('proof'));
         return $this->view->fetch('proof', [
@@ -3509,14 +3511,14 @@ class Vhost extends Frontend
     public function total()
     {
         $Total = $this->btAction->GetTotal();
-        $day = $this->request->get('time',date('Y-m-d', time()));
+        $day = $this->request->get('time', date('Y-m-d', time()));
         if ($Total && @$Total['open'] == 'true') {
             $siteTotal = $this->btAction->SiteTotal($this->siteName, $day);
             if (!$siteTotal) {
-                $this->error('意外的错误','');
+                $this->error('意外的错误', '');
             }
         } else {
-            $this->error('当前主机不支持该插件','');
+            $this->error('当前主机不支持该插件', '');
         }
         $Network = $this->btAction->SiteNetworkTotal($this->siteName);
         if (isset($Network['days']) && $Network['days'] != '') {
@@ -3551,13 +3553,13 @@ class Vhost extends Frontend
     public function Waf()
     {
         // 获取防火墙类型
-        
-        
-        $isWaf = Cache::remember('getWaf',function(){
+
+
+        $isWaf = Cache::remember('getWaf', function () {
             return $this->btTend->getWaf();
         });
         if (!$isWaf) {
-            $this->error('当前主机不支持该插件','');
+            $this->error('当前主机不支持该插件', '');
         }
         // 获取防火墙插件
         $total = [];
@@ -3565,7 +3567,7 @@ class Vhost extends Frontend
         if (isset($waf['open']) && $waf['open'] == 'true') {
             $Sitewaf = $this->btAction->Sitewaf($isWaf, $this->siteName);
             if (!$Sitewaf) {
-                $this->error('意外的错误','');
+                $this->error('意外的错误', '');
             }
             $SitewafConfig = $this->btAction->SitewafConfig($isWaf);
             if ($SitewafConfig) {
@@ -3578,20 +3580,20 @@ class Vhost extends Frontend
                     }
                 }
             }
-        }elseif(isset($waf['msg'])&&Config('app_debug')){
-            $this->error($waf['msg'],'');
+        } elseif (isset($waf['msg']) && Config('app_debug')) {
+            $this->error($waf['msg'], '');
         } else {
-            $this->error('当前主机不支持该插件','');
+            $this->error('当前主机不支持该插件', '');
         }
-        
+
         // 获取四层防御状态
-        $ip_stop = $isWaf!='free_waf'?$this->btTend->getIpstopStatus($isWaf):false;
+        $ip_stop = $isWaf != 'free_waf' ? $this->btTend->getIpstopStatus($isWaf) : false;
         $GetLog  = $this->btAction->GetwafLog($isWaf, $this->siteName, date('Y-m-d', time()));
 
         $this->view->assign('title', __('waf'));
-        
+
         return $this->view->fetch('waf', [
-            'waf_type'=> $isWaf,
+            'waf_type' => $isWaf,
             'ip_stop' => $ip_stop,
             'GetLog'  => $GetLog,
             'Sitewaf' => $Sitewaf,
@@ -3644,21 +3646,21 @@ class Vhost extends Frontend
                 $cycle    = input('post.cycle/d');
                 $limit    = input('post.limit/d');
                 $endtime  = input('post.endtime/d');
-                $increase = input('post.cc_mode')==4 ? 1 : 0;
-                $cc_mode = input('post.cc_mode') ;
-                $cc_increase_type=input('post.cc_increase_type');
+                $increase = input('post.cc_mode') == 4 ? 1 : 0;
+                $cc_mode = input('post.cc_mode');
+                $cc_increase_type = input('post.cc_increase_type');
                 $increase_wu_heng = input('post.increase_wu_heng');
                 $is_open_global = 0;
-                
-                $cc_four_defense = input('post.cc_four_defense')&&$cc_mode>2?input('post.cc_four_defense'):0;
+
+                $cc_four_defense = input('post.cc_four_defense') && $cc_mode > 2 ? input('post.cc_four_defense') : 0;
                 // 设置四层防御
-                if($cc_four_defense){
+                if ($cc_four_defense) {
                     // 开启
                     $this->btAction->SetIPStop($isWaf);
-                }else{
+                } else {
                     $this->btAction->SetIPStopStop($isWaf);
                 }
-                $Setwafcc = $this->btAction->Setwafcc($isWaf, $this->siteName, $cycle, $limit, $endtime, $increase,$cc_mode,$cc_increase_type,$increase_wu_heng,$is_open_global);
+                $Setwafcc = $this->btAction->Setwafcc($isWaf, $this->siteName, $cycle, $limit, $endtime, $increase, $cc_mode, $cc_increase_type, $increase_wu_heng, $is_open_global);
             } elseif ($type == 'retry') {
                 $retry       = input('post.retry/d');
                 $retry_time  = input('post.retry_time/d');
@@ -3714,7 +3716,7 @@ class Vhost extends Frontend
                     'open'         => 1,
                 ];
                 $CreateProxy = $this->btAction->CreateProxy_win($data);
-                
+
                 if ($CreateProxy && isset($CreateProxy['status'])) {
                     $this->success($CreateProxy['msg']);
                 } else {
@@ -3736,8 +3738,11 @@ class Vhost extends Frontend
             }
         } else {
             if ($this->server_type == 'windows') {
+                // 如果是iis需要判断是否安装插件
                 $proxyList = $this->btTend->GetProxy($this->siteName);
-
+                if ($proxyList === false) {
+                    $this->error($this->btTend->_error, '');
+                }
                 // 可选域名列表
                 $domainList = $this->btAction->Websitess($this->bt_id, 'domain');
             } else {
@@ -3784,26 +3789,27 @@ class Vhost extends Frontend
      *
      * @return void
      */
-    public function free_waf(){
+    public function free_waf()
+    {
         // 判断环境是否为nginx
-        if(isset($this->btTend->serverConfig['webserver'])&&$this->btTend->serverConfig['webserver']=='nginx'){
+        if (isset($this->btTend->serverConfig['webserver']) && $this->btTend->serverConfig['webserver'] == 'nginx') {
             // 判断是否安装该插件
             $pluginInfo = $this->btTend->softQuery('free_waf');
-            if(!$pluginInfo){
-                $this->error('当前主机不支持该插件','');
+            if (!$pluginInfo) {
+                $this->error('当前主机不支持该插件', '');
             }
             // waf站点信息
             $waf = $this->btTend->free_waf_site_info();
             // waf站点日志
             $logs = $this->btAction->free_waf_get_logs_list($this->siteName);
-            $this->view->assign('waf',$waf);
-            $this->view->assign('logs',$logs);
-            $this->view->assign('total',$waf['total']);
-            $this->view->assign('title','防火墙');
-        }else{
-            $this->error('当前主机不支持该插件','');
+            $this->view->assign('waf', $waf);
+            $this->view->assign('logs', $logs);
+            $this->view->assign('total', $waf['total']);
+            $this->view->assign('title', '防火墙');
+        } else {
+            $this->error('当前主机不支持该插件', '');
         }
-        
+
         // return $this->view->fetch();
     }
 
@@ -3825,13 +3831,12 @@ class Vhost extends Frontend
 
         if ($this->server_type == 'windows') {
             // Windows下不能包含：< > / \ | :  * ?
-            // 记录排除规则：\:
-            if (!preg_match("/^[\x7f-\xff\w\s\.\/~@#-]+$/i", $path)) {
+            if (!preg_match("/^[\x7f-\xff\w\s\.\/\:~,@#-]+$/i", $path)) {
                 return false;
             }
         } else {
             // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
-            // 记录排除规则：@#-
+            // 记录排除规则：@#
             if (!preg_match("/^[\x7f-\xff\w\s\.\/~,-]+$/i", $path)) {
                 return false;
             }
@@ -3867,48 +3872,51 @@ class Vhost extends Frontend
 
         return true;
     }
-    
+
     // 资源检查并记录
-    private function check(){
+    private function check()
+    {
         if (Cookie('vhost_check_' . $this->vhost_id) < time()) {
             $list = $this->btTend->getResourceSize();
             $msg = $excess = '';
             if ($this->hostInfo['flow_max'] != 0 && $list['total_size'] > $this->hostInfo['flow_max']) {
-                $msg.= '流量';$excess = 1;
+                $msg .= '流量';
+                $excess = 1;
             }
             if ($this->hostInfo['site_max'] != 0 && $list['websize'] > $this->hostInfo['site_max']) {
-                $msg.= '空间';$excess = 1;
+                $msg .= '空间';
+                $excess = 1;
             }
             if ($this->hostInfo['sql_max'] != 0 && $list['sqlsize'] > $this->hostInfo['sql_max']) {
-                $msg.= '数据库';$excess = 1;
+                $msg .= '数据库';
+                $excess = 1;
             }
             $host_data = [
-                'site_size'=>$list['websize'],
-                'flow_size'=>$list['total_size'],
-                'sql_size'=>$list['sqlsize'],
-                'check_time'=>time(),
+                'site_size' => $list['websize'],
+                'flow_size' => $list['total_size'],
+                'sql_size' => $list['sqlsize'],
+                'check_time' => time(),
             ];
-            if($excess){
+            if ($excess) {
                 $host_data['status'] = 'excess';
-            }elseif($this->hostInfo['status']=='excess'){
+            } elseif ($this->hostInfo['status'] == 'excess') {
                 // 恢复主机状态
                 $host_data['status'] = 'normal';
             }
-            
+
             // 连接宝塔停用站点
-            if($excess){
+            if ($excess) {
                 $this->btTend->webstop();
-            }elseif($this->hostInfo['status']=='excess'){
+            } elseif ($this->hostInfo['status'] == 'excess') {
                 // 恢复主机状态
                 $this->btTend->webstart();
             }
-            $this->hostModel->save($host_data,['id'=>$this->vhost_id]);
-            if($msg){
-                $this->_error  = $msg . ($excess?'超出，资源已停用':'');
+            $this->hostModel->save($host_data, ['id' => $this->vhost_id]);
+            if ($msg) {
+                $this->_error  = $msg . ($excess ? '超出，资源已停用' : '');
                 return false;
             }
             Cookie('vhost_check_' . $this->vhost_id, time() + $this->check_time, 3600);
-            
         }
         return true;
     }
