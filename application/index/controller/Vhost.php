@@ -2102,7 +2102,9 @@ class Vhost extends Frontend
             }
             //查看图片
             if (input('post.type') == 'images') {
-                // TODO 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
+                // XXX 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
+                // XXX WIndows下查看中文图片失败，原因带空格
+                // 经过urlencode编码后双系统使用正常
                 $file = input('post.file') ? preg_replace('/([\.]){2,}|([\/\/]){2,}/', '', input('post.file')) : '';
                 // var_dump($WebGetKey . $file, $file);
                 // exit;
