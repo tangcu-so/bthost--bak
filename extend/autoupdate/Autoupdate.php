@@ -77,6 +77,12 @@ class Autoupdate
 		ini_set('max_execution_time', 600);
 		$this->_log = $log;
 		$this->installDir = $installDir;
+		$this->arrContextOptions = [
+			'ssl' => [
+				'verify_peer' => false,
+				'verify_peer_name' => false,
+			]
+		];
 	}
 
 	/* 
@@ -145,23 +151,18 @@ class Autoupdate
 		$this->log('检查更新. . .');
 
 		$updateFile = $this->updateUrl . $this->updateIni;
-
-		// $arrContextOptions = [
-		// 	'ssl' => [
-		// 		'verify_peer' => false,
-		// 		'verify_peer_name' => false,
-		// 	]
-		// ];
-		// $update = file_get_contents($updateFile, false, stream_context_create($arrContextOptions));
-		$update = $this->curl_request($updateFile);
+		$update = file_get_contents($updateFile, false, stream_context_create($this->arrContextOptions));
 
 		if ($update === false) {
 			$this->log('无法获取更新文件 -->' . $updateFile);
 			return false;
 		} else {
 			$updates = json_decode($update, 1);
+			// var_dump($updateFile, $updates);
+			// exit;
 			$versions = isset($updates['data']['newversion']) ? $updates['data']['newversion'] : '';
 
+			//$versions = parse_ini_string($update, true);
 			if ($versions && isset($updates['data']['newversion'])) {
 				$this->sql_file = isset($updates['data']['sqldownloadurl']) ? $updates['data']['sqldownloadurl'] : '';
 				$this->log('最新版本号 -->' . $versions);
@@ -184,16 +185,8 @@ class Autoupdate
 	public function downloadUpdate($updateUrl, $updateFile)
 	{
 		$this->log('正在下载更新...');
-		$client = new \GuzzleHttp\Client();
-		// $arrContextOptions = [
-		// 	'ssl' => [
-		// 		'verify_peer' => false,
-		// 		'verify_peer_name' => false,
-		// 	]
-		// ];
-		// $update = file_get_contents($updateUrl, false, stream_context_create($arrContextOptions));
-		$res = $client->request('GET',$updateUrl);
-		$update = $this->curl_request($updateUrl);
+
+		$update = file_get_contents($updateUrl, false, stream_context_create($arrContextOptions));
 
 		if ($update === false) {
 			$this->log('无法下载更新 -->' . $updateUrl);
@@ -386,7 +379,7 @@ class Autoupdate
 	 * @param  string  $ua           自定义UA
 	 * @return [type]                [description]
 	 */
-	public  function curl_request($url, $post = '', $referer = '', $cookie = '', $returnCookie = 0, $ua = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0')
+	private function curl_request($url, $post = '', $referer = '', $cookie = '', $returnCookie = 0, $ua = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:43.0) Gecko/20100101 Firefox/43.0')
 	{
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
