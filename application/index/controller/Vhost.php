@@ -3827,13 +3827,12 @@ class Vhost extends Frontend
 
         if ($this->server_type == 'windows') {
             // Windows下不能包含：< > / \ | :  * ?
-            // 记录排除规则：\:
-            if (!preg_match("/^[\x7f-\xff\w\s\.\/~,@#-]+$/i", $path)) {
+            if (!preg_match("/^[\x7f-\xff\w\s\.\/\:~,@#-]+$/i", $path)) {
                 return false;
             }
         } else {
             // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
-            // 记录排除规则：@#-
+            // 记录排除规则：@#
             if (!preg_match("/^[\x7f-\xff\w\s\.\/~,-]+$/i", $path)) {
                 return false;
             }
