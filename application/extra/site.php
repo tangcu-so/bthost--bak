@@ -64,4 +64,5 @@ return array (
   'phpmyadmin' => '',
   'debug' => '0',
   'status' => '0',
+  'http' => 'http://',
 );

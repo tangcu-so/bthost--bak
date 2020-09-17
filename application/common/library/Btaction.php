@@ -14,7 +14,7 @@ class Btaction
     public $_error = '';        //  错误信息
     public $btAction  = null;
     // 线上模式
-    private $api_url = 'http://127.0.0.1';
+    private $api_url = '127.0.0.1';
     private $port = 8888;
     private $api_token = '';
     public $bt_id = '';         //  宝塔ID
@@ -34,11 +34,14 @@ class Btaction
     public $os = 'linux';
 
 
-    public function __construct($api_token = '', $port = '', $os = '')
+    public function __construct($api_token = '', $port = '', $http = '', $os = '')
     {
         $port_config = Config('site.api_port') ? Config('site.api_port') : 8888;
         $this->port = $port ? $port : $port_config;
-        $this->api_url = $this->api_url . ':' . $this->port;
+
+        $http_url = Config('site.http') ? Config('site.http') : 'http://';
+        $this->http = $http ? $http : $http_url;
+        $this->api_url = $this->http . $this->api_url . ':' . $this->port;
 
         $apiToken_config = decode(Config('site.api_token'));
         $this->api_token = $api_token ? $api_token : $apiToken_config;
@@ -46,7 +49,6 @@ class Btaction
         // TODO 正式环境下切换到自动获取服务器操作系统类型
         // $this->os = 'linux';
         $this->os = $os ? $os : getOs();
-        
     }
 
     // 测试入口

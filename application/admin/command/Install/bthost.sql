@@ -911,3 +911,7 @@ CREATE TABLE `bth_version` (
 -- ----------------------------
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+
+-- 1.0.2+20200917
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'http', 'server', 'http', '', 'select', 'http://', '{\"http:\\/\\/\":\"http:\\/\\/\",\"https:\\/\\/\":\"https:\\/\\/\"}', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
