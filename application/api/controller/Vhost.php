@@ -933,7 +933,7 @@ class Vhost extends Api
 
         $data = [
             'time' => $time,
-            'random' => $time,
+            'random' => $random,
             'access_token' => $this->access_token,
         ];
 
