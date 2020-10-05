@@ -60,7 +60,8 @@ class Sql extends Model
                     unset($row->password);
                 }
             }
-            if ($changed['type'] == 'bt') {
+            // 单独创建数据库
+            if (isset($changed['type']) && $changed['type'] == 'bt') {
                 $bt = new Btaction();
                 $database = $changed['database'] ? $changed['database'] : $changed['username'];
                 $bt->buildSql($changed['username'], $database, $changed['password']);

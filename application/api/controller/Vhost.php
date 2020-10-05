@@ -426,7 +426,7 @@ class Vhost extends Api
             $analysis = Config::get('site.dnspod_analysis_url');
 
             $sub_domain = $hostSetInfo['domain'];
-            $domain_jx = $this->model->doamin_analysis($plansInfo['domain'], $analysis, $sub_domain, $record_type);
+            $domain_jx = model('Host')->doamin_analysis($plansInfo['domain'], $analysis, $sub_domain, $record_type);
             if (!is_array($domain_jx)) {
                 $this->error('域名解析失败|' . json_encode([$plansInfo['domain'], $analysis, $sub_domain, $domain_jx], JSON_UNESCAPED_UNICODE));
             }
