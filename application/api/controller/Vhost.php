@@ -163,6 +163,58 @@ class Vhost extends Api
         $this->success('请求成功',$list);
     }
 
+    // 创建用户
+    public function user_create()
+    {
+        $username = $this->request->post('username', Random::alnum(8));
+        $nickname = $this->request->post('nickname', $username);
+        $password = $this->request->post('password', Random::alnum(8));
+        $group_id = $this->request->post('group_id/d', 1);
+        if (!$username || !$nickname || !$password) {
+            $this->error('用户名、昵称或密码不能为空');
+        }
+        $user_check = model('User')::get(['username' => $username]);
+        if ($user_check) {
+            $this->error('用户名已存在，请勿重复创建');
+        }
+        $user_inc = model('User')::create([
+            'username' => $username,
+            'password' => $password,
+            'group_id' => $group_id,
+            'nickname' => $nickname,
+        ]);
+        $this->success('创建成功', $user_inc);
+    }
+
+    // 用户删除
+    public function user_del()
+    {
+        $user_id = $this->request->post('user_id/d');
+        $is_del = $this->request->post('delete/d', false);
+        $user = model('User')::withTrashed()->where('id', $user_id)->find();
+        if (!$user) {
+            $this->error('用户不存在');
+        }
+        $user->delete($is_del);
+        $this->success('删除成功');
+    }
+
+    // 用户信息修改
+    public function user_edit()
+    {
+        $user_id = $this->request->post('user_id/d');
+        $params = $this->request->post('info/a');
+        if (!$params || !$user_id) {
+            $this->error('请求错误');
+        }
+        $user = model('User')::get($user_id);
+        if (!$user) {
+            $this->error('用户不存在');
+        }
+        model('User')->allowField(true)->save($params, ['id' => $user_id]);
+        $this->success('修改成功');
+    }
+
     // 账号信息
     public function user_info(){
         $id = $this->request->post('id/d');
@@ -933,7 +985,7 @@ class Vhost extends Api
 
         $data = [
             'time' => $time,
-            'random' => $time,
+            'random' => $random,
             'access_token' => $this->access_token,
         ];
 
