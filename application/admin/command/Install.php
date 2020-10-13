@@ -164,13 +164,13 @@ class Install extends Command
         }
 
         return $this->view->fetch(INSTALL_PATH . "install.html", ['errInfo' => $errInfo, 'link' => [
-            'qqun' => "https://shang.qq.com/wpa/qunwpa?idkey=e0b8001e495453616e79c90bd5123aef1b0505693755c1242ac9f099ace77ca2",
+            'qqun' => "https://qm.qq.com/cgi-bin/qm/qr?k=FGfc6Khovu3IL2dxuWRLvAp3m2IGAGAC&jump_from=webapi",
             'web' => 'https://btai.cc',
             'bbs' => 'https://bbs.btye.net',
             'blog' => 'https://www.youngxj.cn',
             'auths' => 'https://auths.yum6.cn/auth.html',
             'qq' => 'https://wpa.qq.com/msgrd?v=3&uin=1170535111&site=qq&menu=yes',
-            'install' => 'https://www.kancloud.cn/youngxj/bthost_manual/程序安装.md',
+            'install' => 'https://www.kancloud.cn/youngxj/bthost_manual/1926353',
         ]]);
     }
 
