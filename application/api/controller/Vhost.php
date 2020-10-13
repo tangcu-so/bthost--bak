@@ -183,6 +183,7 @@ class Vhost extends Api
             'group_id' => $group_id,
             'nickname' => $nickname,
         ]);
+        $user_inc->password = $password;
         $this->success('创建成功', $user_inc);
     }
 
@@ -247,6 +248,7 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $info = $this->sqlModel::get($id);
+        $info->console = $info->console ? $info->console : config('site.phpmyadmin');
         $this->success('请求成功',$info);
     }
 
@@ -501,12 +503,13 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $info = $this->getHostInfo($id);
+        $info->default_analysis = config('site.default_analysis') == 0 ? $info->bt_name : config('site.dnspod_analysis_url');
         $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
         $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
         $info->domain = model('Domainlist')::all(['vhost_id' => $id]);
+        
         $this->success('请求成功',$info);
     }
-
     // 主机回收站（软删除）
     public function host_recycle(){
         $id = $this->request->post('id/d');
