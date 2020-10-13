@@ -402,8 +402,10 @@ class Ajax extends Backend
     {
         $keyValue = $this->request->post('keyValue');
         // 获取服务器中的分类列表
-        $bt   = new Btaction();
-        $list = $bt->getsitetype();
+        $list = Cache::remember('site_type_list', function () {
+            $bt   = new Btaction();
+            return $list = $bt->getsitetype();
+        });
         if ($list) {
             if ($keyValue) {
                 foreach ($list as $key => $value) {

@@ -7,6 +7,7 @@ use fast\Random;
 use think\Validate;
 use think\Config;
 use think\Db;
+use think\Cache;
 use app\common\library\Btaction;
 
 /**
@@ -70,12 +71,82 @@ class Vhost extends Api
 
     // 网站分类列表
     public function sort_list(){
-        $bt = new Btaction();
-        $sortList = $bt->getsitetype();
+        // 调用缓存
+        $sortList = Cache::remember('site_type_list', function () {
+            $bt   = new Btaction();
+            return $sortList = $bt->getsitetype();
+        });
         if(!$sortList){
             $this->error('请求失败');
         }
         $this->success('请求成功',$sortList);
+    }
+
+    // 创建网站分类
+    public function sort_create()
+    {
+        $name = $this->request->post('name');
+        if (!$name) {
+            $this->error('请求错误');
+        }
+        $bt = new Btaction();
+        $create = $bt->btAction->add_site_type($name);
+        if (!$create) {
+            $this->error($bt->btAction->_error);
+        }
+        // 刷新网站分类列表
+        Cache::rm('site_type_list');
+        // 重新获取网站分类并缓存
+        Cache::remember('site_type_list', function () {
+            $bt   = new Btaction();
+            return $list = $bt->getsitetype();
+        });
+        $this->success('创建成功');
+    }
+
+    // 编辑网站分类
+    public function sort_edit()
+    {
+        $id = $this->request->post('id/d');
+        $name = $this->request->post('name');
+        if (!$id || !$name) {
+            $this->error('请求错误');
+        }
+        $bt = new Btaction();
+        $edit = $bt->btAction->edit_site_type($id, $name);
+        if (!$edit) {
+            $this->error($bt->btAction->_error);
+        }
+        // 刷新网站分类列表
+        Cache::rm('site_type_list');
+        // 重新获取网站分类并缓存
+        Cache::remember('site_type_list', function () {
+            $bt   = new Btaction();
+            return $list = $bt->getsitetype();
+        });
+        $this->success('修改成功');
+    }
+
+    // 删除网站分类
+    public function sort_delete()
+    {
+        $id = $this->request->post('id/d');
+        if (!$id) {
+            $this->error('请求错误');
+        }
+        $bt = new Btaction();
+        $del = $bt->btAction->delete_site_type($id);
+        if (!$del) {
+            $this->error($bt->btAction->_error);
+        }
+        // 刷新网站分类列表
+        Cache::rm('site_type_list');
+        // 重新获取网站分类并缓存
+        Cache::remember('site_type_list', function () {
+            $bt   = new Btaction();
+            return $list = $bt->getsitetype();
+        });
+        $this->success('删除成功');
     }
 
     // IP池列表
@@ -507,9 +578,10 @@ class Vhost extends Api
         $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
         $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
         $info->domain = model('Domainlist')::all(['vhost_id' => $id]);
-        
-        $this->success('请求成功',$info);
+
+        $this->success('请求成功 ', $info);
     }
+    
     // 主机回收站（软删除）
     public function host_recycle(){
         $id = $this->request->post('id/d');

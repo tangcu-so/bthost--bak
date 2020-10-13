@@ -39,7 +39,10 @@ return [
     'Websites'                   => '/data?action=getData&table=sites', //获取网站列表
     'Websitess'                  => '/data?action=getData', //获取网站下的域名列表
     'Webtypes'                   => '/site?action=get_site_types', //获取网站分类
+    'add_site_type'              => '/site?action=add_site_type', //添加网站分类
     'set_site_type'              => '/site?action=set_site_type', //设置网站分类
+    'edit_site_type'             => '/site?action=modify_site_type_name', //修改网站分类
+    'delete_site_type'           => '/site?action=remove_site_type', //删除网站分类
     'GetPHPVersion'              => '/site?action=GetPHPVersion', //获取已安装的 PHP 版本列表
     'GetSitePHPVersion'          => '/site?action=GetSitePHPVersion', //获取指定网站运行的PHP版本
     'SetPHPVersion'              => '/site?action=SetPHPVersion', //修改指定网站的PHP版本

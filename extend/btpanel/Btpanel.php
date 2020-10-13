@@ -516,6 +516,83 @@ class Btpanel
     }
 
     /**
+     * 添加网站分类
+     *
+     * @param [type] $name      分类名
+     * @return void
+     */
+    public function add_site_type($name)
+    {
+        $url = $this->BT_PANEL . config("bt.add_site_type");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['name'] = $name;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && isset($data['status']) && $data['status']) {
+            return true;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 修改网站分类
+     *
+     * @param [type] $id        分类ID
+     * @param [type] $name      分类名称
+     * @return void
+     */
+    public function edit_site_type($id, $name)
+    {
+        $url = $this->BT_PANEL . config("bt.edit_site_type");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $p_data['name'] = $name;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && isset($data['status']) && $data['status']) {
+            return true;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 删除网站分类
+     *
+     * @param [type] $id        分类ID
+     * @return void
+     */
+    public function delete_site_type($id)
+    {
+        $url = $this->BT_PANEL . config("bt.delete_site_type");
+
+        $p_data             = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && isset($data['status']) && $data['status']) {
+            return true;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
      * 获取已安装的 PHP 版本列表
      */
     public function GetPHPVersion()
