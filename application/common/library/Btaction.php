@@ -57,6 +57,9 @@ class Btaction
     // 测试入口
     public function test()
     {
+        $server_config = Cache::remember('vhost_config', function () {
+            return $server_config = $this->clear_config();
+        });
         return $this->tests();
         if ($this->os == 'windows') {
             return $this->tests_win();
@@ -92,7 +95,7 @@ class Btaction
         if ($config && isset($config['status']) && ($config['status'] == true || $config['status'] == 1)) {
             $this->serverConfig = $config;
             return true;
-        } else if (isset($config['status']) && $config['status'] == false) {
+        } else if (isset($config['status']) && $config['status'] == false && isset($config['msg'])) {
             $this->setError($config['msg'] . $this->getRequestTime());
             return false;
         } else {
@@ -108,7 +111,7 @@ class Btaction
         if ($config && isset($config['status']) && $config['status'] === 0) {
             $this->serverConfig = $config;
             return true;
-        } else if (isset($config['status']) && $config['status'] === false) {
+        } else if (isset($config['status']) && $config['status'] === false && isset($config['msg'])) {
 
             $this->setError($config['msg'] . $this->getRequestTime());
             return false;
