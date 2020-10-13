@@ -12,6 +12,7 @@
 return [
     # 系统状态相关接口
     'GetConfig'                  => '/config?action=get_config', //获取服务器配置
+    'getConcifInfo'              => '/system?action=GetConcifInfo',//获取服务器配置（完整）
     'IsPro'                      => '/config?action=is_pro', //是否为专业版
     'GetSystemTotal'             => '/system?action=GetSystemTotal', //获取系统基础统计
     'GetDiskInfo'                => '/system?action=GetDiskInfo', //获取磁盘分区信息

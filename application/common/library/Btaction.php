@@ -57,6 +57,7 @@ class Btaction
     // 测试入口
     public function test()
     {
+        return $this->tests();
         if ($this->os == 'windows') {
             return $this->tests_win();
         } else {
@@ -88,7 +89,7 @@ class Btaction
     public function tests()
     {
         $config = $this->getServerConfig();
-        if ($config && isset($config['status']) && $config['status'] == true) {
+        if ($config && isset($config['status']) && ($config['status'] == true || $config['status'] == 1)) {
             $this->serverConfig = $config;
             return true;
         } else if (isset($config['status']) && $config['status'] == false) {
@@ -1473,6 +1474,16 @@ class Btaction
                     return true;
                 }
             }
+        }
+        return false;
+    }
+
+    // 清除服务器配置缓存，并获取完部缓存
+    public function clear_config()
+    {
+        $config = $this->btAction->getConcifInfo();
+        if (isset($config['status'])) {
+            return $config;
         }
         return false;
     }

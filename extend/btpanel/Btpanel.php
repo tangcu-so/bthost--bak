@@ -48,6 +48,21 @@ class Btpanel
     }
 
     /**
+     * 获取服务器配置（完整）
+     */
+    public function getConcifInfo()
+    {
+        $url = $this->BT_PANEL . config("bt.getConcifInfo");
+
+        $p_data = $this->GetKeyData();
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
      * 获取系统基础统计
      */
     public function GetSystemTotal()

@@ -48,6 +48,8 @@ class Vhost extends Frontend
 
     private $webRootPath = null;
 
+    private $serverConfig = null;
+
     // 资源超出停用面板
     public $is_excess_stop = 0;
 
@@ -82,7 +84,7 @@ class Vhost extends Frontend
         }
 
         $this->is_excess_stop = Config('site.excess_panel');
-        
+
         // 状态甄别
         switch ($this->hostInfo['status']) {
             case 'normal':
@@ -90,19 +92,19 @@ class Vhost extends Frontend
             case 'stop':
                 break;
             case 'locked':
-                $this->error('主机已锁定','/sites');
+                $this->error('主机已锁定', '/sites');
                 break;
             case 'expired':
-                $this->error('主机已到期','/sites');
+                $this->error('主机已到期', '/sites');
                 break;
             case 'excess':
-                $this->is_excess_stop?$this->error('主机超量，已被停用',''):'';
+                $this->is_excess_stop ? $this->error('主机超量，已被停用', '') : '';
                 break;
             case 'error':
-                $this->error('主机异常','/sites');
+                $this->error('主机异常', '/sites');
                 break;
             default:
-                $this->error('主机异常','/sites');
+                $this->error('主机异常', '/sites');
                 break;
         }
 
@@ -120,9 +122,14 @@ class Vhost extends Frontend
         $this->btTend->bt_name = $this->siteName = $this->hostInfo['bt_name'];
         // 宝塔站点id
         $this->btTend->bt_id = $this->bt_id = $this->hostInfo['bt_id'];
-
         // 主机ID
         $this->vhost_id = $this->hostInfo->id;
+
+        // 获取并设置服务器配置
+        $server_config = Cache::remember('vhost_config', function () {
+            return $server_config = $this->btTend->clear_config();
+        });
+        $this->serverConfig = $this->btTend->serverConfig = $server_config;
 
         // 站点初始化
         $webInit = $this->btTend->webInit();
@@ -138,19 +145,16 @@ class Vhost extends Frontend
         $this->dirUserIni = $this->btTend->dirUserIni;
 
         // 获取等待连接耗时
-        $connectTime = $this->btTend->getRequestTime();
-        if (!$connectTime) {
-            $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','/sites');
-        }
-        $this->assign('timeOut', $connectTime);
+        // $connectTime = $this->btTend->getRequestTime();
+        // if (!$connectTime) {
+        //     $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','/sites');
+        // }
+        // $this->assign('timeOut', $connectTime);
         // php加载时长
-        $this->assign('rangeTime', Debug::getRangeTime('begin','end',6).'s');
-        
+        $this->assign('rangeTime', Debug::getRangeTime('begin', 'end', 6) . 's');
         $this->assign('hostInfo', $this->hostInfo);
         $this->assign('userInfo', $this->userInfo);
-        // TODO webserver环境获取失败
-        $this->assign('serverConfig', $this->btTend->serverConfig);
-
+        $this->assign('serverConfig', $server_config);
         $this->assign('phpmyadmin',Config('site.phpmyadmin'));
     }
 
@@ -222,6 +226,8 @@ class Vhost extends Frontend
         Cache::rm('phpversion_list');
         // 清除伪静态规则缓存
         // Cache::rm('phpversion_list');
+        // 清除服务器配置
+        Cache::rm('vhost_config');
 
         $this->success('清理成功','');
     }
@@ -858,7 +864,7 @@ class Vhost extends Frontend
      */
     public function redir()
     {
-        if ($this->btTend->serverConfig['webserver'] != 'nginx') {
+        if ($this->serverConfig['webserver'] != 'nginx') {
             $this->error('当前不支持该模块','');
         }
         // 获取网站下的域名列表
@@ -3790,7 +3796,7 @@ class Vhost extends Frontend
      */
     public function free_waf(){
         // 判断环境是否为nginx
-        if(isset($this->btTend->serverConfig['webserver'])&&$this->btTend->serverConfig['webserver']=='nginx'){
+        if (isset($this->serverConfig['webserver']) && $this->serverConfig['webserver'] == 'nginx') {
             // 判断是否安装该插件
             $pluginInfo = $this->btTend->softQuery('free_waf');
             if(!$pluginInfo){
