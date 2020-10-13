@@ -279,10 +279,8 @@ class Host extends Backend
 
     // 真实删除
     public function destroy($ids = null){
-        $test = $this->model->destroy_delete($ids, 1);
-        if(!$test){
-            $this->error('销毁失败');
-        }
+        $hostInfo = $this->model::onlyTrashed()->where(['id' => $ids])->find();
+        $hostInfo->delete(true);
         $this->success('销毁成功');
         parent::destroy($ids);
     }

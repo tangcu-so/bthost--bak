@@ -72,14 +72,37 @@ class Host extends Model
 
         // TODO 主机创建前事件
         self::beforeInsert(function ($row) {
-            $changed = $row->getChangedData();
+            // $changed = $row->getChangedData();
             // 新建主机调用方法
         });
 
         // TODO 主机删除前事件
         self::beforeDelete(function ($row) {
-            $changed = $row->getChangedData();
-            // 删除主机调用方法
+            if ($row->deletetime) {
+                // 真删除
+                if ($row->bt_id && $row->bt_name) {
+                    $bt = new Btaction();
+                    $del = $bt->siteDelete($row->bt_id, $row->bt_name);
+                    // if (!$del) {
+                    // 删除失败
+                    //     return false;
+                    // }
+                }
+                if ($row->is_vsftpd) {
+                    // TODO 如果有开通vsftpd，也删除
+                    // 暂时没有api，后续更新
+                }
+                // 删除数据库
+                model('Sql')->where('vhost_id', $row->id)->delete(true);
+                // 删除FTP
+                model('Ftp')->where('vhost_id', $row->id)->delete(true);
+            } else {
+                // 软删除，停用主机
+                $bt = new Btaction();
+                $bt->bt_id = $row->bt_id;
+                $bt->bt_name = $row->bt_name;
+                $bt->webstop();
+            }
         });
     }
     
@@ -207,40 +230,6 @@ class Host extends Model
     public function getFtpInfo($value, $data)
     {
         return Ftp::get(['vhost_id' => $data['id']]);
-    }
-
-    /**
-     * 主机删除
-     *
-     * 删除FTP、SQL记录
-     * @param [type] $id        主机ID
-     * @param [type] $dels      强制删除
-     * @return void
-     */
-    public function destroy_delete($id, $dels = 0)
-    {
-        $info = $this::onlyTrashed()->where(['id'=>$id])->find();
-        if (!$info && $dels != 1) {
-            return false;
-        }
-        if($info->bt_id&&$info->bt_name){
-            $bt = new Btaction();
-            $del = $bt->siteDelete($info->bt_id,$info->bt_name);
-            if (!$del && $dels != 1) {
-                return false;
-            }
-        }
-        if($info->is_vsftpd){
-            // TODO 如果有开通vsftpd，也删除
-            // 暂时没有api，后续更新
-        }
-        $info->delete(true);
-        // 删除数据库
-        model('Sql')->where('vhost_id',$info->id)->delete(true);
-        // 删除FTP
-        model('Ftp')->where('vhost_id',$info->id)->delete(true);
-        
-        return true;
     }
 
     // 转换主机状态为数字状态
