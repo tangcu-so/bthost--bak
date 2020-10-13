@@ -41,6 +41,21 @@ class User extends Model
                 }
             }
         });
+
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // 新建账号时加密密码
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    $salt = \fast\Random::alnum();
+                    // $row->password = \app\common\library\Auth::instance()->getEncryptPassword($changed['password'], $salt);
+                    $row->password = encode($changed['password'], $salt);
+                    $row->salt = $salt;
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
     }
 
     // 持有主机总数
