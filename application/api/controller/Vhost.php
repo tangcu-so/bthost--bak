@@ -9,6 +9,7 @@ use think\Config;
 use think\Db;
 use think\Cache;
 use app\common\library\Btaction;
+use think\Cookie;
 
 /**
  * 主机操作对外接口
@@ -581,7 +582,7 @@ class Vhost extends Api
 
         $this->success('请求成功 ', $info);
     }
-    
+
     // 主机登录
     public function host_login()
     {
