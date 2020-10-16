@@ -791,10 +791,10 @@ class Vhost extends Api
         // 同步状态到本地
         if ($hostFind->status == 'normal' && $status != 1) {
             $bt->webstart();
-            $status = 1;
-        } else {
+            $status = '1';
+        } elseif ($hostFind->status != 'normal' && $status == 1) {
             $bt->webstop();
-            $status = 0;
+            $status = '0';
         }
 
         $hostFind->save();
