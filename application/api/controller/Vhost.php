@@ -1075,14 +1075,14 @@ class Vhost extends Api
     // 签名验证
     private function token_check(){
         // 时间戳
-        $time = $this->request->get('time/d');
+        $time = $this->request->param('time/d');
         if((time()-$time)>10){
             return false;
         }
         // 随机数
-        $random = $this->request->get('random');
+        $random = $this->request->param('random');
         // 签名
-        $signature = $this->request->get('signature');
+        $signature = $this->request->param('signature');
 
         $data = [
             'time' => $time,
