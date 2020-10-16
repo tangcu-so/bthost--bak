@@ -693,13 +693,6 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $hostInfo = $bt->webstop();
-        if(!$hostInfo){
-            $this->error($bt->_error);
-        }
         $hostFind->status = 'stop';
         $hostFind->save();
         $this->success('主机已停用');
@@ -712,13 +705,6 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $hostInfo = $bt->webstop();
-        if(!$hostInfo){
-            $this->error($bt->_error);
-        }
         $hostFind->status = 'locked';
         $hostFind->save();
         $this->success('主机已锁定');
@@ -731,13 +717,6 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $hostInfo = $bt->webstart();
-        if(!$hostInfo){
-            $this->error($bt->_error);
-        }
         $hostFind->status = 'normal';
         $hostFind->save();
         $this->success('主机已开启');
