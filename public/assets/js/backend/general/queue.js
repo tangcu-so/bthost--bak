@@ -34,8 +34,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
                                 return value + 's';
                         }},
                         {field: 'runtime', title: __('最近运行时间'),formatter: Table.api.formatter.datetime},
-                        {field: 'createtime', title: __('创建时间'),},
-                        {field: 'updatetime', title: __('更新时间'),},
+                        {field: 'createtime', title: __('创建时间'),formatter: Table.api.formatter.datetime},
+                        {field: 'updatetime', title: __('更新时间'),formatter: Table.api.formatter.datetime},
                         {field: 'weigh', title: __('Weigh')},
                         {field: 'status', title: __('Status'), formatter: Table.api.formatter.status},
                         {
