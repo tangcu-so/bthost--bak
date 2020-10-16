@@ -10,18 +10,24 @@
 // +--------------------------------------------------------------------
 return [
     // 项目名
-    'APP_NAME'      => 'bthost',
-    // 版本号
-    'version'       => '1.0.5+20201013',
+    'APP_NAME'          => 'bthost',
+    // 应用版本
+    'app_version'       => '1.0.5',
+    // 发布时间
+    'release_time'      => '20201013',
+    // 修订版本
+    'revise_version'    => '0',
+    // 完整版本号
+    'version'           => '1.0.5+20201013',
     // API接口地址
-    'api_url'       => 'https://auths.yum6.cn',
-    'api_url2'      => 'https://auths.apip.wang',
+    'api_url'           => 'https://auths.yum6.cn',
+    'api_url2'          => 'https://auths.apip.wang',
     // 自动检测更新
-    'checkupdate'   => true,
+    'checkupdate'       => true,
     // 安全密钥
-    'AUTH_KEY'      => 'MZbiQMJMOqiQyW1lZ6Fi',
+    'AUTH_KEY'          => 'MZbiQMJMOqiQyW1lZ6Fi',
     // 登录有效期
-    'COOKIE_EXPIRE' => '86400',
+    'COOKIE_EXPIRE'     => '86400',
     // 自动获取公告
-    'getnotice'     => true,
+    'getnotice'         => true,
 ];
