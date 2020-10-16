@@ -1481,6 +1481,29 @@ class Btaction
         return false;
     }
 
+    /**
+     * 获取指定名称队列任务
+     *
+     * @param [type] $name      任务名称
+     * @return void
+     */
+    public function get_cron($name)
+    {
+        $list = $this->btAction->GetCrontab();
+        if (!$list) {
+            $this->_error = $this->btAction->_error;
+            return false;
+        }
+        if ($list) {
+            foreach ($list as $key => $value) {
+                if (isset($value['name']) && $value['name'] == $name) {
+                    return $value;
+                }
+            }
+        }
+        return false;
+    }
+
     // 清除服务器配置缓存，并获取完部缓存
     public function clear_config()
     {

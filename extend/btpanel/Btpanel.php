@@ -4499,6 +4499,32 @@ class Btpanel
         }
     }
 
+    /**
+     * 获取计划任务执行日志
+     *
+     * @param [type] $id        任务ID
+     * @return void
+     */
+    public function GetLogs($id)
+    {
+        $url = $this->BT_PANEL . config("bt.GetLogs");
+
+        $p_data         = $this->GetKeyData();
+        $p_data['id'] = $id;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && isset($data['status']) && $data['status'] == true) {
+            return isset($data['msg']) ? $data['msg'] : '';
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
 
 
     /**
