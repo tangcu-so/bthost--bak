@@ -36,7 +36,7 @@ class Vhost extends Api
         $forbiddenip = Config::get('site.api_returnip');
         if ($forbiddenip != '') {
             $black_arr = explode("\r\n", $forbiddenip);
-            if (in_array($ip, $black_arr)) {
+            if (!in_array($ip, $black_arr)) {
                 $this->error('非白名单IP不允许请求');
             }
         }
