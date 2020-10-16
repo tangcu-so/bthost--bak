@@ -582,6 +582,32 @@ class Vhost extends Api
         $this->success('请求成功 ', $info);
     }
     
+    // 主机登录
+    public function host_login()
+    {
+        $id = $this->request->param('id/d');
+        if (!$id) {
+            $this->error('错误的请求');
+        }
+        $hostInfo = model('Host')::get($id);
+        if (!$hostInfo) {
+            $this->error('没有找到有效主机');
+        }
+
+        // 登录用户
+        $userAuth = new \app\common\library\Auth();
+        if (!$userAuth->direct($hostInfo->user_id)) {
+            $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
+        }
+        Cookie::set('uid', $userAuth->id);
+        Cookie::set('token', $userAuth->getToken());
+        // cookie切换到主机id
+        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+
+        // 跳转首页控制台
+        return redirect('/');
+    }
+    
     // 主机回收站（软删除）
     public function host_recycle(){
         $id = $this->request->post('id/d');
