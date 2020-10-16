@@ -865,6 +865,7 @@ class Vhost extends Api
         $domain_max = $this->request->post('domain_max/d');
         $web_back_num = $this->request->post('web_back_num/d');
         $sql_back_num = $this->request->post('sql_back_num/d');
+        $status = $this->request->post('status');
         if(!$id){
             $this->error('请求错误');
         }
@@ -887,7 +888,7 @@ class Vhost extends Api
         if ($is_audit) {
             $hostInfo->is_audit = $is_audit;
         }
-        if ($status != '' || $status != null) {
+        if ($status != '' && $status != null) {
             $hostInfo->status = $status;
         }
         if ($endtime) {
