@@ -908,6 +908,9 @@ class Vhost extends Api
         if ($is_audit) {
             $hostInfo->is_audit = $is_audit;
         }
+        if ($status != '' || $status != null) {
+            $hostInfo->status = $status;
+        }
         if ($endtime) {
             if (date('Y-m-d', strtotime($endtime)) !== $endtime) {
                 $this->error('时间格式错误，请严格按照Y-m-d格式传递');
