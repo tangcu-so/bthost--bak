@@ -922,12 +922,49 @@ class Vhost extends Api
         $this->success('更新成功',$hostInfo);
     }
 
-    // TODO 主机域名绑定（暂定）
+    // 主机域名绑定
     public function host_domain(){
         $id = $this->request->post('id/d');
-        if(!$id){
+        $domain = $this->request->post('domain');
+        $dirs = $this->request->post('dirs', '/');
+        $is_audit = $this->request->post('is_audit', 0);
+        if (!$id || !$domain) {
             $this->error('错误的请求');
         }
+        $hostInfo = model('Host')::get($id);
+        if (!$hostInfo) {
+            $this->error('没有找到有效主机');
+        }
+        $data = [
+            'vhost_id'    => $id,
+            'domain'      => $domain,
+            'dir'         => $dirs,
+            'status'      => $is_audit ? 0 : 1,
+        ];
+
+        \app\common\model\Domainlist::event('before_insert', function ($data) {
+            if ($data->status == 1) {
+                $hostInfo = model('Host')::get($data->vhost_id);
+                if ($data->dir == '/') {
+                    $isdir = 0;
+                    $name  = $hostInfo->bt_name;
+                } else {
+                    $isdir = 1;
+                    $name  = $data->dir;
+                }
+
+                // 连接宝塔绑定域名
+                $bt = new Btaction();
+                $bt->bt_id = $hostInfo->bt_id;
+                $add = $bt->addDomain($data->domain, $name, $isdir);
+                if (!$add) {
+                    $this->error($bt->_error);
+                    return false;
+                }
+            }
+        });
+        $domainInfo = model('Domainlist')::create($data);
+        $this->success('添加成功', $domainInfo);
     }
 
     // 主机绑定IP
