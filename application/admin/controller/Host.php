@@ -523,13 +523,17 @@ class Host extends Backend
 
                 // 同步云端主机状态到本地
                 // 由于本地状态多样性，导致云端和本地不可能完全同步，所以考虑是否由本地同步到云端，实现主机启停
+
                 if ($hostInfo->status == 'normal' && $status != 1) {
                     $statusUp = $bt->webstart();
-                } else {
+                } elseif ($hostInfo->status != 'normal' && $status == 1
+                ) {
                     $statusUp = $bt->webstop();
+                } else {
+                    $statusUp = 1;
                 }
 
-                if ($statusUp && $timeSet && $timeSet) {
+                if ($statusUp && $timeSet) {
                     $this->success($emsg);
                 } else {
                     $this->error($emsg);

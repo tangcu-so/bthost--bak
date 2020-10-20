@@ -29,6 +29,27 @@ class Queue extends Backend
         $this->view->assign('queUrl', $this->queUrl);
     }
 
+    // 获取宝塔面板任务执行日志
+    public function getLogs()
+    {
+        $bt = new Btaction();
+
+        $logsInfo = $bt->get_cron('btHost计划任务');
+        if (!$logsInfo) {
+            $this->error('任务未添加，请先添加任务', null);
+        }
+        if (!isset($logsInfo['id'])) {
+            $this->error('任务获取失败', null);
+        }
+        $log_id = $logsInfo['id'];
+        $logs = $bt->btAction->GetLogs($log_id);
+        if (!$logs) {
+            $this->error($bt->btAction->_error, null);
+        }
+        $this->view->assign('logs', $logs);
+        return $this->view->fetch('queuelogs');
+    }
+
     public function detail($limit = 10)
     {
         $row = model('queueLog')->order('id desc')->paginate($limit)->each(function ($item, $key) {

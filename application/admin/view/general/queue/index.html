@@ -8,8 +8,11 @@
                     <div id="toolbar" class="toolbar">
                         {:build_toolbar('refresh,edit')}
                         <a class="btn btn-info btn-primary btn-dialog" title="{:__('任务日志')}" data-params="logs"
+                            data-url="general/queue/getLogs" href="javascript:;"><i class="fa fa-leaf"></i>
+                            执行明细</a>
+                        <a class="btn btn-info btn-warning btn-dialog" title="{:__('任务日志')}" data-params="logs"
                             data-url="general/queue/detail" href="javascript:;"><i class="fa fa-leaf"></i>
-                            日志</a>
+                            详细日志</a>
                         <a class="btn btn-danger btn-primary btn-clear" href="javascript:;"
                             data-original-title="当日志过多时可以选择全部清空" data-toggle="tooltip"><i class="fa fa-trash-o"></i>
                             清空日志</a>

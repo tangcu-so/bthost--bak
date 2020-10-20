@@ -9,6 +9,7 @@ use think\Config;
 use think\Db;
 use think\Cache;
 use app\common\library\Btaction;
+use think\Cookie;
 
 /**
  * 主机操作对外接口
@@ -36,7 +37,7 @@ class Vhost extends Api
         $forbiddenip = Config::get('site.api_returnip');
         if ($forbiddenip != '') {
             $black_arr = explode("\r\n", $forbiddenip);
-            if (in_array($ip, $black_arr)) {
+            if (!in_array($ip, $black_arr)) {
                 $this->error('非白名单IP不允许请求');
             }
         }
@@ -581,6 +582,32 @@ class Vhost extends Api
 
         $this->success('请求成功 ', $info);
     }
+
+    // 主机登录
+    public function host_login()
+    {
+        $id = $this->request->param('id/d');
+        if (!$id) {
+            $this->error('错误的请求');
+        }
+        $hostInfo = model('Host')::get($id);
+        if (!$hostInfo) {
+            $this->error('没有找到有效主机');
+        }
+
+        // 登录用户
+        $userAuth = new \app\common\library\Auth();
+        if (!$userAuth->direct($hostInfo->user_id)) {
+            $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
+        }
+        Cookie::set('uid', $userAuth->id);
+        Cookie::set('token', $userAuth->getToken());
+        // cookie切换到主机id
+        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+
+        // 跳转首页控制台
+        return redirect('/');
+    }
     
     // 主机回收站（软删除）
     public function host_recycle(){
@@ -667,13 +694,6 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $hostInfo = $bt->webstop();
-        if(!$hostInfo){
-            $this->error($bt->_error);
-        }
         $hostFind->status = 'stop';
         $hostFind->save();
         $this->success('主机已停用');
@@ -686,13 +706,6 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $hostInfo = $bt->webstop();
-        if(!$hostInfo){
-            $this->error($bt->_error);
-        }
         $hostFind->status = 'locked';
         $hostFind->save();
         $this->success('主机已锁定');
@@ -705,13 +718,6 @@ class Vhost extends Api
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        $bt = new Btaction();
-        $bt->bt_name = $hostFind->bt_name;
-        $bt->bt_id = $hostFind->bt_id;
-        $hostInfo = $bt->webstart();
-        if(!$hostInfo){
-            $this->error($bt->_error);
-        }
         $hostFind->status = 'normal';
         $hostFind->save();
         $this->success('主机已开启');
@@ -765,10 +771,10 @@ class Vhost extends Api
         // 同步状态到本地
         if ($hostFind->status == 'normal' && $status != 1) {
             $bt->webstart();
-            $status = 1;
-        } else {
+            $status = '1';
+        } elseif ($hostFind->status != 'normal' && $status == 1) {
             $bt->webstop();
-            $status = 0;
+            $status = '0';
         }
 
         $hostFind->save();
@@ -860,6 +866,7 @@ class Vhost extends Api
         $domain_max = $this->request->post('domain_max/d');
         $web_back_num = $this->request->post('web_back_num/d');
         $sql_back_num = $this->request->post('sql_back_num/d');
+        $status = $this->request->post('status');
         if(!$id){
             $this->error('请求错误');
         }
@@ -882,6 +889,9 @@ class Vhost extends Api
         if ($is_audit) {
             $hostInfo->is_audit = $is_audit;
         }
+        if ($status != '' && $status != null) {
+            $hostInfo->status = $status;
+        }
         if ($endtime) {
             if (date('Y-m-d', strtotime($endtime)) !== $endtime) {
                 $this->error('时间格式错误，请严格按照Y-m-d格式传递');
@@ -893,12 +903,49 @@ class Vhost extends Api
         $this->success('更新成功',$hostInfo);
     }
 
-    // TODO 主机域名绑定（暂定）
+    // 主机域名绑定
     public function host_domain(){
         $id = $this->request->post('id/d');
-        if(!$id){
+        $domain = $this->request->post('domain');
+        $dirs = $this->request->post('dirs', '/');
+        $is_audit = $this->request->post('is_audit', 0);
+        if (!$id || !$domain) {
             $this->error('错误的请求');
         }
+        $hostInfo = model('Host')::get($id);
+        if (!$hostInfo) {
+            $this->error('没有找到有效主机');
+        }
+        $data = [
+            'vhost_id'    => $id,
+            'domain'      => $domain,
+            'dir'         => $dirs,
+            'status'      => $is_audit ? 0 : 1,
+        ];
+
+        \app\common\model\Domainlist::event('before_insert', function ($data) {
+            if ($data->status == 1) {
+                $hostInfo = model('Host')::get($data->vhost_id);
+                if ($data->dir == '/') {
+                    $isdir = 0;
+                    $name  = $hostInfo->bt_name;
+                } else {
+                    $isdir = 1;
+                    $name  = $data->dir;
+                }
+
+                // 连接宝塔绑定域名
+                $bt = new Btaction();
+                $bt->bt_id = $hostInfo->bt_id;
+                $add = $bt->addDomain($data->domain, $name, $isdir);
+                if (!$add) {
+                    $this->error($bt->_error);
+                    return false;
+                }
+            }
+        });
+        $domainInfo = model('Domainlist')::create($data);
+        $this->success('添加成功', $domainInfo);
     }
 
     // 主机绑定IP
@@ -1049,14 +1096,14 @@ class Vhost extends Api
     // 签名验证
     private function token_check(){
         // 时间戳
-        $time = $this->request->get('time/d');
+        $time = $this->request->param('time/d');
         if((time()-$time)>10){
             return false;
         }
         // 随机数
-        $random = $this->request->get('random');
+        $random = $this->request->param('random');
         // 签名
-        $signature = $this->request->get('signature');
+        $signature = $this->request->param('signature');
 
         $data = [
             'time' => $time,
