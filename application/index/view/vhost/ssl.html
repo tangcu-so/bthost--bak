@@ -219,8 +219,12 @@
 			layer.msg('请选择域名')
 			return false;
 		}
-
-		setTimeout("getletlog()", 1000);
+		// 设置成功的话其实就不用获取日志，因为申请成功后会取消标记状态，且请求是同步的
+		// setTimeout("getletlog()", 1000);
+		var l = $('#ssl_loading').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
 		$.post('{:url("index/vhost/sslApplyLets")}', {
 				domain: domain
 			}, function (data, textStatus, xhr) {
@@ -229,6 +233,9 @@
 			.fail(function () {
 				EchoMsg('请求错误，请稍候重试');
 			})
+			.always(function () {
+				l.destroy();
+			})
 	}
 
 	function getletlog() {
@@ -236,6 +243,7 @@
 				url: '{:url("getFileLog")}',
 				type: 'post',
 				dataType: 'json',
+				async:false,
 			})
 			.done(function (res) {
 				if (res.code == 1) {

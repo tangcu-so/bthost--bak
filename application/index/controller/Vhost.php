@@ -2852,7 +2852,7 @@ class Vhost extends Frontend
         if (!$domain) {
             $this->error('域名不能为空');
         }
-        $domainFind = Db::name('domain')->where('vhost_id', $this->vhost_id)->where('domain', 'in', $domain)->find();
+        $domainFind = model('domainlist')->where('vhost_id', $this->vhost_id)->where('domain', 'in', $domain)->find();
         if (!$domainFind) {
             $this->error('没有找到该域名');
         }
@@ -2883,7 +2883,8 @@ class Vhost extends Frontend
             } else {
                 $this->error('检测中，请确认域名解析正确并能访问');
             }
-        } elseif ($GetDVSSL && isset($GetDVSSL['status']) && $GetDVSSL['status'] == 'false') {
+        } elseif ($GetDVSSL && isset($GetDVSSL['msg'])
+        ) {
             // 申请失败
             $this->error($GetDVSSL['msg']);
         } else {
@@ -2911,7 +2912,7 @@ class Vhost extends Frontend
         $domains_arr = $domains['domain'];
         $domain      = implode(',', $domains_arr);
 
-        $domainFind = Db::name('domain')->where('vhost_id', $this->vhost_id)->where('domain', 'in', $domain)->find();
+        $domainFind = model('domainlist')->where('vhost_id', $this->vhost_id)->where('domain', 'in', $domain)->find();
         if (!$domainFind) {
             $this->error('没有找到该域名');
         }
