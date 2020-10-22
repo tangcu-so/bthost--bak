@@ -23,8 +23,8 @@ class Dashboard extends Backend
         // 数据表预设内容
         $paylist = $createlist = [];
         $day = date("H:i:s", time());
-        $createlist[$day] = mt_rand(20, 200);
-        $paylist[$day] = mt_rand(1, mt_rand(1, $createlist[$day]));
+        $createlist[$day] = 0;
+        $paylist[$day] = 0;
         
         $hooks = config('addons.hooks');
         $uploadmode = isset($hooks['upload_config_init']) && $hooks['upload_config_init'] ? implode(',', $hooks['upload_config_init']) : 'local';

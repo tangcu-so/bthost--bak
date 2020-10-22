@@ -203,7 +203,7 @@ class Backend extends Controller
 
         // 配置信息
         $config = [
-            'site'           => array_intersect_key($site, array_flip(['name', 'indexurl', 'cdnurl', 'version', 'timezone', 'languages'])),
+            'site'           => array_intersect_key($site, array_flip(['name', 'indexurl', 'cdnurl', 'version', 'timezone', 'languages', 'auto_flow', 'auto_notice', 'auto_update'])),
             'upload'         => $upload,
             'modulename'     => $modulename,
             'controllername' => $controllername,

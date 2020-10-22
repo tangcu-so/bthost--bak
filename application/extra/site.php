@@ -40,7 +40,7 @@ return array (
   'queue_key' => 'dA0IwO',
   'expire_action' => 'recycle',
   'recycle_delete' => '7',
-  'api_token' => 'b816rlXz2-4N_NlGgnh4_K5Rw5AYLSgMOQrFijrSYXaqPwswyyweXwCl-uSEOpIFUaM_3_MZuKmciUumyA',
+  'api_token' => '7b7cQsOQuGGt79i2cMtMVcbQJasIkjoXTWW5XeWp7PcaKwgeMcQHNSmtIMrlV07kYg21GSBd_gvOngvBCQ',
   'api_port' => '8888',
   'excess_panel' => '0',
   'main_center_notice' => '',
@@ -65,4 +65,7 @@ return array (
   'debug' => '0',
   'status' => '0',
   'http' => 'http://',
+  'auto_flow' => '1',
+  'auto_update' => '1',
+  'auto_notice' => '1',
 );

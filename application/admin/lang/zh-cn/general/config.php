@@ -109,4 +109,7 @@ return [
     'status'                      => '网站维护',
     'ftp_type'                    => 'FTP协议',
     'http'                        => '宝塔面板url协议',
+    'auto_flow'                   => '控制台动态负载信息',
+    'auto_update'                 => '自动检查更新',
+    'auto_notice'                 => '自动获取公告',
 ];

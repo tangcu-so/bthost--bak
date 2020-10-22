@@ -414,7 +414,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'adminlte', 'form'], functi
                 // }
                 //检测更新
                 var ignoreversion = localStorage.getItem("ignoreversion");
-                if (Config.bty.checkupdate && ignoreversion !== "*") {
+                if (Config.bty.checkupdate && ignoreversion !== "*" && Config.site.auto_update=='1') {
                     server.checkupdate(ignoreversion, false);
                 }
                 // 获取公告
