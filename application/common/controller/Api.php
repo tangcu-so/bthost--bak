@@ -349,24 +349,30 @@ class Api
     // 授权验证方法
     protected function auth_check_local()
     {
-        // 授权判断
-        // TODO 新授权判断思路
-        // 使用授权码获取远端私钥
-        // 使用获取的远端私钥+本地公钥进行解密
-        // 解密成功后获得当前授权域名
-        // 如果当前域名全等于授权域名，则授权有效
-        $bt = new Btaction();
-        $ip = $bt->getIp();
-
         $is_ajax = $this->request->isAjax() ? 1 : 0;
-        if (!$ip) {
-            return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确');
-        }
-
         // 公钥
         $public_key = self::getPublicKey();
 
         $rsa = new \fast\Rsa($public_key);
+
+        if (!Cache::get('auth_check_ip')) {
+            $bt = new Btaction();
+            $ipInfo = $bt->getIp();
+            $ip = $ipInfo;
+            if (!$ip) {
+                return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确');
+            }
+            // ip需要密文加密
+            $ip_encode = encode($ipInfo, 'ZD4wNqBVN0Gn');
+            Cache::remember('auth_check_ip', $ip_encode);
+        } else {
+            $ip_encode = Cache::get('auth_check_ip');
+            $ip = decode($ip_encode, 'ZD4wNqBVN0Gn');
+            if (!$ip) {
+                return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确，或尝试删除目录/runtime/cache后重试！') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确，或尝试删除目录/runtime/cache后重试！');
+            }
+        }
+
 
         if (!Cache::get('auth_check')) {
             $json = $this->auth_check($ip);

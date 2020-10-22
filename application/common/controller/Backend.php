@@ -604,18 +604,30 @@ class Backend extends Controller
     // 授权验证方法
     protected function auth_check_local()
     {
-        $bt = new Btaction();
-        $ip = $bt->getIp();
-
         $is_ajax = $this->request->isAjax() ? 1 : 0;
-        if (!$ip) {
-            return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确');
-        }
-        
         // 公钥
         $public_key = self::getPublicKey();
 
         $rsa = new \fast\Rsa($public_key);
+
+        if (!Cache::get('auth_check_ip')) {
+            $bt = new Btaction();
+            $ipInfo = $bt->getIp();
+            $ip = $ipInfo;
+            if (!$ip) {
+                return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确');
+            }
+            // ip需要密文加密
+            $ip_encode = encode($ipInfo, 'ZD4wNqBVN0Gn');
+            Cache::remember('auth_check_ip', $ip_encode);
+        } else {
+            $ip_encode = Cache::get('auth_check_ip');
+            $ip = decode($ip_encode, 'ZD4wNqBVN0Gn');
+            if (!$ip) {
+                return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确，或尝试删除目录/runtime/cache后重试！') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确，或尝试删除目录/runtime/cache后重试！');
+            }
+        }
+        
 
         if (!Cache::get('auth_check')) {
             $json = $this->auth_check($ip);
