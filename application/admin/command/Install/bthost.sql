@@ -924,5 +924,7 @@ ALTER TABLE `bth_user` ADD COLUMN `email`  varchar(100) NOT NULL COMMENT '电子
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_flow', 'personalization', 'auto_flow', '控制台自动加载动态流量图及服务器信息', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_update', 'personalization', 'auto_update', '自动检查更新', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_notice', 'personalization', 'auto_notice', '自动获取公告', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
+ALTER TABLE `bth_user` MODIFY COLUMN `email`  varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '电子邮箱' AFTER `password`;
+
 
 
