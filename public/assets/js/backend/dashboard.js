@@ -1,5 +1,7 @@
 define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echarts-theme', 'template'], function ($, undefined, Backend, Datatable, Table, Echarts, undefined, Template) {
     var server = {};
+    // 基于准备好的dom，初始化echarts实例
+    var myChart = Echarts.init(document.getElementById('echart'), 'walden');
     server.toPercent = function(point){
         // 转百分数
     	if (point==0) {
@@ -121,12 +123,60 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
             }
         });
     }
+    server.getnet = function(){
+        $.post('ajax/getNet', {type: 'getGetNetWork'}, function(data, textStatus, xhr) {
+            if(data){
+                $('#loadOne').html(server.toPercent(data.load.one));
+                if(data.load.one<0.5){
+                    $('#loadStatus').html('运行流畅');
+                }else if(data.load.one<0.8){
+                    $('#loadStatus').html('运行缓慢');
+                }else if(data.load.one<1){
+                    $('#loadStatus').html('运行堵塞');
+                }
+                $('#memBfb').html(server.toPercent(data.mem.memRealUsed/data.mem.memTotal));
+                $('#netUp').html(data.up+'kb');
+                $('#netDown').html(data.down+'kb');
+                $('#downTotal').html(server.change(data.downTotal));
+                $('#upTotal').html(server.change(data.upTotal));
+                $('#mem').html(data.mem.memRealUsed+'/'+data.mem.memTotal+'(MB)');
+                $('#cpu0').html(data.cpu['0']+'%');
+                $('#cpu1').html(data.cpu['1']+'核心');
+                Orderdata.column.push((new Date()).toLocaleTimeString().replace(/^\D*/, ''));// 时间
+                var amount = data.up;// 下行
+                Orderdata.createdata.push(amount);
+                Orderdata.paydata.push(data.down);// 上行
+
+                //按自己需求可以取消这个限制
+                if (Orderdata.column.length >= 20) {
+                    //移除最开始的一条数据
+                    Orderdata.column.shift();
+                    Orderdata.paydata.shift();
+                    Orderdata.createdata.shift();
+                }
+                myChart.setOption({
+                    xAxis: {
+                        data: Orderdata.column
+                    },
+                    series: [{
+                        name: __('Net up'),
+                        data: Orderdata.paydata
+                    },
+                        {
+                            name: __('Net down'),
+                            data: Orderdata.createdata
+                        }]
+                });
+            }else{
+                layer.msg('请求错误');
+            }
+        });
+    }
     var Controller = {
         index: function () {
-            server.getnotice();
-
-            // 基于准备好的dom，初始化echarts实例
-            var myChart = Echarts.init(document.getElementById('echart'), 'walden');
+            if(Config.site.auto_notice=='1'){
+                server.getnotice();
+            }
 
             // 指定图表的配置项和数据
             var option = {
@@ -193,56 +243,20 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
             myChart.setOption(option);
 
             //动态添加数据，可以通过Ajax获取数据然后填充
-            setInterval(function () {
-
-                $.post('ajax/getNet', {type: 'getGetNetWork'}, function(data, textStatus, xhr) {
-                    if(data){
-                        $('#loadOne').html(server.toPercent(data.load.one));
-                        if(data.load.one<0.5){
-                            $('#loadStatus').html('运行流畅');
-                        }else if(data.load.one<0.8){
-                            $('#loadStatus').html('运行缓慢');
-                        }else if(data.load.one<1){
-                            $('#loadStatus').html('运行堵塞');
-                        }
-                        $('#memBfb').html(server.toPercent(data.mem.memRealUsed/data.mem.memTotal));
-                        $('#netUp').html(data.up+'kb');
-                        $('#netDown').html(data.down+'kb');
-                        $('#downTotal').html(server.change(data.downTotal));
-                        $('#upTotal').html(server.change(data.upTotal));
-                        $('#mem').html(data.mem.memRealUsed+'/'+data.mem.memTotal+'(MB)');
-                        $('#cpu0').html(data.cpu['0']+'%');
-                        $('#cpu1').html(data.cpu['1']+'核心');
-                        Orderdata.column.push((new Date()).toLocaleTimeString().replace(/^\D*/, ''));// 时间
-                        var amount = data.up;// 下行
-                        Orderdata.createdata.push(amount);
-                        Orderdata.paydata.push(data.down);// 上行
-
-                        //按自己需求可以取消这个限制
-                        if (Orderdata.column.length >= 20) {
-                            //移除最开始的一条数据
-                            Orderdata.column.shift();
-                            Orderdata.paydata.shift();
-                            Orderdata.createdata.shift();
-                        }
-                        myChart.setOption({
-                            xAxis: {
-                                data: Orderdata.column
-                            },
-                            series: [{
-                                name: __('Net up'),
-                                data: Orderdata.paydata
-                            },
-                                {
-                                    name: __('Net down'),
-                                    data: Orderdata.createdata
-                                }]
-                        });
-                    }else{
-                        layer.msg('请求错误');
-                    }
-                });
+            
+            var auto_getnet = setInterval(function () {
+                server.getnet();
+                if(Config.site.auto_flow!='1'){
+                    clearInterval(auto_getnet);
+                }
             }, 2000);
+
+            $(document).on('click','.btn-refresh-load',function(){
+                $(this).addClass('fa-spin');
+                server.getnet();
+                setTimeout(function(){ $('.btn-refresh-load').removeClass('fa-spin'); }, 2000);
+            });
+            
             $(window).resize(function () {
                 myChart.resize();
             });

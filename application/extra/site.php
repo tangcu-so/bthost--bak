@@ -1,6 +1,6 @@
 <?php
 
-return array (
+return array(
   'name' => 'btHost',
   'description' => '虚拟主机管理系统，完美的解决您的需求，多种多样的使用场景',
   'logo' => '/logo.png',
@@ -8,14 +8,14 @@ return array (
   'timezone' => 'Asia/Shanghai',
   'cdnurl' => '',
   'version' => '1.0.1',
-  'languages' => 
-  array (
+  'languages' =>
+  array(
     'backend' => 'zh-cn',
     'frontend' => 'zh-cn',
   ),
   'forbiddenip' => '',
-  'configgroup' => 
-  array (
+  'configgroup' =>
+  array(
     'basic' => 'Basic',
     'email' => 'Email',
     'server' => 'Server',
@@ -65,4 +65,7 @@ return array (
   'debug' => '0',
   'status' => '0',
   'http' => 'http://',
+  'auto_flow' => '1',
+  'auto_update' => '1',
+  'auto_notice' => '1',
 );

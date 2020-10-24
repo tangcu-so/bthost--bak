@@ -920,3 +920,11 @@ INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`
 INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '2', 'general/upgrade/index', '在线更新', 'fa fa-cloud-upload', '', '', '1', '1602665512', '1602665872', '0', 'normal');
 ALTER TABLE `bth_user` ADD COLUMN `email`  varchar(100) NOT NULL COMMENT '电子邮箱' AFTER `password`;
 
+-- 新版待添加
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_flow', 'personalization', 'auto_flow', '控制台自动加载动态流量图及服务器信息', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_update', 'personalization', 'auto_update', '自动检查更新', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_notice', 'personalization', 'auto_notice', '自动获取公告', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
+ALTER TABLE `bth_user` MODIFY COLUMN `email`  varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '电子邮箱' AFTER `password`;
+
+
+

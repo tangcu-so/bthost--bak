@@ -247,7 +247,8 @@
     <div class="panel-heading">
         {:build_heading(null, false)}
         <ul class="nav nav-tabs">
-            <li class="active"><a href="#one" data-toggle="tab">{:__('Dashboard')}</a></li>
+            <li class="active"><a href="#one" data-toggle="tab">{:__('Dashboard')} <i
+                        class="fa fa-refresh btn-refresh-load" title="刷新"></i></a></li>
             <li><a href="#two" data-toggle="tab">{:__('Custom')}</a></li>
         </ul>
     </div>
@@ -351,7 +352,9 @@
                                         <div class="sm-st clearfix">
                                             <span class="sm-st-icon st-red"><i class="fa fa-users"></i></span>
                                             <div class="sm-st-info">
-                                                <span>{$totaluser|default="0"}</span>
+                                                <span><a href="{:url('/user/user')}" class="btn-addtabs"
+                                                        title="{:__('Total user')}">
+                                                        {$totaluser|default="0"}</a></span>
                                                 {:__('Total user')}
                                             </div>
                                         </div>
@@ -360,7 +363,8 @@
                                         <div class="sm-st clearfix">
                                             <span class="sm-st-icon st-violet"><i class="fa fa-hdd-o"></i></span>
                                             <div class="sm-st-info">
-                                                <span>{$hostCount|default="0"}</span>
+                                                <span><a href="{:url('/host')}" class="btn-addtabs"
+                                                        title="{:__('Total web')}">{$hostCount|default="0"}</a></span>
                                                 {:__('Total web')}
                                             </div>
                                         </div>
@@ -369,7 +373,8 @@
                                         <div class="sm-st clearfix">
                                             <span class="sm-st-icon st-blue"><i class="fa fa-globe"></i></span>
                                             <div class="sm-st-info">
-                                                <span>{$ftpCount|default="0"}</span>
+                                                <span><a href="{:url('/ftp')}" class="btn-addtabs"
+                                                        title="{:__('Total ftp')}">{$ftpCount|default="0"}</a></span>
                                                 {:__('Total ftp')}
                                             </div>
                                         </div>
@@ -378,7 +383,8 @@
                                         <div class="sm-st clearfix">
                                             <span class="sm-st-icon st-green"><i class="fa fa-database"></i></span>
                                             <div class="sm-st-info">
-                                                <span>{$sqlCount|default="0"}</span>
+                                                <span><a href="{:url('/sql')}" class="btn-addtabs"
+                                                        title="{:__('Total sql')}">{$sqlCount|default="0"}</a></span>
                                                 {:__('Total sql')}
                                             </div>
                                         </div>
@@ -457,9 +463,10 @@
                         <div class="card-block">
                             <div class="row row-sm stats-container">
                                 <div class="col-xs-6 stat-col">
-                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat-icon"><i class="fa fa-users"></i></div>
                                     <div class="stat">
-                                        <div class="value"> {$todayusersignup}</div>
+                                        <div class="value"> <a href="{:url('/user/user')}" class="btn-addtabs"
+                                                title="{:__('Today user login')}"> {$todayusersignup}</a></div>
                                         <div class="name"> {:__('Today user login')}</div>
                                     </div>
                                     <div class="progress">
@@ -467,9 +474,11 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-6 stat-col">
-                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat-icon"><i class="fa fa-globe"></i></div>
                                     <div class="stat">
-                                        <div class="value"> {$auditCount}</div>
+                                        <div class="value"> <a href="{:url('/domainlist')}" class="btn-addtabs"
+                                                title="{:__('Total audit')}"> {$auditCount}</a>
+                                        </div>
                                         <div class="name"> {:__('Total audit')}</div>
                                     </div>
                                     <div class="progress">
@@ -477,9 +486,10 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-6 stat-col">
-                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
                                     <div class="stat">
-                                        <div class="value"> {$endtime7Count}</div>
+                                        <div class="value"><a href="{:url('/host')}" class="btn-addtabs"
+                                                title="{:__('Total endtime 7')}"> {$endtime7Count}</a></div>
                                         <div class="name"> {:__('Total endtime 7')}</div>
                                     </div>
                                     <div class="progress">
@@ -487,9 +497,10 @@
                                     </div>
                                 </div>
                                 <div class="col-xs-6 stat-col">
-                                    <div class="stat-icon"><i class="fa fa-rocket"></i></div>
+                                    <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
                                     <div class="stat">
-                                        <div class="value"> {$endCount}</div>
+                                        <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
+                                                title="{:__('Total endtime')}"> {$endCount}</a></div>
                                         <div class="name"> {:__('Total endtime')}</div>
                                     </div>
                                     <div class="progress">
