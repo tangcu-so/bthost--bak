@@ -449,6 +449,23 @@ class Vhost extends Api
         }
         // 构建站点信息
         $hostSetInfo = $bt->setInfo($this->request->post(), $plansInfo);
+        if (!$hostSetInfo) {
+            $this->error('站点信息构建失败，请重试|' . json_encode($plansInfo));
+        }
+
+        // vsftpd创建
+        if (isset($plansInfo['vsftpd']) && $plansInfo['vsftpd'] == 1) {
+            // 调用vsftpd进行目录创建
+            $creatVsftpdPath = $bt->btAction->AddVsftpdUser($hostSetInfo['username'], $hostSetInfo['password'], $hostSetInfo['path'], $plansInfo['site_max'], $plansInfo['limit_rate']);
+            if ($creatVsftpdPath && isset($creatVsftpdPath['status']) && $creatVsftpdPath['status'] != 'Success') {
+                $this->error('主机创建失败->' . $creatVsftpdPath['msg'] . '|' . json_encode($hostSetInfo));
+            } elseif ($creatVsftpdPath && !isset($creatVsftpdPath['status'])) {
+                $this->error('主机创建失败->vsftpd网站根目录创建失败|' . json_encode($hostSetInfo['path']));
+            } elseif (isset($creatVsftpdPath['msg'])) {
+                $this->error('主机创建失败->' . $creatVsftpdPath['msg'] . '|' . json_encode($hostSetInfo));
+            }
+        }
+
         // 连接宝塔进行站点开通
         $btInfo = $bt->btBuild($hostSetInfo);
         if (!$btInfo) {
@@ -485,7 +502,6 @@ class Vhost extends Api
         // 并发、限速设置
         // 默认并发、网速限制
         if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0 && isset($bt->serverConfig['webserver']) && $bt->serverConfig['webserver'] == 'nginx') {
-            // 有错误，记录，防止开通被打断
             $modify_status = $bt->setLimit($plansInfo);
             if (!$modify_status) {
                 $this->error($bt->_error);

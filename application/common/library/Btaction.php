@@ -415,6 +415,8 @@ class Btaction
             // 以下非宝塔使用，个人记录
             'bt_name'      => $defaultDomain,
             'domain'       => $set_domain,
+            'username'     => $set_domain,
+            'password'     => $rand_password,
         );
 
         return $hostSetInfo;

@@ -17,7 +17,7 @@ use think\Config;
  */
 class Host extends Backend
 {
-    
+
     /**
      * Host模型对象
      * @var \app\admin\model\Host
@@ -82,105 +82,124 @@ class Host extends Backend
      * 因此在当前控制器中可不用编写增删改查的代码,除非需要自己控制这部分逻辑
      * 需要将application/admin/library/traits/Backend.php中对应的方法复制到当前控制器,然后进行修改
      */
-    
+
     // 创建主机
-    public function add(){
-        if($this->request->isPost()){
+    public function add()
+    {
+        if ($this->request->isPost()) {
             $params = $this->request->post('row/a');
             $plans_type = isset($params['plans_type']) ? $params['plans_type'] : 0;
             if ($plans_type == 0 && empty($params['plans'])) {
                 $this->error('请选择资源');
             }
             try {
-            // 读取资源组
-            // 资源组信息转化
-            if ($plans_type == 1) {
-                // 自定义配置
-                $params['pack']['domainpools_id'] = $params['domainpools_id'];
-                $params['pack']['ippools_id'] = $params['ippools_id'];
-                $params['pack']['preset_procedure'] = $params['preset_procedure'];
-                $params['pack']['phpver'] = $params['phpver'];
-                $plansInfo = model('Plans')->getPlanInfo('', $params['pack']);
-            } else {
+                // 读取资源组
+                // 资源组信息转化
+                if ($plans_type == 1) {
+                    // 自定义配置
+                    $params['pack']['domainpools_id'] = $params['domainpools_id'];
+                    $params['pack']['ippools_id'] = $params['ippools_id'];
+                    $params['pack']['preset_procedure'] = $params['preset_procedure'];
+                    $params['pack']['phpver'] = $params['phpver'];
+                    $plansInfo = model('Plans')->getPlanInfo('', $params['pack']);
+                } else {
                     // 资源组配置
                     $plansInfo = model('Plans')->getPlanInfo($params['plans']);
-            }
-                
-                
-                if(!$plansInfo){
-                    $this->error(model('Plans')->msg);
-                }
-                
-                $bt = new Btaction();
-                if (!$bt->test()) {
-                    $this->error($bt->_error);
                 }
 
-                $hostSetInfo = $bt->setInfo($params,$plansInfo);
+
+                if (!$plansInfo) {
+                    throw new \think\Exception(model('Plans')->msg);
+                }
+
+                $bt = new Btaction();
+                if (!$bt->test()) {
+                    throw new \think\Exception($bt->_error);
+                }
+
+
+
+                $hostSetInfo = $bt->setInfo($params, $plansInfo);
+                if (!$hostSetInfo) {
+                    throw new \think\Exception('站点信息构建失败，请重试|' . json_encode($plansInfo));
+                }
+                // vsftpd创建
+                if (isset($plansInfo['vsftpd']) && $plansInfo['vsftpd'] == 1
+                ) {
+                    // 调用vsftpd进行目录创建
+                    $creatVsftpdPath = $bt->btAction->AddVsftpdUser($hostSetInfo['username'], $hostSetInfo['password'], $hostSetInfo['path'], $plansInfo['site_max'], $plansInfo['limit_rate']);
+                    if ($creatVsftpdPath && isset($creatVsftpdPath['status']) && $creatVsftpdPath['status'] != 'Success') {
+                        throw new \think\Exception('主机创建失败->' . $creatVsftpdPath['msg'] . '|' . json_encode($hostSetInfo));
+                    } elseif ($creatVsftpdPath && !isset($creatVsftpdPath['status'])) {
+                        throw new \think\Exception('主机创建失败->vsftpd网站根目录创建失败|' . json_encode($hostSetInfo['path']));
+                    } elseif (isset($creatVsftpdPath['msg'])) {
+                        throw new \think\Exception('主机创建失败->' . $creatVsftpdPath['msg'] . '|' . json_encode($hostSetInfo));
+                    }
+                }
+
                 // 连接宝塔进行站点开通
                 $btInfo = $bt->btBuild($hostSetInfo);
                 if (!$btInfo) {
-                    $this->error($bt->_error);
+                    throw new \think\Exception($bt->_error);
                 }
                 $bt->bt_id = $btId = $btInfo['siteId'];
-                $btName = $hostSetInfo['bt_name'];    
+                $btName = $hostSetInfo['bt_name'];
 
                 Db::startTrans();
 
-                
-                // vsftpd创建
-                
+
+
+
                 // 修改到期时间
-                $timeSet = $bt->btAction->WebSetEdate($btId,$params['endtime']);
+                $timeSet = $bt->btAction->WebSetEdate($btId, $params['endtime']);
                 if (!$timeSet['status']) {
-                    $this->error('开通时间设置失败|' . json_encode($params['endtime']));
+                    throw new \think\Exception('开通时间设置失败|' . json_encode($params['endtime']));
                 }
-                
+
                 // 预装程序
-                if($plansInfo['preset_procedure']){
+                if ($plansInfo['preset_procedure']) {
                     // 程序预装
-                    $defaultPhp = $hostSetInfo['version']&&$hostSetInfo['version']!='00'?$hostSetInfo['version']:'56';
+                    $defaultPhp = $hostSetInfo['version'] && $hostSetInfo['version'] != '00' ? $hostSetInfo['version'] : '56';
                     $setUp = $bt->presetProcedure($plansInfo['preset_procedure'], $btName, $defaultPhp);
-                    if(!$setUp){
-                        $this->error($bt->_error);
+                    if (!$setUp) {
+                        throw new \think\Exception($bt->_error);
                     }
                 }
 
                 if ($plansInfo['session']) {
-                // session隔离
-                $bt->btAction->set_php_session_path($btId, 1);
+                    // session隔离
+                    $bt->btAction->set_php_session_path($btId, 1);
                 }
 
 
                 // 并发、限速设置
                 // 默认并发、网速限制
                 if (isset($plansInfo['perserver']) && $plansInfo['perserver'] != 0 && isset($bt->serverConfig['webserver']) && $bt->serverConfig['webserver'] == 'nginx') {
-                    // 有错误，记录，防止开通被打断
                     $modify_status = $bt->setLimit($plansInfo);
                     if (!$modify_status) {
-                        $this->error($bt->_error);
+                        throw new \think\Exception($bt->_error);
                     }
                 }
 
                 $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
-                
-                if($plansInfo['dnspod']){
+
+                if ($plansInfo['dnspod']) {
                     // 如果域名属于dnspod智能解析
                     $record_type = Config::get('site.dnspod_analysis_type');
                     $analysis = Config::get('site.dnspod_analysis_url');
-                    
+
                     $sub_domain = $hostSetInfo['domain'];
-                    $domain_jx = $this->model->doamin_analysis($plansInfo['domain'],$analysis,$sub_domain,$record_type);
-                    if(!is_array($domain_jx)){
-                        $this->error('域名解析失败|' . json_encode([$plansInfo['domain'],$analysis,$sub_domain,$domain_jx],JSON_UNESCAPED_UNICODE));
+                    $domain_jx = $this->model->doamin_analysis($plansInfo['domain'], $analysis, $sub_domain, $record_type);
+                    if (!is_array($domain_jx)) {
+                        throw new \think\Exception('域名解析失败|' . json_encode([$plansInfo['domain'], $analysis, $sub_domain, $domain_jx], JSON_UNESCAPED_UNICODE));
                     }
                     $dnspod_record = $sub_domain;
                     $dnspod_record_id = $domain_jx['id'];
                     $dnspod_domain_id = $domain_jx['domain_id'];
                 }
-                
+
                 // 绑定多ip
-                
+
                 // 获取信息后存入数据库
                 $host_data = [
                     'user_id'               => $params['user_id'],
@@ -195,53 +214,50 @@ class Host extends Backend
                     'domain_max'            => $plansInfo['domain_num'],
                     'web_back_num'          => $plansInfo['web_back_num'],
                     'sql_back_num'          => $plansInfo['sql_back_num'],
-                    'ip_address'            => isset($plansInfo['ipArr'])?$plansInfo['ipArr']:'',
+                    'ip_address'            => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
                     'endtime'               => $params['endtime'],
                 ];
-                $inc = model('Host')::create($host_data);                
+                $inc = model('Host')::create($host_data);
 
                 $vhost_id = $inc->id;
-                if(!$vhost_id){
-                    $this->error('主机信息存储失败');
+                if (!$vhost_id) {
+                    throw new \think\Exception('主机信息存储失败');
                 }
-                
-                if($btInfo['ftpStatus']==true){
+
+                if ($btInfo['ftpStatus'] == true) {
                     // 存储ftp
-                    $ftp = model('Ftp')::create([
-                        'vhost_id'=>$vhost_id,
-                        'username'=>$btInfo['ftpUser'],
-                        'password'=>$btInfo['ftpPass'],
+                    $ftp = model('Ftp')::create(['vhost_id' => $vhost_id,
+                        'username' => $btInfo['ftpUser'],
+                        'password' => $btInfo['ftpPass'],
                     ]);
                 }
-                
-                if($btInfo['databaseStatus']==true){
+
+                if ($btInfo['databaseStatus'] == true) {
                     // 存储sql
-                    $sql = model('Sql')::create([
-                        'vhost_id'=>$vhost_id,
-                        'database'=>$btInfo['databaseUser'],
-                        'username'=>$btInfo['databaseUser'],
-                        'password'=>$btInfo['databasePass'],
+                    $sql = model('Sql')::create(['vhost_id' => $vhost_id,
+                        'database' => $btInfo['databaseUser'],
+                        'username' => $btInfo['databaseUser'],
+                        'password' => $btInfo['databasePass'],
                     ]);
                 }
-                
+
                 // 存入域名信息
-                model('Domainlist')::create([
-                    'domain'=>$btName,
-                    'vhost_id'=>$vhost_id,
-                    'domain_id'=>$plansInfo['domainlist_id'],
-                    'dnspod_record'=>$dnspod_record,
-                    'dnspod_record_id'=>$dnspod_record_id,
-                    'dnspod_domain_id'=>$dnspod_domain_id,
-                    'dir'=>'/',
+                model('Domainlist')::create(['domain' => $btName,
+                    'vhost_id' => $vhost_id,
+                    'domain_id' => $plansInfo['domainlist_id'],
+                    'dnspod_record' => $dnspod_record,
+                    'dnspod_record_id' => $dnspod_record_id,
+                    'dnspod_domain_id' => $dnspod_domain_id,
+                    'dir' => '/',
                 ]);
-                
+
                 Db::commit();
             } catch (\Exception $ex) {
                 return ['code' => 0, 'msg' => $ex->getMessage()];
             } catch (\Throwable $th) {
                 return ['code' => 0, 'msg' => $th->getMessage()];
             }
-            
+
             $this->success('添加成功');
         }
         $siteList = [];
@@ -278,7 +294,8 @@ class Host extends Backend
     }
 
     // 真实删除
-    public function destroy($ids = null){
+    public function destroy($ids = null)
+    {
         $hostInfo = $this->model::onlyTrashed()->where(['id' => $ids])->find();
         $hostInfo->delete(true);
         $this->success('销毁成功');
@@ -286,43 +303,45 @@ class Host extends Backend
     }
 
     // 一键登录主机
-    public function login($ids=null){
+    public function login($ids = null)
+    {
         $hostInfo = $this->model::get($ids);
-        if(!$hostInfo){
+        if (!$hostInfo) {
             $this->error('没有找到当前主机');
         }
         // 登录用户
         $userAuth = new \app\common\library\Auth();
-        if(!$userAuth->direct($hostInfo->user_id)){
+        if (!$userAuth->direct($hostInfo->user_id)) {
             $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
         }
         Cookie::set('uid', $userAuth->id);
         Cookie::set('token', $userAuth->getToken());
         // cookie切换到主机id
         Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
-        
+
         // 跳转首页控制台
         return $this->redirect('/');
     }
 
     // 添加主机
-    public function add_local(){
+    public function add_local()
+    {
         // 考虑使用拉下选择并查找
-        if($this->request->isPost()){
+        if ($this->request->isPost()) {
             // 需要接收参数
             $params = $this->request->post('row/a');
-            $sort_id = isset($params['sort_id'])?$params['sort_id']:0;
-            $bt_name = isset($params['bt_name'])?$params['bt_name']:'';
-            $ftp_name = isset($params['ftp_name'])?$params['ftp_name']:'';
-            $sql_name = isset($params['sql_name'])?$params['sql_name']:'';
-            $user_id = isset($params['user_id'])?$params['user_id']:'';
-            $endtime = isset($params['endtime'])?$params['endtime']:'';
-            $notice = isset($params['notice'])?$params['notice']:'';
+            $sort_id = isset($params['sort_id']) ? $params['sort_id'] : 0;
+            $bt_name = isset($params['bt_name']) ? $params['bt_name'] : '';
+            $ftp_name = isset($params['ftp_name']) ? $params['ftp_name'] : '';
+            $sql_name = isset($params['sql_name']) ? $params['sql_name'] : '';
+            $user_id = isset($params['user_id']) ? $params['user_id'] : '';
+            $endtime = isset($params['endtime']) ? $params['endtime'] : '';
+            $notice = isset($params['notice']) ? $params['notice'] : '';
             $bt_id = isset($params['bt_id']) ? $params['bt_id'] : '';
-            if(!$bt_name){
+            if (!$bt_name) {
                 $this->error('必须填写或选择站点');
             }
-            if(!$user_id){
+            if (!$user_id) {
                 $this->error('必须选择一个用户');
             }
             // 连接宝塔
@@ -333,35 +352,35 @@ class Host extends Backend
             $bt->sql_name = $sql_name;
             // 查找站点
             $hostInfo = $bt->getSiteInfo();
-            if(!$hostInfo){
+            if (!$hostInfo) {
                 $this->error($bt->_error);
             }
             // 查找ftp
-            if($ftp_name){
+            if ($ftp_name) {
                 $ftpInfo = $bt->getFtpInfo();
-                if(!$ftpInfo){
+                if (!$ftpInfo) {
                     $this->error($bt->_error);
                 }
             }
-            if($sql_name){
+            if ($sql_name) {
                 $sqlInfo = $bt->getSqlInfo();
-                if(!$sqlInfo){
+                if (!$sqlInfo) {
                     $this->error($bt->_error);
                 }
             }
             // 判断站点是否已存在
-            $hostfind = model('Host')::get(['bt_name'=>$bt_name]);
-            if($hostfind){
+            $hostfind = model('Host')::get(['bt_name' => $bt_name]);
+            if ($hostfind) {
                 $this->error('站点已存在，请勿重复添加');
             }
             // 判断数据库
-            $sqlfind = model('Sql')::get(['database'=>$sql_name]);
-            if($sqlfind){
+            $sqlfind = model('Sql')::get(['database' => $sql_name]);
+            if ($sqlfind) {
                 $this->error('数据库已存在，请勿重复添加');
             }
             // 判断ftp
-            $sqlfind = model('Ftp')::get(['username'=>$ftp_name]);
-            if($sqlfind){
+            $sqlfind = model('Ftp')::get(['username' => $ftp_name]);
+            if ($sqlfind) {
                 $this->error('数据库已存在，请勿重复添加');
             }
             if ($endtime) {
@@ -369,31 +388,28 @@ class Host extends Backend
             }
             // var_dump($hostInfo,$ftpInfo,$sqlInfo);exit;
             // 都查找完毕后存入数据库
-            $hostInc = model('Host')::create([
-                'user_id'=>$user_id,
-                'sort_id'=>$sort_id,
-                'bt_id'=>$hostInfo['id'],
-                'bt_name'=>$hostInfo['name'],
-                'domain_max'=>0,
-                'web_back_num'=>0,
-                'sql_back_num'=>0,
-                'notice'=>$notice,
-                'endtime'=>$endtime?$endtime:$hostInfo['edate'],
+            $hostInc = model('Host')::create(['user_id' => $user_id,
+                'sort_id' => $sort_id,
+                'bt_id' => $hostInfo['id'],
+                'bt_name' => $hostInfo['name'],
+                'domain_max' => 0,
+                'web_back_num' => 0,
+                'sql_back_num' => 0,
+                'notice' => $notice,
+                'endtime' => $endtime ? $endtime : $hostInfo['edate'],
             ]);
             $host_id = $hostInc->id;
-            if($ftp_name){
-                model('Ftp')::create([
-                    'vhost_id'=>$host_id,
-                    'username'=>$ftpInfo['name'],
-                    'password'=>$ftpInfo['password'],
+            if ($ftp_name) {
+                model('Ftp')::create(['vhost_id' => $host_id,
+                    'username' => $ftpInfo['name'],
+                    'password' => $ftpInfo['password'],
                 ]);
             }
-            if($sql_name){
-                model('Sql')::create([
-                    'vhost_id'=>$host_id,
-                    'username'=>$sqlInfo['username'],
-                    'database'=>$sqlInfo['name'],
-                    'password'=>$sqlInfo['password'],
+            if ($sql_name) {
+                model('Sql')::create(['vhost_id' => $host_id,
+                    'username' => $sqlInfo['username'],
+                    'database' => $sqlInfo['name'],
+                    'password' => $sqlInfo['password'],
                 ]);
             }
             // 都入库了就成功了
@@ -403,58 +419,61 @@ class Host extends Backend
     }
 
     // 站点列表
-    public function weblist(){
-        config('default_return_type','json');
-        $pageNumber = $this->request->post('pageNumber',1);
-        $pageSize = $this->request->post('pageSize',15);
+    public function weblist()
+    {
+        config('default_return_type', 'json');
+        $pageNumber = $this->request->post('pageNumber', 1);
+        $pageSize = $this->request->post('pageSize', 15);
         $serch = $this->request->post('name');
         // 搜索重置分页
-        $pageNumber = $serch?1:$pageNumber;
+        $pageNumber = $serch ? 1 : $pageNumber;
         $bt = new Btaction();
-        $list = $bt->getSiteList($serch,$pageNumber,$pageSize);
-        if($list&&isset($list['data'])){
+        $list = $bt->getSiteList($serch, $pageNumber, $pageSize);
+        if ($list && isset($list['data'])) {
             $row = $list['data'];
             $total = $bt->sqlCount($serch);
-            return json(['list'=>$row,'total'=>$total]);
-        }else{
+            return json(['list' => $row, 'total' => $total]);
+        } else {
             return [];
         }
     }
-    
+
     // ftp列表
-    public function ftplist(){
-        config('default_return_type','json');
-        $pageNumber = $this->request->post('pageNumber',1);
-        $pageSize = $this->request->post('pageSize',15);
+    public function ftplist()
+    {
+        config('default_return_type', 'json');
+        $pageNumber = $this->request->post('pageNumber', 1);
+        $pageSize = $this->request->post('pageSize', 15);
         $serch = $this->request->post('name');
         // 搜索重置分页
-        $pageNumber = $serch?1:$pageNumber;
+        $pageNumber = $serch ? 1 : $pageNumber;
         $bt = new Btaction();
-        $list = $bt->getFtpList($serch,$pageNumber,$pageSize);
-        if($list&&isset($list['data'])){
+        $list = $bt->getFtpList($serch, $pageNumber, $pageSize);
+        if ($list && isset($list['data'])) {
             $row = $list['data'];
             $total = $bt->ftpCount($serch);
-            return json(['list'=>$row,'total'=>$total]);
-        }else{
+            return json(['list' => $row, 'total' => $total]);
+        } else {
             return [];
         }
     }
 
     // 数据库列表
-    public function sqllist(){
-        config('default_return_type','json');
-        $pageNumber = $this->request->post('pageNumber',1);
-        $pageSize = $this->request->post('pageSize',15);
+    public function sqllist()
+    {
+        config('default_return_type', 'json');
+        $pageNumber = $this->request->post('pageNumber', 1);
+        $pageSize = $this->request->post('pageSize', 15);
         $serch = $this->request->post('name');
         // 搜索重置分页
-        $pageNumber = $serch?1:$pageNumber;
+        $pageNumber = $serch ? 1 : $pageNumber;
         $bt = new Btaction();
-        $list = $bt->getSqlList($serch,$pageNumber,$pageSize);
-        if($list&&isset($list['data'])){
+        $list = $bt->getSqlList($serch, $pageNumber, $pageSize);
+        if ($list && isset($list['data'])) {
             $row = $list['data'];
             $total = $bt->siteCount($serch);
-            return json(['list'=>$row,'total'=>$total]);
-        }else{
+            return json(['list' => $row, 'total' => $total]);
+        } else {
             return [];
         }
     }
