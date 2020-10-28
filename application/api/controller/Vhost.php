@@ -639,14 +639,6 @@ class Vhost extends Api
             $this->error('请求错误');
         }
         $hostFind = $this->getHostInfo($id);
-        // 连接宝塔停用站点
-        $bt = new Btaction();
-        $bt->bt_id = $hostFind->bt_id;
-        $bt->bt_name = $hostFind->bt_name;
-        $set = $bt->webstop();
-        if(!$set){
-            $this->error($bt->_error);
-        }
         $this->hostModel::destroy($id);
         $this->success('已回收');
     }
@@ -685,15 +677,7 @@ class Vhost extends Api
         $bt = new Btaction();
         
         if($type=='ftp'||$type=='all'){
-            $ftpFind = $this->ftpModel::get(['vhost_id'=>$id]);
-            $bt->ftp_name = $ftpFind->username;
-            if(!$ftpFind){
-                $this->error('无FTP');
-            }
-            $set = $bt->resetFtpPass($ftpFind->username,$password);
-            if(!$set){
-                $this->error($bt->_error);
-            }
+            $ftpFind = $this->ftpModel::get(['vhost_id' => $id]);
             $ftpFind->password = $password;
             $ftpFind->save();
         }
