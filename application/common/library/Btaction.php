@@ -311,6 +311,31 @@ class Btaction
     }
 
     /**
+     * FTP状态变更
+     *
+     * @param integer $status       0=停用;1=启用
+     * @return void
+     */
+    public function FtpStatus($status = 0)
+    {
+        $id = $this->getFtpInfo('id');
+        if (!$id) {
+            $this->setError('id获取有误');
+            return false;
+        }
+        $s = $this->btAction->SetStatus($id, $this->ftp_name, $status);
+        if (isset($s['status']) && $s['status'] == true) {
+            return true;
+        } elseif (isset($s['msg'])) {
+            $this->setError($s['msg']);
+            return false;
+        } else {
+            $this->setError('请求失败');
+            return false;
+        }
+    }
+
+    /**
      * 新建网站
      *
      * @param [type] $hostSetInfo

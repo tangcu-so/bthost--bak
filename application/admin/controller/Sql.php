@@ -68,20 +68,20 @@ class Sql extends Backend
     }
 
     // 真实删除
-    public function destroy($ids = null){
-        $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
-        if(!$info){
-            $this->error('不存在');
-        }
-        $bt = new Btaction();
-        $bt->sql_name = $info->username;
-        $del = $bt->SqlDelete();
-        // 强制删除，忽略错误
-        // if(!$del){
-        //     $this->error($bt->_error);
-        // }
-        parent::destroy($ids);
-    }
+    // public function destroy($ids = null){
+    //     $info = $this->model::onlyTrashed()->where(['id'=>$ids])->find();
+    //     if(!$info){
+    //         $this->error('不存在');
+    //     }
+    //     $bt = new Btaction();
+    //     $bt->sql_name = $info->username;
+    //     $del = $bt->SqlDelete();
+    //     // 强制删除，忽略错误
+    //     // if(!$del){
+    //     //     $this->error($bt->_error);
+    //     // }
+    //     parent::destroy($ids);
+    // }
 
 
     /**

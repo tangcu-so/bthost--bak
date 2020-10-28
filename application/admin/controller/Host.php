@@ -293,15 +293,6 @@ class Host extends Backend
         return parent::edit($ids);
     }
 
-    // 真实删除
-    public function destroy($ids = null)
-    {
-        $hostInfo = $this->model::onlyTrashed()->where(['id' => $ids])->find();
-        $hostInfo->delete(true);
-        $this->success('销毁成功');
-        parent::destroy($ids);
-    }
-
     // 一键登录主机
     public function login($ids = null)
     {

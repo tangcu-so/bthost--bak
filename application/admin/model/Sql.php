@@ -34,9 +34,10 @@ class Sql extends Model
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
             // 如果有修改密码
-            if (isset($changed['password'])) {
+            if (isset($changed['password']) && isset($row->origin['password']) && ($changed['password'] != $row->origin['password'])) {
                 if ($changed['password']) {
                     $row->password = encode($changed['password']);
+                    \app\common\model\Sql::sql_pass($row);
                 } else {
                     unset($row->password);
                 }
@@ -53,6 +54,12 @@ class Sql extends Model
                     unset($row->password);
                 }
             }
+            \app\common\model\Sql::sql_create($row);
+        });
+
+        // 数据库删除前事件
+        self::beforeDelete(function ($row) {
+            \app\common\model\Sql::sql_del($row);
         });
     }
     
