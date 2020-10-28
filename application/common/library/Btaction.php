@@ -554,6 +554,26 @@ class Btaction
     }
 
     /**
+     * 获取面板信息
+     *
+     * @param string $value
+     * @return void
+     */
+    public function getPanelConfig($value = '')
+    {
+        $config = $this->btAction->GetSystemTotal();
+        if ($config) {
+            if ($value) {
+                return isset($config[$value]) ? $config[$value] : false;
+            } else {
+                return $config;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * 获取服务器公网IP
      *
      * @return void

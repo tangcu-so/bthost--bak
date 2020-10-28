@@ -1222,9 +1222,11 @@ class Btpanel
      * @param [type] $site    网站名
      * @param [type] $fix     URL后缀
      * @param [type] $domains 许可域名
-     * @param [type] $status  状态 true为启动 false为禁用
+     * @param [type] $status  状态 true为启动 false为禁用 1为允许空HTTP_REFERER请求
+     * 7.5.22版本新增
+     * @param [type] $return_rule 响应资源 可设置404/403等状态码，也可以设置一个有效资源，如：/security.png
      */
-    public function SetSecurity($id, $site, $fix, $domains, $status = true)
+    public function SetSecurity($id, $site, $fix, $domains, $status = 'true', $return_rule = '404')
     {
         $url = $this->BT_PANEL . config("bt.SetSecurity");
 
@@ -1233,7 +1235,8 @@ class Btpanel
         $p_data['name']    = $site;
         $p_data['fix']     = $fix;
         $p_data['domains'] = $domains;
-        $p_data['status']  = $status ? 'true' : 'false'; // 必须传字符型
+        $p_data['return_rule'] = $return_rule;
+        $p_data['status']  = $status ? $status : 'false'; // 必须传字符型
         $result            = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
