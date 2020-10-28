@@ -398,14 +398,21 @@ class Vhost extends Api
         $this->success('修改成功',$info);
     }
 
-    // FTP启用
-    public function ftp_start(){
-
-    }
-
-    // FTP停用
-    public function ftp_stop(){
-
+    // FTP状态修改
+    public function ftp_status()
+    {
+        $id = $this->request->post('ftp_id/d');
+        $status = $this->request->post('status');
+        if (!$id) {
+            $this->error('请求错误');
+        }
+        $info = $this->ftpModel::get($id);
+        if (!$info) {
+            $this->error('ftp不存在');
+        }
+        $info->status = $status == 'hidden' ? 'hidden' : 'normal';
+        $info->save();
+        $this->success('修改成功', $info);
     }
 
     // 主机列表
