@@ -74,7 +74,7 @@ class Host extends Model
         $bt->bt_id = $row->bt_id;
         $bt->bt_name = $row->bt_name;
         // 构建数据
-        $expTime = date('Y-m-d', $changed->endtime);
+        $expTime = date('Y-m-d', $changed['endtime']);
         $bt->setEndtime($expTime);
     }
 
