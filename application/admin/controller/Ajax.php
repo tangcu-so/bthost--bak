@@ -372,6 +372,9 @@ class Ajax extends Backend
             $this->error('请先配置宝塔面板接口密钥');
         }
         $bt  = new Btaction();
+        if ($bt->os != 'linux') {
+            $this->error('当前操作系统不支持自动获取phpMyAdmin地址，请尝试到宝塔面板中手动复制phpMyAdmin地址');
+        }
         $url = $bt->getphpmyadminUrl();
         if (!$url) {
             $this->error('获取失败，请在服务器中提前安装phpMyAdmin插件');

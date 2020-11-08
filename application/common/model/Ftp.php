@@ -33,21 +33,103 @@ class Ftp extends Model
     {
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
+            \app\common\model\Ftp::ftp_update_status($row);
             // 如果有修改密码
-            if (isset($changed['password']) && isset($row->origin['password']) && ($changed['password'] != $row->origin['password'])) {
+            if (isset($changed['password'])) {
+                if ($changed['password']) {
+                    if (\app\common\model\Ftp::ftp_update_pass($row) == false) {
+                        return false;
+                    }
+                    $row->password = encode($changed['password']);
+                } else {
+                    unset($row->password);
+                }
+            }
+        });
 
+        self::beforeInsert(function ($row) {
+            $changed = $row->getChangedData();
+            // 新建账号时加密密码
+            if (isset($changed['password'])) {
                 if ($changed['password']) {
                     $row->password = encode($changed['password']);
                 } else {
                     unset($row->password);
                 }
+            }
+        });
 
+        // TODO 删除前事件
+        self::beforeDelete(function ($row) {
+            \app\common\model\Ftp::ftp_del($row);
+        });
+    }
+
+    /**
+     * FTP 更新
+     *
+     * @param [type] $row
+     * @return void
+     */
+    public static function ftp_update_status($row)
+    {
+        $changed = $row->getChangedData();
+        // 如果有状态发生改变
+        if (isset($changed['status']) && ($changed['status'] != $row->origin['status'])) {
+            $bt = new Btaction();
+            $bt->ftp_name = $row->username;
+            if ($changed['status'] == 'normal') {
+                $bt->FtpStatus(1);
+            }
+            if ($changed['status'] != 'normal') {
+                $bt->FtpStatus(0);
+            }
+        }
+    }
+
+    /**
+     * FTP密码修改
+     *
+     * @param [type] $row
+     * @return void
+     */
+    public static function ftp_update_pass($row)
+    {
+        $changed = $row->getChangedData();
+        $bt = new Btaction();
+        $bt->ftp_name = $row->username;
+        $set = $bt->resetFtpPass($row->username, $changed['password']);
+        if (!$set) {
+            throw new \Exception($bt->_error, 1);
+        }
+        return true;
+    }
+
+    /**
+     * FTP 删除
+     *
+     * @param [type] $row
+     * @return void
+     */
+    public static function ftp_del($row)
+    {
+        if ($row->deletetime) {
+            // 真删除
+            if ($row->username) {
                 $bt = new Btaction();
                 $bt->ftp_name = $row->username;
-                $bt->resetFtpPass($row->username, $changed['password']);
+                $del = $bt->FtpDelete();
+                // if (!$del) {
+                // 删除失败
+                //     return false;
+                // }
             }
-            // TODO 主机超量停用ftp
-        });
+        } else {
+            // 软删除，停用ftp
+            $bt = new Btaction();
+            $bt->ftp_name = $row->username;
+            $bt->FtpStatus(0);
+        }
     }
 
     

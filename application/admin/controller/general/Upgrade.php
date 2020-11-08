@@ -275,8 +275,8 @@ class Upgrade extends Backend
                 Service::refresh();
                 \app\common\library\Common::clear_cache();
 
-                $this->log("系统更新成功!");
-                $this->success('系统更新成功！');
+                $this->log("系统更新成功-->" . $this->latestVersion);
+                $this->success('系统更新成功-->' . $this->latestVersion);
             } else {
                 $this->error('请选择要更新的文件！');
             }

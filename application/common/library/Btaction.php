@@ -308,6 +308,31 @@ class Btaction
     }
 
     /**
+     * FTP状态变更
+     *
+     * @param integer $status       0=停用;1=启用
+     * @return void
+     */
+    public function FtpStatus($status = 0)
+    {
+        $id = $this->getFtpInfo('id');
+        if (!$id) {
+            $this->setError('id获取有误');
+            return false;
+        }
+        $s = $this->btAction->SetStatus($id, $this->ftp_name, $status);
+        if (isset($s['status']) && $s['status'] == true) {
+            return true;
+        } elseif (isset($s['msg'])) {
+            $this->setError($s['msg']);
+            return false;
+        } else {
+            $this->setError('请求失败');
+            return false;
+        }
+    }
+
+    /**
      * 新建网站
      *
      * @param [type] $hostSetInfo
@@ -412,6 +437,8 @@ class Btaction
             // 以下非宝塔使用，个人记录
             'bt_name'      => $defaultDomain,
             'domain'       => $set_domain,
+            'username'     => $set_domain,
+            'password'     => $rand_password,
         );
 
         return $hostSetInfo;
@@ -512,6 +539,26 @@ class Btaction
     public function getServerConfig($value = '')
     {
         $config = $this->btAction->GetConfig();
+        if ($config) {
+            if ($value) {
+                return isset($config[$value]) ? $config[$value] : false;
+            } else {
+                return $config;
+            }
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * 获取面板信息
+     *
+     * @param string $value
+     * @return void
+     */
+    public function getPanelConfig($value = '')
+    {
+        $config = $this->btAction->GetSystemTotal();
         if ($config) {
             if ($value) {
                 return isset($config[$value]) ? $config[$value] : false;

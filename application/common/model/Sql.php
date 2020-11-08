@@ -35,17 +35,15 @@ class Sql extends Model
             $changed = $row->getChangedData();
             // 如果有修改密码
             if (isset($changed['password']) && isset($row->origin['password']) && ($changed['password'] != $row->origin['password'])) {
-
                 if ($changed['password']) {
+                    if ($row->origin['type'] == 'bt') {
+                        if (\app\common\model\Sql::sql_pass($row) == false) {
+                            return false;
+                        }
+                    }
                     $row->password = encode($changed['password']);
                 } else {
                     unset($row->password);
-                }
-
-                if ($row->type == 'bt') {
-                    $bt = new Btaction();
-                    $bt->sql_name = $row->username;
-                    $bt->resetSqlPass($row->username, $changed['password']);
                 }
             }
         });
@@ -60,13 +58,68 @@ class Sql extends Model
                     unset($row->password);
                 }
             }
-            // 单独创建数据库
-            if (isset($changed['type']) && $changed['type'] == 'bt') {
-                $bt = new Btaction();
-                $database = $changed['database'] ? $changed['database'] : $changed['username'];
-                $bt->buildSql($changed['username'], $database, $changed['password']);
-            }
+            \app\common\model\Sql::sql_create($row);
         });
+
+        // 数据库删除前事件
+        self::beforeDelete(function ($row) {
+            \app\common\model\Sql::sql_del($row);
+        });
+    }
+
+    /**
+     * 数据库删除
+     *
+     * @param [type] $row
+     * @return void
+     */
+    public static function sql_del($row)
+    {
+        $bt = new Btaction();
+        if ($row->deletetime) {
+            // 真删除
+            if ($row->username) {
+                $bt = new Btaction();
+                $bt->sql_name = $row->username;
+                $del = $bt->SqlDelete();
+                // if (!$del) {
+                // 删除失败
+                //     return false;
+                // }
+            }
+        }
+    }
+
+    /**
+     * 数据库密码修改
+     */
+    public static function sql_pass($row)
+    {
+        $changed = $row->getChangedData();
+        $bt = new Btaction();
+        $bt->sql_name = $row->username;
+        $set = $bt->resetSqlPass($row->username, $changed['password']);
+        if (!$set) {
+            throw new \Exception($bt->_error, 1);
+        }
+        return true;
+    }
+
+    /**
+     * 数据库创建
+     *
+     * @param [type] $row
+     * @return void
+     */
+    public static function sql_create($row)
+    {
+        $changed = $row->getChangedData();
+        // 单独创建数据库
+        if (isset($changed['type']) && $changed['type'] == 'bt') {
+            $bt = new Btaction();
+            $database = $changed['database'] ? $changed['database'] : $changed['username'];
+            $bt->buildSql($changed['username'], $database, $changed['password']);
+        }
     }
     
 

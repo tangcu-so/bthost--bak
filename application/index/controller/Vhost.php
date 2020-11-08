@@ -590,9 +590,12 @@ class Vhost extends Frontend
                 $this->error($validate->getError());
             }
             Db::startTrans();
-
-            $sqlFind->password = $data['password'];
-            $sqlFind->save();
+            try {
+                $sqlFind->password = $data['password'];
+                $sqlFind->save();
+            } catch (\Exception $e) {
+                $this->error($e->getMessage());
+            }
             Db::commit();
             $this->success('设置成功');
         }
@@ -631,10 +634,12 @@ class Vhost extends Frontend
                 $this->error($validate->getError());
             }
             Db::startTrans();
-
-            $ftpFind->password = $data['password'];
-            $ftpFind->save();
-
+            try {
+                $ftpFind->password = $data['password'];
+                $ftpFind->save();
+            } catch (\Exception $e) {
+                $this->error($e->getMessage());
+            }
             Db::commit();
             $this->success('设置成功');
         }

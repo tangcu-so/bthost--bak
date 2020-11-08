@@ -42,32 +42,17 @@ class Host extends Model
             $changed = $row->getChangedData();
             // 如果有状态发生改变
             if (isset($changed['status']) && ($changed['status'] != $row->origin['status'])) {
-                $bt = new Btaction();
-                $bt->bt_id = $row->bt_id;
-                $bt->bt_name = $row->bt_name;
-                if ($changed['status'] == 'normal') {
-                    $bt->webstart();
-                }
-                if ($changed['status'] != 'normal') {
-                    $bt->webstop();
-                }
+                \app\common\model\Host::host_update_status($row);
             }
             // 如果分类ID发生改变
             if (isset($changed['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
-                $bt = new Btaction();
-                // 构建数据
-                $data = json_encode([$row->bt_id]);
-                $bt->btAction->set_site_type($data, $changed['sort_id']);
+                \app\common\model\Host::host_update_sort($row);
             }
             // 如果到期时间发生改变
             if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
-                $bt = new Btaction();
-                $bt->bt_id = $row->bt_id;
-                $bt->bt_name = $row->bt_name;
-                // 构建数据
-                $expTime = date('Y-m-d', $changed['endtime']);
-                $bt->setEndtime($expTime);
+                \app\common\model\Host::host_update_endtime($row);
             }
+            
         });
 
         // TODO 主机创建前事件
@@ -78,31 +63,7 @@ class Host extends Model
 
         // TODO 主机删除前事件
         self::beforeDelete(function ($row) {
-            if ($row->deletetime) {
-                // 真删除
-                if ($row->bt_id && $row->bt_name) {
-                    $bt = new Btaction();
-                    $del = $bt->siteDelete($row->bt_id, $row->bt_name);
-                    // if (!$del) {
-                    // 删除失败
-                    //     return false;
-                    // }
-                }
-                if ($row->is_vsftpd) {
-                    // TODO 如果有开通vsftpd，也删除
-                    // 暂时没有api，后续更新
-                }
-                // 删除数据库
-                model('Sql')->where('vhost_id', $row->id)->delete(true);
-                // 删除FTP
-                model('Ftp')->where('vhost_id', $row->id)->delete(true);
-            } else {
-                // 软删除，停用主机
-                $bt = new Btaction();
-                $bt->bt_id = $row->bt_id;
-                $bt->bt_name = $row->bt_name;
-                $bt->webstop();
-            }
+            \app\common\model\Host::host_del($row);
         });
     }
     
