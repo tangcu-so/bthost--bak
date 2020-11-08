@@ -36,8 +36,12 @@ class Sql extends Model
             // 如果有修改密码
             if (isset($changed['password']) && isset($row->origin['password']) && ($changed['password'] != $row->origin['password'])) {
                 if ($changed['password']) {
+                    if ($row->origin['type'] == 'bt') {
+                        if (\app\common\model\Sql::sql_pass($row) == false) {
+                            return false;
+                        }
+                    }
                     $row->password = encode($changed['password']);
-                    \app\common\model\Sql::sql_pass($row);
                 } else {
                     unset($row->password);
                 }

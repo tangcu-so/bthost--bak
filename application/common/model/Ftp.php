@@ -37,8 +37,10 @@ class Ftp extends Model
             // 如果有修改密码
             if (isset($changed['password'])) {
                 if ($changed['password']) {
+                    if (\app\common\model\Ftp::ftp_update_pass($row) == false) {
+                        return false;
+                    }
                     $row->password = encode($changed['password']);
-                    \app\common\model\Ftp::ftp_update_pass($row);
                 } else {
                     unset($row->password);
                 }
@@ -96,7 +98,10 @@ class Ftp extends Model
         $changed = $row->getChangedData();
         $bt = new Btaction();
         $bt->ftp_name = $row->username;
-        $bt->resetFtpPass($row->username, $changed['password']);
+        $set = $bt->resetFtpPass($row->username, $changed['password']);
+        if ($set) {
+            throw new \Exception($bt->_error, 1);
+        }
     }
 
     /**
