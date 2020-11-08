@@ -37,24 +37,6 @@ define('IS_WIN', strpos(PHP_OS, 'WIN') !== false);
 // 载入Loader类
 require CORE_PATH . 'Loader.php';
 
-// 加载环境变量配置文件
-if (is_file(ROOT_PATH . '.env')) {
-    $env = parse_ini_file(ROOT_PATH . '.env', true);
-
-    foreach ($env as $key => $val) {
-        $name = ENV_PREFIX . strtoupper($key);
-
-        if (is_array($val)) {
-            foreach ($val as $k => $v) {
-                $item = $name . '_' . strtoupper($k);
-                putenv("$item=$v");
-            }
-        } else {
-            putenv("$name=$val");
-        }
-    }
-}
-
 // 注册自动加载
 \think\Loader::register();
 
