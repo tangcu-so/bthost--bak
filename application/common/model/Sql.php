@@ -102,6 +102,7 @@ class Sql extends Model
         if (!$set) {
             throw new \Exception($bt->_error, 1);
         }
+        return true;
     }
 
     /**

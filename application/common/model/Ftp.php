@@ -99,9 +99,10 @@ class Ftp extends Model
         $bt = new Btaction();
         $bt->ftp_name = $row->username;
         $set = $bt->resetFtpPass($row->username, $changed['password']);
-        if ($set) {
+        if (!$set) {
             throw new \Exception($bt->_error, 1);
         }
+        return true;
     }
 
     /**
