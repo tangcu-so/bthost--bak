@@ -185,10 +185,10 @@ class Auth
         if ($oldpassword == decode($this->_user->password, $this->_user->salt) || $ignoreoldpassword) {
             Db::startTrans();
             try {
-                $salt = Random::alnum();
+                // $salt = Random::alnum();
                 // $newpassword = $this->getEncryptPassword($newpassword, $salt);
-                $newpassword = encode($newpassword, $salt);
-                $this->_user->save(['loginfailure' => 0, 'password' => $newpassword, 'salt' => $salt]);
+                // $newpassword = encode($newpassword, $salt);
+                $this->_user->save(['loginfailure' => 0, 'password' => $newpassword]);
 
                 Token::delete($this->_token);
                 //修改密码成功的事件
