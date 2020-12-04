@@ -26,7 +26,7 @@ class Vhost extends Api
         $this->access_token = Config::get('site.access_token');
         if(!$this->token_check()){
             // TODO 上线需要验证签名
-            $this->error('签名错误');
+            // $this->error('签名错误');
         }
         $this->hostModel = model('host');
         $this->sqlModel = model('sql');
@@ -908,6 +908,41 @@ class Vhost extends Api
         
         $hostInfo->save();
         $this->success('更新成功',$hostInfo);
+    }
+
+    // 主机修改套餐
+    public function host_update()
+    {
+        $id = $this->request->post('id/d');
+        $plan_id = $this->request->post('plan_id/d');
+
+        if (!$id || !$plan_id) {
+            $this->error('错误的请求');
+        }
+        $hostInfo = $this->getHostInfo($id);
+        if (!$hostInfo) {
+            $this->error('主机不存在');
+        }
+        $plansInfo = model('Plans')::get($plan_id);
+        if (!$plansInfo) {
+            $this->error('套餐不存在');
+        }
+        $plansInfo = json_decode($plansInfo->value);
+        // var_dump($plansInfo->site_max, $plansInfo->perserver);
+        // exit;
+        $hostInfo->site_max = $plansInfo->site_max;
+        $hostInfo->sql_max = $plansInfo->sql_max;
+        $hostInfo->flow_max = $plansInfo->flow_max;
+        $hostInfo->domain_max = $plansInfo->domain_num;
+        $hostInfo->web_back_num = $plansInfo->web_back_num;
+        $hostInfo->sql_back_num = $plansInfo->sql_back_num;
+        $hostInfo->is_audit = $plansInfo->domain_audit;
+        // 升级并发、限速
+        $hostInfo->perserver = $plansInfo->perserver;
+        $hostInfo->limit_rate = $plansInfo->limit_rate;
+
+        $hostInfo->allowField(true)->save();
+        $this->success('更新成功', $hostInfo);
     }
 
     // 主机域名绑定
