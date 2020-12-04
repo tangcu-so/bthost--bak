@@ -67,7 +67,7 @@ class Queue extends Backend
     // 清空日志
     public function quelogclear()
     {
-        $this->model->where('id', '>', 1)->delete(true);
+        model('QueueLog')->where('id', '>', 1)->delete(true);
         $this->success('已清空');
     }
 

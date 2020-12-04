@@ -50,6 +50,25 @@ class Queue extends Api
      */
     public function index()
     {
+        // 修正<1.1.2数据错误，判断原有监控任务是否被删除。如果被删除，就添加上
+        $btresourceFind = $this->model->where('function', 'btresource')->find();
+        $hosttaskFind = $this->model->where('function', 'hosttask')->find();
+        $hostclearFind = $this->model->where('function', 'hostclear')->find();
+        $list = [];
+        if (!$btresourceFind) {
+            $list[] = ['function' => 'btresource', 'executetime' => '60', 'status' => 'normal', 'weigh' => '4', 'configgroup' => '[{"key":"limit","value":"10","info":"一次检查多少主机"},{"key":"checkTime","value":"20","info":"单台主机检查间隔（分钟），如主机数量过多，请适当提高检查间隔时间或limit的值"}]'];
+        }
+        if (!$hosttaskFind) {
+            $list[] = ['function' => 'hosttask', 'executetime' => '43200', 'status' => 'normal', 'weigh' => '5', 'configgroup' => ''];
+        }
+        if (!$hostclearFind) {
+            $list[] = ['function' => 'hostclear', 'executetime' => '43200', 'status' => 'normal', 'weigh' => '6', 'configgroup' => ''];
+        }
+        if (!empty($list)) {
+            $this->model->saveAll($list);
+        }
+        // end
+        
         set_time_limit(0);
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '128M');
