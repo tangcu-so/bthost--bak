@@ -52,7 +52,10 @@ class Host extends Model
             if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
                 \app\common\model\Host::host_update_endtime($row);
             }
-            
+            // 如果修改并发、限速
+            if (isset($changed['perserver']) && ($changed['perserver'] != $row->origin['perserver'])) {
+                \app\common\model\Host::host_perserver($row);
+            }
         });
 
         // TODO 主机创建前事件

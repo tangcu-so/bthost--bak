@@ -57,6 +57,22 @@
         </div>
     </div>
     <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Perserver')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-perserver" data-rule="" class="form-control" name="row[perserver]" type="number"
+                value="{$row.perserver|default=''|htmlentities}">
+                <small class="text-danger">0:不限制，该功能仅限Nginx环境使用</small>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Limit_rate')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-limit_rate" data-rule="" class="form-control" name="row[limit_rate]" type="number"
+                value="{$row.limit_rate|default=''|htmlentities}">
+                <small class="text-danger">0:不限制，该功能仅限Nginx环境使用,（单位：KB）</small>
+        </div>
+    </div>
+    <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Ip_address')}:</label>
         <div class="col-xs-12 col-sm-8">
             <input id="c-ip_address" data-source="ipaddress/index" data-primary-key="id" data-field="ip" class="form-control selectpage" data-multiple="true" name="row[ip_address]" type="text" value="{$row.ip_address|htmlentities}">
