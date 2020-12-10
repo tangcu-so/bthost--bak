@@ -43,6 +43,26 @@ class Ipaddress extends Model
         return isset($list[$value]) ? $list[$value] : '';
     }
 
+    /**
+     * 随机抽选IP数
+     *
+     * @param [type] $ippools_id
+     * @return void
+     */
+    public function getRandId($ippools_id, $num = 1)
+    {
+        $list = $this->where(['ippools_id' => $ippools_id, 'status' => 'normal'])->column('id,ip');
+        $list_rand = array_rand($list, $num);
+        $new_data = [];
+        if (!is_null($list_rand) && !is_array($list_rand)) {
+            // 如果自有一个数要给他转成数组
+            $new_data[] = $list_rand;
+        } else {
+            $new_data = $list_rand;
+        }
+        return $new_data;
+    }
+
 
 
 
