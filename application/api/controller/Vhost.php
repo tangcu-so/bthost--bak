@@ -26,7 +26,7 @@ class Vhost extends Api
         $this->access_token = Config::get('site.access_token');
         if(!$this->token_check()){
             // TODO 上线需要验证签名
-            // $this->error('签名错误');
+            $this->error('签名错误');
         }
         $this->hostModel = model('host');
         $this->sqlModel = model('sql');
@@ -493,7 +493,7 @@ class Vhost extends Api
         }
 
         // 预装程序
-        if ($plansInfo['preset_procedure']) {
+        if (isset($plansInfo['preset_procedure']) && $plansInfo['preset_procedure']) {
             // 程序预装
             $defaultPhp = $hostSetInfo['version'] && $hostSetInfo['version'] != '00' ? $hostSetInfo['version'] : '56';
             $setUp = $bt->presetProcedure($plansInfo['preset_procedure'], $btName, $defaultPhp);
@@ -501,7 +501,7 @@ class Vhost extends Api
                 $this->error($bt->_error);
             }
         }
-        if ($plansInfo['session']) {
+        if (isset($plansInfo['session']) && $plansInfo['session']) {
             // session隔离
             $bt->btAction->set_php_session_path($btId, 1);
         }
@@ -517,7 +517,7 @@ class Vhost extends Api
 
         $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
 
-        if ($plansInfo['dnspod']) {
+        if (isset($plansInfo['dnspod']) && $plansInfo['dnspod']) {
             // 如果域名属于dnspod智能解析
             $record_type = Config::get('site.dnspod_analysis_type');
             $analysis = Config::get('site.dnspod_analysis_url');
@@ -538,15 +538,15 @@ class Vhost extends Api
             'sort_id'               => $sort_id,
             'bt_id'                 => $btId,
             'bt_name'               => $btName,
-            'site_max'              => $plansInfo['site_max'],
-            'sql_max'               => $plansInfo['sql_max'],
-            'flow_max'              => $plansInfo['flow_max'],
-            'is_audit'              => $plansInfo['domain_audit'],
-            'is_vsftpd'             => $plansInfo['vsftpd'],
-            'domain_max'            => $plansInfo['domain_num'],
-            'web_back_num'          => $plansInfo['web_back_num'],
-            'sql_back_num'          => $plansInfo['sql_back_num'],
-            'ip_address'            => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
+            'site_max'              => $plansInfo['site_max'] ?? 0,
+            'sql_max'               => $plansInfo['sql_max'] ?? 0,
+            'flow_max'              => $plansInfo['flow_max'] ?? 0,
+            'is_audit'              => $plansInfo['domain_audit'] ?? 0,
+            'is_vsftpd'             => $plansInfo['vsftpd'] ?? 0,
+            'domain_max'            => $plansInfo['domain_num'] ?? 0,
+            'web_back_num'          => $plansInfo['web_back_num'] ?? 0,
+            'sql_back_num'          => $plansInfo['sql_back_num'] ?? 0,
+            'ip_address'            => $plansInfo['ipArr'] ?? '',
             'endtime'               => $endtime,
         ];
         $hostInfo = model('Host')::create($host_data);
@@ -579,7 +579,7 @@ class Vhost extends Api
         $domainInfo = model('Domainlist')::create([
             'domain' => $btName,
             'vhost_id' => $vhost_id,
-            'domain_id' => $plansInfo['domainlist_id'],
+            'domain_id' => $plansInfo['domainlist_id'] ?? 0,
             'dnspod_record' => $dnspod_record,
             'dnspod_record_id' => $dnspod_record_id,
             'dnspod_domain_id' => $dnspod_domain_id,
