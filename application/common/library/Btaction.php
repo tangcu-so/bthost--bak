@@ -1032,7 +1032,6 @@ class Btaction
     public function getWaf()
     {
         $list = ['btwaf_httpd', 'btwaf', 'waf_nginx', 'waf_iis', 'waf_apache', 'free_waf'];
-        return 'free_waf';
         $isWaf = '';
         foreach ($list as $key => $value) {
             if ($this->softQuery($value) !== false) {
