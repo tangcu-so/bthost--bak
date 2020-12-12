@@ -330,7 +330,7 @@ class Vhost extends Frontend
         //获取子目录绑定信息
         $dirList = $this->btTend->getSiteDirBinding();
 
-
+        $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
         // 剩余可绑定数
 
         // 获取未审核的域名
@@ -343,6 +343,7 @@ class Vhost extends Frontend
         $this->view->assign('sys', $sys);
         $this->view->assign('count', $count);
         $this->view->assign('dirList', $dirList);
+        $this->view->assign('sub_bind', $sub_bind);
         $this->view->assign('domainList', $domainList);
         $this->view->assign('auditList', $auditList);
         return $this->view->fetch();
@@ -355,6 +356,7 @@ class Vhost extends Frontend
     public function incDomain()
     {
         $post_str = $this->request->post();
+        $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
 
         if (!empty($post_str['domain'])) {
             $domain_list = trim($post_str['domain']);
@@ -384,6 +386,10 @@ class Vhost extends Frontend
             }
             if (preg_match($this->reg, $post_str['dirs']) || preg_match($this->reg, $post_str['domain'])) {
                 $this->error('非法参数');
+            }
+            // 限制绑定根目录
+            if ($sub_bind != 1 && $post_str['dirs'] != '/') {
+                $this->error('绑定的目录错误');
             }
 
             if (count($domain_arr) - 1 >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != '0') {
@@ -2889,8 +2895,7 @@ class Vhost extends Frontend
             } else {
                 $this->error('检测中，请确认域名解析正确并能访问');
             }
-        } elseif ($GetDVSSL && isset($GetDVSSL['msg'])
-        ) {
+        } elseif ($GetDVSSL && isset($GetDVSSL['msg'])) {
             // 申请失败
             $this->error($GetDVSSL['msg']);
         } else {

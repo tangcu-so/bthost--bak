@@ -218,6 +218,7 @@ class Host extends Backend
                     'endtime'               => $params['endtime'],
                     'perserver'             => $plansInfo['perserver'] ?? 0,
                     'limit_rate'            => $plansInfo['limit_rate'] ?? 0,
+                    'sub_bind'              => $plansInfo['sub_bind'] ?? 0,
                 ];
                 $inc = model('Host')::create($host_data);
 

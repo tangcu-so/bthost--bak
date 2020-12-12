@@ -548,6 +548,7 @@ class Vhost extends Api
             'sql_back_num'          => $plansInfo['sql_back_num'] ?? 0,
             'ip_address'            => $plansInfo['ipArr'] ?? '',
             'endtime'               => $endtime,
+            'sub_bind'              => $plansInfo['sub_bind'] ?? 0,
         ];
         $hostInfo = model('Host')::create($host_data);
 
@@ -873,27 +874,38 @@ class Vhost extends Api
         $domain_max = $this->request->post('domain_max/d');
         $web_back_num = $this->request->post('web_back_num/d');
         $sql_back_num = $this->request->post('sql_back_num/d');
+        $sub_bind = $this->request->post('sub_bind/d');
         $status = $this->request->post('status');
         if(!$id){
             $this->error('请求错误');
         }
-        if(!$site_max&&!$flow_max&&!$sql_max&&!$domain_max&&!$web_back_num&&!$sql_back_num){
-            $this->error('请求错误');
-        }
         // 修改内容包含：空间大小、数据库大小、流量大小、域名绑定数、网站备份数、数据库备份数
         $hostInfo = $this->getHostInfo($id);
-        if($site_max){$hostInfo->site_max = $site_max;}
-        if($sql_max){$hostInfo->sql_max = $sql_max;}
-        if($flow_max){$hostInfo->flow_max = $flow_max;}
-        if($domain_max){$hostInfo->domain_max = $domain_max;}
-        if($web_back_num){$hostInfo->web_back_num = $web_back_num;}
-        if ($sql_back_num) {
+        if ($site_max != '' && $site_max != null) {
+            $hostInfo->site_max = $site_max;
+        }
+        if ($sql_max != '' && $sql_max != null) {
+            $hostInfo->sql_max = $sql_max;
+        }
+        if ($flow_max != '' && $flow_max != null) {
+            $hostInfo->flow_max = $flow_max;
+        }
+        if ($domain_max != '' && $domain_max != null) {
+            $hostInfo->domain_max = $domain_max;
+        }
+        if ($web_back_num != '' && $web_back_num != null) {
+            $hostInfo->web_back_num = $web_back_num;
+        }
+        if ($sql_back_num != '' && $sql_back_num != null) {
             $hostInfo->sql_back_num = $sql_back_num;
         }
         if ($sort_id) {
             $hostInfo->sort_id = $sort_id;
         }
-        if ($is_audit) {
+        if ($sub_bind != '' && $sub_bind != null) {
+            $hostInfo->sub_bind = $sub_bind;
+        }
+        if ($is_audit != '' && $is_audit != null) {
             $hostInfo->is_audit = $is_audit;
         }
         if ($status != '' && $status != null) {
@@ -964,6 +976,12 @@ class Vhost extends Api
             'dir'         => $dirs,
             'status'      => $is_audit ? 0 : 1,
         ];
+
+        $sub_bind = isset($hostInfo->sub_bind) && $hostInfo->sub_bind ? 1 : 0;
+        // 限制绑定根目录
+        if ($sub_bind != 1 && $dirs != '/') {
+            $this->error('绑定的目录错误');
+        }
 
         \app\common\model\Domainlist::event('before_insert', function ($data) {
             if ($data->status == 1) {
