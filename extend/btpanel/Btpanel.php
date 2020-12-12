@@ -33,13 +33,31 @@ class Btpanel
     }
 
     /**
+     * API请求
+     *
+     * @param [type] $api   API名
+     * @param array $p_data   传递数据
+     * @return void
+     */
+    // TODO 使用该方法进行API请求封装
+    public function request_get($api, $p_data = [])
+    {
+        $url = $this->BT_PANEL . config("bt." . $api);
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
      * 获取服务器配置
      */
     public function GetConfig()
     {
         $url = $this->BT_PANEL . config("bt.GetConfig");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -54,7 +72,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.getConcifInfo");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -69,7 +87,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSystemTotal");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -85,7 +103,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetWebSize");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -101,7 +119,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSqlSize");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['db_name'] = $db_name;
         $result            = $this->HttpPostCookie($url, $p_data);
 
@@ -116,7 +134,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDiskInfo");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -132,7 +150,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetNetWork");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -147,7 +165,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetTaskCount");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -162,7 +180,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.UpdatePanel");
 
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['check'] = $check;
         $p_data['force'] = $force;
 
@@ -179,7 +197,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.UpdatePanel");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['toUpdate'] = $toUpdate;
 
         $result = $this->HttpPostCookie($url, $p_data);
@@ -196,7 +214,7 @@ class Btpanel
     public function IsPro()
     {
         $url    = $this->BT_PANEL . config("bt.IsPro");
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
         $data   = json_decode($result, true);
         return $data;
@@ -211,7 +229,7 @@ class Btpanel
     public function RepPanel($action = 'RepPanel')
     {
         $url              = $this->BT_PANEL . config("bt.RepPanel");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -227,7 +245,7 @@ class Btpanel
     public function ReWeb($action = 'ReWeb')
     {
         $url              = $this->BT_PANEL . config("bt.ReWeb");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -244,7 +262,7 @@ class Btpanel
     public function ServiceAdmin($name, $type = 'stop')
     {
         $url            = $this->BT_PANEL . config("bt.ServiceAdmin");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['name'] = $name;
         $p_data['type'] = $type;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -261,7 +279,7 @@ class Btpanel
     public function RestartServer($action = 'RestartServer')
     {
         $url              = $this->BT_PANEL . config("bt.RestartServer");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -281,7 +299,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Websites");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['p']      = $page;
         $p_data['limit']  = $limit;
         $p_data['type']   = $type;
@@ -305,7 +323,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Websitess");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['table']  = $table;
         $p_data['list']   = $list;
         $p_data['search'] = $search;
@@ -324,7 +342,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetRedirectList");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['sitename'] = $sitename;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -349,7 +367,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CreateRedirect");
 
-        $p_data                   = $this->GetKeyData();
+        $p_data                   = [];
         $p_data['sitename']       = $sitename;
         $p_data['redirecttype']   = $redirecttype;
         $p_data['domainorpath']   = $domainorpath;
@@ -376,7 +394,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DeleteRedirect");
 
-        $p_data                 = $this->GetKeyData();
+        $p_data                 = [];
         $p_data['sitename']     = $sitename;
         $p_data['redirectname'] = $redirectname;
         $result                 = $this->HttpPostCookie($url, $p_data);
@@ -403,7 +421,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.ModifyRedirect");
 
-        $p_data                   = $this->GetKeyData();
+        $p_data                   = [];
         $p_data['sitename']       = $sitename;
         $p_data['redirecttype']   = $redirecttype;
         $p_data['domainorpath']   = $domainorpath;
@@ -432,7 +450,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebFtpList");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['p']      = $page;
         $p_data['limit']  = $limit;
         $p_data['order']  = $order;
@@ -457,7 +475,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebSqlList");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['p']      = $page;
         $p_data['limit']  = $limit;
         $p_data['type']   = $type;
@@ -478,7 +496,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Webtypes");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -497,7 +515,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.set_site_type");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['site_ids'] = $site_ids;
         $p_data['id']       = $id;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -525,7 +543,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.add_site_type");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['name'] = $name;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -551,7 +569,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.edit_site_type");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -577,7 +595,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.delete_site_type");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id'] = $id;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -601,7 +619,7 @@ class Btpanel
         $url = $this->BT_PANEL . config("bt.GetPHPVersion");
 
         //准备POST数据
-        $p_data = $this->GetKeyData(); //取签名
+        $p_data = []; //取签名
 
         //请求面板接口
         $result = $this->HttpPostCookie($url, $p_data);
@@ -622,7 +640,7 @@ class Btpanel
 
         $url = $this->BT_PANEL . config("bt.SetPHPVersion");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $site;
         $p_data['version']  = $php;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -639,7 +657,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSitePHPVersion");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -669,7 +687,7 @@ class Btpanel
         $url = $this->BT_PANEL . config("bt.WebAddSite");
 
         //准备POST数据
-        $p_data                 = $this->GetKeyData(); //取签名
+        $p_data                 = []; //取签名
         $p_data['webname']      = $infoArr['webname'];
         $p_data['path']         = $infoArr['path'];
         $p_data['type_id']      = $infoArr['type_id'];
@@ -707,7 +725,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebDeleteSite");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id']       = $id;
         $p_data['webname']  = $webname;
         $p_data['ftp']      = $ftp;
@@ -729,7 +747,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebSiteStop");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id']   = $id;
         $p_data['name'] = $name;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -747,7 +765,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebSiteStart");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id']   = $id;
         $p_data['name'] = $name;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -765,7 +783,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebSetEdate");
 
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['id']    = $id;
         $p_data['edate'] = $edate;
         $result          = $this->HttpPostCookie($url, $p_data);
@@ -783,7 +801,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebSetPs");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $p_data['ps'] = $ps;
         $result       = $this->HttpPostCookie($url, $p_data);
@@ -804,7 +822,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebBackupList");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['p']      = $page;
         $p_data['limit']  = $limit;
         $p_data['type']   = $type;
@@ -824,7 +842,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebToBackup");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -840,7 +858,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebDelBackup");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -856,7 +874,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SQLDelBackup");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -872,7 +890,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SQLToBackup");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -889,7 +907,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.InputSql");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['file'] = '/www/backup/database/' . $file;
         $p_data['name'] = $name;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -907,7 +925,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.InputSql");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['file'] = $file;
         $p_data['name'] = $name;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -933,7 +951,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddDatabase");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['name'] = $name;
         $p_data['codeing'] = $codeing;
         $p_data['db_user'] = $db_user;
@@ -959,7 +977,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DeleteDatabase");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id']   = $id;
         $p_data['name'] = $name;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -977,7 +995,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebDoaminList");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['table']  = 'domain';
         $p_data['search'] = $id;
         $p_data['list']   = $list;
@@ -997,7 +1015,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebAddDomain");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['id']      = $id;
         $p_data['webname'] = $webname;
         $p_data['domain']  = $domain;
@@ -1018,7 +1036,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebDelDomain");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['id']      = $id;
         $p_data['webname'] = $webname;
         $p_data['domain']  = $domain;
@@ -1037,7 +1055,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetRewriteList");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1053,7 +1071,7 @@ class Btpanel
     public function GetFileBody($path, $type = 0)
     {
         $url      = $this->BT_PANEL . config("bt.GetFileBody");
-        $p_data   = $this->GetKeyData();
+        $p_data   = [];
         $path_dir = $type ? 'vhost/rewrite' : 'rewrite/nginx';
 
         //获取当前站点伪静态规则
@@ -1079,7 +1097,7 @@ class Btpanel
     public function GetFileBody_win($path, $type = 'nginx')
     {
         $url    = $this->BT_PANEL . config("bt.GetFileBody");
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $path_dir = 'rewrite/' . $type;
 
@@ -1114,7 +1132,7 @@ class Btpanel
         } else {
             $path_dir = '/www/server/panel/vhost/rewrite/' . $path . '.conf';
         }
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['path']     = $path_dir;
         $p_data['data']     = $data;
         $p_data['encoding'] = $encoding;
@@ -1136,7 +1154,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SaveFileBody");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['path']     = $path;
         $p_data['data']     = $data;
         $p_data['encoding'] = $encoding;
@@ -1156,7 +1174,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetHasPwd");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id']       = $id;
         $p_data['username'] = $username;
         $p_data['password'] = $password;
@@ -1174,7 +1192,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CloseHasPwd");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -1190,7 +1208,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSiteLogs");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1207,7 +1225,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSecurity");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id']   = $id;
         $p_data['name'] = $site;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -1230,7 +1248,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetSecurity");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['id']      = $id;
         $p_data['name']    = $site;
         $p_data['fix']     = $fix;
@@ -1252,7 +1270,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDirUserINI");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id']   = $id;
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -1269,7 +1287,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.HttpToHttps");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1285,7 +1303,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CloseToHttps");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1304,7 +1322,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetSSL");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['type']     = $type;
         $p_data['siteName'] = $site;
         $p_data['key']      = $key;
@@ -1324,7 +1342,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CloseSSLConf");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['updateOf'] = $updateOf;
         $p_data['siteName'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -1341,7 +1359,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSSL");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1360,7 +1378,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDVSSL");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['domain'] = $domain;
         $p_data['path']   = $path;
         $result           = $this->HttpPostCookie($url, $p_data);
@@ -1380,7 +1398,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Completed");
 
-        $p_data                   = $this->GetKeyData();
+        $p_data                   = [];
         $p_data['siteName']       = $siteName;
         $p_data['partnerOrderId'] = $partnerOrderId;
         $result                   = $this->HttpPostCookie($url, $p_data);
@@ -1400,7 +1418,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSSLInfo");
 
-        $p_data                   = $this->GetKeyData();
+        $p_data                   = [];
         $p_data['siteName']       = $siteName;
         $p_data['partnerOrderId'] = $partnerOrderId;
         $result                   = $this->HttpPostCookie($url, $p_data);
@@ -1417,7 +1435,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebGetIndex");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -1434,7 +1452,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebSetIndex");
 
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['id']    = $id;
         $p_data['Index'] = $index;
         $result          = $this->HttpPostCookie($url, $p_data);
@@ -1451,7 +1469,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetLimitNet");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -1470,7 +1488,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetLimitNet");
 
-        $p_data               = $this->GetKeyData();
+        $p_data               = [];
         $p_data['id']         = $id;
         $p_data['perserver']  = $perserver;
         $p_data['perip']      = $perip;
@@ -1492,7 +1510,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetLimitNet");
 
-        $p_data               = $this->GetKeyData();
+        $p_data               = [];
         $p_data['id']         = $id;
         $p_data['perserver']  = $perserver;
         $p_data['timeout']    = $timeout;
@@ -1511,7 +1529,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CloseLimitNet");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -1527,7 +1545,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Get301Status");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1546,7 +1564,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Set301Status");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['siteName']  = $site;
         $p_data['toDomain']  = $toDomain;
         $p_data['srcDomain'] = $srcDomain;
@@ -1565,7 +1583,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetProxyList");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['sitename'] = $site;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1590,7 +1608,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CreateProxy");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['cache']     = $cache;
         $p_data['proxyname'] = $proxyname;
         $p_data['cachetime'] = $cachetime;
@@ -1617,7 +1635,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.CreateProxy");
 
-        $p_data                 = $this->GetKeyData();
+        $p_data                 = [];
         $p_data['cache_open']   = $data['cache_open'];
         $p_data['path_open']    = $data['path_open'];
         $p_data['proxyname']    = $data['proxyname'];
@@ -1652,7 +1670,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.ModifyProxy");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['cache']     = $cache;
         $p_data['proxyname'] = $proxyname;
         $p_data['cachetime'] = $cachetime;
@@ -1680,7 +1698,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.RemoveProxy");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['sitename']  = $sitename;
         $p_data['proxyname'] = $proxyname;
         $result              = $this->HttpPostCookie($url, $p_data);
@@ -1697,7 +1715,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDirBinding");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -1715,7 +1733,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddDirBinding");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['id']      = $id;
         $p_data['domain']  = $domain;
         $p_data['dirName'] = $dirName;
@@ -1733,7 +1751,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DelDirBinding");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $dirid;
         $result       = $this->HttpPostCookie($url, $p_data);
 
@@ -1749,7 +1767,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDirRewrite");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $dirid;
         if ($type) {
             $p_data['add'] = 1;
@@ -1770,7 +1788,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetUserPassword");
 
-        $p_data                 = $this->GetKeyData();
+        $p_data                 = [];
         $p_data['id']           = $id;
         $p_data['ftp_username'] = $ftp_username;
         $p_data['new_password'] = $new_password;
@@ -1790,7 +1808,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.ResDatabasePass");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id']       = $id;
         $p_data['name']     = $name;
         $p_data['password'] = $password;
@@ -1810,7 +1828,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetStatus");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id']       = $id;
         $p_data['username'] = $username;
         $p_data['status']   = $status;
@@ -1831,7 +1849,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DeleteUser");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['id']       = $id;
         $p_data['username'] = $username;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -1853,7 +1871,7 @@ class Btpanel
             $url = $this->BT_PANEL . config("bt.deployment");
         }
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -1870,7 +1888,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetupPackage");
 
-        $p_data                = $this->GetKeyData();
+        $p_data                = [];
         $p_data['dname']       = $dname;
         $p_data['site_name']   = $site_name;
         $p_data['php_version'] = $php_version;
@@ -1892,7 +1910,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSoftList");
 
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['query'] = $query;
         $p_data['p']     = $p;
         $p_data['type']  = $type;
@@ -1913,7 +1931,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetProof");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -1928,7 +1946,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SiteProof");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1944,7 +1962,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.ServiceProof");
 
-        $p_data                  = $this->GetKeyData();
+        $p_data                  = [];
         $p_data['serviceStatus'] = $serviceStatus;
         $result                  = $this->HttpPostCookie($url, $p_data);
 
@@ -1960,7 +1978,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.LogProof");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1976,7 +1994,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetgzProof");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -1993,7 +2011,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddprotectProof");
 
-        $p_data               = $this->GetKeyData();
+        $p_data               = [];
         $p_data['siteName']   = $siteName;
         $p_data['protectExt'] = $protectExt;
         $result               = $this->HttpPostCookie($url, $p_data);
@@ -2011,7 +2029,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddexcloudProof");
 
-        $p_data                = $this->GetKeyData();
+        $p_data                = [];
         $p_data['siteName']    = $siteName;
         $p_data['excludePath'] = $excludePath;
         $result                = $this->HttpPostCookie($url, $p_data);
@@ -2029,7 +2047,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DelprotectProof");
 
-        $p_data               = $this->GetKeyData();
+        $p_data               = [];
         $p_data['siteName']   = $siteName;
         $p_data['protectExt'] = $protectExt;
         $result               = $this->HttpPostCookie($url, $p_data);
@@ -2047,7 +2065,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DelexcloudProof");
 
-        $p_data                = $this->GetKeyData();
+        $p_data                = [];
         $p_data['siteName']    = $siteName;
         $p_data['excludePath'] = $excludePath;
         $result                = $this->HttpPostCookie($url, $p_data);
@@ -2063,7 +2081,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetTotal");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2077,7 +2095,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.StatusTotal");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
@@ -2095,7 +2113,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetTotal");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['s_key']    = $s_key;
         $p_data['s_value']  = $s_value;
@@ -2114,7 +2132,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SiteTotal");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['today']    = $today;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -2131,7 +2149,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SiteNetworkTotal");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -2147,7 +2165,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SiteSpiderTotal");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -2163,7 +2181,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SiteErrorLogTotal");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -2182,7 +2200,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SiteLogTotal");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['siteName']  = $siteName;
         $p_data['s_status']  = $s_status;
         $p_data['error_log'] = $error_log;
@@ -2201,7 +2219,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Siteclient");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -2219,7 +2237,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Getwaf") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2233,7 +2251,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Setwaf") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2248,7 +2266,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Sitewaf") . '&name=' . $wafType;
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -2265,7 +2283,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SitewafStatus") . '&name=' . $wafType;
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['obj']      = $obj;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -2291,7 +2309,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Setwafcc") . '&name=' . $wafType;
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['cycle']    = $cycle;
         $p_data['limit']    = $limit;
@@ -2318,7 +2336,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetwafRetry") . '&name=' . $wafType;
 
-        $p_data                = $this->GetKeyData();
+        $p_data                = [];
         $p_data['siteName']    = $siteName;
         $p_data['retry']       = $retry;
         $p_data['retry_time']  = $retry_time;
@@ -2338,7 +2356,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Addwafcnip") . '&name=' . $wafType;
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['start_ip'] = $start_ip;
         $p_data['end_ip']   = $end_ip;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -2355,7 +2373,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Getwafcnip") . '&name=' . $wafType;
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['ruleName'] = $ruleName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -2370,7 +2388,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetwafCms") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2387,7 +2405,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetwafLog") . '&name=' . $wafType;
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['toDate']   = $toDate;
         $p_data['p']        = $p;
@@ -2404,7 +2422,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SitewafConfig") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2418,7 +2436,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetIPStopStop") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2432,7 +2450,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetIPStop") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2446,7 +2464,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetIPStop") . '&name=' . $wafType;
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -2465,7 +2483,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WebGetKey");
 
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['id']    = $btid;
         $p_data['key']   = $key;
         $p_data['table'] = $table;
@@ -2486,7 +2504,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetSiteRunPath");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['id']      = $id;
         $p_data['runPath'] = $path;
         $result            = $this->HttpPostCookie($url, $p_data);
@@ -2512,7 +2530,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDir") . '&tojs=' . $tojs . '&p=' . $p . '&showRow=' . $showRow;
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         if ($search) {
             $p_data['search'] = $search;
         }
@@ -2543,9 +2561,9 @@ class Btpanel
      */
     public function UploadFile($path, $data, $codeing = 'byte')
     {
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $url             = $this->BT_PANEL . config("bt.UploadFile");
-        $data            = array_merge($data, $this->GetKeyData());
+        // $data            = array_merge($data, $this->GetKeyData());
         $data['path']    = $path;
         $data['codeing'] = $codeing;
         $result          = $this->HttpPostCookie($url, $data);
@@ -2567,9 +2585,9 @@ class Btpanel
      */
     public function UploadFiles($path, $name, $f_size, $f_start, $blob, $m = 'coll_upload', $f = 'upload')
     {
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $url             = $this->BT_PANEL . config("bt.UploadFiles");
-        $data            = $this->GetKeyData();
+        $data            = [];
         $data['f_path']  = $path;
         $data['f_name']  = $name;
         $data['f_size']  = $f_size;
@@ -2592,7 +2610,7 @@ class Btpanel
     public function DeleteDir($path)
     {
         $url            = $this->BT_PANEL . config("bt.DeleteDir");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
         $data           = json_decode($result, true);
@@ -2608,7 +2626,7 @@ class Btpanel
     public function DeleteFile($path)
     {
         $url            = $this->BT_PANEL . config("bt.DeleteFile");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
         $data           = json_decode($result, true);
@@ -2626,7 +2644,7 @@ class Btpanel
     public function MvFile($sfile, $dfile, $rename = 'true')
     {
         $url              = $this->BT_PANEL . config("bt.MvFile");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['sfile']  = $sfile;
         $p_data['dfile']  = $dfile;
         $p_data['rename'] = $rename;
@@ -2648,7 +2666,7 @@ class Btpanel
     public function UnZip($sfile, $dfile, $password = 'undefined', $type, $coding = 'UTF-8')
     {
         $url                = $this->BT_PANEL . config("bt.UnZip");
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['sfile']    = $sfile;
         $p_data['dfile']    = $dfile;
         $p_data['password'] = $password;
@@ -2672,7 +2690,7 @@ class Btpanel
     public function fileZip($sfile, $dfile, $z_type, $path)
     {
         $url              = $this->BT_PANEL . config("bt.fileZip");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['sfile']  = $sfile;
         $p_data['dfile']  = $dfile;
         $p_data['z_type'] = $z_type;
@@ -2691,7 +2709,7 @@ class Btpanel
     public function GetFileAccess($filename)
     {
         $url                = $this->BT_PANEL . config("bt.GetFileAccess");
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['filename'] = $filename;
         $result             = $this->HttpPostCookie($url, $p_data);
         $data               = json_decode($result, true);
@@ -2709,7 +2727,7 @@ class Btpanel
     public function SetFileAccess($filename, $user, $access)
     {
         $url                = $this->BT_PANEL . config("bt.SetFileAccess");
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['filename'] = $filename;
         $p_data['user']     = $user;
         $p_data['access']   = $access;
@@ -2727,7 +2745,7 @@ class Btpanel
     public function GetFileBodys($path)
     {
         $url            = $this->BT_PANEL . config("bt.GetFileBody");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
         $data           = json_decode($result, true);
@@ -2744,7 +2762,7 @@ class Btpanel
     public function CopyFile($sfile, $dfile)
     {
         $url             = $this->BT_PANEL . config("bt.CopyFile");
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['sfile'] = $sfile;
         $p_data['dfile'] = $dfile;
         $result          = $this->HttpPostCookie($url, $p_data);
@@ -2763,7 +2781,7 @@ class Btpanel
     public function SetBatchData($path, $type, $data)
     {
         $url            = $this->BT_PANEL . config("bt.SetBatchData");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $p_data['type'] = $type;
         $p_data['data'] = $data;
@@ -2782,7 +2800,7 @@ class Btpanel
     public function BatchPaste($path, $type)
     {
         $url            = $this->BT_PANEL . config("bt.BatchPaste");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $p_data['type'] = $type;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -2800,7 +2818,7 @@ class Btpanel
     public function download($file, $filename)
     {
         error_reporting(0);
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $url    = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $result = $this->HttpPostCookie($url);
         if ($result && isset($result['status']) && $result['status'] == 'false') {
@@ -2834,7 +2852,7 @@ class Btpanel
     public function images_view($file, $filename)
     {
         error_reporting(0);
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $url    = $this->BT_PANEL . config("bt.download") . urlencode($file) . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $result = $this->HttpPostCookie($url);
         if ($result && isset($result['status']) && $result['status'] == 'false') {
@@ -2858,7 +2876,7 @@ class Btpanel
     public function DownloadFile($path, $urls, $filename)
     {
         $url                = $this->BT_PANEL . config("bt.DownloadFile");
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['path']     = $path;
         $p_data['url']      = $urls;
         $p_data['filename'] = $filename;
@@ -2876,7 +2894,7 @@ class Btpanel
     public function CreateDir($path)
     {
         $url            = $this->BT_PANEL . config("bt.CreateDir");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
         $data           = json_decode($result, true);
@@ -2892,7 +2910,7 @@ class Btpanel
     public function CreateFile($path)
     {
         $url            = $this->BT_PANEL . config("bt.CreateFile");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
         $data           = json_decode($result, true);
@@ -2908,7 +2926,7 @@ class Btpanel
     public function GetSoftFind($sName)
     {
         $url             = $this->BT_PANEL . config("bt.GetSoftFind");
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['sName'] = $sName;
         $result          = $this->HttpPostCookie($url, $p_data);
         $data            = json_decode($result, true);
@@ -2927,7 +2945,7 @@ class Btpanel
     public function InstallPlugin($sName, $version = 1, $type = 0, $upgrade = '')
     {
         $url               = $this->BT_PANEL . config("bt.InstallPlugin");
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['sName']   = $sName;
         $p_data['version'] = $version;
         $p_data['type']    = $type;
@@ -2949,7 +2967,7 @@ class Btpanel
     public function UnInstallPlugin($sName, $version)
     {
         $url               = $this->BT_PANEL . config("bt.UnInstallPlugin");
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['sName']   = $sName;
         $p_data['version'] = $version;
         $result            = $this->HttpPostCookie($url, $p_data);
@@ -2966,7 +2984,7 @@ class Btpanel
     public function CloseLogs($action = 'CloseLogs')
     {
         $url              = $this->BT_PANEL . config("bt.CloseLogs");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -2982,7 +3000,7 @@ class Btpanel
     public function GetRecyclebin($action = 'Get_Recycle_bin')
     {
         $url              = $this->BT_PANEL . config("bt.GetRecyclebin");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -2998,7 +3016,7 @@ class Btpanel
     public function Close_Recycle_bin($action = 'Close_Recycle_bin')
     {
         $url              = $this->BT_PANEL . config("bt.Close_Recycle_bin");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -3014,7 +3032,7 @@ class Btpanel
     public function GetSiteDomains($id)
     {
         $url          = $this->BT_PANEL . config("bt.GetSiteDomains");
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['id'] = $id;
         $result       = $this->HttpPostCookie($url, $p_data);
         $data         = json_decode($result, true);
@@ -3034,7 +3052,7 @@ class Btpanel
     public function CreateLet($siteName, $domains, $email, $updateOf = 1, $force = 'true')
     {
         $url                = $this->BT_PANEL . config("bt.CreateLet");
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['domains']  = $domains;
         $p_data['email']    = $email;
@@ -3054,7 +3072,7 @@ class Btpanel
     public function RenewLets($action = 'renew_lets_ssl')
     {
         $url              = $this->BT_PANEL . config("bt.RenewLets");
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['action'] = $action;
         $result           = $this->HttpPostCookie($url, $p_data);
         $data             = json_decode($result, true);
@@ -3072,7 +3090,7 @@ class Btpanel
     public function getFileLog($filename, $num = 10)
     {
         $url                = $this->BT_PANEL . config("bt.getFileLog");
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['filename'] = $filename;
         $p_data['num']      = $num;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -3090,7 +3108,7 @@ class Btpanel
     public function GetList($search = '', $type = 0)
     {
         $url            = $this->BT_PANEL . config("bt.GetList");
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['type'] = $type;
         if ($search) {
             $p_data['search'] = $search;
@@ -3111,7 +3129,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetupPackageNew");
 
-        $p_data                = $this->GetKeyData();
+        $p_data                = [];
         $p_data['dname']       = $dname;
         $p_data['site_name']   = $site_name;
         $p_data['php_version'] = $php_version;
@@ -3137,7 +3155,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddPackage");
 
-        $p_data                     = $this->GetKeyData();
+        $p_data                     = [];
         $p_data['name']             = $name;
         $p_data['title']            = $title;
         $p_data['php']              = $php;
@@ -3161,7 +3179,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetSiteRewrite");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -3180,7 +3198,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetSiteRewrite");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['data']     = $data;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -3199,7 +3217,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetDirUserINI");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -3217,7 +3235,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetConfigLocking");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -3234,7 +3252,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetPatch");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3252,7 +3270,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetPatch");
 
-        $p_data          = $this->GetKeyData();
+        $p_data          = [];
         $p_data['url']   = $url;
         $p_data['patch'] = $patch;
         $result          = $this->HttpPostCookie($url, $p_data);
@@ -3270,7 +3288,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetupIisProxy");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3286,7 +3304,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetIisProxyConfig");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3303,7 +3321,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.SetIisProxyConfig");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
 
         // 反向代理启用状态
         $p_data['enabled'] = $data['enabled'];
@@ -3347,7 +3365,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIis");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3363,7 +3381,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIisSetOpen");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3379,7 +3397,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIisGetConfig");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3395,7 +3413,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIisSiteConfig");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3412,7 +3430,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIisGetLog");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -3431,7 +3449,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIisSetSiteOpen");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['obj']      = $obj;
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -3450,7 +3468,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.WafIisSetSiteConfig");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -3470,7 +3488,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_site_disable_rule");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['ruleName'] = $ruleName;
         $result             = $this->HttpPostCookie($url, $p_data);
@@ -3489,7 +3507,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_speed");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3506,7 +3524,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_panel_api");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3524,7 +3542,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.set_panel_api");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['api_info'] = $api_info;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -3544,7 +3562,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.chekc_surroundings");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['panel']     = $panel;
         $p_data['api_token'] = $api_token;
         $result              = $this->HttpPostCookie($url, $p_data);
@@ -3565,7 +3583,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_site_info");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['panel']     = $panel;
         $p_data['api_token'] = $api_token;
         $result              = $this->HttpPostCookie($url, $p_data);
@@ -3584,7 +3602,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.set_sync_info");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['sync_info'] = $sync_info;
         $result              = $this->HttpPostCookie($url, $p_data);
 
@@ -3602,7 +3620,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_sync_info");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3619,7 +3637,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.return_log");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3637,7 +3655,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.log_remove_file");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['data'] = $data;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -3655,7 +3673,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.log_status");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3672,7 +3690,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_config_back");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3688,7 +3706,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.set_config_back");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3707,7 +3725,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.import_config_back");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $p_data['type'] = $type;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -3727,7 +3745,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.Decompression");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['type'] = $type;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -3746,7 +3764,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.del_config_back");
 
-        $p_data             = $this->GetKeyData();
+        $p_data             = [];
         $p_data['filename'] = $filename;
         $result             = $this->HttpPostCookie($url, $p_data);
 
@@ -3766,7 +3784,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.port_blast");
 
-        $p_data       = $this->GetKeyData();
+        $p_data       = [];
         $p_data['dk'] = $dk;
         $p_data['ip'] = $ip;
         $result       = $this->HttpPostCookie($url, $p_data);
@@ -3785,7 +3803,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_host_config");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3803,7 +3821,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.add_host_config");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['domain'] = $domain;
         $p_data['ip']     = $ip;
         $result           = $this->HttpPostCookie($url, $p_data);
@@ -3823,7 +3841,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.del_host_config");
 
-        $p_data           = $this->GetKeyData();
+        $p_data           = [];
         $p_data['domain'] = $domain;
         $result           = $this->HttpPostCookie($url, $p_data);
 
@@ -3844,7 +3862,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.edit_host_config");
 
-        $p_data              = $this->GetKeyData();
+        $p_data              = [];
         $p_data['olddomain'] = $olddomain;
         $p_data['newdomain'] = $newdomain;
         $p_data['ip']        = $ip;
@@ -3865,7 +3883,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_list");
 
-        $p_data = $this->GetKeyData();
+        $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -3883,7 +3901,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_info");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['site'] = $site;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -3904,7 +3922,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_install");
 
-        $p_data            = $this->GetKeyData();
+        $p_data            = [];
         $p_data['site']    = $site;
         $p_data['demourl'] = $demourl;
         $p_data['demoid']  = $demoid;
@@ -3925,7 +3943,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_uninstall");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['site'] = $site;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -3943,7 +3961,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_dir_auth");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -3965,7 +3983,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.set_dir_auth");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
         $p_data['site_dir'] = $site_dir;
@@ -3991,7 +4009,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.modify_dir_auth_pass");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
         $p_data['username'] = $username;
@@ -4014,7 +4032,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.delete_dir_auth");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
 
@@ -4039,7 +4057,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddVsftpdUser");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['username'] = $username;
         $p_data['password'] = $password;
         $p_data['homepath'] = $homepath;
@@ -4063,7 +4081,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetTotalData");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4080,7 +4098,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetGlobalData");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4097,7 +4115,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetVsftpdUserList");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4114,7 +4132,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetLogText");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4130,7 +4148,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.DelVsftpdLog");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4147,7 +4165,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_san_dir");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = $path;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -4166,7 +4184,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_san_dir");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['siteName'] = $siteName;
         $p_data['obj'] = $obj;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -4185,7 +4203,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_get_logs_list");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['siteName'] = $siteName;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -4208,7 +4226,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_set_site_cc_conf");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['siteName'] = $siteName;
         $p_data['cycle'] = $cycle;
         $p_data['limit'] = $limit;
@@ -4230,7 +4248,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_total");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4246,7 +4264,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_set_open");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4262,7 +4280,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.free_waf_site_config");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4279,7 +4297,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.webshellCheck");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['filename'] = $filename;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -4298,7 +4316,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.getData");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['tojs'] = 'firewall.get_log_list';
         $p_data['table'] = 'logs';
         $p_data['limit'] = $limit;
@@ -4320,7 +4338,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetDirSize");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['path'] = '/www/wwwlogs';
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -4339,7 +4357,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.ReTable");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['db_name'] = $db_name;
         $p_data['tables'] = $tables;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -4359,7 +4377,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.OpTable");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['db_name'] = $db_name;
         $p_data['tables'] = $tables;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -4380,7 +4398,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AlTable");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['db_name'] = $db_name;
         $p_data['tables'] = $tables;
         $p_data['table_type'] = $table_type;
@@ -4400,7 +4418,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.get_php_session_path");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -4423,7 +4441,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.set_php_session_path");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['act'] = $act;
         $result         = $this->HttpPostCookie($url, $p_data);
@@ -4451,7 +4469,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.AddCrontab");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['name'] = isset($params['name']) ? $params['name'] : '';
         $p_data['type'] = isset($params['type']) ? $params['type'] : '';
         $p_data['where1'] = isset($params['where1']) ? $params['where1'] : '';
@@ -4487,7 +4505,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetCrontab");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $result         = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -4512,7 +4530,7 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt.GetLogs");
 
-        $p_data         = $this->GetKeyData();
+        $p_data         = [];
         $p_data['id'] = $id;
         $result         = $this->HttpPostCookie($url, $p_data);
 
@@ -4552,25 +4570,19 @@ class Btpanel
      * @param Array|String $data 欲提交的数据
      * @return string
      */
-    private function HttpPostCookie($url, $data = '', $timeout = 120)
+    private function HttpPostCookie($url, $data = [], $timeout = 120)
     {
         $path = ROOT_PATH . 'logs/';
         if (!is_dir($path)) {
             mkdir($path, 0777, true);
         }
-        //定义cookie保存位置
-        $cookie_file =  $path . md5($this->BT_PANEL) . '.cookie';
-        if (!file_exists($cookie_file)) {
-            $fp = fopen($cookie_file, 'w+');
-            fclose($fp);
-        }
+        // 拼接api验证信息
+        $data = array_merge($data, $this->GetKeyData());
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookie_file);
-        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookie_file);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_HEADER, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
