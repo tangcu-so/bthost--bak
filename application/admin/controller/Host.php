@@ -216,6 +216,8 @@ class Host extends Backend
                     'sql_back_num'          => $plansInfo['sql_back_num'],
                     'ip_address'            => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
                     'endtime'               => $params['endtime'],
+                    'perserver'             => $plansInfo['perserver'] ?? 0,
+                    'limit_rate'            => $plansInfo['limit_rate'] ?? 0,
                 ];
                 $inc = model('Host')::create($host_data);
 

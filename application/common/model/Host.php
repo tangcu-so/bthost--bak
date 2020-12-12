@@ -47,6 +47,10 @@ class Host extends Model
             if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
                 \app\common\model\Host::host_update_endtime($row);
             }
+            // 如果修改并发、限速
+            if (isset($changed['perserver']) && ($changed['perserver'] != $row->origin['perserver'])) {
+                \app\common\model\Host::host_perserver($row);
+            }
         });
 
         // TODO 主机创建前事件
@@ -146,6 +150,25 @@ class Host extends Model
             $bt->webstop();
         }
     }
+
+    /**
+     * 主机并发、限速
+     *
+     * @param [type] $row
+     * @return void
+     */
+    public static function host_perserver($row)
+    {
+        $changed = $row->getChangedData();
+        $bt = new Btaction();
+        $bt->bt_id = $row->bt_id;
+        $bt->bt_name = $row->bt_name;
+        $data = [
+            'perserver' => $changed['perserver'],
+            'limit_rate' => $changed['limit_rate'],
+        ];
+        $set = $bt->setLimit($data);
+    }
     
 
     
@@ -231,24 +254,26 @@ class Host extends Model
      * @param [type] $domain        根域名
      * @param [type] $value         记录值 如ip cname.xxx.com
      * @param [type] $sub_domain    解析值 如www @ xxxx
+     * @param [type] $record_type   解析方式 'SRV', 'MX', 'CNAME', 'AAAA', 'A', 'TXT', 'NS'
      * @return void
      */
-    public function doamin_analysis($domain,$value,$sub_domain){
-        $domain_find = model('Domain')->where(['domain'=>$domain,'status'=>'normal'])->find();
-        if(!$domain_find){
+    public function doamin_analysis($domain, $value, $sub_domain, $record_type)
+    {
+        $domain_find = model('Domain')->where(['domain' => $domain, 'status' => 'normal'])->find();
+        if (!$domain_find) {
             return '域名不存在';
         }
         $id = Config::get('dnspod.id');
         $token = Config::get('dnspod.token');
-        if(!$id||!$token){
+        if (!$id || !$token) {
             return '配置不完整';
         }
-        $dnspod = new Dnspod($id,decode($token));
-        $jx = $dnspod->record_Create($domain_find['dnspod_id'],'',$value,$sub_domain);
-        if($jx&&isset($jx['record'])&&$jx['record']){
-            $data = array_merge($jx['record'],['domain_id'=>$domain_find['dnspod_id'],'domain'=>$domain_find['domain']]);
+        $dnspod = new Dnspod($id, decode($token));
+        $jx = $dnspod->record_Create($domain_find['dnspod_id'], '', $value, $sub_domain, $record_type);
+        if ($jx && isset($jx['record']) && $jx['record']) {
+            $data = array_merge($jx['record'], ['domain_id' => $domain_find['dnspod_id'], 'domain' => $domain_find['domain']]);
             return $data;
-        }else{
+        } else {
             return $dnspod->msg;
         }
     }

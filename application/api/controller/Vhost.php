@@ -493,7 +493,7 @@ class Vhost extends Api
         }
 
         // 预装程序
-        if ($plansInfo['preset_procedure']) {
+        if (isset($plansInfo['preset_procedure']) && $plansInfo['preset_procedure']) {
             // 程序预装
             $defaultPhp = $hostSetInfo['version'] && $hostSetInfo['version'] != '00' ? $hostSetInfo['version'] : '56';
             $setUp = $bt->presetProcedure($plansInfo['preset_procedure'], $btName, $defaultPhp);
@@ -501,7 +501,7 @@ class Vhost extends Api
                 $this->error($bt->_error);
             }
         }
-        if ($plansInfo['session']) {
+        if (isset($plansInfo['session']) && $plansInfo['session']) {
             // session隔离
             $bt->btAction->set_php_session_path($btId, 1);
         }
@@ -517,7 +517,7 @@ class Vhost extends Api
 
         $dnspod_record = $dnspod_record_id = $dnspod_domain_id = '';
 
-        if ($plansInfo['dnspod']) {
+        if (isset($plansInfo['dnspod']) && $plansInfo['dnspod']) {
             // 如果域名属于dnspod智能解析
             $record_type = Config::get('site.dnspod_analysis_type');
             $analysis = Config::get('site.dnspod_analysis_url');
@@ -538,15 +538,15 @@ class Vhost extends Api
             'sort_id'               => $sort_id,
             'bt_id'                 => $btId,
             'bt_name'               => $btName,
-            'site_max'              => $plansInfo['site_max'],
-            'sql_max'               => $plansInfo['sql_max'],
-            'flow_max'              => $plansInfo['flow_max'],
-            'is_audit'              => $plansInfo['domain_audit'],
-            'is_vsftpd'             => $plansInfo['vsftpd'],
-            'domain_max'            => $plansInfo['domain_num'],
-            'web_back_num'          => $plansInfo['web_back_num'],
-            'sql_back_num'          => $plansInfo['sql_back_num'],
-            'ip_address'            => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
+            'site_max'              => $plansInfo['site_max'] ?? 0,
+            'sql_max'               => $plansInfo['sql_max'] ?? 0,
+            'flow_max'              => $plansInfo['flow_max'] ?? 0,
+            'is_audit'              => $plansInfo['domain_audit'] ?? 0,
+            'is_vsftpd'             => $plansInfo['vsftpd'] ?? 0,
+            'domain_max'            => $plansInfo['domain_num'] ?? 0,
+            'web_back_num'          => $plansInfo['web_back_num'] ?? 0,
+            'sql_back_num'          => $plansInfo['sql_back_num'] ?? 0,
+            'ip_address'            => $plansInfo['ipArr'] ?? '',
             'endtime'               => $endtime,
         ];
         $hostInfo = model('Host')::create($host_data);
@@ -579,7 +579,7 @@ class Vhost extends Api
         $domainInfo = model('Domainlist')::create([
             'domain' => $btName,
             'vhost_id' => $vhost_id,
-            'domain_id' => $plansInfo['domainlist_id'],
+            'domain_id' => $plansInfo['domainlist_id'] ?? 0,
             'dnspod_record' => $dnspod_record,
             'dnspod_record_id' => $dnspod_record_id,
             'dnspod_domain_id' => $dnspod_domain_id,
@@ -908,6 +908,41 @@ class Vhost extends Api
         
         $hostInfo->save();
         $this->success('更新成功',$hostInfo);
+    }
+
+    // 主机修改套餐
+    public function host_update()
+    {
+        $id = $this->request->post('id/d');
+        $plan_id = $this->request->post('plan_id/d');
+
+        if (!$id || !$plan_id) {
+            $this->error('错误的请求');
+        }
+        $hostInfo = $this->getHostInfo($id);
+        if (!$hostInfo) {
+            $this->error('主机不存在');
+        }
+        $plansInfo = model('Plans')::get($plan_id);
+        if (!$plansInfo) {
+            $this->error('套餐不存在');
+        }
+        $plansInfo = json_decode($plansInfo->value);
+        // var_dump($plansInfo->site_max, $plansInfo->perserver);
+        // exit;
+        $hostInfo->site_max = $plansInfo->site_max;
+        $hostInfo->sql_max = $plansInfo->sql_max;
+        $hostInfo->flow_max = $plansInfo->flow_max;
+        $hostInfo->domain_max = $plansInfo->domain_num;
+        $hostInfo->web_back_num = $plansInfo->web_back_num;
+        $hostInfo->sql_back_num = $plansInfo->sql_back_num;
+        $hostInfo->is_audit = $plansInfo->domain_audit;
+        // 升级并发、限速
+        $hostInfo->perserver = $plansInfo->perserver;
+        $hostInfo->limit_rate = $plansInfo->limit_rate;
+
+        $hostInfo->allowField(true)->save();
+        $this->success('更新成功', $hostInfo);
     }
 
     // 主机域名绑定

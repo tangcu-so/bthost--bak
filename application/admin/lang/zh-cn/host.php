@@ -46,4 +46,6 @@ return [
     'Resource max'     => '资源大小',
     'Add New'          => '新建主机',
     'Add Local'        => '添加主机',
+    'Perserver'        => '限制并发',
+    'Limit_rate'       => '限制流量(单IP',
 ];

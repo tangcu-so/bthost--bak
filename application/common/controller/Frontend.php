@@ -217,7 +217,7 @@ class Frontend extends Controller
             }
             // ip需要密文加密
             $ip_encode = encode($ipInfo, 'ZD4wNqBVN0Gn');
-            Cache::remember('auth_check_ip', $ip_encode);
+            Cache::remember('auth_check_ip', $ip_encode, 0);
         } else {
             $ip_encode = Cache::get('auth_check_ip');
             $ip = decode($ip_encode, 'ZD4wNqBVN0Gn');
@@ -229,7 +229,7 @@ class Frontend extends Controller
 
         if (!Cache::get('auth_check')) {
             $json = $this->auth_check($ip);
-            $curl = Cache::remember('auth_check', $json);
+            $curl = Cache::remember('auth_check', $json, 0);
         } else {
             $curl = Cache::get('auth_check');
         }

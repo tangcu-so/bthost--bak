@@ -926,5 +926,8 @@ INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'auto_notice', 'personalization', 'auto_notice', '自动获取公告', 'switch', '1', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
 ALTER TABLE `bth_user` MODIFY COLUMN `email`  varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '电子邮箱' AFTER `password`;
 
-
+-- 新版本待加入
+ALTER TABLE `bth_host`
+ADD COLUMN `perserver`  int(10) NOT NULL DEFAULT 0 COMMENT '限制并发' AFTER `sql_back_num`,
+ADD COLUMN `limit_rate`  int(10) NOT NULL DEFAULT 0 COMMENT '限制流量' AFTER `perserver`;
 
