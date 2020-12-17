@@ -219,14 +219,14 @@ class Btaction
         $Total = $this->btAction->GetTotal();
         if ($Total && isset($Total['open']) && $Total['open'] == 'true') {
             $total_size = $this->getNetNumber_month($this->bt_name);
-            if (!$total_size || !isset($total_size['total_size'])) {
-                $total_size['total_size'] = 0;
+            if (!$total_size || !isset($total_size['month_total'])) {
+                $total_size['month_total'] = 0;
             }
         } else {
-            $total_size['total_size'] = 0;
+            $total_size['month_total'] = 0;
         }
         // 实际使用流量
-        $total_size = is_numeric($total_size['total_size']) ? bytes2mb($total_size['total_size']) : 0;
+        $total_size = is_numeric($total_size['month_total']) ? bytes2mb($total_size['month_total']) : 0;
         // 空间大小
         $websize = bytes2mb($this->getWebSizes($this->bt_name));
         // 数据库
