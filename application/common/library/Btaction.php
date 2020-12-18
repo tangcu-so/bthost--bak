@@ -59,7 +59,7 @@ class Btaction
     {
         $server_config = Cache::remember('vhost_config', function () {
             return $server_config = $this->clear_config();
-        });
+        }, 3600 * 24);
         return $this->tests();
         if ($this->os == 'windows') {
             return $this->tests_win();
@@ -92,8 +92,8 @@ class Btaction
     public function tests()
     {
         // $config = $this->getServerConfig();
-        $config = $this->btAction->getConcifInfo();
-        if ($config && isset($config['status']) && ($config['status'] == true || $config['status'] == 1)) {
+        $config = Cache::get('vhost_config');
+        if ($config && isset($config['status']) && $config['status']) {
             $this->serverConfig = $config;
             return true;
         } else if (isset($config['msg'])) {
