@@ -91,15 +91,16 @@ class Btaction
     // linux版测试连接
     public function tests()
     {
-        $config = $this->getServerConfig();
+        // $config = $this->getServerConfig();
+        $config = $this->btAction->getConcifInfo();
         if ($config && isset($config['status']) && ($config['status'] == true || $config['status'] == 1)) {
             $this->serverConfig = $config;
             return true;
-        } else if (isset($config['status']) && $config['status'] == false && isset($config['msg'])) {
+        } else if (isset($config['msg'])) {
             $this->setError($config['msg'] . $this->getRequestTime());
             return false;
         } else {
-            $this->setError('服务器连接失败' . $this->getRequestTime());
+            $this->setError('服务器连接测试失败' . $this->getRequestTime());
             return false;
         }
     }
