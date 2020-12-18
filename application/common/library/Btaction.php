@@ -88,15 +88,16 @@ class Btaction
     // linux版测试连接
     public function tests()
     {
-        $config = $this->getServerConfig();
+        // $config = $this->getServerConfig();
+        $config = $this->btAction->getConcifInfo();
         if ($config && isset($config['status']) && ($config['status'] == true || $config['status'] == 1)) {
             $this->serverConfig = $config;
             return true;
-        } else if (isset($config['status']) && $config['status'] == false && isset($config['msg'])) {
+        } else if (isset($config['msg'])) {
             $this->setError($config['msg'] . $this->getRequestTime());
             return false;
         } else {
-            $this->setError('服务器连接失败' . $this->getRequestTime());
+            $this->setError('服务器连接测试失败' . $this->getRequestTime());
             return false;
         }
     }
@@ -216,14 +217,14 @@ class Btaction
         $Total = $this->btAction->GetTotal();
         if ($Total && isset($Total['open']) && $Total['open'] == 'true') {
             $total_size = $this->getNetNumber_month($this->bt_name);
-            if (!$total_size || !isset($total_size['total_size'])) {
-                $total_size['total_size'] = 0;
+            if (!$total_size || !isset($total_size['month_total'])) {
+                $total_size['month_total'] = 0;
             }
         } else {
-            $total_size['total_size'] = 0;
+            $total_size['month_total'] = 0;
         }
         // 实际使用流量
-        $total_size = is_numeric($total_size['total_size']) ? bytes2mb($total_size['total_size']) : 0;
+        $total_size = is_numeric($total_size['month_total']) ? bytes2mb($total_size['month_total']) : 0;
         // 空间大小
         $websize = bytes2mb($this->getWebSizes($this->bt_name));
         // 数据库
