@@ -2,7 +2,7 @@
 	"php_ext": "",
 	"chmod": [],
 	"success_url": "/install.php",
-	"php_versions": "56,70,71,72,73,74",
+	"php_versions": "71,72,73,74",
 	"admin_username": "admin",
 	"admin_password": "admin000",
 	"run_path": "/public",
