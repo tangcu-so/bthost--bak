@@ -3144,7 +3144,7 @@ class Btpanel
      * @Author   Youngxj
      * @DateTime 2019-12-14
      * @param    [type]     $name             英文名
-     * @param    [type]     $title            中文吗
+     * @param    [type]     $title            中文名
      * @param    [type]     $php              php版本：70,71,72
      * @param    [type]     $enable_functions 解禁的函数
      * @param    [type]     $version          项目版本
