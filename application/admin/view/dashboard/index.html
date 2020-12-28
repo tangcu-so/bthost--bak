@@ -392,6 +392,9 @@
                                 </div>
                             
                             <div class="text-center" id="btAction">
+                                <a class="btn btn-success btn-deployment btn-dialog {:$auth->check('general/deployment/upload')?'':'hide'}"
+                                    href="general/deployment/upload" title="{:__('新增一键部署包')}"><i
+                                        class="fa fa-upload"></i> {:__('新增一键部署包')}</a>
                                 <button class="btn btn-default" id="default" type="button">
                                     修改默认页
                                 </button>

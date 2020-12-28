@@ -330,6 +330,7 @@ class Ajax extends Backend
         $bt   = new Btaction();
         $list = $bt->getphplist();
         $new_data = [];
+        $new_data['list'] = [];
         if ($list) {
             // 处理一下数据
             if ($keyValue) {
