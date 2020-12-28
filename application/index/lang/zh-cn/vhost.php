@@ -95,6 +95,7 @@ return [
     'deployment_new'                        => '一键部署(新)',
     'total'                                 => '流量报表',
     'proxy'                                 => '反向代理',
+    'hostreset'                             => '站点重置',
     'normal'                                => '正常',
     'stop'                                  => '停止',
     'locked'                                => '锁定',

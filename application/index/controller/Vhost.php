@@ -232,6 +232,69 @@ class Vhost extends Frontend
         $this->success('清理成功','');
     }
 
+    // 站点重置
+    public function hostreset()
+    {
+        if ($this->request->isPost()) {
+            try {
+                // 创建站点重建记录
+                $c = \app\common\model\HostresetLog::create([
+                    'user_id' => $this->auth->id,
+                    'host_id' => $this->hostInfo->id,
+                    'bt_id' => $this->bt_id,
+                    'info' => json_encode($this->hostInfo)
+                ]);
+                // 删除原有站点信息，保留数据库、ftp账号，清空域名绑定详情
+                $del = $this->btTend->siteDelete($this->btTend->bt_id, $this->btTend->bt_name, 0, 0, 1);
+                if (!$del) {
+                    throw new \Exception('重置失败.' . $this->btTend->_error);
+                }
+                $arr = explode('.', $this->btTend->bt_name);
+                $name = isset($arr[0]) ? $arr[0] : \fast\Random::alnum(6);
+                // 创建一个新的站点，保持原有信息一致性，如空间大小，IP等
+                $hostSetArr = [
+                    'domains' => $this->btTend->bt_name,
+                    'WebGetKey' => $this->btAction->WebGetKey($this->btTend->bt_id),
+                    // 'ftp' => 1,
+                    'site_max' => $this->hostInfo->site_max,
+                    'sql_max' => $this->hostInfo->sql_max,
+                    'flow_max' => $this->hostInfo->flow_max,
+                ];
+                $hostSetInfo = $this->btTend->setInfo(['username' => $name], $hostSetArr);
+
+                // var_dump($hostSetInfo);
+                // exit;
+                // 删除原有域名绑定信息
+                \app\common\model\Domainlist::where(['vhost_id' => $this->hostInfo->id])->where('domain', '<>', $this->btTend->bt_name)->delete();
+
+                $crea = $this->btTend->btBuild($hostSetInfo);
+                if (!$crea) {
+                    throw new \Exception('重置失败.' . $this->btTend->_error);
+                }
+                // 将数据库中站点信息变更为新站点信息，btid，站点名等
+                $this->hostModel->save([
+                    'bt_name' => $this->btTend->bt_name,
+                    'bt_id' => $crea['siteId'],
+                ], ['id' => $this->hostInfo->id]);
+
+                \app\common\model\HostresetLog::where(['id' => $c->id])->update([
+                    'status' => 1,
+                    'new_host_id' => $this->hostInfo->id,
+                    'new_bt_id' => $crea['siteId'],
+                ]);
+                $msg = true;
+            } catch (\Exception $e) {
+                $msg = '重置失败.' . $e->getMessage();
+            }
+            if ($msg === true) {
+                $this->success('重置成功');
+            } else {
+                $this->success($msg);
+            }
+        }
+        return $this->view->fetch();
+    }
+
     /**
      * 设置PHP版本
      * @Author   Youngxj

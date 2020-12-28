@@ -396,19 +396,19 @@ class Btaction
         }
 
         // 站点随机域名
-        $userRandId = strtolower(Random::alnum(6));
+        // $userRandId = ;
         // 站点域名
         if (isset($params['username']) && $params['username']) {
             // 自定义
             $set_domain = strtolower($params['username']);
         } else {
             // 随机
-            $set_domain = $userRandId;
+            $set_domain = strtolower(Random::alnum(6));
         }
         // 测试语句，正式环境注释
-        $set_domain = $userRandId;
+        // $set_domain = $userRandId;
         // 拼接默认域名 6.8.18+版官方强转小写 2019-03-09
-        $defaultDomain = strtolower($set_domain . '.' . $plans['domain']);
+        $defaultDomain = isset($plans['domains']) ? $plans['domains'] : strtolower($set_domain . '.' . $plans['domain']);
         // php版本
         $phpversion    = isset($plans['phpver']) && is_numeric($plans['phpver']) ? $plans['phpver'] : '00';
         // mysql
@@ -423,13 +423,13 @@ class Btaction
         // 构建数据
         $hostSetInfo = array(
             'webname'      => '{"domain":"' . $defaultDomain . '","domainlist":[],"count":0}',
-            'path'         => $defaultPath . $userRandId,
+            'path'         => isset($params['WebGetKey']) && $params['WebGetKey'] ? $params['WebGetKey'] : $defaultPath . $set_domain,
             'type_id'      => isset($params['sort_id']) ? $params['sort_id'] : '0',
             'type'         => 'PHP',
             'version'      => $phpversion ? $phpversion : '00',
             'port'         => isset($plans['port']) ? $plans['port'] : '80',
             'ps'           => 'Site:' . $site_max . ' Sql:' . $sql_max . ' Flow:' . $flow_max,
-            'ftp'          => $plans['ftp'] ? 'true' : 'false',
+            'ftp'          => isset($plans['ftp']) && $plans['ftp'] ? 'true' : 'false',
             'ftp_username' => $set_domain,
             'ftp_password' => $rand_password,
             // 'sql'          => $plans['sql'] ? 'true' : 'false',

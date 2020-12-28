@@ -470,6 +470,12 @@
                       <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('proxy')}</span>
                     </a>
                   </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/hostreset')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('hostreset')}"
+                      data-url="{:url('index/vhost/hostreset')}">
+                      <i class="mdi mdi-format-clear"></i> <span style="color:#333333;">{:__('hostreset')}</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

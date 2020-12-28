@@ -932,3 +932,22 @@ ADD COLUMN `perserver`  int(10) NOT NULL DEFAULT 0 COMMENT '限制并发' AFTER 
 ADD COLUMN `limit_rate`  int(10) NOT NULL DEFAULT 0 COMMENT '限制流量' AFTER `perserver`,
 ADD COLUMN `sub_bind`  enum('0','1') NOT NULL DEFAULT '1' COMMENT '绑定子目录' AFTER `is_vsftpd`;
 INSERT INTO `bth_product` (`id`, `pid`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`) VALUES (null, '1', 'sub_bind', 'btpanel', '子目录绑定', '是否允许绑定域名到子目录', 'radio', '1', '{\"1\":\"允许\",\"0\":\"不允许\"}', NULL, NULL);
+
+-- 新版待添加
+-- ----------------------------
+-- Table structure for bth_hostreset_log
+-- ----------------------------
+DROP TABLE IF EXISTS `bth_hostreset_log`;
+CREATE TABLE `bth_hostreset_log` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `user_id` int(10) NOT NULL COMMENT '用户ID',
+  `host_id` int(10) NOT NULL COMMENT '原有主机ID',
+  `new_host_id` int(10) DEFAULT NULL COMMENT '新主机ID',
+  `bt_id` int(10) NOT NULL COMMENT '宝塔ID',
+  `new_bt_id` int(10) DEFAULT NULL COMMENT '新宝塔ID',
+  `createtime` int(10) NOT NULL COMMENT '创建时间',
+  `updatetime` int(10) DEFAULT NULL COMMENT '更新时间',
+  `info` text COLLATE utf8_unicode_ci COMMENT '其他信息',
+  `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='站点重置记录表';
