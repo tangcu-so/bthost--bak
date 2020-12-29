@@ -5,20 +5,20 @@
     <div class="col-lg-12">
         <div class="card" id="loading_box">
             <header class="card-header">
-                <div class="card-title">站点重置</div>
+                <div class="card-title">{:__("Host reset")}</div>
             </header>
             <div class="card-body">
                 <div id="toolbar" class="toolbar-btn-action">
                     <button id="btn_reset" type="button" class="btn btn-primary m-r-5 btn_reset" data-type="retable">
-                        站点重置
+                        {:__("Host reset")}
                     </button>
                 </div>
                 <hr>
                 <small class="text-danger warning_info">
-                    <span class="text-danger">!</span> 【警告】站点重置将删除网站及网站内所有数据文件(不包含数据库)，属于高危操作，请提前备份站点源码及数据库信息，如出现意外请求造成的丢失，概不负责<br>
-                    <span class="text-danger">!</span> 【警告】站点重置将自动解除除赠送域名外所有手动绑定的域名信息，如需使用，请尝试重新绑定域名（包括子目录）<br>
-                    <span class="text-danger">!</span> 【警告】站点重置有一定几率失败，如失败，请联系站点进行手动重置操作<br>
-                    <span class="text-danger">!</span> 【警告】站点重置后请查看站点信息及功能是否能够正常使用，如有疑问请带图联系站长<br>
+                    <span class="text-danger">!</span> 【{:__('Warning')}】{:__('Site reset will delete the website and all data files in the website (not including the database), which is a high-risk operation. Please back up the site source code and database information in advance. If there is an unexpected situation, we will not be responsible for the loss.')}<br>
+                    <span class="text-danger">!</span> 【{:__('Warning')}】{:__('Site reset will automatically release all manually bound domain information except the gift domain name. If you need to use it, please try to rebind the domain name (including subdirectories)')}<br>
+                    <span class="text-danger">!</span> 【{:__('Warning')}】{:__('There is a certain chance that the site reset will fail. If it fails, please contact the site for manual reset operation')}<br>
+                    <span class="text-danger">!</span> 【{:__('Warning')}】{:__('After the site is reset, please check whether the site information and functions can be used normally. If you have any questions, please contact the webmaster with a picture')}<br>
                 </small>
             </div>
         </div>
@@ -29,14 +29,14 @@
 <script>
     $('#btn_reset').click(function () {
         $.confirm({
-            title: '请仔细阅读！！！',
+            title: '{:__("Please read carefully! ! !")}',
             content: $('.warning_info').html(),
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
             buttons: {
                 confirm: {
-                    text: '立即重置',
+                    text: '{:__("Execute")}',
                     btnClass: 'btn-orange',
                     action: function () {
                         var l = $('#loading_box').lyearloading({
@@ -47,14 +47,14 @@
                                 EchoMsg(res.msg);
                             })
                             .fail(function () {
-                                EchoMsg('请求错误，请稍候重试');
+                                EchoMsg('{:__("Request error, please try again later")}');
                             })
                             .always(function () {
                                 l.destroy();
                             })
                     }
                 },
-                '取消': function () {
+                '{:__("Cancel")}': function () {
 
                 }
             }

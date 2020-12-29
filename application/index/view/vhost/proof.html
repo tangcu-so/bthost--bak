@@ -5,7 +5,7 @@
 		<div class="card" id="loading_box">
 			<div class="card-header">
 				<header class="card-title">
-					防篡改汇总
+					{:__('Proof total')}
 				</header>
 			</div>
 			<div class="card-body">
@@ -13,23 +13,26 @@
 					<table class="table table-bordered">
 						<thead>
 							<tr>
-								<th colspan="2">状态：{$proofInfo.bak_open ? '<span style="color:green">已开启</span><a
-										href="javascript:proofStatus(0);">[关闭]</a>' : '<span
-										style="color:#2288cc">未开启</span><a href="javascript:proofStatus(1)">[开启]</a>'}
+								<th colspan="2">{:__('Status')}：
+									{if $proofInfo.bak_open }
+										<span style="color:green">{:__('Open')}</span><a href="javascript:proofStatus(0);">[{:__('Close')}]</a>
+										{else /}
+										<span style="color:#2288cc">{:__('Close')}</span><a href="javascript:proofStatus(1)">[{:__('Open')}]</a>
+									{/if}
 								</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr>
 								<td>/</td>
-								<td>全部统计</td>
-								<td>创建次数</td>
-								<td>删除次数</td>
-								<td>修改次数</td>
-								<td>移动次数</td>
+								<td>{:__('All Total')}</td>
+								<td>{:__('Create number')}</td>
+								<td>{:__('Delete number')}</td>
+								<td>{:__('Edit number')}</td>
+								<td>{:__('Move number')}</td>
 							</tr>
 							<tr>
-								<td>站点总计</td>
+								<td>{:__('Total')}</td>
 								<td>{$proofInfo.total.site.total}</td>
 								<td>{$proofInfo.total.site.create}</td>
 								<td>{$proofInfo.total.site.delete}</td>
@@ -37,7 +40,7 @@
 								<td>{$proofInfo.total.site.move}</td>
 							</tr>
 							<tr>
-								<td>今日统计</td>
+								<td>{:__('Day total')}</td>
 								<td>{$proofInfo.total.day.total}</td>
 								<td>{$proofInfo.total.day.create}</td>
 								<td>{$proofInfo.total.day.delete}</td>
@@ -60,7 +63,7 @@
 	<div class="col-md-6 col-lg-6" id="loading_box1">
 		<div class="card card-hover-shadow">
 			<header class="card-header">
-				<div class="card-title">保护文件名 <a href="javascript:inc('protect')" class="btn btn-xs btn-warning">添加</a>
+				<div class="card-title">{:__('Protect file name')} <a href="javascript:inc('protect')" class="btn btn-xs btn-warning">{:__("Add")}</a>
 				</div>
 			</header>
 			<div class="card-body">
@@ -69,7 +72,7 @@
 						{volist name="proofInfo.protectExt" id="protectExt"}
 						<tr>
 							<td>{$protectExt}</td>
-							<td><a href="javascript:delProof('{$protectExt}','protect')">删除</a></td>
+							<td><a href="javascript:delProof('{$protectExt}','protect')">{:__('Delete')}</a></td>
 						</tr>
 						{/volist}
 					</tbody>
@@ -80,7 +83,7 @@
 	<div class="col-md-6 col-lg-6" id="loading_box2">
 		<div class="card card-hover-shadow">
 			<header class="card-header">
-				<div class="card-title">排除文件夹 <a href="javascript:inc('excloud')" class="btn btn-xs btn-warning">添加</a>
+				<div class="card-title">{:__('Exclude folder')} <a href="javascript:inc('excloud')" class="btn btn-xs btn-warning">{:__("Add")}</a>
 				</div>
 			</header>
 			<div class="card-body">
@@ -89,7 +92,7 @@
 						{volist name="proofInfo.excludePath" id="excludePath"}
 						<tr>
 							<td>{$excludePath}</td>
-							<td><a href="javascript:delProof('{$excludePath}','excloud')">删除</a></td>
+							<td><a href="javascript:delProof('{$excludePath}','excloud')">{:__('Delete')}</a></td>
 						</tr>
 						{/volist}
 					</tbody>
@@ -112,7 +115,7 @@
 				EchoMsg(res.msg, 1);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();
@@ -122,14 +125,14 @@
 	function delProof(name, type) {
 		id_text = type == 'protect' ? 'loading_box1' : 'loading_box2';
 		$.confirm({
-			title: '温馨提示',
-			content: '确定要删除？',
+			title: '{:__("Reminder")}',
+			content: '{:__("Confirm delete?")}',
 			icon: 'mdi mdi-alert',
 			animation: 'scale',
 			closeAnimation: 'zoom',
 			buttons: {
 				confirm: {
-					text: '确定',
+					text: '{:__("Confirm")}',
 					btnClass: 'btn-orange',
 					action: function () {
 						var l = $('#'+id_text).lyearloading({
@@ -143,14 +146,14 @@
 								EchoMsg(res.msg, 1);
 							})
 							.fail(function () {
-								EchoMsg('请求错误，请稍候重试');
+								EchoMsg('{:__("Request error, please try again later")}');
 							})
 							.always(function () {
 								l.destroy();
 							})
 					}
 				},
-				'取消': function () {}
+				'{:__("Cancel")}': function () {}
 			}
 		});
 	}
@@ -168,7 +171,7 @@
 				EchoMsg(res.msg, 1);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();
@@ -176,25 +179,25 @@
 	}
 
 	function inc(type) {
-		str = type == 'protect' ? '保护' : '排除';
-		str2 = type == 'protect' ? '文件名' : '文件夹';
+		str = type == 'protect' ? '{:__("Protection")}' : '{:__("Exclude")}';
+		str2 = type == 'protect' ? '{:__("File name")}' : '{:__("File dir")}';
 		$.confirm({
-			title: '添加' + str,
+			title: '{:__("Add")}' + str,
 			content: '<div class="form-group p-1 mb-0">' +
-				'  <label class="control-label">输入要添加' + str + '的内容</label>' +
-				'  <input autofocus="" type="text" id="input-value" placeholder="请输入' + str2 +
+				'  <label class="control-label">{:__("Enter to add")}' + str + '{:__(" Content")}</label>' +
+				'  <input autofocus="" type="text" id="input-value" placeholder="{:__("Please enter")}' + str2 +
 				'" class="form-control">' +
 				'</div>',
 			buttons: {
 				sayMyName: {
-					text: '提交',
+					text: '{:__("Submit")}',
 					btnClass: 'btn-orange',
 					action: function () {
 						var input = this.$content.find('input#input-value');
 						var errorText = this.$content.find('.text-danger');
 						if (!$.trim(input.val())) {
 							$.alert({
-								content: "不能为空。",
+								content: "{:__('Can not be empty')}。",
 								type: 'red'
 							});
 							return false;
@@ -203,7 +206,7 @@
 						}
 					}
 				},
-				'关闭': function () {}
+				'{:__("Close")}': function () {}
 			}
 		});
 	}

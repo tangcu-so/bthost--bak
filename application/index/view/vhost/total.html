@@ -8,21 +8,26 @@
 		<div class="card">
 			<div class="card-header">
 				<header class="card-title">
-					流量统计汇总
+					{:__('Total')}
 				</header>
 			</div>
 			<div class="card-body">
 				<table class="table table-bordered">
 					<thead>
 						<tr>
-							<th colspan="2">状态：{$siteTotal.open ? '<span style="color:green">已开启</span>' : '<span
-									style="color:#2288cc">未开启</span>'}</th>
+							<th colspan="2">{:__('Status')}：
+								{if $siteTotal.open }
+									<span style="color:green">{:__('Open')}</span>
+									{else /}
+									<span style="color:#2288cc">{:__('Close')}</span>
+								{/if}
+							</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr>
-							<td style="text-align: center;">总流量</td>
-							<td style="text-align: center;">总请求</td>
+							<td style="text-align: center;">{:__('Total flow')}</td>
+							<td style="text-align: center;">{:__('Total request')}</td>
 						</tr>
 						<tr>
 							<td style="text-align: center;">{$Network.total_size|default="0"}</td>
@@ -39,10 +44,10 @@
 		<div class="card" id="loading_box">
 			<div class="card-header">
 					<nav class="navbar justify-content-between" style="width:100%;">
-						<a class="navbar-brand">流量统计报表</a>
+						<a class="navbar-brand">{:__('Flow total')}</a>
 						<form class="form-inline">
 							<input type="text" name="time" class="form-control" data-date-end-date="0d" data-provide="datepicker" data-autoclose="true" value="{$day}" data-date-highlight="true"/>
-						  <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">查看</button>
+						  <button class="btn btn-outline-warning my-2 my-sm-0" type="submit">{:__('Unfold')}</button>
 						</form>
 					  </nav>
 					<!-- <div class="form-group form-inline">
@@ -54,12 +59,12 @@
 					<table class="table table-bordered">
 						<thead>
 							<tr>
-								<th colspan='11'>流量统计</th>
+								<th colspan='11'>{:__('Flow total')}</th>
 							</tr>
 							<tr>
-								<th>日期</th>
-								<th>流量</th>
-								<th>请求</th>
+								<th>{:__('Date')}</th>
+								<th>{:__('Flow')}</th>
+								<th>{:__('Request')}</th>
 								<th>PV</th>
 								<th>UV</th>
 								<th>IP</th>
@@ -72,7 +77,7 @@
 						</thead>
 						<tbody>
 							{if $Network.days}
-							{volist name="Network.days" id="net" empty="没有数据"}
+							{volist name="Network.days" id="net" empty="__('Empty')"}
 							<tr>
 								<td>{$net.date|default="--"}</td>
 								<td>{$net.size|default="0"}</td>
@@ -89,7 +94,7 @@
 							{/volist}
 							{else /}
 							<tr>
-								<td colspan='11'>当前没有网络统计数据</td>
+								<td colspan='11'>{:__('There are currently no network statistics')}</td>
 							</tr>
 							{/if}
 						</tbody>
@@ -101,24 +106,24 @@
 					<table class="table table-bordered">
 						<thead>
 							<tr>
-								<th colspan='11'>蜘蛛统计</th>
+								<th colspan='11'>{:__('Spider total')}</th>
 							</tr>
 							<tr>
-								<th>日期</th>
-								<th>百度</th>
-								<th>360</th>
-								<th>google</th>
-								<th>搜狗</th>
-								<th>必应</th>
-								<th>Soso</th>
-								<th>神马</th>
-								<th>雅虎</th>
-								<th>总次数</th>
+								<th>{:__('Date')}</th>
+								<th>{:__('Baidu')}</th>
+								<th>{:__('360')}</th>
+								<th>{:__('Google')}</th>
+								<th>{:__('Sogo')}</th>
+								<th>{:__('Bing')}</th>
+								<th>{:__('Soso')}</th>
+								<th>{:__('Sm')}</th>
+								<th>{:__('Yahoo')}</th>
+								<th>{:__('Sum')}</th>
 							</tr>
 						</thead>
 						<tbody>
 							{if $Spider.days}
-							{volist name="Spider.days" id="Spider" empty="没有数据"}
+							{volist name="Spider.days" id="Spider" empty="__('Empty')"}
 							<tr>
 								<td>{$Spider.date|default="0"}</td>
 								<td>{$Spider.baidu|default="0"}</td>
@@ -134,7 +139,7 @@
 							{/volist}
 							{else /}
 							<tr>
-								<td colspan='11'>当前没有蜘蛛统计数据</td>
+								<td colspan='11'>{:__('There are currently no spider statistics')}</td>
 							</tr>
 							{/if}
 						</tbody>
@@ -144,24 +149,24 @@
 					<table class="table table-bordered">
 						<thead>
 							<tr>
-								<th colspan='11'>客户端统计</th>
+								<th colspan='11'>{:__('Client total')}</th>
 							</tr>
 							<tr>
-								<th>日期</th>
-								<th>Windows</th>
-								<th>Android</th>
-								<th>iPhone</th>
-								<th>Mac</th>
-								<th>微信</th>
-								<th>Chrome</th>
-								<th>火狐</th>
-								<th>QQ</th>
-								<th>其它</th>
+								<th>{:__('Date')}</th>
+								<th>{:__('Windows')}</th>
+								<th>{:__('Android')}</th>
+								<th>{:__('iPhone')}</th>
+								<th>{:__('Mac')}</th>
+								<th>{:__('Wechat')}</th>
+								<th>{:__('Chrome')}</th>
+								<th>{:__('Firefox')}</th>
+								<th>{:__('QQ')}</th>
+								<th>{:__('Other')}</th>
 							</tr>
 						</thead>
 						<tbody>
 							{if $Client}
-							{volist name="Client" id="Client" empty="没有数据"}
+							{volist name="Client" id="Client" empty="__('Empty')"}
 							<tr>
 								<td>{$Client.date|default="--"}</td>
 								<td>{$Client.Windows|default="0"}</td>
@@ -177,7 +182,7 @@
 							{/volist}
 							{else /}
 							<tr>
-								<td colspan='11'>当前没有客户端统计数据</td>
+								<td colspan='11'>{:__('There are currently no client statistics')}</td>
 							</tr>
 							{/if}
 						</tbody>
@@ -185,8 +190,8 @@
 				</div>
 				<hr>
 				<small class="text-muted">
-					<span style="color:red">！</span> PV(PageView值)：用户每次打开网站页面被记录1次。用户多次打开同一页面，访问量值累计多次。此指标衡量网站访问量情况。<br>
-					<span style="color:red">！</span> UV(独立访客)：访问您网站的上网电脑数量（以cookie为依据），此指标衡量独立访客数量情况。<br>
+					<span style="color:red">！</span> {:__('PV(PageView)：Each time a user opens a website page, it is recorded once. The user opens the same page multiple times, and the traffic value accumulates multiple times. This metric measures website traffic.')}<br>
+					<span style="color:red">！</span> {:__('UV (Independent Visitors): The number of Internet computers that visit your website (based on cookies). This indicator measures the number of independent visitors.')}<br>
 				</small>
 			</div>
 		</div>

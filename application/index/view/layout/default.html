@@ -115,7 +115,7 @@
                             <label for="logo_bg_8"></label>
                         </span>
                         </li>
-                        <li class="drop-title"><p>头部</p></li>
+                        <li class="drop-title"><p>{:__('Head')}</p></li>
                         <li class="drop-skin-li clearfix">
                         <span class="inverse">
                             <input type="radio" name="header_bg" value="default" id="header_bg_1" checked>
@@ -150,7 +150,7 @@
                             <label for="header_bg_8"></label>
                         </span>
                         </li>
-                        <li class="drop-title"><p>侧边栏</p></li>
+                        <li class="drop-title"><p>{:__('Sidebar')}</p></li>
                         <li class="drop-skin-li clearfix">
                         <span class="inverse">
                             <input type="radio" name="sidebar_bg" value="default" id="sidebar_bg_1" checked>
@@ -195,17 +195,17 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <li>
-                        <a class="multitabs dropdown-item" data-url="{:url('index/vhost/pass')}" href="javascript:void(0)"><i class="mdi mdi-lock-outline"></i> 修改密码</a>
+                        <a class="multitabs dropdown-item" data-url="{:url('index/vhost/pass')}" href="javascript:void(0)"><i class="mdi mdi-lock-outline"></i> {:__('Reset password')}</a>
                         </li>
                         <li>
-                            <a class="multitabs dropdown-item" data-url="{:url('index/user/index')}" href="javascript:void(0)"><i class="mdi mdi-camera-switch"></i> 切换网站</a>
+                            <a class="multitabs dropdown-item" data-url="{:url('index/user/index')}" href="javascript:void(0)"><i class="mdi mdi-camera-switch"></i> {:__('Switch site')}</a>
                         </li>
                         <li>
-                        <a class="multitabs dropdown-item" data-url="{:url('index/vhost/clear_cache')}" href="javascript:void(0)"><i class="mdi mdi-delete"></i> 清空缓存</a>
+                        <a class="dropdown-item btn_clear_cache" href="javascript:void(0)"><i class="mdi mdi-delete"></i> {:__('Empty the cache')}</a>
                         </li>
                         <li class="dropdown-divider"></li>
                         <li>
-                        <a class="dropdown-item" href="{:url('index/user/logout')}"><i class="mdi mdi-logout-variant"></i> 退出登录</a>
+                        <a class="dropdown-item" href="{:url('index/user/logout')}"><i class="mdi mdi-logout-variant"></i> {:__('Logout')}</a>
                         </li>
                     </ul>
                     </li>

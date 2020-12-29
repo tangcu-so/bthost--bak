@@ -5,18 +5,21 @@
 		<div class="card">
 			<div class="card-header">
 				<header class="card-title">
-					SSL设置
+					{:__('Ssl setting')}
 				</header>
 			</div>
 			<div class="card-body">
 				<table class="table table-bordered">
 					<thead>
 						<tr>
-							<th colspan="2">SSL状态：{$GetSSL.status ? '<span style="color:green">已开启SSL</span><a
-									href="javascript:sslOff()">[关闭]</a>' : '<span style="color:#2288cc">未开启</span>'}
+							<th colspan="2">SSL{:__('Status')}：
+								{if $GetSSL.status }
+									<span style="color:green">{:__('Open')}</span><a href="javascript:sslOff()">[{:__('Close')}]</a>
+									{else /}
+									<span style="color:#2288cc">{:__('Close')}</span>
+								{/if}
 							</th>
-							<th colspan="2">强制HTTPS：<input type="checkbox" id="toHttps" {$GetSSL.httpTohttps ? 'checked'
-									:''}></th>
+							<th colspan="2">{:__('Mandatory HTTPS')}：<input type="checkbox" id="toHttps" {$GetSSL.httpTohttps ? 'checked' :''}></th>
 						</tr>
 					</thead>
 					<tbody>
@@ -33,13 +36,13 @@
 		<div class="card" id="ssl_loading">
 			<div class="card-header">
 				<header class="card-title">
-					一键申请证书
+					{:__('Apply for a certificate with one click')}
 				</header>
 			</div>
 			<div class="card-body">
 				<ul class="nav nav-tabs">
 					<li class="nav-item">
-						<a class="nav-link active" data-toggle="tab" href="#home" aria-selected="true">宝塔SSL</a>
+						<a class="nav-link active" data-toggle="tab" href="#home" aria-selected="true">{:__('Bt ssl')}</a>
 					</li>
 					<li class="nav-item">
 						<a class="nav-link" data-toggle="tab" href="#profile" aria-selected="false">Let's Encrypt</a>
@@ -55,13 +58,13 @@
 							</select>
 							<div class="input-group-append">
 								<button class="btn btn-outline-secondary btn-success" type="button"
-									onclick="sslApply()">一键申请证书</button>
+									onclick="sslApply()">{:__('Apply')}</button>
 							</div>
 						</div>
 						<hr>
 						<small class="text-muted">
-							<li>宝塔SSL申请的是TrustAsia DV SSL CA - G5 原价：1900元/1年，当前用户免费！</li>
-							<li>一年满期后免费颁发</li>
+							<li>{:__('Pagoda SSL application is TrustAsia DV SSL CA-G5 original price: 1900 yuan /1 year, current users free!')}</li>
+							<li>{:__('You can apply again for free after one year')}</li>
 						</small>
 					</div>
 					<div class="tab-pane fade" id="profile">
@@ -75,16 +78,16 @@
 						{/volist}
 						<hr>
 						<div class="form-group">
-							<p><a href="javascript:sslApplyLets();" class="btn btn-success">一键申请</a> <a
-									href="javascript:sslrenewlets();" class="btn btn-warning">续签</a></p>
+							<p><a href="javascript:sslApplyLets();" class="btn btn-success">{:__('Apply')}</a> <a
+									href="javascript:sslrenewlets();" class="btn btn-warning">{:__('Ssl renew')}</a></p>
 						</div>
 						<hr>
 						<small class="text-muted">
-							<li>申请之前，请确保域名已解析，如未解析会导致审核失败</li>
-							<li>Let's Encrypt免费证书，有效期3个月，支持多域名。默认会自动续签</li>
-							<li>若您的站点使用了CDN或301重定向会导致续签失败</li>
-							<li>在未指定SSL默认站点时,未开启SSL的站点使用HTTPS会直接访问到已开启SSL的站点</li>
-							<li>如开启后无法使用HTTPS访问，请检查安全组是否正确放行443端口</li>
+							<li>{:__('Before applying, please make sure that the domain name has been resolved. Failure to resolve this will cause the review to fail')}</li>
+							<li>{:__('Let\'s Encrypt free certificate, valid for 3 months, supports multiple domain names. Automatic renewal by default')}</li>
+							<li>{:__('If your site uses CDN or 301 redirection, the renewal will fail')}</li>
+							<li>{:__('When the SSL default site is not specified, the site without SSL will be directly accessed to the site with SSL enabled using HTTPS')}</li>
+							<li>{:__('If you cannot use HTTPS access after opening, please check whether the security group correctly allows port 443')}</li>
 						</small>
 						{/if}
 					</div>
@@ -98,26 +101,26 @@
 		<div class="card">
 			<div class="card-header">
 				<header class="card-title">
-					证书配置
+					{:__('Certificate configuration')}
 				</header>
 			</div>
 			<div class="card-body" id="sslSet_loading">
 				<form action="" method="post">
 					<div class="row">
 						<div class="col-lg-6 col-md-6">
-							<label for="key">密钥(KEY)：</label>
+							<label for="key">{:__('KEY')}：</label>
 							<textarea name="key" id="key" style="width:100%;line-height:22px" class="form-control"
 								rows="10">{$GetSSL.key|default=""}</textarea>
 						</div>
 						<div class="col-lg-6 col-md-6">
-							<label for="csr">证书(PEM格式)：</label>
+							<label for="csr">{:__('PEM')}：</label>
 							<textarea name="csr" id="csr" style="width:100%;line-height:22px" class="form-control"
 								rows="10">{$GetSSL.csr|default=""}</textarea>
 						</div>
 
 						<div class="col-md-12">
 							<div class="form-group">
-								<input type="button" value="保存并开启SSL" class="btn btn-warning" onclick="sslSet()">
+								<input type="button" value="{:__('Submit')}" class="btn btn-warning" onclick="sslSet()">
 							</div>
 						</div>
 					</div>
@@ -126,12 +129,12 @@
 				</form>
 				<hr>
 				<small class="text-muted">
-					<li>粘贴您的*.key以及*.pem内容，然后保存即可[<a href="https://www.bt.cn/bbs/thread-704-1-1.html"
-							target="_blank">帮助</a>]。</li>
-					<li>如果浏览器提示证书链不完整,请检查是否正确拼接PEM证书</li>
-					<li>PEM格式证书 = 域名证书.crt + 根证书(root_bundle).crt</li>
-					<li>在未指定SSL默认站点时,未开启SSL的站点使用HTTPS会直接访问到已开启SSL的站点</li>
-					<li>如开启后无法使用HTTPS访问，请检查安全组是否正确放行443端口</li>
+					<li>{:__('Paste your *.key and *.pem content, then save')}[<a href="https://www.bt.cn/bbs/thread-704-1-1.html"
+							target="_blank">{:__('Help')}</a>]。</li>
+					<li>{:__('If the browser prompts that the certificate chain is incomplete, please check whether the PEM certificate is correctly spliced')}</li>
+					<li>{:__('PEM format certificate = domain name certificate.crt + root certificate (root_bundle).crt')}</li>
+					<li>{:__('When the SSL default site is not specified, the site without SSL will be directly accessed to the site with SSL enabled using HTTPS')}</li>
+					<li>{:__('If you cannot use HTTPS access after opening, please check whether the security group correctly allows port 443')}</li>
 				</small>
 			</div>
 		</div>
@@ -149,7 +152,7 @@
 					EchoMsg(data.msg);
 				})
 				.fail(function () {
-					EchoMsg('请求错误，请稍候重试');
+					EchoMsg('{:__("Request error, please try again later")}');
 				})
 		});
 	});
@@ -158,7 +161,7 @@
 		key = $('#key').val();
 		csr = $('#csr').val();
 		if (!key || !csr) {
-			EchoMsg('都不能为空');
+			EchoMsg('{:__("Can not be empty")}');
 			return false;
 		}
 		var l = $('#sslSet_loading').lyearloading({
@@ -172,7 +175,7 @@
 				EchoMsg(res.msg);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();
@@ -186,14 +189,14 @@
 				EchoMsg(res.msg);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 	}
 
 	function sslApply() {
 		domain = $('#domainList').val();
 		if (!domain) {
-			layer.msg('请选择域名')
+			layer.msg('{:__("Please select a domain")}')
 			return false;
 		}
 		var l = $('#ssl_loading').lyearloading({
@@ -206,7 +209,7 @@
 				EchoMsg(data.msg);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();
@@ -216,7 +219,7 @@
 	function sslApplyLets() {
 		domain = jqchk();
 		if (!domain) {
-			layer.msg('请选择域名')
+			layer.msg('{:__("Please select a domain")}')
 			return false;
 		}
 		// 设置成功的话其实就不用获取日志，因为申请成功后会取消标记状态，且请求是同步的
@@ -231,7 +234,7 @@
 				EchoMsg(data.msg);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();
@@ -254,7 +257,7 @@
 				}
 			})
 			.fail(function () {
-				layer.alert('连接服务器失败，请稍候重试');
+				layer.alert('{:__("Unexpected situation")}');
 			})
 			.always(function () {
 				console.log("complete");
@@ -269,13 +272,13 @@
 		});
 		$.post('{:url("index/vhost/sslRenewLets")}', '', function (data, textStatus, xhr) {
 				try {
-					EchoMsg(data.msg + '<br/>成功：' + data[0].sucess_list.length + '失败：' + data[0].err_list.length);
+					EchoMsg(data.msg + '<br />{:__("Success")}：' + data[0].sucess_list.length + '{:__("Fail")}：' + data[0].err_list.length);
 				} catch (error) {
 					EchoMsg(data.msg);
 				}
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();

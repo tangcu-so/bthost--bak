@@ -216,10 +216,10 @@
           <div class="card-body">
             <div class="flex-box">
               <div>
-                <span><b>网页空间</b></span>
+                <span><b>{:__('Web size')}</b></span>
                 <p class="text-muted m-b-10">{$hostInfo.site_size}M</p>
               </div>
-              <h3 class="text-success">{$hostInfo.site_max!='0'?$hostInfo.site_max.'M':'无限制'}</h3>
+              <h3 class="text-success">{$hostInfo.site_max!='0'?$hostInfo.site_max.'M':__('Unlimited')}</h3>
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-success" role="progressbar" aria-valuenow="80" aria-valuemin="0"
@@ -238,10 +238,10 @@
           <div class="card-body">
             <div class="flex-box">
               <div>
-                <span><b>数据空间</b></span>
+                <span><b>{:__('Sql size')}</b></span>
                 <p class="text-muted m-b-10">{$hostInfo.sql_size}M</p>
               </div>
-              <h3 class="text-danger">{$hostInfo.sql_max!='0'?$hostInfo.sql_max.'M':'无限制'}</h3>
+              <h3 class="text-danger">{$hostInfo.sql_max!='0'?$hostInfo.sql_max.'M':__('Unlimited')}</h3>
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="50" aria-valuemin="0"
@@ -260,10 +260,10 @@
           <div class="card-body">
             <div class="flex-box">
               <div>
-                <span><b>流量</b></span>
+                <span><b>{:__('Flow size')}</b></span>
                 <p class="text-muted m-b-10">{$hostInfo.flow_size?$hostInfo.flow_size:'0'}M</p>
               </div>
-              <h3 class="text-primary">{$hostInfo.flow_max!='0'?$hostInfo.flow_max.'M':'无限制'}</h3>
+              <h3 class="text-primary">{$hostInfo.flow_max!='0'?$hostInfo.flow_max.'M':__('Unlimited')}</h3>
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-primary" role="progressbar" aria-valuenow="25" aria-valuemin="0"
@@ -294,81 +294,81 @@
           <div class="card-body">
             <ul class="nav nav-tabs nav-fill">
               <li class="nav-item">
-                <a class="nav-link active" data-toggle="tab" href="#home-pills" aria-selected="true">{:__('basic')}</a>
+                <a class="nav-link active" data-toggle="tab" href="#home-pills" aria-selected="true">{:__('Basic')}</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#files-pills" aria-selected="false">{:__('file_back')}</a>
+                <a class="nav-link" data-toggle="tab" href="#files-pills" aria-selected="false">{:__('File backup')}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#security-pills"
-                  aria-selected="false">{:__('security_settings')}</a>
+                  aria-selected="false">{:__('Security settings')}</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link" data-toggle="tab" href="#expert-pills"
-                  aria-selected="false">{:__('advanced_features')}</a>
+                  aria-selected="false">{:__('Advanced features')}</a>
               </li>
             </ul>
             <div class="tab-content" id="v-pills-tabContent">
               <div class="tab-pane fade show active" id="home-pills">
                 <div class="row">
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/domain')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('domain')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Domain bind')}"
                       data-url="{:url('index/vhost/domain')}">
-                      <i class="mdi mdi-web"></i> <span style="color:#333333;">{:__('domain')}</span>
+                      <i class="mdi mdi-web"></i> <span style="color:#333333;">{:__('Domain bind')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/pass')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('pass')}" data-url="{:url('index/vhost/pass')}">
-                      <i class="mdi mdi-lock-reset"></i> <span style="color:#333333;">{:__('pass')}</span>
+                    <a href="#!" class="js-create-tab" data-title="{:__('Pass')}" data-url="{:url('index/vhost/pass')}">
+                      <i class="mdi mdi-lock-reset"></i> <span style="color:#333333;">{:__('Pass')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/speed')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('speed')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Speed')}"
                       data-url="{:url('index/vhost/speed')}">
-                      <i class="mdi mdi-rocket"></i> <span style="color:#333333;">{:__('speed')}</span>
+                      <i class="mdi mdi-rocket"></i> <span style="color:#333333;">{:__('Speed')}</span>
                     </a>
                   </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/rewrite301')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite301')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Rewrite 301')}"
                       data-url="{:url('index/vhost/rewrite301')}">
-                      <i class="mdi mdi-undo-variant"></i> <span style="color:#333333;">{:__('rewrite301')}</span>
+                      <i class="mdi mdi-undo-variant"></i> <span style="color:#333333;">{:__('Rewrite 301')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/redir')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('redir')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Redir')}"
                       data-url="{:url('index/vhost/redir')}">
-                      <i class="mdi mdi-umbraco"></i> <span style="color:#333333;">{:__('redir')}</span>
+                      <i class="mdi mdi-umbraco"></i> <span style="color:#333333;">{:__('Redir')}</span>
                     </a>
                   </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/defaultfile')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('defaultfile')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Default file')}"
                       data-url="{:url('index/vhost/defaultfile')}">
-                      <i class="mdi mdi-home"></i> <span style="color:#333333;">{:__('defaultfile')}</span>
+                      <i class="mdi mdi-home"></i> <span style="color:#333333;">{:__('Default file')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/rewrite')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('rewrite')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Rewrite')}"
                       data-url="{:url('index/vhost/rewrite')}">
-                      <i class="mdi mdi-tree"></i> <span style="color:#333333;">{:__('rewrite')}</span>
+                      <i class="mdi mdi-tree"></i> <span style="color:#333333;">{:__('Rewrite')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/ssl')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('ssl')}" data-url="{:url('index/vhost/ssl')}">
-                      <i class="mdi mdi-send"></i> <span style="color:#333333;">{:__('ssl')}</span>
+                    <a href="#!" class="js-create-tab" data-title="{:__('Ssl')}" data-url="{:url('index/vhost/ssl')}">
+                      <i class="mdi mdi-send"></i> <span style="color:#333333;">{:__('Ssl')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/runPath')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('runPath')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Run path')}"
                       data-url="{:url('index/vhost/runPath')}">
-                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('runPath')}</span>
+                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('Run path')}</span>
                     </a>
                   </div>
                   {notempty name="hostInfo.sql.username"}
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin">
                     <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}" {if $phpmyadmin}target="_blank"
-                      {/if}> <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('sql_console')}</span>
+                      {/if}> <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('Sql console')}</span>
                     </a>
                   </div>
                   {/notempty}
@@ -377,20 +377,20 @@
               <div class="tab-pane fade" id="files-pills">
                 <div class="row">
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/file')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('file')}" data-url="{:url('index/vhost/file')}">
-                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('file')}</span>
+                    <a href="#!" class="js-create-tab" data-title="{:__('File')}" data-url="{:url('index/vhost/file')}">
+                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('File')}</span>
                     </a>
                   </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/file_ftp')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('file_ftp')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('File(ftp)')}"
                       data-url="{:url('index/vhost/file_ftp')}">
-                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('file_ftp')}</span>
+                      <i class="mdi mdi-folder-account"></i> <span style="color:#333333;">{:__('File(ftp)')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/back')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('back')}" data-url="{:url('index/vhost/back')}">
-                      <i class="mdi mdi-clipboard-flow"></i> <span style="color:#333333;">{:__('back')}</span>
+                    <a href="#!" class="js-create-tab" data-title="{:__('Backup')}" data-url="{:url('index/vhost/back')}">
+                      <i class="mdi mdi-clipboard-flow"></i> <span style="color:#333333;">{:__('Backup')}</span>
                     </a>
                   </div>
                 </div>
@@ -399,26 +399,26 @@
                 <div class="row">
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/protection')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('protection')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Protection')}"
                       data-url="{:url('index/vhost/protection')}">
-                      <i class="mdi mdi-minus-network"></i> <span style="color:#333333;">{:__('protection')}</span>
+                      <i class="mdi mdi-minus-network"></i> <span style="color:#333333;">{:__('Protection')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/waf')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('waf')}" data-url="{:url('index/vhost/waf')}">
-                      <i class="mdi mdi-wall"></i> <span style="color:#333333;">{:__('waf')}</span>
+                    <a href="#!" class="js-create-tab" data-title="{:__('Waf')}" data-url="{:url('index/vhost/waf')}">
+                      <i class="mdi mdi-wall"></i> <span style="color:#333333;">{:__('Waf')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/dirauth')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('dirauth')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Dir auth')}"
                       data-url="{:url('index/vhost/dirauth')}">
-                      <i class="mdi mdi-file-lock-outline"></i> <span style="color:#333333;">{:__('dirauth')}</span>
+                      <i class="mdi mdi-file-lock-outline"></i> <span style="color:#333333;">{:__('Dir auth')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/proof')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('proof')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Proof')}"
                       data-url="{:url('index/vhost/proof')}">
-                      <i class="mdi mdi-webcam"></i> <span style="color:#333333;">{:__('proof')}</span>
+                      <i class="mdi mdi-webcam"></i> <span style="color:#333333;">{:__('Proof')}</span>
                     </a>
                   </div>
                 </div>
@@ -426,54 +426,54 @@
               <div class="tab-pane fade" id="expert-pills">
                 <div class="row">
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/sitelog')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('sitelog')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Site log')}"
                       data-url="{:url('index/vhost/sitelog')}">
-                      <i class="mdi mdi-chart-bar-stacked"></i> <span style="color:#333333;">{:__('sitelog')}</span>
+                      <i class="mdi mdi-chart-bar-stacked"></i> <span style="color:#333333;">{:__('Site log')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/sqltools')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('sqltools')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Sql tools')}"
                       data-url="{:url('index/vhost/sqltools')}">
-                      <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('sqltools')}</span>
+                      <i class="mdi mdi-database"></i> <span style="color:#333333;">{:__('Sql tools')}</span>
                     </a>
                   </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/httpauth')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('httpauth')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Http auth')}"
                       data-url="{:url('index/vhost/httpauth')}">
-                      <i class="mdi mdi-wan"></i> <span style="color:#333333;">{:__('httpauth')}</span>
+                      <i class="mdi mdi-wan"></i> <span style="color:#333333;">{:__('Http auth')}</span>
                     </a>
                   </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/deployment')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('deployment')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Deployment')}"
                       data-url="{:url('index/vhost/deployment')}">
-                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('deployment')}</span>
+                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('Deployment')}</span>
                     </a>
                   </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/deployment_new')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('deployment_new')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Deployment(new)')}"
                       data-url="{:url('index/vhost/deployment_new')}">
-                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('deployment_new')}</span>
+                      <i class="mdi mdi-puzzle"></i> <span style="color:#333333;">{:__('Deployment(new)')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/total')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('total')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Total')}"
                       data-url="{:url('index/vhost/total')}">
-                      <i class="mdi mdi-chart-pie"></i> <span style="color:#333333;">{:__('total')}</span>
+                      <i class="mdi mdi-chart-pie"></i> <span style="color:#333333;">{:__('Total')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/proxy')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('proxy')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Proxy')}"
                       data-url="{:url('index/vhost/proxy')}">
-                      <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('proxy')}</span>
+                      <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('Proxy')}</span>
                     </a>
                   </div>
                   <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/hostreset')?'':'d-none'}">
-                    <a href="#!" class="js-create-tab" data-title="{:__('hostreset')}"
+                    <a href="#!" class="js-create-tab" data-title="{:__('Host reset')}"
                       data-url="{:url('index/vhost/hostreset')}">
-                      <i class="mdi mdi-format-clear"></i> <span style="color:#333333;">{:__('hostreset')}</span>
+                      <i class="mdi mdi-format-clear"></i> <span style="color:#333333;">{:__('Host reset')}</span>
                     </a>
                   </div>
                 </div>
@@ -516,26 +516,27 @@
       <header class="card-header">
         <div class="card-title dis_contents">
           FTP
-          <a href="#!" data-title="在线文件管理" data-title="{:__('file')}"
+          <a href="#!" data-title="{:__('Web file manager')}" data-title="{:__('file')}"
             data-url="{:url('vhost/file')}"
             class="js-create-tab badge badge-purple text-white float-right
-            {:$auth->check('vhost/file')?'':'d-none'}">在线文件管理器</a>
+            {:$auth->check('vhost/file')?'':'d-none'}">{:__('Web file manager')}</a>
         </div>
       </header>
       <div class="list-group-item">
         <div class="media">
           <div class="media-body clearfix">
             <p class="m0">
-              <small>FTP地址：{$Think.config.site.ftp_server|default="请使用IP地址"}</small>
-              <br><small>FTP端口：{$Think.config.site.ftp_port|default="21"}</small>
-              <br><small>FTP用户名：{$hostInfo.ftp.username}</small>
-              <br><small>FTP密码：<a onclick="$(this).html($(this).attr('val'))"
+              <small>{:__('Ftp server')}：{$Think.config.site.ftp_server|default=__('Please use the IP address')}</small>
+              <br><small>{:__('Ftp port')}：{$Think.config.site.ftp_port|default="21"}</small>
+              <br><small>{:__('Ftp username')}：{$hostInfo.ftp.username}</small>
+              <br><small>{:__('Ftp password')}：<a onclick="$(this).html($(this).attr('val'))"
                   val="{$hostInfo.ftp.password}">*******</a></small>
-              <br><small>FTP状态：{if $ftpInfo.status}<a href="javascript:ftpStatus(0);" class="text-success"
-                  data-toggle="tooltip" data-original-title="点击关闭">正常</a>{else/}<a href="javascript:ftpStatus(1);"
-                  class="text-danger" data-toggle="tooltip" data-original-title="点击开启">禁用</a>{/if}</small> <span
+              <br><small>{:__('Ftp status')}：{if $ftpInfo.status}<a href="javascript:ftpStatus(0);" class="text-success"
+                  data-toggle="tooltip" data-original-title="{:__('Click on close')}">{:__('normal')}</a>{else/}<a
+                    href="javascript:ftpStatus(1);"
+                  class="text-danger" data-toggle="tooltip" data-original-title="{:__('Click on open')}">{:__('Disable')}</a>{/if}</small> <span
                 class="badge badge-pill badge-info" data-toggle="tooltip"
-                data-original-title="注意：FTP可用于应急管理，如非特殊环境使用，请勿手动关闭">!</span>
+                data-original-title="{:__('Note: FTP can be used for emergency management. Do not close it manually unless it is used in a special environment')}">!</span>
             </p>
           </div>
         </div>
@@ -545,7 +546,7 @@
     {notempty name="hostInfo.sql.username"}
     <div class="card card-default">
       <header class="card-header">
-        <div class="card-title dis_contents">数据库
+        <div class="card-title dis_contents">{:__('Sql')}
           <a href="{if $phpmyadmin}{$phpmyadmin}{else/}{:__('Not sql')}{/if}"
             class="badge badge-info text-white float-right" target="_blank">phpMyAdmin</a>
         </div>
@@ -554,7 +555,7 @@
         <div class="media">
           <div class="media-body clearfix">
             <p class="m0">
-              <small>数据库地址：localhost</small><br><small>数据库端口：3306</small><br><small>数据库名：{$hostInfo.sql.database}</small><br><small>数据库用户名：{$hostInfo.sql.username}</small><br><small>数据库密码：<a
+              <small>{:__('Sql server')}：localhost</small><br><small>{:__('Sql port')}：3306</small><br><small>{:__('Sql database')}：{$hostInfo.sql.database}</small><br><small>{:__('Sql username')}：{$hostInfo.sql.username}</small><br><small>{:__('Sql password')}：<a
                   onclick="$(this).html($(this).attr('val'))" val="{$hostInfo.sql.password}">*******</a></small>
             </p>
           </div>
@@ -564,15 +565,15 @@
     {/notempty}
     <div class="card card-default">
       <header class="card-header">
-        <div class="card-title">主机信息</div>
+        <div class="card-title">{:__('Host info')}</div>
       </header>
       <div class="list-group-item">
         <div class="media">
           <div class="media-body clearfix">
             <p class="m0">
-              <small>站点名称：{$hostInfo.bt_name}</small>
+              <small>{:__('Host name')}：{$hostInfo.bt_name}</small>
               <br>
-              <small>运行状态：<span class="text-info">{:__($hostInfo.status)}</span>
+              <small>{:__('Host status')}：<span class="text-info">{:__($hostInfo.status)}</span>
                 {if $userLocked}
                 <span class="mdi mdi-lock-outline"></span>
                 {else/}
@@ -580,23 +581,23 @@
                 {/if}
               </small>
               <br />
-              <small>主机操作：{if $siteStatus}
+              <small>{:__('Host operation')}：{if $siteStatus}
                 <a href="javascript:sitestop();" class="text-success" data-toggle="tooltip" data-placement="top"
-                  title="" data-original-title="点击停止网站">停止网站</a>
+                  title="" data-original-title="{:__('Click on close')}">{:__('stop')}</a>
                 {else/}
                 <a href="javascript:sitestart();" class="text-danger" data-toggle="tooltip" data-placement="top"
-                  title="" data-original-title="点击开启网站">开启网站</a>
+                  title="" data-original-title="{:__('Click on open')}">{:__('open')}</a>
                 {/if}
               </small>
-              <br /><small>到期时间：{if $hostInfo.endtime}{$hostInfo.endtime|date="Y-m-d",###}{else/}数据有误{/if}</small>
-              <br /><small>环境：{$hostInfo.server_os} + {$serverConfig.webserver|default=""}</small>
-              <br /><small>响应：{:debug('begin','end',6).'s'}</small>
+              <br /><small>{:__('Endtime')}：{if $hostInfo.endtime}{$hostInfo.endtime|date="Y-m-d",###}{else/}{:__('Data error')}{/if}</small>
+              <br /><small>{:__('System environment')}：{$hostInfo.server_os} + {$serverConfig.webserver|default=""}</small>
+              <br /><small>{:__('Response')}：{:debug('begin','end',6).'s'}</small>
             </p>
             <form action="{:url('index/vhost/phpSet')}" method="POST">
               <div class="form-row">
                 <div class="col-auto my-1">
                   <div class="custom-control custom-checkbox mr-sm-2">
-                    php版本：
+                    {:__('Php version')}：
                   </div>
                 </div>
                 <div class="col-auto my-1">
@@ -609,7 +610,7 @@
                   </select>
                 </div>
                 <div class="col-auto my-1">
-                  <input onclick="setPhpVer()" type="button" class="btn btn-outline-warning btn-sm" value="切换" />
+                  <input onclick="setPhpVer()" type="button" class="btn btn-outline-warning btn-sm" value="{:__('Transform')}" />
                 </div>
               </div>
             </form>
@@ -661,7 +662,7 @@
   function setPhpVer() {
     version = $("#phpSet option:selected").val();
     if (!version) {
-      EchoMsg('意外的情况');
+      EchoMsg('{:__("Unexpected situation")}');
       return false;
     }
 
