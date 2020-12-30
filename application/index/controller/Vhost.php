@@ -134,7 +134,7 @@ class Vhost extends Frontend
         // 站点初始化
         $webInit = $this->btTend->webInit();
         if(!$webInit){
-            $this->error($this->btTend->_error);
+            $this->error($this->btTend->bt_name . $this->btTend->_error .  ' <a href="' . url('index/user/index') . '">' . __('Switch site') . '</a>', '');
         }
         // 检查资源使用量
         if(!$this->check()){
@@ -862,7 +862,7 @@ class Vhost extends Frontend
      */
     public function Rewrite301()
     {
-        if ($this->hostInfo->server_os == 'windows') {
+        if ($this->hostInfo->server_os != 'linux') {
             $this->error('当前不支持该模块','');
         }
 
@@ -939,9 +939,9 @@ class Vhost extends Frontend
      */
     public function redir()
     {
-        if ($this->serverConfig['webserver'] != 'nginx') {
-            $this->error('当前不支持该模块','');
-        }
+        // if ($this->serverConfig['webserver'] != 'nginx') {
+        //     $this->error('当前不支持该模块','');
+        // }
         // 获取网站下的域名列表
         $WebsitesList = $this->btAction->Websitess($this->bt_id, 'domain');
         // 获取重定向内测版列表
@@ -1285,15 +1285,16 @@ class Vhost extends Frontend
             $info = $file->move($tempDir, $file->getInfo('name'));
             if ($info) {
                 set_time_limit(0);
+                $msg = '';
                 $postFile = $tempDir . $info->getFilename();
                 try {
                     $put = $ftp->put($path . '/' . $info->getFilename(), $postFile, 2);
                 } catch (\Exception $e) {
-                    $this->error('上传失败' . $e->getMessage());
+                    $msg = $e->getMessage();
                 }
 
                 if (!$put) {
-                    $this->error('上传失败');
+                    $this->error('上传失败.' . $msg);
                 }
                 $this->success('上传成功');
             } else {
@@ -3050,9 +3051,9 @@ class Vhost extends Frontend
         set_time_limit(120);
         $renew = $this->btAction->RenewLets();
         if ($renew && isset($renew['status']) && $renew['status'] == 'true') {
-            return ['code' => 1, 'msg' => '请求成功', $renew];
-        } elseif ($renew && isset($renew['status']) && $renew['status'] == 'false') {
-            return ['code' => 0, 'msg' => '续签失败', $renew];
+            $this->success('请求成功，正在处理');
+        } elseif ($renew && isset($renew['msg'])) {
+            $this->error('请求失败.' . $renew['msg']);
         } else {
             $this->error('请求失败');
         }
@@ -3407,7 +3408,10 @@ class Vhost extends Frontend
     public function deployment()
     {
 
-        $deploymentList = $this->btAction->deployment();
+        // $deploymentList = $this->btAction->deployment();
+        $deploymentList =  Cache::remember('deploymentlist', function () {
+            return $this->btAction->deployment();
+        });
         if (!$deploymentList || isset($deploymentList['status']) && $deploymentList['status'] == false) {
             $this->error('暂不支持该功能','');
         }
@@ -3431,8 +3435,11 @@ class Vhost extends Frontend
     {
         $post_str       = $this->request->post();
         $is_new         = input('post.is_new') ? input('post.is_new') : 0;
-        $deploymentList = $is_new ? $this->btAction->GetList() : $this->btAction->deployment();
+        // $deploymentList = $is_new ? $this->btAction->GetList() : $this->btAction->deployment();
 
+        $deploymentList =  Cache::remember($is_new ? 'deploymentlist_new' : 'deploymentlist', function ($is_new) {
+            return $is_new ? $this->btAction->GetList() : $this->btAction->deployment();
+        });
         if (!$deploymentList || isset($deploymentList['status']) && $deploymentList['status'] == false) {
             $is_new ? '' : $this->error('暂不支持该功能');
         }
@@ -3471,7 +3478,10 @@ class Vhost extends Frontend
      */
     public function deployment_new()
     {
-        $deploymentList = $this->btAction->GetList();
+        $deploymentList =  Cache::remember('deploymentlist_new', function () {
+            return $this->btAction->GetList();
+        });
+        // $deploymentList = $this->btAction->GetList();
 
         $this->view->assign('title', __('deployment_new'));
         return view('deployment_new', [
@@ -3500,7 +3510,7 @@ class Vhost extends Frontend
                 $this->error('没有找到该站点');
             }
         } else {
-            $this->error('当前主机不支持该插件','');
+            $this->error(__('The plug-in is not supported by the current host'), '');
         }
         $this->view->assign('title', __('proof'));
         return $this->view->fetch('proof', [
@@ -3599,7 +3609,7 @@ class Vhost extends Frontend
                 $this->error('意外的错误','');
             }
         } else {
-            $this->error('当前主机不支持该插件','');
+            $this->error(__('The plug-in is not supported by the current host'), '');
         }
         $Network = $this->btAction->SiteNetworkTotal($this->siteName);
         if (isset($Network['days']) && $Network['days'] != '') {
@@ -3640,7 +3650,7 @@ class Vhost extends Frontend
             return $this->btTend->getWaf();
         });
         if (!$isWaf) {
-            $this->error('当前主机不支持该插件','');
+            $this->error(__('The plug-in is not supported by the current host'), '');
         }
         // 获取防火墙插件
         $total = [];
@@ -3664,7 +3674,7 @@ class Vhost extends Frontend
         }elseif(isset($waf['msg'])&&Config('app_debug')){
             $this->error($waf['msg'],'');
         } else {
-            $this->error('当前主机不支持该插件','');
+            $this->error(__('The plug-in is not supported by the current host'), '');
         }
         
         // 获取四层防御状态
@@ -3876,7 +3886,7 @@ class Vhost extends Frontend
             // 判断是否安装该插件
             $pluginInfo = $this->btTend->softQuery('free_waf');
             if(!$pluginInfo){
-                $this->error('当前主机不支持该插件','');
+                $this->error(__('The plug-in is not supported by the current host'), '');
             }
             // waf站点信息
             $waf = $this->btTend->free_waf_site_info();
@@ -3887,7 +3897,7 @@ class Vhost extends Frontend
             $this->view->assign('total',$waf['total']);
             $this->view->assign('title','防火墙');
         }else{
-            $this->error('当前主机不支持该插件','');
+            $this->error(__('The plug-in is not supported by the current host'), '');
         }
         
         // return $this->view->fetch();

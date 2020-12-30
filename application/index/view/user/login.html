@@ -28,25 +28,25 @@
     <div class="p-5">
         <div class="text-center">
         <a href="{:url('/')}">
-            <h3 class="login-logo2">控制台登录</h3> <img alt="{$site.name}" src="{$Think.config.site.logo}" class="login-logo">
+            <h3 class="login-logo2">{:__('Console center')}</h3> <img alt="{$site.name}" src="{$Think.config.site.logo}" class="login-logo">
         </a>
         </div>
-        <p class="text-center text-muted"><small>{:__('Login Tips')}</small></p>
+        <p class="text-center text-muted"><small>{:__('Please use your account to log in to the system')}</small></p>
 
         <form name="form" id="login-form" class="form-vertical" method="POST" action="">
             {:token()}
             <div class="form-group">
                 <label for="username">{:__('Account')}</label>
-                <input type="text" class="form-control" id="account" name="account" placeholder="请输入您的{:__('Account')}">
+                <input type="text" class="form-control" id="account" name="account" placeholder="{:__('Please enter %s',__('Account'))}">
             </div>
 
             <div class="form-group">
                 <label for="password">{:__('Password')}</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="请输入您的{:__('Password')}">
+                <input type="password" class="form-control" id="password" name="password" placeholder="{:__('Please enter %s',__('Password'))}">
             </div>
 
             <div class="form-group">
-                <button class="btn btn-block btn-primary" type="submit">立即登录</button>
+                <button class="btn btn-block btn-primary" type="submit">{:__('Login')}</button>
             </div>
         </form>
         <p class="text-center text-muted mt-3">Copyright © 2020 <a href="{:url('/')}">{$site.name}</a>.

@@ -649,12 +649,12 @@ class Btaction
                 $siteArr = $siteInfo['data'][0];
             }
             if (!$siteArr) {
-                $this->setError('获取站点信息失败');
+                $this->setError(__('Failed to get site information'));
                 return false;
             }
             return $siteArr;
         } else {
-            $this->setError('获取站点信息失败');
+            $this->setError(__('Failed to get site information'));
             return false;
         }
     }

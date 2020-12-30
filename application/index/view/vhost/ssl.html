@@ -36,7 +36,7 @@
 		<div class="card" id="ssl_loading">
 			<div class="card-header">
 				<header class="card-title">
-					{:__('Apply for a certificate with one click')}
+					{:__('Certificate request')}
 				</header>
 			</div>
 			<div class="card-body">
@@ -84,7 +84,7 @@
 						<hr>
 						<small class="text-muted">
 							<li>{:__('Before applying, please make sure that the domain name has been resolved. Failure to resolve this will cause the review to fail')}</li>
-							<li>{:__('Let\'s Encrypt free certificate, valid for 3 months, supports multiple domain names. Automatic renewal by default')}</li>
+							<li>{:__("Let\'s Encrypt free certificate, valid for 3 months, supports multiple domain names. Automatic renewal by default")}</li>
 							<li>{:__('If your site uses CDN or 301 redirection, the renewal will fail')}</li>
 							<li>{:__('When the SSL default site is not specified, the site without SSL will be directly accessed to the site with SSL enabled using HTTPS')}</li>
 							<li>{:__('If you cannot use HTTPS access after opening, please check whether the security group correctly allows port 443')}</li>
@@ -118,7 +118,7 @@
 								rows="10">{$GetSSL.csr|default=""}</textarea>
 						</div>
 
-						<div class="col-md-12">
+						<div class="col-lg-12 col-md-12">
 							<div class="form-group">
 								<input type="button" value="{:__('Submit')}" class="btn btn-warning" onclick="sslSet()">
 							</div>
@@ -196,7 +196,7 @@
 	function sslApply() {
 		domain = $('#domainList').val();
 		if (!domain) {
-			layer.msg('{:__("Please select a domain")}')
+			EchoMsg('{:__("Please select a domain")}')
 			return false;
 		}
 		var l = $('#ssl_loading').lyearloading({
@@ -219,7 +219,7 @@
 	function sslApplyLets() {
 		domain = jqchk();
 		if (!domain) {
-			layer.msg('{:__("Please select a domain")}')
+			EchoMsg('{:__("Please select a domain")}')
 			return false;
 		}
 		// 设置成功的话其实就不用获取日志，因为申请成功后会取消标记状态，且请求是同步的
@@ -250,14 +250,14 @@
 			})
 			.done(function (res) {
 				if (res.code == 1) {
-					layer.msg(res.msg);
+					EchoMsg(res.msg);
 					getletlog();
 				} else {
 					return false;
 				}
 			})
 			.fail(function () {
-				layer.alert('{:__("Unexpected situation")}');
+				EchoMsg('{:__("Unexpected situation")}');
 			})
 			.always(function () {
 				console.log("complete");

@@ -179,13 +179,13 @@
 	}
 
 	function inc(type) {
-		str = type == 'protect' ? '{:__("Protection")}' : '{:__("Exclude")}';
+		str = type == 'protect' ? '{:__("Protect")}' : '{:__("Exclude")}';
 		str2 = type == 'protect' ? '{:__("File name")}' : '{:__("File dir")}';
 		$.confirm({
 			title: '{:__("Add")}' + str,
 			content: '<div class="form-group p-1 mb-0">' +
 				'  <label class="control-label">{:__("Enter to add")}' + str + '{:__(" Content")}</label>' +
-				'  <input autofocus="" type="text" id="input-value" placeholder="{:__("Please enter")}' + str2 +
+				'  <input autofocus="" type="text" id="input-value" placeholder="{:__("Please enter %s","")}' + str2 +
 				'" class="form-control">' +
 				'</div>',
 			buttons: {

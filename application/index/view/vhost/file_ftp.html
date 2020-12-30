@@ -72,28 +72,58 @@
     .text-middle{
         vertical-align:middle;
     }
+
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+    }
+
+    .CodeMirror-scroll {
+        height: auto;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+    .CodeMirror-hints{
+        z-index:19991017 !important;
+    }
 </style>
 {/block}
 {block name="content"}
+
 <link href="__CDN____STATIC__/Light-Year/css/animate.min.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="__CDN__/assets/libs/codemirror/lib/codemirror.css">
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/lib/codemirror.js"></script>
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
+
 
 <!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
 <!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/mode/modeAll.js"></script> -->
 <!-- 引入javascript编辑器格式 -->
 <script src="__CDN__/assets/libs/codemirror/mode/clike/clike.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script> -->
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script> -->
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/css/css.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/sql/sql.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/xml/xml.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/python/python.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/nginx/nginx.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/markdown/markdown.js"></script>
- -->
+
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/dialog/dialog.js"></script>
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/search/search.js"></script>
+
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/show-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/sql-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/html-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/xml-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/javascript-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/css-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/anyword-hint.js"></script>
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/hint/show-hint.css">
+<!-- <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/lint/lint.css"> -->
 <!-- 各种主题配色 -->
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-day.css">
@@ -143,6 +173,7 @@
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-light.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/yeti.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/zenburn.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/darcula.css">
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -150,7 +181,7 @@
                 <button style="float: right;" class="btn btn-sm btn-success" onclick="location.reload()" title="{:__('Refresh')}"><i class="mdi mdi-restore"></i></button>
                 <button style="float: right;" class="btn btn-sm btn-dark" onclick="newdir()">{:__('Create dir')}</button>
                 <button style="float: right;" class="btn btn-sm btn-purple" onclick="newfile()">{:__('Create file')}</button>
-                <!-- <button style="float: right;" class="btn btn-sm btn-info" onclick="UploadFiles()">上传</button> -->
+                <!-- <button style="float: right;" class="btn btn-sm btn-info" onclick="UploadFiles()">{:__('Upload')}</button> -->
                 <div class="batchAction" style="display: none;">
                     <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('CutFiles')">{:__('Copy')}</button>
                     <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('CutFile')">{:__('Cut')}</button>
@@ -710,8 +741,12 @@
     }
     //文件编辑
     function editFile(file,fileType){
-        if(!file){
-            layer.msg('{:__("Please select file")}');
+        if (!file) {
+            $.notify({
+                message: '{:__("Please select file")}',
+            }, {
+                type: 'warning'
+            });
             return false;
         }
         randMath = randomNum(1111,9999);
@@ -719,15 +754,22 @@
         $.post('', {file:file,type:'getfile'}, function(data, textStatus, xhr) {
             if(data.code==1){
                 var u = ["utf-8", "GBK", "GB2312", "BIG5"];
+                var theme = ['default','monokai','3024-day','3024-night','abcdef','ambiance','base16-dark','bespin','base16-light','blackboard','cobalt','colorforth','dracula','duotone-dark','duotone-light','eclipse','elegant','erlang-dark','hopscotch','icecoder','isotope','lesser-dark','liquibyte','material','mbo','mdn-like','midnight','monokai','neat','neo','night','panda-syntax','paraiso-dark','paraiso-light','pastel-on-dark','railscasts','rubyblue','seti','solarized','the-matrix','tomorrow-night-bright','tomorrow-night-eighties','ttcn','twilight','vibrant-ink','xq-dark','xq-light','yeti','zenburn','darcula'];
                 var n = "";
                 var m = "";
                 var o = "";
                 var t = "";
+                var th = "";
+                var is_theme = localStorage.getItem('theme')?localStorage.getItem('theme'):'default';
                 for(var p = 0; p < u.length; p++) {
                     m = data.encoding == u[p] ? "selected" : "";
                     n += '<option value="' + u[p] + '" ' + m + ">" + u[p] + "</option>"
                 }
-                content = '<form class="bt-form pd20 pb70" id="codemirror'+randMath+'"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">{:__("Tip: Ctrl+F searches for keywords, Ctrl+G finds the next one, Ctrl+S saves, Ctrl+Shift+R finds and replaces!")}<select class="bt-input-text hidden" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' + n + '</select></p><textarea id="textBody'+randMath+'" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
+                for (var p1 = 0; p1 < theme.length; p1++) {
+                    m = is_theme == theme[p1] ? "selected" : "";
+                    th += '<option value="' + theme[p1] + '" ' + m + ">" + theme[p1] + "</option>"
+                }
+                content = '<form class="bt-form pd20 pb70" id="codemirror'+randMath+'"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">{:__("Tip: Ctrl+F searches for keywords, Ctrl+G finds the next one, Ctrl+S saves, Ctrl+Shift+R finds and replaces, Ctrl code hint!")}<select class="bt-input-text hidden" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' + n + '</select><span style="font-size:xx-small;color:#8d6658;padding:0 5px;">{:__("Theme")}:</span><select class="bt-input-text" id="select_theme" name="theme" style="width: 74px;position: absolute;height: 22px;z-index: 9999;border-radius: 0;">'+th+'</select></p><textarea id="textBody'+randMath+'" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
                 //content = '<pre style="width:100%;height:100%;" file="'+file+'"><code  class="php">'+data.data+'</code></pre>';
                 var index = layer.open({
                   type: 1
@@ -758,9 +800,6 @@
                 switch(fileType)
                 {
                     case "html":
-                    var mixedMode = {name: "htmlmixed",scriptTypes: [{matches: /\/x-handlebars-template|\/x-mustache/i,mode: null}, {matches: /(text|application)\/(x-)?vb(a|script)/i,mode: "vbscript"}]};
-                    doctype = mixedMode;
-                    break;
                     case "htm":
                     var mixedMode = {name: "htmlmixed",scriptTypes: [{matches: /\/x-handlebars-template|\/x-mustache/i,mode: null},{matches: /(text|application)\/(x-)?vb(a|script)/i,mode: "vbscript"}]};
                     doctype = mixedMode;
@@ -801,6 +840,7 @@
                     extraKeys: {
                         "Ctrl-F": "findPersistent",
                         "Ctrl-H": "replaceAll",
+                        "Ctrl": "autocomplete",
                         "Ctrl-S": function() {
                             $("#textBody"+randMath).text(t.getValue());
                             content = t.getValue();
@@ -810,15 +850,24 @@
                         }
                     },
                     lineNumbers: true,
-                    //mode: 'application/x-httpd-php',
-                    //styleActiveLine: true,
+                    mode: doctype,
+                    styleActiveLine: true,
                     matchBrackets: true,
                     indentUnit: 4,
                     indentWithTabs: true,
                     matchtags: true,
-                    autoMatchParens: true
-            
+                    autoMatchParens: true,
+                    hintOptions: {
+                        completeSingle: false
+                    }
                     //readOnly:true
+                });
+                $(function(){
+                    // showCodeHint(t);
+                    $('#select_theme').change(function(){
+                        localStorage.setItem('theme',$(this).val());
+                        t.setOption("theme", $(this).val());
+                    })
                 });
                 //console.log(t.getValue());
                 
@@ -827,7 +876,7 @@
                     $("#textBody"+randMath).text(data.data);
                     t.setValue(data.data)
                 },500);
-                t.setOption("theme", 'default');
+                t.setOption("theme", is_theme);
                 t.focus();
             }else{
                 EchoMsg(data.msg);

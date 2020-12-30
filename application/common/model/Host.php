@@ -300,25 +300,25 @@ class Host extends Model
     {
         switch ($status) {
             case 'normal':
-                $status_attr = '正常';
+                $status_attr = __('normal');
                 break;
             case 'stop':
-                $status_attr = '停用';
+                $status_attr = __('stop');
                 break;
             case 'locked':
-                $status_attr = '锁定';
+                $status_attr = __('locked');
                 break;
             case 'expired':
-                $status_attr = '到期';
+                $status_attr = __('expired');
                 break;
             case 'excess':
-                $status_attr = '超量';
+                $status_attr = __('excess');
                 break;
             case 'error':
-                $status_attr = '异常';
+                $status_attr = __('error');
                 break;
             default:
-                $status_attr = '异常';
+                $status_attr = __('error');
                 break;
         }
         return $status_attr;
