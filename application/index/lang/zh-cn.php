@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'Logout' => '退出登录',
     'Keep login'                                             => '保持会话',
     'Forgot password'                                        => '忘记密码?',
     'Username'                                               => '用户名',
@@ -153,4 +154,6 @@ return [
     'Enter' => '管理',
     'Please enter %s'                       => '请输入%s',
     'Console center'                        => '控制台',
+    'Site selection' => '站点选择',
+    'No site currently available' => '当前无可用站点',
 ];

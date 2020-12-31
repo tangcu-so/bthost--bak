@@ -19,7 +19,7 @@
         <li class="nav-item nav-item-has-subnav">
         <a href="javascript:void(0)"><i class="mdi mdi-format-align-justify"></i> <span>{:__('File backup')}</span></a>
         <ul class="nav nav-subnav">
-            <li> <a class="multitabs {:$auth->check('vhost/file')?'':'d-none'}" href="{:url('index/vhost/file')}">{:__('File')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/file')?'':'d-none'}" href="{:url('index/vhost/file')}">{:__('File manager')}</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/file_ftp')?'':'d-none'}" href="{:url('index/vhost/file_ftp')}">{:__('File(ftp)')}</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/back')?'':'d-none'}" href="{:url('index/vhost/back')}">{:__('Backup')}</a> </li>
         </ul>
