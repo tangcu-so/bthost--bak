@@ -154,5 +154,13 @@
             }
         });
     }
+    $(function(){
+        $('#domain').blur(function(){
+            var content = $(this).val();
+            var AllReplace = new RegExp("https|http|ftp|。|：| |/","g");
+            content=content.replace(AllReplace,"");
+            $(this).val(content);
+        });
+    });
 </script>
 {/block}
