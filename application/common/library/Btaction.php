@@ -957,7 +957,7 @@ class Btaction
      */
     public function siteDelete($id, $webname, $ftp = 1, $database = 1, $path = 1)
     {
-        $del = $this->btAction->WebDeleteSite($id, $webname, $ftp = 1, $database = 1, $path = 1);
+        $del = $this->btAction->WebDeleteSite($id, $webname, $ftp, $database, $path);
         if ($del && isset($del['status']) && $del['status'] == 'true') {
             return true;
         } elseif (isset($del['status'])) {
