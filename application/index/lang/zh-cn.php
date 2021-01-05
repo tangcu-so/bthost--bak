@@ -156,4 +156,5 @@ return [
     'Console center'                        => '控制台',
     'Site selection' => '站点选择',
     'No site currently available' => '当前无可用站点',
+    'Host resources' => '主机资源',
 ];

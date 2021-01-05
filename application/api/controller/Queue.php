@@ -252,7 +252,13 @@ class Queue extends Api
                 $value->sql_size = $getSqlSizes;
                 $value->save();
 
-                // 记录入库
+                // 记录站点资源日志入库
+                \app\common\model\ResourcesLog::create([
+                    'host_id' => $value->id,
+                    'site_size' => $getWebSizes,
+                    'flow_size' => $total_size,
+                    'sql_size' => $getSqlSizes,
+                ]);
                 // Db::startTrans();
                 $excess = 0;
                 if (($getSqlSizes > $value->sql_max && $value->sql_max != '0') || ($getWebSizes > $value->site_max && $value->site_max != '0') || ($total_size > $value->flow_max && $value->flow_max != '0')) {

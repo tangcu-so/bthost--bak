@@ -951,3 +951,14 @@ CREATE TABLE `bth_hostreset_log` (
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='站点重置记录表';
+
+DROP TABLE IF EXISTS `bth_hostresources_log`;
+CREATE TABLE `bth_hostresources_log` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `host_id` int(10) NOT NULL COMMENT '主机ID',
+  `site_size` int(10) NOT NULL DEFAULT '0' COMMENT '空间大小',
+  `flow_size` int(10) NOT NULL DEFAULT '0' COMMENT '流量大小',
+  `sql_size` int(10) NOT NULL COMMENT '数据库大小',
+  `createtime` int(10) NOT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='主机资源记录表';

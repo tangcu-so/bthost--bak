@@ -527,7 +527,7 @@ return [
     'The webmaster’s mailbox is not configured' => '站长邮箱未配置，请提醒配置',
     'Hazard dir %s' => '危险目录%s',
     'Exceeded, resource disabled' => '超出，资源已停用',
-    '1' => '2222222222',
+    'Please select the query time' => '请选择查询时间',
     '1' => '2222222222',
     '1' => '2222222222',
     '1' => '2222222222',

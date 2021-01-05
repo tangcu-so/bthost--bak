@@ -1,7 +1,10 @@
 {extend name="common/base" /}
 {block name="css"}
+<!-- 日期选择器 -->
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker3.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-clockpicker/bootstrap-clockpicker.min.css" rel="stylesheet">
 <style type="text/css">
-
   .dis_contents {
     display: contents;
   }
@@ -203,12 +206,14 @@
       transform: rotate(360deg);
     }
   }
+  /* 背景动画end */
 </style>
 {/block}
 {block name="content"}
 <div class="row">
   <!-- START dashboard main content-->
   <div class="col-md-9">
+    <!-- 站点资源 -->
     <!-- START summary widgets-->
     <div class="row">
       <div class="col-sm-6 col-md-6 col-lg-4">
@@ -278,12 +283,14 @@
       </div>
     </div>
     <!-- END summary widgets-->
+    <!-- 站点公告 -->
     <div class="row">
       <div class="col-lg-12">
         {$Think.config.site.main_center_notice}
       </div>
     </div>
     <!-- START chart-->
+    <!-- 功能菜单 -->
     <div class="row">
       <div class="col-lg-12">
         <!-- START card-->
@@ -300,12 +307,10 @@
                 <a class="nav-link" data-toggle="tab" href="#files-pills" aria-selected="false">{:__('File backup')}</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#security-pills"
-                  aria-selected="false">{:__('Security settings')}</a>
+                <a class="nav-link" data-toggle="tab" href="#security-pills" aria-selected="false">{:__('Security settings')}</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" data-toggle="tab" href="#expert-pills"
-                  aria-selected="false">{:__('Advanced features')}</a>
+                <a class="nav-link" data-toggle="tab" href="#expert-pills" aria-selected="false">{:__('Advanced features')}</a>
               </li>
             </ul>
             <div class="tab-content" id="v-pills-tabContent">
@@ -470,7 +475,8 @@
                       <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('Proxy')}</span>
                     </a>
                   </div>
-                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/hostreset')?'':'d-none'}">
+                  <div
+                    class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/hostreset')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('Host reset')}"
                       data-url="{:url('index/vhost/hostreset')}">
                       <i class="mdi mdi-format-clear"></i> <span style="color:#333333;">{:__('Host reset')}</span>
@@ -484,7 +490,28 @@
         <!-- END card-->
       </div>
     </div>
-
+    <!-- 主机图表 -->
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <!-- <header class="card-header">
+            
+          </header> -->
+          <div class="card-body">
+            <div class="form-group">
+              <div class="input-group">
+                <input type="text" class="form-control" data-provide="datepicker" data-today-highlight="true"
+                  data-autoclose="false" id="querytime" placeholder="{:__('Please select the query time')}" value="{:date('Y-m-d',time())}"/>
+                <div class="input-group-append">
+                  <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                </div>
+              </div>
+            </div>
+            <canvas id="host_resources" width="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- END chart-->
   </div>
   <!-- END dashboard main content-->
@@ -516,8 +543,7 @@
       <header class="card-header">
         <div class="card-title dis_contents">
           FTP
-          <a href="#!" data-title="{:__('Web file manager')}" data-title="{:__('file')}"
-            data-url="{:url('vhost/file')}"
+          <a href="#!" data-title="{:__('Web file manager')}" data-title="{:__('file')}" data-url="{:url('vhost/file')}"
             class="js-create-tab badge badge-purple text-white float-right
             {:$auth->check('vhost/file')?'':'d-none'}">{:__('Web file manager')}</a>
         </div>
@@ -533,8 +559,8 @@
                   val="{$hostInfo.ftp.password}">*******</a></small>
               <br><small>{:__('Ftp status')}：{if $ftpInfo.status}<a href="javascript:ftpStatus(0);" class="text-success"
                   data-toggle="tooltip" data-original-title="{:__('Click on close')}">{:__('normal')}</a>{else/}<a
-                    href="javascript:ftpStatus(1);"
-                  class="text-danger" data-toggle="tooltip" data-original-title="{:__('Click on open')}">{:__('Disable')}</a>{/if}</small> <span
+                  href="javascript:ftpStatus(1);" class="text-danger" data-toggle="tooltip"
+                  data-original-title="{:__('Click on open')}">{:__('Disable')}</a>{/if}</small> <span
                 class="badge badge-pill badge-info" data-toggle="tooltip"
                 data-original-title="{:__('Note: FTP can be used for emergency management. Do not close it manually unless it is used in a special environment')}">!</span>
             </p>
@@ -638,6 +664,11 @@
 </div>
 {/block}
 {block name="script"}
+<!-- 图表js -->
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/Chart.min.js"></script>
+<!--日期选择器-->
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
 <script type="text/javascript">
   function sitestop() {
 
@@ -682,6 +713,89 @@
     }, function (res) {
 
       EchoMsg(res.msg, 1);
+    })
+  }
+
+  $(document).ready(function () {
+    $('#host_resources').attr('height',$(window).width() > 800 ? '100px' : '');
+    //使用Ajax获取json数据
+    chassss();
+    $('#querytime').change(function(){
+      querytime = $('#querytime').val();
+      chassss(querytime);
+    })
+  });
+  function chassss(querytime = ''){
+    var jsonData = $.ajax({
+        url: "{:url('index/ajax/getResources')}",
+        data:{init:1,querytime:querytime},
+        type: "post",
+        dataType: 'json',
+    }).done(function (results) {
+        // 将获取到的json数据分别存放到两个数组中
+        var labels = [], data=[], webdata=[], sqldata=[], flowdata=[];
+        for (var item in results) {
+            labels.push(item);
+            // data.push(results[item]);
+            webdata.push(results[item]['site_size']);
+            sqldata.push(results[item]['sql_size']);
+            flowdata.push(results[item]['flow_size']);
+        }
+        // 设置图表的数据
+        var tempData = {
+            labels : labels,
+            datasets: [{
+                label: "{:__('Web size')}",
+                fill: false,
+                borderWidth: 3,
+                pointRadius: 4,
+                borderColor: "#1abc9c",
+                backgroundColor: "#1abc9c",
+                pointBackgroundColor: "#1abc9c",
+                pointBorderColor: "#1abc9c",
+                pointHoverBackgroundColor: "#fff",
+                pointHoverBorderColor: "#1abc9c",
+                data:webdata,
+            },
+            {
+              label: "{:__('Sql size')}",
+              fill: false,
+              borderWidth: 3,
+              pointRadius: 4,
+              borderColor: "#ff6b81",
+              backgroundColor: "#ff6b81",
+              pointBackgroundColor: "#ff6b81",
+              pointBorderColor: "#ff6b81",
+              pointHoverBackgroundColor: "#fff",
+              pointHoverBorderColor: "#ff6b81",
+              data:sqldata,
+            },
+            {
+              label: "{:__('Flow size')}",
+              fill: false,
+              borderWidth: 3,
+              pointRadius: 4,
+              borderColor: "#a4b0be",
+              backgroundColor: "#a4b0be",
+              pointBackgroundColor: "#a4b0be",
+              pointBorderColor: "#a4b0be",
+              pointHoverBackgroundColor: "#fff",
+              pointHoverBorderColor: "#a4b0be",
+              data:flowdata,
+            }
+          ]
+        };
+
+        // 获取所选canvas元素的内容
+        var ctx = document.getElementById("host_resources");
+        //设置图表高度
+        var myLineChart = new Chart(ctx, {
+            type: 'line',
+            data: tempData,
+            options: {
+                maintainAspectRatio: true,
+            }
+        });
     })
   }
 </script>
