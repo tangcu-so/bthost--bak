@@ -726,7 +726,15 @@
     })
   });
   function chassss(querytime = ''){
-    var jsonData = $.ajax({
+    // 获取所选canvas元素的内容
+    var ctx = document.getElementById("host_resources");
+    var myLineChart = new Chart(ctx, {
+        type: 'line',
+        options: {
+            maintainAspectRatio: true,
+        }
+    });
+    $.ajax({
         url: "{:url('index/ajax/getResources')}",
         data:{init:1,querytime:querytime},
         type: "post",
@@ -786,17 +794,35 @@
           ]
         };
 
-        // 获取所选canvas元素的内容
-        var ctx = document.getElementById("host_resources");
-        //设置图表高度
-        var myLineChart = new Chart(ctx, {
-            type: 'line',
-            data: tempData,
-            options: {
-                maintainAspectRatio: true,
-            }
-        });
-    })
+        myLineChart.data = tempData;
+        myLineChart.update();
+    });
+  }
+
+  // 删除最后一行数据
+  function removeData(chart) {
+      chart.data.labels.pop();
+      chart.data.datasets.forEach((dataset) => {
+          dataset.data.pop();
+      });
+      chart.update();
+  }
+  // 清空数据
+  function removeAll(chart) {
+      chart.data.labels = [];
+      chart.data.datasets.forEach((dataset) => {
+          dataset.data  = [];
+      });
+      chart.update();
+  }
+  // 添加
+  function addData(chart, label, data) {
+      // 调用：addData(myLineChart,['dasdasads'],10);
+      chart.data.labels.push(label);
+      chart.data.datasets.forEach((dataset) => {
+          dataset.data.push(data);
+      });
+      chart.update();
   }
 </script>
 {/block}

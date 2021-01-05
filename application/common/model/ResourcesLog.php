@@ -17,6 +17,6 @@ class ResourcesLog extends Model
 
     public function getCreatetimeAttr($value, $data)
     {
-        return is_numeric($value) ? date('H:i:s', $value) : '';
+        return is_numeric($value) ? date('H:i', $value) : '';
     }
 }
