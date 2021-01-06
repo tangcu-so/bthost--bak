@@ -38,6 +38,11 @@ class Vhost extends Frontend
 
     private $check_time  = 3600;
 
+    /**
+     * 主机信息聚合
+     *
+     * @var [type]
+     */
     private $hostInfo = null;
 
     private $_error = '';
@@ -49,6 +54,11 @@ class Vhost extends Frontend
     private $webRootPath = null;
 
     private $serverConfig = null;
+
+    /**
+     * 宝塔主机信息
+     */
+    private $hostBtInfo = null;
 
     // 资源超出停用面板
     public $is_excess_stop = 0;
@@ -143,6 +153,9 @@ class Vhost extends Frontend
 
         $this->webRootPath = $this->btTend->webRootPath;
         $this->dirUserIni = $this->btTend->dirUserIni;
+        $this->hostBtInfo = $this->btTend->hostBtInfo;
+        // var_dump($this->hostBtInfo);
+        // exit;
 
         // 获取等待连接耗时
         // $connectTime = $this->btTend->getRequestTime();
@@ -153,6 +166,7 @@ class Vhost extends Frontend
         // php加载时长
         $this->assign('rangeTime', Debug::getRangeTime('begin', 'end', 6) . 's');
         $this->assign('hostInfo', $this->hostInfo);
+        $this->assign('hostBtInfo', $this->hostBtInfo);
         $this->assign('userInfo', $this->userInfo);
         $this->assign('serverConfig', $server_config);
         $this->assign('phpmyadmin',Config('site.phpmyadmin'));
@@ -184,8 +198,8 @@ class Vhost extends Frontend
     // 控制台
     public function main()
     {
-        $phpVer = $this->btTend->getSitePhpVer($this->siteName);
-        $siteStatus = $this->btTend->getSiteStatus($this->siteName);
+        $phpVer = isset($this->hostBtInfo['php_version']) && $this->hostBtInfo['php_version'] ? str_replace(".", "", $this->hostBtInfo['php_version']) : $this->btTend->getSitePhpVer($this->siteName);
+        $siteStatus = isset($this->hostBtInfo['status']) && $this->hostBtInfo['status'] ? $this->hostBtInfo['status'] : $this->btTend->getSiteStatus($this->siteName);
         if (isset($this->hostInfo->ftp->username) && $this->hostInfo->ftp->username) {
             $ftpInfo = $this->btTend->getFtpInfo();
             if (!$ftpInfo) {
@@ -272,10 +286,10 @@ class Vhost extends Frontend
                     throw new \Exception(__('Fail') . '.' . $this->btTend->_error);
                 }
                 // 将数据库中站点信息变更为新站点信息，btid，站点名等
-                $this->hostModel->save([
+                $this->hostInfo->allowField(true)->save([
                     'bt_name' => $this->btTend->bt_name,
                     'bt_id' => $crea['siteId'],
-                ], ['id' => $this->hostInfo->id]);
+                ]);
 
                 \app\common\model\HostresetLog::where(['id' => $c->id])->update([
                     'status' => 1,
@@ -339,9 +353,9 @@ class Vhost extends Frontend
         if(!$set){
             $this->error($this->btTend->_error);
         }
-        $this->hostModel->save([
+        $this->hostInfo->allowField(true)->save([
             'status'=>'stop'
-        ],['id'=>$this->hostInfo->id]);
+        ]);
         $this->success(__('Success'));
     }
 
@@ -378,9 +392,9 @@ class Vhost extends Frontend
         if(!$set){
             $this->error($this->btTend->_error);
         }
-        $this->hostModel->save([
+        $this->hostInfo->allowField(true)->save([
             'status'=>'normal'
-        ],['id'=>$this->hostInfo->id]);
+        ]);
         $this->success(__('Success'));
     }
 
@@ -2075,13 +2089,13 @@ class Vhost extends Frontend
             if ($files = request()->file('blob')) {
                 header("Content-type: text/html; charset=utf-8");
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
-                $this->hostModel->save([
+                $this->hostInfo->allowField(true)->save([
                     'site_size'=>$websize,
-                ],['id'=>$this->hostInfo->id]);
+                ]);
                 if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
-                    $this->hostModel->save([
+                    $this->hostInfo->allowField(true)->save([
                         'status'=>'excess',
-                    ],['id'=>$this->hostInfo->id]);
+                    ]);
                     $this->error(__('Site size exceeded, resources stopped'));
                 }
                 $path     = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '') : '/';
@@ -2328,13 +2342,13 @@ class Vhost extends Frontend
                     $this->error(__('Illegal operation'));
                 }
                 $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
-                $this->hostModel->save([
+                $this->hostInfo->allowField(true)->save([
                     'site_size'=>$websize,
-                ],['id'=>$this->hostInfo->id]);
+                ]);
                 if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
-                    $this->hostModel->save([
+                    $this->hostInfo->allowField(true)->save([
                         'status'=>'excess',
-                    ],['id'=>$this->hostInfo->id]);
+                    ]);
                     $this->error(__('Site size exceeded, resources stopped'));
                 }
                 $down = $this->btAction->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
@@ -2911,6 +2925,14 @@ class Vhost extends Frontend
         }
         $modify_status = $this->btAction->SetSSL(1, $this->siteName, $key, $csr);
         if (isset($modify_status) && $modify_status['status'] == 'true') {
+            // 记录ssl证书
+            \app\common\model\HostSsl::create([
+                'host_id' => $this->hostInfo->id,
+                'user_id' => $this->auth->id,
+                'domain' => $this->siteName,
+                'csr' => $csr,
+                'key' => $key,
+            ]);
             $this->success($modify_status['msg']);
         } else {
             $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -4022,7 +4044,7 @@ class Vhost extends Frontend
                 // 恢复主机状态
                 $this->btTend->webstart();
             }
-            $this->hostModel->save($host_data,['id'=>$this->vhost_id]);
+            $this->hostInfo->allowField(true)->save($host_data);
             if($msg){
                 $this->_error  = $msg . ($excess ? __('Exceeded, resource disabled') : '');
                 return false;
