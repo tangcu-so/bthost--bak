@@ -307,8 +307,8 @@
                                     <h5>{$disk.path|default="--"}</h5>
                                 </div>
                                 <div class="panel-content">
-                                    <h1 class="no-margins">{$disk.size['1']}/{$disk.size['0']}</h1>
-                                    <small id="memBfb">{$disk.size['3']}</small>
+                                    <h1 class="no-margins">{$disk.size['1']|default="--"}/{$disk.size['0']|default="--"}</h1>
+                                    <small id="memBfb">{$disk.size['3']|default="--"}</small>
                                 </div>
                             </div>
                         </div>
@@ -320,7 +320,7 @@
                         <div class="panel-heading">
                             <p>
                                 {if $isWindows}<span class="ico-windows"></span>{else/}<span class="ico-centos"></span>{/if}
-                                {$GetSystemTotal.system} (Bt.Ver:{$GetSystemTotal.version}) 
+                                {$GetSystemTotal.system|default="--"} (Bt.Ver:{$GetSystemTotal.version|default="--"}) 
                                 {if isset($GetSoftList.pro)&&$GetSoftList.pro!='-1'}
                                 <span class="ispro">到期时间：
                                     <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
@@ -342,7 +342,7 @@
                                 {else/}
                                 <span class="notpro">免费版</span>
                                 {/if}
-                                <span>不间断运行：{$GetSystemTotal.time}</span>
+                                <span>不间断运行：{$GetSystemTotal.time|default="--"}</span>
                             </p>
                         </div>
                         <div class="panel-body">

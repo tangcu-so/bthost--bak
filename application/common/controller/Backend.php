@@ -218,7 +218,9 @@ class Backend extends Controller
 
         Config::set('upload', array_merge(Config::get('upload'), $upload));
 
-        
+        if (!Config('site.debug')) {
+            error_reporting(E_ALL ^ E_NOTICE);
+        }
 
         
 

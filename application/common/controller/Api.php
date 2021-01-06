@@ -136,6 +136,10 @@ class Api
             }
         }
 
+        if (!Config('site.debug')) {
+            error_reporting(E_ALL ^ E_NOTICE);
+        }
+
         $upload = \app\common\model\Config::upload();
 
         // 上传信息配置后

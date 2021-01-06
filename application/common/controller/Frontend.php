@@ -94,6 +94,10 @@ class Frontend extends Controller
             $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
         }
 
+        if (!Config('site.debug')) {
+            error_reporting(E_ALL ^ E_NOTICE);
+        }
+
         $this->auth_check_local();
 
         // 已登录用户信息
