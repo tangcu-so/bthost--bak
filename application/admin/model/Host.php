@@ -41,19 +41,19 @@ class Host extends Model
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
             // 如果有状态发生改变
-            if (isset($changed['status']) && ($changed['status'] != $row->origin['status'])) {
+            if (isset($changed['status']) && isset($row->origin['status']) && ($changed['status'] != $row->origin['status'])) {
                 \app\common\model\Host::host_update_status($row);
             }
             // 如果分类ID发生改变
-            if (isset($changed['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
+            if (isset($changed['sort_id']) && isset($row->origin['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
                 \app\common\model\Host::host_update_sort($row);
             }
             // 如果到期时间发生改变
-            if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
+            if (isset($changed['endtime']) && isset($row->origin['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
                 \app\common\model\Host::host_update_endtime($row);
             }
             // 如果修改并发、限速
-            if (isset($changed['perserver']) && ($changed['perserver'] != $row->origin['perserver'])) {
+            if (isset($changed['perserver']) && isset($row->origin['perserver']) && ($changed['perserver'] != $row->origin['perserver'])) {
                 \app\common\model\Host::host_perserver($row);
             }
         });
