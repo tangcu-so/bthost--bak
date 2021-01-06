@@ -769,29 +769,45 @@ class Vhost extends Frontend
         if (!$validate->check($post_str)) {
             $this->error($validate->getError());
         }
-        if ($this->server_type == 'linux') {
-            if (!empty($post_str['perserver']) && !empty($post_str['perip']) && !empty($post_str['limit_rate'])) {
-                $modify_status = $this->btAction->SetLimitNet($this->bt_id, $post_str['perserver'], $post_str['perip'], $post_str['limit_rate']);
-                if (isset($modify_status) && $modify_status['status'] == 'true') {
-                    $this->success($modify_status['msg']);
-                } else {
-                    $this->error(__('Fail') . '：' . $modify_status['msg']);
-                }
-            } else {
-                $this->error(__('%s can not be empty', __('All')));
-            }
-        } else {
-            if (!empty($post_str['perserver']) && !empty($post_str['timeout']) && !empty($post_str['limit_rate'])) {
-                $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $post_str['perserver'], $post_str['timeout'], $post_str['limit_rate']);
-                if (isset($modify_status) && $modify_status['status'] == 'true') {
-                    $this->success($modify_status['msg']);
-                } else {
-                    $this->error(__('Fail') . '：' . $modify_status['msg']);
-                }
-            } else {
-                $this->error(__('%s can not be empty', __('All')));
-            }
+        $msg = '';
+        try {
+            $this->hostInfo->allowField(true)->save([
+                'perserver' => $post_str['perserver'],
+                'limit_rate' => $post_str['limit_rate'],
+            ]);
+        } catch (\Exception $e) {
+            $msg = $e->getMessage();
         }
+        if ($msg) {
+            $this->error($msg);
+        }
+        $this->success(__('Success'));
+        
+        // if ($this->server_type == 'linux') {
+        //     if (!empty($post_str['perserver']) && !empty($post_str['perip']) && !empty($post_str['limit_rate'])) {
+        //         $modify_status = $this->btAction->SetLimitNet($this->bt_id, $post_str['perserver'], $post_str['perip'], $post_str['limit_rate']);
+        //         if (isset($modify_status) && $modify_status['status'] == 'true') {
+                    
+        //             $this->success($modify_status['msg']);
+        //         } else {
+        //             $this->error(__('Fail') . '：' . $modify_status['msg']);
+        //         }
+        //     } else {
+        //         $this->error(__('%s can not be empty', __('All')));
+        //     }
+        // } else {
+        //     if (!empty($post_str['perserver']) && !empty($post_str['timeout']) && !empty($post_str['limit_rate'])) {
+        //         $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $post_str['perserver'], $post_str['timeout'], $post_str['limit_rate']);
+        //         if (isset($modify_status) && $modify_status['status'] == 'true') {
+                    
+        //             $this->success($modify_status['msg']);
+        //         } else {
+        //             $this->error(__('Fail') . '：' . $modify_status['msg']);
+        //         }
+        //     } else {
+        //         $this->error(__('%s can not be empty', __('All')));
+        //     }
+        // }
     }
 
     /**
@@ -806,6 +822,10 @@ class Vhost extends Frontend
 
         if (isset($post_str['speed']) && $post_str['speed'] == 'off') {
             if ($modify_status = $this->btAction->CloseLimitNet($this->bt_id)) {
+                $this->hostModel->save([
+                    'perserver' => 0,
+                    'limit_rate' => 0,
+                ], ['id' => $this->hostInfo->id]);
                 $this->success($modify_status['msg']);
             } else {
                 $this->error(__('Fail') . '：' . $modify_status['msg']);

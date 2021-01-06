@@ -2,7 +2,7 @@
 {block name="content"}
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card" id="loading_box1">
             <div class="card-header">
                 <header class="card-title">
                     {:__('Speed')}
@@ -31,14 +31,14 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card" id="loading_box">
             <div class="card-header">
                 <header class="card-title">
                     {:__('Speed setting')}
                 </header>
             </div>
             <div class="card-body">
-                <form action="" method="post">
+                <form action="" method="post" >
                     <div class="form-group row">
                         <label for="inputEmail3" class="col-sm-1 col-form-label">{:__('Restricted scheme')}：</label>
                         <div class="col-sm-2">
@@ -138,6 +138,10 @@
             EchoMsg('{:__("Can not be empty")}');
             return false;
         }
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('{:url("index/vhost/speedUp")}', {
                 perserver: perserver,
                 perip: perip,
@@ -148,9 +152,16 @@
             .fail(function () {
                 EchoMsg('{:__("Request error, please try again later")}');
             })
+            .always(function () {
+                l.destroy();
+            })
     }
 
     function speedOff() {
+        var l = $('#loading_box1').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('{:url("index/vhost/speedOff")}', {
                 speed: 'off'
             }, function (res) {
@@ -158,6 +169,9 @@
             })
             .fail(function () {
                 EchoMsg('{:__("Request error, please try again later")}');
+            })
+            .always(function () {
+                l.destroy();
             })
     }
 </script>
