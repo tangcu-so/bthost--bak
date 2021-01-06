@@ -407,7 +407,7 @@ class Install extends Command
         $api_port = $this->request->post('api_port');
         $http = $this->request->post('http');
         if (!$api_token || !$api_port) {
-            return '请填写完整' . __('api_token') . '|' . __('api_port');
+            return __('Please complete') . __('api_token') . '|' . __('api_port');
         }
         $bt = new Btaction($api_token, $api_port, $http);
         if (!$bt->test()) {
@@ -415,7 +415,7 @@ class Install extends Command
         }
         $ip = $bt->getIp();
         if (!$ip) {
-            return '当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确';
+            return __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct');
         }
 
         // 公钥
@@ -423,33 +423,43 @@ class Install extends Command
 
         $rsa = new \fast\Rsa($public_key);
 
-        $curl = $this->auth_check($ip);
-
-        if ($curl && isset($curl['code']) && $curl['code'] == 1) {
-            // 解密信息获取域名及有效期
-            // 公钥解密
-            $decode = $rsa->pubDecrypt($curl['encode']);
-            if (!$decode) {
-                return '授权信息错误';
-            }
-            $decode_arr = explode('|', $decode);
-            if (!isset($decode_arr[0]) || !isset($decode_arr[1])) {
-                return '授权信息错误';
-            }
-            // 检查授权域名是否为当前域名
-            if ($decode_arr[0] != '9527' && $decode_arr[0] !== $ip) {
-                return $ip . '授权信息不正确';
-            }
-            // 检查授权是否过期
-            if ($decode_arr[1] != 0 && time() > $decode_arr[1]) {
-                return $ip . '授权已过期';
-            }
-            $exp = isset($decode_arr[1]) && $decode_arr[1] != 0 ? date('Y-m-d', $decode_arr[1]) : '永久';
-            return ['encode' => $curl['encode'], 'msg' => $curl['msg'] . ' | 授权IP：' . $decode_arr[0] . ' | 有效期：' . $exp];
-        } elseif (isset($curl['msg'])) {
-            return $ip . $curl['msg'];
+        // 离线授权
+        if ($this->request->post('security_code')) {
+            $security_code = $this->request->post('security_code');
         } else {
-            return $ip . '授权检查失败';
+            $curl = $this->auth_check($ip);
+            if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+                $security_code = $curl['encode'];
+            } elseif (isset($curl['msg'])) {
+                return $ip . $curl['msg'];
+            } else {
+                return $ip . __('Authorization check failed');
+            }
         }
+        // 解密信息获取域名及有效期
+        // 公钥解密
+        $decode = $rsa->pubDecrypt($security_code);
+        if (!$decode) {
+            return __('security_code error');
+        }
+        $decode_arr = explode('|', $decode);
+
+        list($domain, $auth_expiration_time) = $decode_arr;
+
+        if (!isset($domain) || !isset($auth_expiration_time)) {
+            return __('Authorization information error, please request authorization again or obtain authorization code');
+        }
+        // 检查授权域名是否为当前域名
+        if (
+            $domain != '9527' && $domain !== $ip
+        ) {
+            return $ip . __('security_code failed');
+        }
+        // 检查授权是否过期
+        if ($auth_expiration_time != 0 && time() > $auth_expiration_time) {
+            return $ip . __('Authorization expired');
+        }
+        $exp = isset($auth_expiration_time) && $auth_expiration_time != 0 ? date('Y-m-d', $auth_expiration_time) : '00';
+        return ['encode' => $security_code, 'msg' => __('Auth success') . ' | ' . __('IP') . '：' . $domain . ' | ' . __('Expire date') . '：' . $exp];
     }
 }

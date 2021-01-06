@@ -70,17 +70,7 @@
             border-bottom-right-radius: 4px;
         }
 
-        .form-field input {
-            background: #EDF2F7;
-            margin: 0 0 1px;
-            border: 2px solid transparent;
-            transition: background 0.2s, border-color 0.2s, color 0.2s;
-            width: 100%;
-            padding: 15px 15px 15px 180px;
-            box-sizing: border-box;
-        }
-
-        .form-field select {
+        .form-field input,.form-field textarea,.form-field select {
             background: #EDF2F7;
             margin: 0 0 1px;
             border: 2px solid transparent;
@@ -254,8 +244,7 @@
 
                 <div class="form-field">
                     <label>{:__('security_code')}</label>
-                    <input type="text" name="security_code" placeholder="{:__('security_code_tips')}" required=""
-                        readonly />
+                    <input type="text" name="security_code" placeholder="{:__('If you do not fill in the offline authorization code, you will use the online authorization')}" required=""/>
                 </div>
             </div>
 
@@ -352,11 +341,11 @@
                     return false;
                 });
 
-                $('input[name="api_token"],input[name="api_port"]').blur(function(e){
+                $('input[name="api_token"],input[name="api_port"],input[name="security_code"]').blur(function(e){
                     var $error = $("#error");
                     var $success = $("#success");
                     var form = $('form');
-                    $success.show().text('请求中……');
+                    $success.show().text('{:__("Loading……")}');
                     var $button = $(this).find('button')
                     .text("{:__('Installing')}")
                     .prop('disabled', true);
@@ -368,12 +357,12 @@
                         success: function (ret) {
                             console.log(ret);
                             if(ret.code==1){
-                                msg = ret.msg?ret.msg:'请求错误';
+                                msg = ret.msg?ret.msg:'{:__("Request error")}';
                                 $error.hide().text('');
                                 $success.show().text(msg);
                                 $('input[name="security_code"]').val(ret.data.encode);
                             }else{
-                                msg = ret.msg?ret.msg:'请求错误';
+                                msg = ret.msg?ret.msg:'{:__("Request error")}';
                                 $success.hide().text('');
                                 $error.show().text(msg);
                                 
