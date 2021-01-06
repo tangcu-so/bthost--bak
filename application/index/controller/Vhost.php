@@ -2875,8 +2875,14 @@ class Vhost extends Frontend
         // var_dump($GetSSL);var_dump($Domains);exit;
         //获取域名绑定列表
         $domainList = $this->btAction->WebDoaminList($this->bt_id);
+
+        // 获取商用证书列表及价格
+        $GetProductList = $this->btAction->GetProductList();
+        // var_dump($GetProductList);
+        // exit;
         $this->view->assign('title', __('ssl'));
         return $this->view->fetch('ssl', [
+            'GetProductList' => $GetProductList,
             'Domains'    => $Domains,
             'domainList' => $domainList,
             'GetSSL'     => $GetSSL,
@@ -2925,14 +2931,6 @@ class Vhost extends Frontend
         }
         $modify_status = $this->btAction->SetSSL(1, $this->siteName, $key, $csr);
         if (isset($modify_status) && $modify_status['status'] == 'true') {
-            // 记录ssl证书
-            \app\common\model\HostSsl::create([
-                'host_id' => $this->hostInfo->id,
-                'user_id' => $this->auth->id,
-                'domain' => $this->siteName,
-                'csr' => $csr,
-                'key' => $key,
-            ]);
             $this->success($modify_status['msg']);
         } else {
             $this->error(__('Fail') . '：' . $modify_status['msg']);

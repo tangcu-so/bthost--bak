@@ -1,4 +1,7 @@
 {extend name="common/base" /}
+{block name="css"}
+	<link rel="stylesheet" href="__CDN____STATIC__/css/host_ssl.css">
+{/block}
 {block name="content"}
 <div class="row">
 	<div class="col-md-12">
@@ -25,7 +28,16 @@
 					<tbody>
 					</tbody>
 				</table>
-
+				{notempty name='GetSSL.cert_data'}
+				<div class="alert alert-success" role="alert">
+					<div class="row">
+						<div class="col-lg-6 col-md-6">{:__('Ssl brand')}：{$GetSSL.cert_data.issuer}</div>
+						<div class="col-lg-6 col-md-6">{:__('Ssl domains')}：{:implode("、",$GetSSL.cert_data.dns)}</div>
+						<div class="col-lg-6 col-md-6">{:__('Createtime')}：{$GetSSL.cert_data.notBefore}</div>
+						<div class="col-lg-6 col-md-6">{:__('Endtime')}：{$GetSSL.cert_data.notAfter}</div>
+					</div>
+				</div>
+				{/notempty}
 
 			</div>
 		</div>
@@ -42,14 +54,17 @@
 			<div class="card-body">
 				<ul class="nav nav-tabs">
 					<li class="nav-item">
-						<a class="nav-link active" data-toggle="tab" href="#home" aria-selected="true">{:__('Bt ssl')}</a>
+						<a class="nav-link active" data-toggle="tab" href="#ssl_status" aria-selected="true">{:__('Bt ssl')}</a>
 					</li>
 					<li class="nav-item">
-						<a class="nav-link" data-toggle="tab" href="#profile" aria-selected="false">Let's Encrypt</a>
+						<a class="nav-link" data-toggle="tab" href="#ssl_config" aria-selected="false">{:__("Let's Encrypt")}</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" data-toggle="tab" href="#ssl_commercial" aria-selected="false">{:__('Commercial ssl')}</a>
 					</li>
 				</ul>
 				<div id="myTabContent" class="tab-content">
-					<div class="tab-pane fade active show in" id="home">
+					<div class="tab-pane fade active show in" id="ssl_status">
 						<div class="input-group">
 							<select class="form-control" id="domainList">
 								{volist name="domainList" id="domain"}
@@ -63,11 +78,17 @@
 						</div>
 						<hr>
 						<small class="text-muted">
-							<li>{:__('Pagoda SSL application is TrustAsia DV SSL CA-G5 original price: 1900 yuan /1 year, current users free!')}</li>
-							<li>{:__('You can apply again for free after one year')}</li>
+							<li>{:__('Before applying, please make sure that the domain name has been resolved. Failure to resolve this will cause the review to fail(Include root domain)')}</li>
+							<li>{:__('Pagoda SSL application is TrustAsia DV SSL CA-G5 original price: 1900 yuan /1 year, only supports single domain name application,current users free!')}</li>
+							<li>{:__('The validity period is 1 year. Renewal is not supported. You need to reapply after expiration.')}</li>
+							<li>{:__('It is recommended to apply for a certificate with a domain name whose second-level domain name is www. At this time, the system will give the top-level domain name as an optional name by default.')}</li>
+							<li>{:__('When the SSL default site is not specified, the site without SSL will be directly accessed to the site with SSL enabled using HTTPS')}</li>
+							<li class="text-danger">{:__('If it prompts [Order already exists] when re-applying for the certificate, please contact the administrator to delete')}</li>
+							<li class="text-danger">{:__('If your site uses CDN, high-defense IP, reverse proxy, 301 redirect and other functions, it may cause verification failure')}</li>
+							<li class="text-danger">{:__('To apply for a certificate such as www.xxxxxx.cn with www as the second-level domain name, you need to bind and resolve the top-level domain name (xxxxxx.cn), otherwise the verification will fail')}</li>
 						</small>
 					</div>
-					<div class="tab-pane fade" id="profile">
+					<div class="tab-pane fade" id="ssl_config">
 						{if $Domains.domains}
 						{volist name="Domains.domains" id="domain"}
 						<div class="custom-control custom-checkbox custom-control-inline">
@@ -83,13 +104,98 @@
 						</div>
 						<hr>
 						<small class="text-muted">
-							<li>{:__('Before applying, please make sure that the domain name has been resolved. Failure to resolve this will cause the review to fail')}</li>
+							<li>{:__('Before applying, please make sure that the domain name has been resolved. Failure to resolve this will cause the review to fail(Include root domain)')}</li>
 							<li>{:__("Let\'s Encrypt free certificate, valid for 3 months, supports multiple domain names. Automatic renewal by default")}</li>
-							<li>{:__('If your site uses CDN or 301 redirection, the renewal will fail')}</li>
+							<li>{:__('If your site uses CDN, high-defense IP, reverse proxy, 301 redirect and other functions, it may cause verification failure')}</li>
 							<li>{:__('When the SSL default site is not specified, the site without SSL will be directly accessed to the site with SSL enabled using HTTPS')}</li>
-							<li>{:__('If you cannot use HTTPS access after opening, please check whether the security group correctly allows port 443')}</li>
 						</small>
 						{/if}
+					</div>
+					<div class="tab-pane fade" id="ssl_commercial">
+						{notempty name='GetProductList.data'}
+						<div class="row">
+							<div class="alert alert-info col-lg-12 col-md-12" role="alert">
+								<i class="mdi mdi-alert-decagram"></i> {:__('To apply for a business certificate, please contact the administrator')}
+							</div>
+							<div class="col-lg-6 col-md-6">
+								<div class="line"> <span class="tname">{:__('Ssl brand')}</span>
+									<div class="info-r"> <a href="javascript:;" class="ssl-brand-info">{:__('Sectigo (formerly Comodo CA) is the CA company with the highest share of the global SSL certificate market. At present, nearly 40% of SSL certificate users choose Sectigo. Because of its safety and low price, it is trusted and welcomed by a large number of webmasters.')}</a> </div>
+								</div>
+							</div>
+							<div class="col-lg-6 col-md-6">
+								<div class="line"> <span class="tname">{:__('Ssl compared')}</span>
+									<div class="info-r">
+										<table class="compared_ssl_list">
+											<thead>
+												<tr>
+													<th>{:__('Ssl type')}</th>
+													<th>{:__('Free ssl')}</th>
+													<th>{:__('Commercial ssl')}</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td class="one_title">{:__('Personal use')}</td>
+													<td class="yes"></td>
+													<td class="yes"></td>
+												</tr>
+												<tr>
+													<td class="one_title">{:__('Enterprise use')}</td>
+													<td class="no"></td>
+													<td class="yes"></td>
+												</tr>
+												<tr>
+													<td class="one_title">{:__('Multi-domain/pan-domain/IP certificate')}</td>
+													<td class="no"></td>
+													<td class="yes"></td>
+												</tr>
+												<tr>
+													<td class="one_title">{:__('Payment protection')}</td>
+													<td class="no"></td>
+													<td class="yes"></td>
+												</tr>
+												<tr>
+													<td class="one_title">{:__('Technical Support')}</td>
+													<td class="no"></td>
+													<td class="yes"></td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-12 col-md-12">
+								<div class="line"> <span class="tname">{:__('Ssl type')}</span>
+									<div class="info-r">
+										<div class="divtable ssl_class_table">
+											<table class="table table-striped">
+												<tbody>
+													{volist name='GetProductList.data' id='vo'}
+														<tr data-index="0" class="active">
+															<td><span>{$vo.title}</span></td>
+															<td style="text-align: right;"><span
+																	style="color: #bbbbbb;text-decoration: line-through;margin-right: 15px;"
+																	class="mr5">{:__('Original price:%s yuan/year',$vo.src_price)}</span><span style="color: #FF6232;">{:__('%s yuan/1year',$vo.price)}</span>
+															</td>
+														</tr>
+													{/volist}
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						{/notempty}
+						<hr>
+						<small class="text-muted">
+							<li>{:__('Before applying, please make sure that the domain name has been resolved. Failure to resolve this will cause the review to fail(Include root domain)')}</li>
+							<li>{:__('The validity period is 1 year. Renewal is not supported. You need to reapply after expiration.')}</li>
+							<li>{:__('When the SSL default site is not specified, the site without SSL will be directly accessed to the site with SSL enabled using HTTPS')}</li>
+							<li class="text-danger">{:__('If your site uses CDN, high-defense IP, reverse proxy, 301 redirect and other functions, it may cause verification failure')}</li>
+							<li class="text-danger">{:__('To apply for a certificate such as www.xxxxxx.cn with www as the second-level domain name, you need to bind and resolve the top-level domain name (xxxxxx.cn), otherwise the verification will fail')}</li>
+							<li class="text-danger">{:__('Compared with ordinary certificates, commercial certificates have higher security, compensation guarantee and support for wildcards and multiple domain names. <a href="https://www.racent.com/sectigo-ssl" target="_blank">Click to view</a>')}</li>
+						</small>
 					</div>
 				</div>
 			</div>

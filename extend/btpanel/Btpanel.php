@@ -4546,6 +4546,50 @@ class Btpanel
         }
     }
 
+    /**
+     * 商用证书申请列表
+     *
+     * @return array|bool
+     * {"data": [{"pid": 8001, "code": "comodo-positivessl", "num": 1, "title": "PositiveSSL  SSL证书", "price": 78.66, "discount": 0.23, "state": 1, "ps": "", "src_price": 342}, {"pid": 8002, "code": "comodo-positive-multi-domain", "num": 3, "title": "PositiveSSL 多域名SSL证书", "price": 378.88, "discount": 0.37, "state": 1, "ps": "", "src_price": 1024}, {"pid": 8008, "code": "comodo-positivessl-wildcard", "num": 1, "title": "PositiveSSL 通配符SSL证书", "price": 696.8, "discount": 0.4, "state": 1, "ps": "", "src_price": 1742}, {"pid": 8009, "code": "comodo-positive-multi-domain-wildcard", "num": 2, "title": "PositiveSSL 多域名通配符SSL证书", "price": 1257.8, "discount": 0.38, "state": 1, "ps": "", "src_price": 3310}], "administrator": {"job": "总务", "city": "", "email": "", "state": "", "mobile": "13800138000", "address": "", "country": "CN", "lastName": "", "firstName": "", "organation": "", "postCode": "523000"}}
+     */
+    public function GetProductList()
+    {
+        $url = $this->BT_PANEL . config("bt.GetProductList");
+
+        $p_data         = [];
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 商用证书下单
+     *
+     * @param [type] $array 申请信息
+     * @return void
+     * {"status": true, "msg": {"wxcode": "weixin://wxpay/bizpayurl?pr=aOI0e3uzz", "alicode": "https://qr.alipay.com/bax03666ir8yise92pri20e6", "oid": 800001784}}
+     */
+    public function ApplyOrderPay($array)
+    {
+        $url = $this->BT_PANEL . config("bt.ApplyOrderPay");
+
+        $p_data         = [];
+        $p_data['pdata'] = json_encode($array);
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data && isset($data['status']) && $data['status'] == true) {
+            return $data;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
 
 
     /**
