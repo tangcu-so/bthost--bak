@@ -24,6 +24,7 @@ class Btaction
     public $ftp_name = '';      //  ftp名
     public $sql_name = '';      //  数据库名
     public $webRootPath = '';   //  网站根目录
+    public $hostBtInfo = '';   //  宝塔主机信息
     public $siteInfo = '';      //  站点信息
 
     public $serverConfig = null; //  服务器配置信息
@@ -157,6 +158,7 @@ class Btaction
             $this->setError('该站点根目录有误，请联系管理员');
             return false;
         }
+        $this->hostBtInfo = $siteInfo;
 
         // 检查运行目录及跨站锁
         if (!$this->examineDir()) {
@@ -476,18 +478,20 @@ class Btaction
      */
     public function setLimit($data)
     {
+        $perip = isset($data['perip']) ? $data['perip'] : 25;
+        $timeout = isset($data['timeout']) ? $data['timeout'] : 120;
         if ($this->os == 'linux') {
-            $modify_status = $this->btAction->SetLimitNet($this->bt_id, $data['perserver'], '25', $data['limit_rate']);
+            $modify_status = $this->btAction->SetLimitNet($this->bt_id, $data['perserver'], $perip, $data['limit_rate']);
             if (isset($modify_status) && $modify_status['status'] != 'true') {
                 // 有错误，记录，防止开通被打断
-                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], '25', $data['limit_rate']]]));
+                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], $perip, $data['limit_rate']]]));
                 return false;
             }
         } else {
-            $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $data['perserver'], '120', $data['limit_rate']);
+            $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $data['perserver'], $timeout, $data['limit_rate']);
             if (isset($modify_status) && $modify_status['status'] != 'true') {
                 // 有错误，记录，防止开通被打断
-                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], '120', $data['limit_rate']]]));
+                $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], $timeout, $data['limit_rate']]]));
                 return false;
             }
         }
