@@ -936,9 +936,6 @@ INSERT INTO `bth_product` (`id`, `pid`, `name`, `group`, `title`, `tip`, `type`,
 -- 1.3.0+20210107
 INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/hostreset', '站点重置', '站点重置', '1', '1609135243', '1609135406', '88', 'normal');
 
--- ----------------------------
--- Table structure for bth_hostreset_log
--- ----------------------------
 DROP TABLE IF EXISTS `bth_hostreset_log`;
 CREATE TABLE `bth_hostreset_log` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
@@ -952,7 +949,7 @@ CREATE TABLE `bth_hostreset_log` (
   `info` text COLLATE utf8_unicode_ci COMMENT '其他信息',
   `status` tinyint(1) NOT NULL DEFAULT '0' COMMENT '状态',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='站点重置记录表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='站点重置记录表';
 
 DROP TABLE IF EXISTS `bth_hostresources_log`;
 CREATE TABLE `bth_hostresources_log` (
@@ -963,4 +960,5 @@ CREATE TABLE `bth_hostresources_log` (
   `sql_size` int(10) NOT NULL COMMENT '数据库大小',
   `createtime` int(10) NOT NULL COMMENT '创建时间',
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='主机资源记录表';
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='主机资源记录表';
+
