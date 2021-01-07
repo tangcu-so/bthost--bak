@@ -5,7 +5,7 @@
         <div class="card" id="loading_list">
             <div class="card-header">
                 <header class="card-title">
-                    反向代理
+                    {:__('Proxy')}
                 </header>
             </div>
             <div class="card-body">
@@ -15,22 +15,22 @@
                             <thead>
                                 <tr>
                                     <th>
-                                        名称
+                                        {:__('Name')}
                                     </th>
                                     <th>
-                                        代理目录
+                                        {:__('Agent directory')}
                                     </th>
                                     <th>
-                                        目标Url
+                                        {:__('Target Url')}
                                     </th>
                                     <th>
-                                        缓存
+                                        {:__('Cache')}
                                     </th>
                                     <th>
-                                        状态
+                                        {:__('Status')}
                                     </th>
                                     <th style="text-align:right;">
-                                        操作
+                                        {:__('Operation')}
                                     </th>
                                 </tr>
                             </thead>
@@ -47,15 +47,23 @@
                                         {$proxy.proxysite}
                                     </td>
                                     <td>
-                                        {$proxy.cache?'已开启':'已关闭'}
+                                        {if $proxy.cache }
+                                            {:__("Open")}
+                                            {else /}
+                                            {:__("Close")}
+                                        {/if}
                                     </td>
                                     <td>
-                                        {$proxy.advanced?'运行中':'已暂停'}
+                                        {if $proxy.advanced }
+                                            {:__("Running")}
+                                            {else /}
+                                            {:__("stop")}
+                                        {/if}
                                     </td>
                                     <td style="text-align: right;">
                                         <a href="javascript:del('{$proxy.proxyname}')"
                                             class="btn btn-label btn-danger btn-xs">
-                                            <label><i class="mdi mdi-close"></i></label> 删除
+                                            <label><i class="mdi mdi-close"></i></label> {:__('Delete')}
                                         </a>
                                     </td>
                                 </tr>
@@ -73,64 +81,64 @@
         <div class="card" id="loading_box">
             <div class="card-header">
                 <header class="card-title">
-                    新增反代
+                    {:__('Add proxy')}
                 </header>
             </div>
             <div class="card-body">
                 <form id="incPorxy" style="padding: 20px;">
                     <div class="custom-control custom-checkbox custom-control-inline">
                         <input name="type" id="type" type="checkbox" class="custom-control-input" />
-                        <label class="custom-control-label" for="type">开启代理</label>
+                        <label class="custom-control-label" for="type">{:__('Open proxy')}</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
                         <input name="cache" id="cache" type="checkbox" class="custom-control-input" />
-                        <label class="custom-control-label" for="cache">开启缓存</label>
+                        <label class="custom-control-label" for="cache">{:__('Enable cache')}</label>
                     </div>
                     <div class="custom-control custom-checkbox custom-control-inline">
                         <input name="advanced" id="advanced" type="checkbox" class="custom-control-input" />
-                        <label class="custom-control-label" for="advanced">开启代理目录</label>
+                        <label class="custom-control-label" for="advanced">{:__('Open proxy directory')}</label>
                     </div>
                     <hr>
                     <div class="form-group">
-                        <label for="proxyname">代理名称：</label>
+                        <label for="proxyname">{:__('Proxy name')}：</label>
                         <input class="form-control" name="proxyname" id="proxyname" type="text" />
                     </div>
-                    <label for="cachetime">缓存时间：</label>
+                    <label for="cachetime">{:__('Cache Time')}：</label>
                     <div class="form-group input-group">
                         <input class="form-control" name="cachetime" id="cachetime" type="number" value="0" />
                         <div class="input-group-append">
-                            <span class="input-group-text" id="basic-addon2">分钟</span>
+                            <span class="input-group-text" id="basic-addon2">{:__('Minute')}</span>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="proxydir">代理目录：</label>
+                        <label for="proxydir">{:__('Agent Directory')}：</label>
                         <input class="form-control" name="proxydir" id="proxydir" type="text" value="/" />
                     </div>
                     <div class="form-group">
-                        <label for="proxysite">目标Url：</label>
+                        <label for="proxysite">{:__('Target Url')}：</label>
                         <input class="form-control" name="proxysite" id="proxysite" type="text"
                             placeholder="https://www.baidu.com" />
                     </div>
                     <div class="form-group">
-                        <label for="todomain">发送域名：</label>
+                        <label for="todomain">{:__('Send domain')}：</label>
                         <input class="form-control" name="todomain" id="todomain" type="text"
                             placeholder="www.baidu.com" />
                     </div>
                     <div class="form-group">
-                        <label for="">内容替换：</label>
-                        <input class="form-control" name="subfiltera" placeholder="被替换文本，可留空" type="text" />
-                        <input class="form-control" name="subfilterb" placeholder="替换为，可留空" type="text" />
+                        <label for="">{:__('Content replacement')}：</label>
+                        <input class="form-control" name="subfiltera" placeholder="{:__('Replaced text, can be left blank')}" type="text" />
+                        <input class="form-control" name="subfilterb" placeholder="{:__('Replace with, can be left blank')}" type="text" />
                     </div>
                     <div class="form-group">
-                        <input onclick="inc()" type="button" value="提交" class="btn btn-warning">
+                        <input onclick="inc()" type="button" value="{:__('Submit')}" class="btn btn-warning">
                     </div>
                 </form>
                 <hr>
                 <small class="text-muted">
-                    <span style="color:red">！</span> 代理目录：访问这个目录时将会把目标URL的内容返回并显示(需要开启高级功能) <br>
-                    <span style="color:red">！</span> 目标URL：可以填写你需要代理的站点，目标URL必须为可正常访问的URL，否则将返回错误 <br>
-                    <span style="color:red">！</span> 发送域名：将域名添加到请求头传递到代理服务器，默认为目标URL域名，若设置不当可能导致代理无法正常运行 <br>
-                    <span style="color:red">！</span> 内容替换：只能在使用nginx时提供，最多可以添加3条替换内容,如果不需要替换请留空 <br>
+                    <span style="color:red">！</span> {:__('Proxy Directory: When accessing this directory, the content of the target URL will be returned and displayed (advanced features need to be turned on)')}<br>
+                    <span style="color:red">！</span> {:__('Target URL: You can fill in the site you need to proxy. The target URL must be a URL that can be accessed normally, otherwise an error will be returned')}<br>
+                    <span style="color:red">！</span> {:__('Send domain: Add the domain name to the request header and pass it to the proxy server. The default is the target URL domain name. If it is set incorrectly, it may not work properly')} <br>
+                    <span style="color:red">！</span> {:__('Content replacement: only available when using nginx, multiple content is separated by commas, such as sub1, sub2 replaced with str1, str2')} <br>
                 </small>
             </div>
         </div>
@@ -154,7 +162,7 @@
                 }
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -163,14 +171,14 @@
 
     function del(name) {
         $.confirm({
-            title: '温馨提醒',
-            content: '确定要删除？',
+            title: '{:__("Reminder")}',
+            content: '{:__("Confirm delete?")}',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
             buttons: {
                 confirm: {
-                    text: '确定',
+                    text: '{:__("Confirm")}',
                     btnClass: 'btn-orange',
                     action: function () {
                         var l = $('#loading_list').lyearloading({
@@ -183,14 +191,14 @@
                                 EchoMsg(data.msg, 1);
                             })
                             .fail(function () {
-                                EchoMsg('请求错误，请稍候重试');
+                                EchoMsg('{:__("Request error, please try again later")}');
                             })
                             .always(function () {
                                 l.destroy();
                             })
                     }
                 },
-                '取消': function () {
+                '{:__("Cancel")}': function () {
 
                 }
             }

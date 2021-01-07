@@ -79,6 +79,8 @@ return [
     'GetDVSSL'                   => '/ssl?action=GetDVSSL', //申请ssl证书 TrustAsia 域名型SSL证书(D3)
     'Completed'                  => '/ssl?action=Completed', //部署前效验ssl证书
     'GetSSLInfo'                 => '/ssl?action=GetSSLInfo', //获取申请的ssl证书信息
+    'GetProductList'             => '/ssl?action=get_product_list', //商用证书列表
+    'ApplyOrderPay'              => '/ssl?action=apply_order_pay', //商用证书订单提交
     'GetSiteDomains'             => '/site?action=GetSiteDomains', // 获取站点绑定的所有域名
     'CreateLet'                  => '/site?action=CreateLet', // 批量申请Lets证书
     'RenewLets'                  => '/ssl?action=renew_lets_ssl', // Lets证书续签

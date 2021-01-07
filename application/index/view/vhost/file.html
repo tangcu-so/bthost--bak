@@ -72,6 +72,20 @@
     .text-middle{
         vertical-align:middle;
     }
+
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+    }
+
+    .CodeMirror-scroll {
+        height: auto;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+    .CodeMirror-hints{
+        z-index:19991017 !important;
+    }
 </style>
 {/block}
 {block name="content"}
@@ -81,20 +95,35 @@
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/lib/codemirror.js"></script>
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
 
+
 <!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
 <!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/mode/modeAll.js"></script> -->
 <!-- 引入javascript编辑器格式 -->
 <script src="__CDN__/assets/libs/codemirror/mode/clike/clike.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script> -->
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script> -->
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/css/css.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/sql/sql.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/xml/xml.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/python/python.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/nginx/nginx.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/markdown/markdown.js"></script>
- -->
+
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/dialog/dialog.js"></script>
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/search/search.js"></script>
+
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/show-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/sql-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/html-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/xml-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/javascript-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/css-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/anyword-hint.js"></script>
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/hint/show-hint.css">
+<!-- <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/lint/lint.css"> -->
 <!-- 各种主题配色 -->
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-day.css">
@@ -144,26 +173,27 @@
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-light.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/yeti.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/zenburn.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/darcula.css">
 <div class="row">
     <div class="col-md-12">
         <div class="card" id="loading_box">
             <div class="card-body example-box">
                 
-                <button class="btn btn-sm btn-success float-right" onclick="location.reload()" title="刷新"><i
+                <button class="btn btn-sm btn-success float-right" onclick="location.reload()" title=":__('Refresh')}"><i
                         class="mdi mdi-restore"></i></button>
-                <button class="btn btn-sm btn-yellow float-right" onclick="openDown()">远程下载</button>
-                <button class="btn btn-sm btn-dark float-right" onclick="newdir()">新建目录</button>
-                <button class="btn btn-sm btn-purple float-right" onclick="newfile()">新建文件</button>
-                <button class="btn btn-sm btn-info float-right" onclick="UploadFiles()">上传</button>
-                <input class="float-right btn" type="search" placeholder="搜索" aria-label="Search" id="search" value="{$search}">
+                <button class="btn btn-sm btn-yellow float-right" onclick="openDown()">{:__("Remote download")}</button>
+                <button class="btn btn-sm btn-dark float-right" onclick="newdir()">{:__('Create dir')}</button>
+                <button class="btn btn-sm btn-purple float-right" onclick="newfile()">{:__('Create file')}</button>
+                <button class="btn btn-sm btn-info float-right" onclick="UploadFiles()">{:__('Upload')}</button>
+                <input class="float-right btn" type="search" placeholder="{:__('Search')}" aria-label="Search" id="search" value="{$search}">
                 <div class="batchAction" style="display: none;">
                     <button class="btn btn-sm btn-info float-right"
-                        onclick="batchAction('CutFiles')">复制</button>
+                        onclick="batchAction('CutFiles')">{:__("Copy")}</button>
                     <button class="btn btn-sm btn-info float-right"
-                        onclick="batchAction('CutFile')">剪切</button>
+                        onclick="batchAction('CutFile')">{:__("Cut")}</button>
                     <button class="btn btn-sm btn-info float-right"
-                        onclick="openZip('{$viewpath}'+getBatchFileName(),batch())">压缩</button>
-                    <button class="btn btn-sm btn-info float-right" onclick="batchAction('del')">删除</button>
+                        onclick="openZip('{$viewpath}'+getBatchFileName(),batch())">{:__("Condense")}</button>
+                    <button class="btn btn-sm btn-info float-right" onclick="batchAction('del')">{:__('Delete')}</button>
                 </div>
 
                 <!-- <form id="btyUploadFile">
@@ -173,22 +203,22 @@
                     </div>
                 </form> -->
                 <div style="float: left;padding-left: 10px;padding-top:5px;">
-                    当前目录：
+                    {:__('Current directory')}：
                     <a href="{:url('index/vhost/file')}" class="loading_dir">
-                        根目录
+                        {:__('Root')}
                     </a>
                     {volist name="paths" id="path"}
                     / <a href="?path={$path.url}" class="loading_dir">{$path.path}</a>
                     {/volist}
                     <!-- {$viewpath} -->
                     {if cookie('cutFileNames')}
-                    <a href="javascript:PasteFile('{$viewpath}{:cookie('cutFileName')}');">粘贴</a>
+                    <a href="javascript:PasteFile('{$viewpath}{:cookie('cutFileName')}');">{:__('Paste')}</a>
                     {elseif cookie('copyFileNames')}
-                    <a href="javascript:PasteFile('{$viewpath}{:cookie('cutFileName')}',1);">粘贴</a>
+                    <a href="javascript:PasteFile('{$viewpath}{:cookie('cutFileName')}',1);">{:__('Paste')}</a>
                     {elseif cookie('CutFile')}
-                    <a href="javascript:BatchPaste('2');">粘贴</a>
+                    <a href="javascript:BatchPaste('2');">{:__('Paste')}</a>
                     {elseif cookie('CutFiles')}
-                    <a href="javascript:BatchPaste('1');">粘贴</a>
+                    <a href="javascript:BatchPaste('1');">{:__('Paste')}</a>
                     {/if}
                 </div>
 
@@ -202,22 +232,22 @@
                                     </label>
                                 </td>
                                 <td>
-                                    文件名
+                                    {:__('File name')}
                                 </td>
                                 <td>
-                                    大小
+                                    {:__('File size')}
                                 </td>
                                 <td>
-                                    修改时间
+                                    {:__('Change the time')}
                                 </td>
                                 <td>
-                                    权限
+                                    {:__('Jurisdiction')}
                                 </td>
                                 <td>
-                                    所有者
+                                    {:__('Owner')}
                                 </td>
                                 <td>
-                                    操作
+                                    {:__('Operation')}
                                 </td>
                             </tr>
                         </thead>
@@ -235,7 +265,7 @@
                                     {switch name="i" }
 
                                     {case value="1"}
-                                    <span class="mdi mdi-folder text-warning mdi-24px text-middle"></span> <a als="{$viewpath}{$dirlist}" href="?path={$viewpath}{$dirlist}" title="点击进入"
+                                    <span class="mdi mdi-folder text-warning mdi-24px text-middle"></span> <a als="{$viewpath}{$dirlist}" href="?path={$viewpath}{$dirlist}" title="{:__('Click to enter')}"
                                         class="loading_dir">
                                         {$dirlist}
                                     </a>
@@ -243,7 +273,7 @@
                                     {case value="2"}
                                     <a href="javascript:;" id="dirSize"
                                         onclick="getSize('{$viewpath}{$dir[\'0\']}',this);">
-                                        计算大小
+                                        {:__('Calculated size')}
                                     </a>
                                     {/case}
 
@@ -257,26 +287,26 @@
                                     <span>
                                         <a class="btlink"
                                             href="javascript:CutFile('{$viewpath}{$dir['0']}','{$dir['0']}',1);">
-                                            复制
+                                            {:__("Copy")}
                                         </a>
                                         |
                                         <a class="btlink"
                                             href="javascript:CutFile('{$viewpath}{$dir['0']}','{$dir['0']}');">
-                                            剪切
+                                            {:__("Cut")}
                                         </a>
                                         |
                                         <a class="btlink" href="javascript:MvFile('{$dir['0']}');">
-                                            重命名
+                                            {:__("Rename")}
                                         </a>
                                         |
                                         <a class="btlink"
                                             href="javascript:openZip('{$viewpath}{$dir['0']}','{$dir['0']}');">
-                                            压缩
+                                            {:__("Condense")}
                                         </a>
                                         |
                                         <a class="btlink" href="javascript:;"
                                             onclick="DeleteDir('{$viewpath}{$dir[\'0\']}')">
-                                            删除
+                                            {:__('Delete')}
                                         </a>
                                     </span>
                                 </td>
@@ -357,34 +387,34 @@
                                     <span id="operation">
                                         <a class="btlink"
                                             href="javascript:CutFile('{$viewpath}{$files['0']}','{$files['0']}',1);">
-                                            复制
+                                            {:__("Copy")}
                                         </a>
                                         |
                                         <a class="btlink"
                                             href="javascript:CutFile('{$viewpath}{$files['0']}','{$files['0']}');">
-                                            剪切
+                                            {:__("Cut")}
                                         </a>
                                         |
                                         <a class="btlink" href="javascript:MvFile('{$files['0']}');">
-                                            重命名
+                                            {:__("Rename")}
                                         </a>
                                         |
                                         <a class="btlink"
                                             href="javascript:openZip('{$viewpath}{$files['0']}','{$files['0']}');">
-                                            压缩
+                                            {:__("Condense")}
                                         </a>
                                         {if fileExtension($files['0'])=='zip'||fileExtension($files['0'])=='rar'}
                                         |
                                         <a class="btlink"
                                             href="javascript:openunZip('{$viewpath}{$files['0']}','{$viewpath}','{:fileExtension($files['0'])}');">
-                                            解压
+                                            {:__('Unzip')}
                                         </a>
                                         {/if}
                                         {if fileExtension($files['0'])=='gz'||fileExtension($files['0'])=='tgz'}
                                         |
                                         <a class="btlink"
                                             href="javascript:openunZip('{$viewpath}{$files['0']}','{$viewpath}','tar');">
-                                            解压
+                                            {:__('Unzip')}
                                         </a>
 
                                         {/if}
@@ -401,7 +431,7 @@
                                     |
                                     <a class="btlink" href="javascript:;"
                                         onclick="images_view('{$viewpath}{$files[\'0\']}')">
-                                        预览
+                                        {:__('Preview')}
                                     </a>
                                 <?php
                                 break;
@@ -418,7 +448,12 @@
                                         |
                                         <a class="btlink" href="javascript:;"
                                             onclick="sqlInput('{$viewpath}{$files[\'0\']}','{:fileExtension($files[\'0\'])}')">
-                                            导入
+                                            {:__('Import')}
+                                        </a>
+                                        |
+                                        <a class="btlink" href="javascript:;"
+                                            onclick="editFile('{$viewpath}{$files[\'0\']}','{:fileExtension($files[\'0\'])}')">
+                                            {:__('Edit')}
                                         </a>
                                         <?php
                                         break;
@@ -427,7 +462,7 @@
                                         |
                                         <a class="btlink" href="javascript:;"
                                             onclick="webshellcheck('{$viewpath}{$files[\'0\']}')">
-                                            查杀
+                                            {:__('Detect')}
                                         </a>
                                         <?php
                                 default:
@@ -435,7 +470,7 @@
                                         |
                                         <a class="btlink" href="javascript:;"
                                             onclick="editFile('{$viewpath}{$files[\'0\']}','{:fileExtension($files[\'0\'])}')">
-                                            编辑
+                                            {:__('Edit')}
                                         </a>
                                         <?php
                                 break;
@@ -444,12 +479,12 @@
                                         <a class="btlink"
                                             href="{:url('index/vhost/file')}?go=1&downfile={$viewpath}{$files['0']}"
                                             target="_blank">
-                                            下载
+                                            {:__('Download')}
                                         </a>
                                         |
                                         <a class="btlink" href="javascript:;"
                                             onclick="DeleteFile('{$viewpath}{$files[\'0\']}')">
-                                            删除
+                                            {:__('Delete')}
                                         </a>
                                     </span>
                                 </td>
@@ -475,7 +510,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             var l = $('body').lyearloading({
                 opacity: 0.2,
                 spinnerSize: 'lg',
-                spinnerText: '加载中，请稍后...',
+                spinnerText: '{:__("Loading")}',
                 textColorClass: 'text-info',
                 spinnerColorClass: 'text-info'
             });
@@ -491,21 +526,21 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function DeleteFile(file) {
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
             return false;
         }
         $.confirm({
-            title: '温馨提示',
-            content: '确定删除？',
+            title: '{:__("Reminder")}',
+            content: '{:__("Confirm delete?")}',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
             buttons: {
                 confirm: {
-                    text: '确定',
+                    text: '{:__("Confirm")}',
                     btnClass: 'btn-orange',
                     action: function () {
                         var l = $('#loading_box').lyearloading({
@@ -519,14 +554,14 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                                 EchoMsg(data.msg, 1);
                             })
                             .fail(function () {
-                                EchoMsg('请求错误，请稍候重试');
+                                EchoMsg('{:__("Request error, please try again later")}');
                             })
                             .always(function () {
                                 l.destroy();
                             })
                     }
                 },
-                '取消': function () {}
+                '{:__("Cancel")}': function () {}
             }
         });
     }
@@ -534,7 +569,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function webshellcheck(file) {
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -551,7 +586,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 EchoMsg(data.msg);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -561,7 +596,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function images_view(file){
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -588,7 +623,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 });
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 // l.destroy();
@@ -599,19 +634,19 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function sqlInput(file) {
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
             return false;
         }
-        layer.confirm('确定要导入数据库？导入会覆盖之前的数据哦~！', {
-            btn: ['确定', '取消']
+        layer.confirm('{:__("Are you sure you want to import the database? Importing will overwrite the previous data~!")}', {
+            btn: ['{:__("Confirm")}', '{:__("Cancel")}']
         }, function () {
             $.post('{:url("index/vhost/file")}', {
                 type: 'sqlinput',
                 file: file
-            }, function (data, textStatus, xhr) {
+            }, function (data, textStatus, xhr) { 
                 EchoMsg(data.msg, 1);
             });
         }, function (index) {
@@ -622,11 +657,11 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
 
     function DeleteDir(file) {
         if (!file) {
-            layer.msg('请选择文件夹');
+            layer.msg('{:__("Please select dir")}');
             return false;
         }
-        layer.confirm('确定删除？', {
-            btn: ['确定', '取消']
+        layer.confirm('{:__("Confirm delete?")}', {
+            btn: ['{:__("Confirm")}', '{:__("Cancel")}']
         }, function () {
             $.post('{:url("index/vhost/file")}', {
                 type: 'deletedir',
@@ -643,7 +678,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function openZip(param, sfile) {
         if (!param) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -654,20 +689,20 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             shift: 5,
             closeBtn: 2,
             area: area,
-            title: '压缩',
+            title: '{:__("Condense")}',
             content: '<div class="bt-form pd20 pb70" style="padding:20px;">' +
                 '<div class="">' +
                 '<input type="hidden" class="form-control" id="path" value="{$viewpath}" placeholder="" />' +
                 '<input type="hidden" class="form-control" id="sfile" value="' + sfile +
                 '" placeholder="" />' +
-                '<div class="form-group"><label>压缩类型</label><select class="bt-input-text form-control" name="z_type" id="zipType"><option value="tar.gz">tar.gz (推荐)</option><option value="zip">zip (通用格式)</option><option value="rar">rar (WinRAR对中文兼容较好)</option></select></div>' +
-                '<div class="form-group"><label>压缩到</label><input type="text" class="bt-input-text form-control" id="zipdfile" value="' +
-                param + '.tar.gz" placeholder="压缩到" param="' + param + '"/>' +
+                '<div class="form-group"><label>{:__("Condense type")}</label><select class="bt-input-text form-control" name="z_type" id="zipType"><option value="tar.gz">tar.gz ({:__("Recommend")})</option><option value="zip">zip ({:__("Common format")})</option><option value="rar">rar ({:__("WinRAR is better compatible with Chinese")})</option></select></div>' +
+                '<div class="form-group"><label>{:__("Condense to")}</label><input type="text" class="bt-input-text form-control" id="zipdfile" value="' +
+                param + '.tar.gz" placeholder="{:__("Condense to")}" param="' + param + '"/>' +
                 '</div>' +
                 '<p></p><div class="bt-form-submit-btn" style="text-align:right;margin-top:10px;">' +
-                '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">关闭</button>' +
+                '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">{:__("Close")}</button>' +
                 '<button type="button" id="ReNameBtn" class="btn btn-success btn-sm btn-title" onclick="Zip(\'' +
-                param + '\',1)">压缩</button>' +
+                param + '\',1)">{:__("Condense")}</button>' +
                 '</div></div>' +
                 '</div>'
         });
@@ -681,7 +716,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function Zip(param) {
         if (!param) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -717,7 +752,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function openunZip(sifle, path, zip) {
         if (!sifle) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -728,14 +763,14 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 '<div class="">' +
                 '<input type="hidden" name="type" class="form-control" value="unzip" placeholder="" />' +
                 '<input type="hidden" name="zipType" class="form-control" value="' + zip +'" placeholder="" />' +
-                '<div class="form-group"><label>文件名</label><input class="bt-input-text form-control" name="sfile" value="'+sifle+'" placeholder="压缩文件名"></div>' +
-                '<div class="form-group"><label>解压到</label><input type="text" class="bt-input-text form-control" name="dfile" value="' + path + '" placeholder="解压到"/>' +
+                '<div class="form-group"><label>{:__("File name")}</label><input class="bt-input-text form-control" name="sfile" value="'+sifle+'" placeholder="{:__("File name")}"></div>' +
+                '<div class="form-group"><label>{:__("Unzip to")}</label><input type="text" class="bt-input-text form-control" name="dfile" value="' + path + '" placeholder="{:__("Unzip to")}"/>' +
                 '</div>' +
-                '<div class="form-group"><label>解压密码</label><input type="text" class="bt-input-text form-control" name="unpass" value="" placeholder="不需要请留空"/></div>' +
-                '<div class="form-group"><label>编码</label><select class="form-control" name="coding"><option value="UTF-8">UTF-8</option><option value="gb18030">GBK</option></select></div>' +
+                '<div class="form-group"><label>{:__("Unzip password")}</label><input type="text" class="bt-input-text form-control" name="unpass" value="" placeholder="{:__("No password, please leave blank")}"/></div>' +
+                '<div class="form-group"><label>{:__("Coding")}</label><select class="form-control" name="coding"><option value="UTF-8">UTF-8</option><option value="gb18030">GBK</option></select></div>' +
                 '<p></p><div class="bt-form-submit-btn" style="text-align:right;margin-top:10px;">' +
-                '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">关闭</button>' +
-                '<button type="button" id="ReNameBtn" class="btn btn-success btn-sm btn-title" onclick="unZip()">解压</button>' +
+                '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">{:__("Close")}</button>' +
+                '<button type="button" id="ReNameBtn" class="btn btn-success btn-sm btn-title" onclick="unZip()">{:__("Unzip")}</button>' +
                 '</div></div>' +
                 '</div></form>';
 
@@ -744,7 +779,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             shift: 5,
             closeBtn: 2,
             area: area,
-            title: '解压',
+            title: '{:__("Unzip")}',
             content: strVar
         });
     }
@@ -759,7 +794,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function MvFile(file) {
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -767,7 +802,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         }
         path = '{$viewpath}';
         layer.prompt({
-            title: '重命名',
+            title: '{:__("Rename")}',
             formType: 3,
             value: file
         }, function (text, index) {
@@ -787,7 +822,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         var l = $('body').lyearloading({
             opacity: 0.2,
             spinnerSize: 'lg',
-            spinnerText: '后台处理中，请稍后...',
+            spinnerText: '{:__("Loading")}',
             textColorClass: 'text-info',
             spinnerColorClass: 'text-info'
         });
@@ -798,7 +833,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 obj.innerHTML = data.msg;
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -809,7 +844,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function CutFile(file, name = '', copy = '') {
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -827,7 +862,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
 
     function PasteFile(path, copy) {
         if (!path) {
-            layer.msg('请选择粘贴文件');
+            layer.msg('{:__("Please select paste file")}');
             return false;
         }
         $.post('{:url("index/vhost/file")}', {
@@ -862,7 +897,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             if (!is_exts) {
                 if (user_agent.indexOf('chrome') !== -1 || user_agent.indexOf('firefox') !== -1) {
                     btn_dir =
-                        '<input type="file" class="btn btn-sm btn-brown" id="dir_input" onchange="bt_upload_file.list(this.files)" style="display:none;"  multiple="true" autocomplete="off" multiple webkitdirectory /><button type="button"  id="opt" onclick="$(\'#dir_input\').click()" autocomplete="off" title="支持的浏览器: Chrome、Firefox、Edge、有极速模式的国产浏览器" class="btn btn-sm btn-info">选择目录</button>'
+                        '<input type="file" class="btn btn-sm btn-brown" id="dir_input" onchange="bt_upload_file.list(this.files)" style="display:none;"  multiple="true" autocomplete="off" multiple webkitdirectory /><button type="button"  id="opt" onclick="$(\'#dir_input\').click()" autocomplete="off" title="{:__("Supported browsers: Chrome, Firefox, Edge, domestic browsers with speed mode")}" class="btn btn-sm btn-info">{:__("Select directory")}</button>'
                 }
             } else {
                 accept_ext = 'accept="' + is_exts + '"'
@@ -871,14 +906,14 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             if (ps) {
                 other_ps = ' --- <span style="color:red;">' + ps + '</span>'
             } else {
-                other_ps = ' --- 支持断点续传'
+                other_ps = ' --- {:__("Support breakpoint resume")}'
             }
             if (collback_to) {
                 bt_upload_file.collback_to = collback_to
             }
             bt_upload_file._loadT = layer.open({
                 type: 1,
-                title: '上传文件到[{$viewpath}]' + other_ps,
+                title: '{:__("Upload files to")}[{$viewpath}]' + other_ps,
                 area: [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? '90%' : '90%'],
                 // shadeClose: false,
                 shift: 5,
@@ -886,9 +921,9 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 maxmin: true,
                 content: '<div class="fileUploadDiv"><div class="row example-box"><div class="col-lg-6"><input type="file" id="file_input" onchange="bt_upload_file.list(this.files)"  multiple="true" autocomplete="off" ' +
                     accept_ext +
-                    '  class="btn btn-sm btn-info"/><button type="button"  id="opt" onclick="$(\'#file_input\').click()" autocomplete="off" class="btn btn-sm btn-primary" >选择文件</button>' +
+                    '  class="btn btn-sm btn-info"/><button type="button"  id="opt" onclick="$(\'#file_input\').click()" autocomplete="off" class="btn btn-sm btn-primary" >{:__("Select file")}</button>' +
                     btn_dir +
-                    '<span><button type="button" id="up" autocomplete="off" onclick="bt_upload_file.start(0)" class="btn btn-sm btn-success">开始上传</button><!--<button type="button" id="filesClose" autocomplete="off" onClick="layer.close(bt_upload_file._loadT)" class="btn btn-sm btn-danger">关闭</button>--></span></div><div class="col-md-6"><span id="totalProgress"></span></div></div></div><div class="table-responsive"><table  class="table"><thead><tr><th>文件名</th><th>大小</th><th>状态</th></tr></thead><tbody id="up_box"></tbody></table></div>'
+                    '<span><button type="button" id="up" autocomplete="off" onclick="bt_upload_file.start(0)" class="btn btn-sm btn-success">{:__("Upload start")}</button><!--<button type="button" id="filesClose" autocomplete="off" onClick="layer.close(bt_upload_file._loadT)" class="btn btn-sm btn-danger">{:__("Close")}</button>--></span></div><div class="col-md-6"><span id="totalProgress"></span></div></div></div><div class="table-responsive"><table  class="table"><thead><tr><th>{:__("File name")}</th><th>{:__("File Size")}</th><th>{:__("Status")}</th></tr></thead><tbody id="up_box"></tbody></table></div>'
             })
             // 强制全屏
             layer.full(bt_upload_file._loadT);
@@ -897,7 +932,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             bt_upload_file._files = _files;
             var up_box = $("#up_box");
             $("#up_box").html('');
-            var loadT = layer.msg('正在加载文件列表...', {
+            var loadT = layer.msg('{:__("Loading")}', {
                 time: 0,
                 icon: 16,
                 shade: 0.3
@@ -907,9 +942,9 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 if (_files[i].webkitRelativePath) {
                     f_name = _files[i].webkitRelativePath
                 }
-                up_box.append('<tr class="offset-' + i + '"><td class="filename" title="上传到: ' + bt_upload_file
+                up_box.append('<tr class="offset-' + i + '"><td class="filename" title="{:__("Upload to")}: ' + bt_upload_file
                     .f_path + '/' + f_name + '">' + f_name + '</td><td class="filesize">' + bt_upload_file
-                    .to_size(_files[i].size) + '</td><td class="emmmm">等待上传</td></tr>')
+                    .to_size(_files[i].size) + '</td><td class="emmmm">{:__("Waiting for upload")}</td></tr>')
             }
             layer.close(loadT)
         },
@@ -926,7 +961,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         start: function (i) {
             var len = bt_upload_file._files.length;
             if (len === 0) {
-                layer.msg('请选择文件!', {
+                layer.msg('{:__("Please select file")}!', {
                     icon: 2
                 });
                 return false
@@ -936,12 +971,12 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             }
             $("#filesClose,#up,#opt").attr("disabled", "disabled");
             var total_time = bt_upload_file.diff_time(bt_upload_file._t_start_time, new Date());
-            $("#totalProgress").html('<p>已上传(' + i + '/' + len + '),' + total_time +
+            $("#totalProgress").html('<p>{:__("Uploaded")}(' + i + '/' + len + '),' + total_time +
                 '</p> <div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' +
                 i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i, len) +
                 '"><span class="sr-only">' + i + '% Complete</span></div></div>');
             if (len <= i) {
-                $("#totalProgress").html('<p>上传完成(' + i + '/' + len + '), ' + total_time +
+                $("#totalProgress").html('<p>{:__("Upload success")}(' + i + '/' + len + '), ' + total_time +
                     '</p> <div class="progress"><div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="' +
                     i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,
                         len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
@@ -989,13 +1024,13 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                         var progress = parseInt(data / bt_upload_file.f.size * 100);
                         var total_time = bt_upload_file.diff_time(bt_upload_file._t_start_time,
                             new Date());
-                        $("#totalProgress").html('<p>已上传(' + i + '/' + len + '),' + total_time +
+                        $("#totalProgress").html('<p>{:__("Uploaded")}(' + i + '/' + len + '),' + total_time +
                             '</p> <div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' +
                             i + '" aria-valuemin="0" aria-valuemax="' + len +
                             '" style="width: ' + GetPercent(i, len) +
                             '"><span class="sr-only">' + i + '% Complete</span></div></div>');
                         $("#up_box tr .emmmm")[i].outerHTML =
-                            '<td class="emmmm" style="color:green;">上传进度:' + progress + '%</td>';
+                            '<td class="emmmm" style="color:green;">{:__("Upload progress")}:' + progress + '%</td>';
                         $("#up_box tr .filesize")[i].outerHTML = '<td class="filesize">' +
                             bt_upload_file.to_size(data) + '/' + bt_upload_file.to_size(
                                 bt_upload_file.f.size) + '</td>';
@@ -1006,7 +1041,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                             var f_time = bt_upload_file.diff_time(bt_upload_file._start_time,
                                 new Date());
                             $("#up_box tr .emmmm")[i].outerHTML =
-                                '<td class="emmmm" style="color:green;">已完成(' + f_time + ')</td>';
+                                '<td class="emmmm" style="color:green;">{:__("Completed")}(' + f_time + ')</td>';
                             $("#up_box tr .filesize")[i].outerHTML = '<td class="filesize">' +
                                 bt_upload_file.to_size(bt_upload_file.f.size) + '/' + bt_upload_file
                                 .to_size(bt_upload_file.f.size) + '</td>'
@@ -1020,7 +1055,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 error: function (e) {
                     if (bt_upload_file._error > 5) {
                         $("#up_box li .emmmm")[i].outerHTML =
-                            '<td class="emmmm" style="color:red;">上传失败</td>';
+                            '<td class="emmmm" style="color:red;">{:__("Upload failed")}</td>';
                         bt_upload_file.start(i + 1);
                         return
                     }
@@ -1034,9 +1069,9 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             var minutes = Math.floor(diff / (60 * 1000));
             var leave3 = diff % (60 * 1000);
             var seconds = (leave3 / 1000).toFixed(2);
-            var result = seconds + '秒';
+            var result = seconds + '{:__("Second")}';
             if (minutes > 0) {
-                result = minutes + "分" + result
+                result = minutes + "{:__('Minute')}" + result
             }
             return result
         }
@@ -1050,10 +1085,10 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         if (parseInt(fileSize) >= parseInt(maxSize)) {
             var maxSize = "{$php_upload_max?$php_upload_max:'0'}"; //最大上传(字节)  
             max = bytes2mb('{$php_upload_max}');
-            parent.alert('上传的文件不能超过' + max + 'M');
+            parent.alert('{:__("The uploaded file cannot exceed")}' + max + 'M');
             return false;
         } else {
-            layer.msg('正在上传');
+            layer.msg('{:__("Upload loading")}');
 
             var data = new FormData($('#btyUploadFile')[0]);
             $.ajax({
@@ -1089,31 +1124,38 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function editFile(file, fileType) {
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
             return false;
         }
         randMath = randomNum(1111, 9999);
-        layer.msg('获取中……');
+        layer.msg('{:__("Loading")}');
         $.post('{:url("index/vhost/file")}', {
             file: file,
             type: 'getfile'
         }, function (data, textStatus, xhr) {
             if (data.code == 1) {
                 var u = ["utf-8", "GBK", "GB2312", "BIG5"];
+                var theme = ['default','monokai','3024-day','3024-night','abcdef','ambiance','base16-dark','bespin','base16-light','blackboard','cobalt','colorforth','dracula','duotone-dark','duotone-light','eclipse','elegant','erlang-dark','hopscotch','icecoder','isotope','lesser-dark','liquibyte','material','mbo','mdn-like','midnight','monokai','neat','neo','night','panda-syntax','paraiso-dark','paraiso-light','pastel-on-dark','railscasts','rubyblue','seti','solarized','the-matrix','tomorrow-night-bright','tomorrow-night-eighties','ttcn','twilight','vibrant-ink','xq-dark','xq-light','yeti','zenburn','darcula'];
                 var n = "";
                 var m = "";
                 var o = "";
                 var t = "";
+                var th = "";
+                var is_theme = localStorage.getItem('theme')?localStorage.getItem('theme'):'default';
                 for (var p = 0; p < u.length; p++) {
                     m = data.encoding == u[p] ? "selected" : "";
                     n += '<option value="' + u[p] + '" ' + m + ">" + u[p] + "</option>"
                 }
+                for (var p1 = 0; p1 < theme.length; p1++) {
+                    m = is_theme == theme[p1] ? "selected" : "";
+                    th += '<option value="' + theme[p1] + '" ' + m + ">" + theme[p1] + "</option>"
+                }
                 content = '<form class="bt-form pd20 pb70" id="codemirror' + randMath +
-                    '"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">提示：Ctrl+F 搜索关键字，Ctrl+G 查找下一个，Ctrl+S 保存，Ctrl+Shift+R 查找替换!<select class="bt-input-text" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' +
-                    n + '</select></p><textarea id="textBody' + randMath +
+                    '"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">{:__("Tip: Ctrl+F searches for keywords, Ctrl+G finds the next one, Ctrl+S saves, Ctrl+Shift+R finds and replaces, Ctrl code hint!")}<select class="bt-input-text" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' +
+                    n + '</select><span style="font-size:xx-small;color:#8d6658;padding:0 5px;">{:__("Theme")}:</span><select class="bt-input-text" id="select_theme" name="theme" style="width: 74px;position: absolute;height: 22px;z-index: 9999;border-radius: 0;">'+th+'</select></p><textarea id="textBody' + randMath +
                     '" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
                 //content = '<pre style="width:100%;height:100%;" file="'+file+'"><code  class="php">'+data.data+'</code></pre>';
                 id = 'loading_'+ Math.random() * 10;
@@ -1121,13 +1163,13 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 var index = layer.open({
                     id:id,
                     type: 1,
-                    title: '在线编辑' + file,
+                    title: '{:__("Edit")}' + file,
                     shade: 0,
                     area: ["90%", "90%"],
                     offset: 'auto',
                     maxmin: true,
                     content: content,
-                    btn: ['保存', '关闭'],
+                    btn: ['{:__("Save")}', '{:__("Close")}'],
                     yes: function () {
                         $("#textBody" + randMath).text(t.getValue());
                         content = t.getValue();
@@ -1142,22 +1184,10 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                     // }
                 });
                 //layer.full(index);
-
+                
 
                 switch (fileType) {
                     case "html":
-                        var mixedMode = {
-                            name: "htmlmixed",
-                            scriptTypes: [{
-                                matches: /\/x-handlebars-template|\/x-mustache/i,
-                                mode: null
-                            }, {
-                                matches: /(text|application)\/(x-)?vb(a|script)/i,
-                                mode: "vbscript"
-                            }]
-                        };
-                        doctype = mixedMode;
-                        break;
                     case "htm":
                         var mixedMode = {
                             name: "htmlmixed",
@@ -1216,6 +1246,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                     extraKeys: {
                         "Ctrl-F": "findPersistent",
                         "Ctrl-H": "replaceAll",
+                        "Ctrl": "autocomplete",
                         "Ctrl-S": function () {
                             $("#textBody" + randMath).text(t.getValue());
                             content = t.getValue();
@@ -1225,24 +1256,53 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                         }
                     },
                     lineNumbers: true,
-                    //mode: 'application/x-httpd-php',
-                    //styleActiveLine: true,
+                    mode: doctype,
+                    styleActiveLine: true,
                     matchBrackets: true,
                     indentUnit: 4,
                     indentWithTabs: true,
                     matchtags: true,
-                    autoMatchParens: true
+                    autoMatchParens: true,
+                    hintOptions: {
+                        completeSingle: false
+                    }
 
                     //readOnly:true
                 });
-                //console.log(t.getValue());
 
+                /**
+                * 用来实时对用户的输入进行提示
+                */
+                function showCodeHint(editor) {
+                    editor.on("cursorActivity", function () {
+                        //获取用户当前的编辑器中的编写的代码
+                        var words = editor.getValue() + "";
+                        //利用正则取出用户输入的所有的英文的字母
+                        words = words.replace(/[a-z]+[\-|\']+[a-z]+/ig, '').match(/([a-z]+)/ig);
+                        //将获取到的用户的单词传入CodeMirror,并在javascript-hint中做匹配
+                        CodeMirror.ukeys = words;
+                        //调用显示提示
+                        editor.showHint();
+                    });
+                }
+
+                $(function(){
+                    // t.on("change",function(t,changes){
+                    //     showCodeHint(t);
+                    // });
+                    $('#select_theme').change(function(){
+                        localStorage.setItem('theme',$(this).val());
+                        t.setOption("theme", $(this).val());
+                    });
+                });
+                //console.log(t.getValue());
+                
                 t.setSize("auto", q - 150);
                 setTimeout(function () {
                     $("#textBody" + randMath).text(data.data);
                     t.setValue(data.data)
                 }, 500);
-                t.setOption("theme", 'default');
+                t.setOption("theme", is_theme);
                 t.focus();
             } else {
                 EchoMsg(data.msg);
@@ -1255,7 +1315,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         console.log(id);
         if (!file) {
             $.notify({
-                message: '请选择文件',
+                message: '{:__("Please select file")}',
             }, {
                 type: 'warning'
             });
@@ -1309,7 +1369,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function newdir() {
         path = '{$viewpath}';
         layer.prompt({
-            title: '新建文件夹',
+            title: '{:__("Create dir")}',
             formType: 3
         }, function (text, index) {
 
@@ -1328,7 +1388,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
     function newfile() {
         path = '{$viewpath}';
         layer.prompt({
-            title: '新建文件',
+            title: '{:__("Create file")}',
             formType: 3
         }, function (text, index) {
 
@@ -1380,26 +1440,26 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         path = '{$viewpath}';
         data = batch();
 
-        var msg = '标题';
+        var msg = '{:__("Title")}';
         switch (batchType) {
             case 'del':
-                msg = '确定删除？';
+                msg = '{:__("Confirm delete?")}';
                 break;
             case 'openZip':
-                msg = '压缩？';
+                msg = '{:__("Condense")}？';
                 break;
             case 'CutFile':
-                msg = '剪切？';
+                msg = '{:__("Cut")}？';
                 break;
             case 'CutFiles':
-                msg = '复制？';
+                msg = '{:__("Copy")}？';
                 break;
             default:
                 msg = '?????????'
                 break;
         }
         layer.confirm(msg, {
-            btn: ['确定', '取消']
+            btn: ['{:__("Confirm")}', '{:__("Cancel")}']
         }, function () {
 
             $.post('{:url("index/vhost/file")}', {
@@ -1431,7 +1491,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         });
         var arrystr = arry.join(',');
         if (!arrystr) {
-            layer.msg('没有勾选内容');
+            layer.msg('{:__("No content selected")}');
             return false;
         }
         return arrystr;
@@ -1443,7 +1503,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             a = $(this).val();
         });
         if (!a) {
-            layer.msg('没有勾选内容');
+            layer.msg('{:__("No content selected")}');
             return false;
         }
         return a;
@@ -1468,13 +1528,13 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         strVar = '<form id="DownloadFile"><div class="bt-form pd20 pb70" style="padding:20px;">' +
                 '<div class="">' +
                 '<input type="hidden" name="type" class="form-control" value="DownloadFile"/>' +
-                '<div class="form-group"><label>URL地址</label><input class="bt-input-text form-control" id="mUrl" name="mUrl" value="" placeholder="URL地址"></div>' +
-                '<div class="form-group"><label>下载到</label><input type="text" class="bt-input-text form-control" name="path" value="' + path + '" placeholder="下载到目录路径"/>' +
+                '<div class="form-group"><label>{:__("Url")}</label><input class="bt-input-text form-control" id="mUrl" name="mUrl" value="" placeholder="{:__("Url")}"></div>' +
+                '<div class="form-group"><label>{:__("Download to")}</label><input type="text" class="bt-input-text form-control" name="path" value="' + path + '" placeholder="{:__("Download to dir")}"/>' +
                 '</div>' +
-                '<div class="form-group"><label>文件名</label><input type="text" class="bt-input-text form-control" name="dfilename" id="dfilename" value="" placeholder="文件名"/></div>' +
+                '<div class="form-group"><label>{:__("File name")}</label><input type="text" class="bt-input-text form-control" name="dfilename" id="dfilename" value="" placeholder="{:__("File name")}"/></div>' +
                 '<p></p><div class="bt-form-submit-btn" style="text-align:right;margin-top:10px;">' +
-                '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">关闭</button>' +
-                '<button type="button" id="ReNameBtn" class="btn btn-success btn-sm btn-title" onclick="DownloadFile()">下载</button>' +
+                '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">{:__("Close")}</button>' +
+                '<button type="button" id="ReNameBtn" class="btn btn-success btn-sm btn-title" onclick="DownloadFile()">{:__("Download")}</button>' +
                 '</div></div>' +
                 '</div></form>';
         layer.open({
@@ -1482,7 +1542,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             shift: 5,
             closeBtn: 2,
             area: area,
-            title: '远程下载',
+            title: '{:__("Remote download")}',
             content: strVar
         });
         $("#mUrl").change(function () {
@@ -1498,11 +1558,11 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
         mUrl = $('#mUrl').val();
         dfilename = $('#dfilename').val();
         if (mUrl == '') {
-            lay.msg('下载地址不能为空');
+            lay.msg('{:__("%s can not be empty",__("Download url"))}');
             return false;
         }
         if (dfilename == '') {
-            lay.msg('文件名不能为空');
+            lay.msg('{:__("%s can not be empty",__("File name"))}');
             return false;
         }
         $.post('{:url("index/vhost/file")}', data, function (data, textStatus, xhr) {

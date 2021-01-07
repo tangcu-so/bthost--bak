@@ -36,19 +36,19 @@ class Host extends Model
         self::beforeUpdate(function ($row) {
             $changed = $row->getChangedData();
             // 如果有状态发生改变
-            if (isset($changed['status']) && ($changed['status'] != $row->origin['status'])) {
+            if (isset($changed['status']) && isset($row->origin['status']) && ($changed['status'] != $row->origin['status'])) {
                 \app\common\model\Host::host_update_status($row);
             }
             // 如果分类ID发生改变
-            if (isset($changed['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
+            if (isset($changed['sort_id']) && isset($row->origin['sort_id']) && ($changed['sort_id'] != $row->origin['sort_id'])) {
                 \app\common\model\Host::host_update_sort($row);
             }
             // 如果到期时间发生改变
-            if (isset($changed['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
+            if (isset($changed['endtime']) && isset($row->origin['endtime']) && ($changed['endtime'] != $row->origin['endtime'])) {
                 \app\common\model\Host::host_update_endtime($row);
             }
             // 如果修改并发、限速
-            if (isset($changed['perserver']) && ($changed['perserver'] != $row->origin['perserver'])) {
+            if (isset($changed['perserver']) && isset($row->origin['perserver']) && ($changed['perserver'] != $row->origin['perserver'])) {
                 \app\common\model\Host::host_perserver($row);
             }
         });
@@ -164,10 +164,19 @@ class Host extends Model
         $bt->bt_id = $row->bt_id;
         $bt->bt_name = $row->bt_name;
         $data = [
-            'perserver' => $changed['perserver'],
-            'limit_rate' => $changed['limit_rate'],
+            'perserver' => isset($changed['perserver']) ? $changed['perserver'] : $row->origin['perserver'],
+            'limit_rate' => isset($changed['limit_rate']) ? $changed['limit_rate'] : $row->origin['limit_rate'],
         ];
+        if (request()->post('perip/d')) {
+            $data['perip'] = request()->post('perip/d');
+        }
+        if (request()->post('timeout/d')) {
+            $data['timeout'] = request()->post('timeout/d');
+        }
         $set = $bt->setLimit($data);
+        if (!$set) {
+            throw new \Exception($bt->getError());
+        }
     }
     
 
@@ -300,25 +309,25 @@ class Host extends Model
     {
         switch ($status) {
             case 'normal':
-                $status_attr = '正常';
+                $status_attr = __('normal');
                 break;
             case 'stop':
-                $status_attr = '停用';
+                $status_attr = __('stop');
                 break;
             case 'locked':
-                $status_attr = '锁定';
+                $status_attr = __('locked');
                 break;
             case 'expired':
-                $status_attr = '到期';
+                $status_attr = __('expired');
                 break;
             case 'excess':
-                $status_attr = '超量';
+                $status_attr = __('excess');
                 break;
             case 'error':
-                $status_attr = '异常';
+                $status_attr = __('error');
                 break;
             default:
-                $status_attr = '异常';
+                $status_attr = __('error');
                 break;
         }
         return $status_attr;

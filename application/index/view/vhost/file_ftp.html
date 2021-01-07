@@ -72,28 +72,58 @@
     .text-middle{
         vertical-align:middle;
     }
+
+    .CodeMirror {
+        border: 1px solid #eee;
+        height: auto;
+    }
+
+    .CodeMirror-scroll {
+        height: auto;
+        overflow-y: hidden;
+        overflow-x: auto;
+    }
+    .CodeMirror-hints{
+        z-index:19991017 !important;
+    }
 </style>
 {/block}
 {block name="content"}
+
 <link href="__CDN____STATIC__/Light-Year/css/animate.min.css" rel="stylesheet">
 <link rel="stylesheet" type="text/css" href="__CDN__/assets/libs/codemirror/lib/codemirror.css">
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/lib/codemirror.js"></script>
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
+
 
 <!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
 <!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/mode/modeAll.js"></script> -->
 <!-- 引入javascript编辑器格式 -->
 <script src="__CDN__/assets/libs/codemirror/mode/clike/clike.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script> -->
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script> -->
-<!-- <script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/css/css.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/sql/sql.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/xml/xml.js"></script>
+<script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/python/python.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/nginx/nginx.js"></script>
 <script src="__CDN__/assets/libs/codemirror/mode/markdown/markdown.js"></script>
- -->
+
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/dialog/dialog.js"></script>
 <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/search/search.js"></script>
+
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/show-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/sql-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/html-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/xml-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/javascript-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/css-hint.js"></script>
+<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/anyword-hint.js"></script>
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/hint/show-hint.css">
+<!-- <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/lint/lint.css"> -->
 <!-- 各种主题配色 -->
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-day.css">
@@ -143,43 +173,44 @@
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-light.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/yeti.css">
 <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/zenburn.css">
+<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/darcula.css">
 <div class="row">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body example-box">
-                <button style="float: right;" class="btn btn-sm btn-success" onclick="location.reload()" title="刷新"><i class="mdi mdi-restore"></i></button>
-                <button style="float: right;" class="btn btn-sm btn-dark" onclick="newdir()">新建目录</button>
-                <button style="float: right;" class="btn btn-sm btn-purple" onclick="newfile()">新建文件</button>
-                <!-- <button style="float: right;" class="btn btn-sm btn-info" onclick="UploadFiles()">上传</button> -->
+                <button style="float: right;" class="btn btn-sm btn-success" onclick="location.reload()" title="{:__('Refresh')}"><i class="mdi mdi-restore"></i></button>
+                <button style="float: right;" class="btn btn-sm btn-dark" onclick="newdir()">{:__('Create dir')}</button>
+                <button style="float: right;" class="btn btn-sm btn-purple" onclick="newfile()">{:__('Create file')}</button>
+                <!-- <button style="float: right;" class="btn btn-sm btn-info" onclick="UploadFiles()">{:__('Upload')}</button> -->
                 <div class="batchAction" style="display: none;">
-                    <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('CutFiles')">复制</button>
-                    <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('CutFile')">剪切</button>
-                    <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('del')">删除</button>
+                    <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('CutFiles')">{:__('Copy')}</button>
+                    <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('CutFile')">{:__('Cut')}</button>
+                    <button style="float: right;" class="btn btn-sm btn-info" onclick="batchAction('del')">{:__('Delete')}</button>
                 </div>
                 
                 <form id="btyUploadFile">
-                    <div class="upload-drag" id="upload-drag" onclick="zunfile.click()" title="点击上传文件" style="float: right;">
+                    <div class="upload-drag" id="upload-drag" onclick="zunfile.click()" title="{:__('Upload file')}" style="float: right;">
                         <input type="hidden" name="type" value="uploadfile">
-                        <p id="stat" class="btn btn-sm btn-info">上传文件</p>
+                        <p id="stat" class="btn btn-sm btn-info">{:__('Upload file')}</p>
                         <input type="file" id="zunfile" name="zunfile" onchange="scs();" style="display:none" accept="*/*">
                     </div>
                 </form>
                 <div style="float: left;padding-left: 10px;padding-top:5px;">
-                    当前目录：
+                    {:__('Current directory')}：
                     <a href="?path=/" class="loading_dir">
-                        根目录
+                        {:__('Root')}
                     </a>
                     {volist name="paths" id="path"}
                     / <a href="?path={$path.url}" class="loading_dir">{$path.path}</a>
                     {/volist}
                     {if cookie('cutFileName')}
-                    <a href="javascript:PasteFile('{$viewpath}');">粘贴</a>
+                    <a href="javascript:PasteFile('{$viewpath}');">{:__('Paste')}</a>
                     {elseif cookie('copyFileName')}
-                    <a href="javascript:PasteFile('{$viewpath}',1);">粘贴</a>
+                    <a href="javascript:PasteFile('{$viewpath}',1);">{:__('Paste')}</a>
                     {elseif cookie('cutFileNames')}
-                    <a href="javascript:PasteFiles('{$viewpath}');">粘贴</a>
+                    <a href="javascript:PasteFiles('{$viewpath}');">{:__('Paste')}</a>
                     {elseif cookie('copyFileNames')}
-                    <a href="javascript:PasteFiles('{$viewpath}',1);">粘贴</a>
+                    <a href="javascript:PasteFiles('{$viewpath}',1);">{:__('Paste')}</a>
                     {/if}
                 </div>
 
@@ -193,22 +224,22 @@
                             </label>
                         </td>
                         <td>
-                            文件名
+                            {:__('File name')}
                         </td>
                         <td>
-                            大小
+                            {:__('File size')}
                         </td>
                         <td>
-                            修改时间
+                            {:__('Change the time')}
                         </td>
                         <td>
-                            权限
+                            {:__('Jurisdiction')}
                         </td>
                         <td>
-                            所有者
+                            {:__('Owner')}
                         </td>
                         <td>
-                            操作
+                            {:__('Operation')}
                         </td>
                     </tr>
                 </thead>
@@ -221,7 +252,7 @@
                             </label>
                         </td>
                         <td><span class="mdi mdi-folder text-warning mdi-24px text-middle"></span> <a href="?path={$viewpath}{$dirs.name}">{$dirs.name}</a></td>
-                        <td><a href="javascript:;" onclick="getSize('{$dirs.name}',this)">计算大小</a></td>
+                        <td><a href="javascript:;" onclick="getSize('{$dirs.name}',this)">{:__('Calculated size')}</a></td>
                         <td>{:monthTosmonth($dirs.month)}-{$dirs.day} {$dirs.time}</td>
                         <td>{$dirs.chmod}</td>
                         <td>{$dirs.group}</td>
@@ -229,15 +260,15 @@
                             <span>
                             	
                                 <a class="btlink" href="javascript:CutFile('{$viewpath}{$key}','{$key}');">
-                                    剪切
+                                    {:__('Cut')}
                                 </a>
                                 |
                                 <a class="btlink" href="javascript:MvFile('{$key}');">
-                                    重命名
+                                    {:__('Rename')}
                                 </a>
                                 |
                                 <a class="btlink" href="javascript:;" onclick="DeleteDir('{$viewpath}{$key}')">
-                                    删除
+                                    {:__('Delete')}
                                 </a>
                             </span>
                         </td>
@@ -311,15 +342,15 @@
                         <td>
                             <span id="operation">
                                 <a class="btlink" href="javascript:CutFile('{$viewpath}{$key}','{$key}',1);">
-                                    复制
+                                    {:__("Copy")}
                                 </a>
                                 |
                                 <a class="btlink" href="javascript:CutFile('{$viewpath}{$key}','{$key}');">
-                                    剪切
+                                    {:__("Cut")}
                                 </a>
                                 |
                                 <a class="btlink" href="javascript:MvFile('{$key}');">
-                                    重命名
+                                    {:__("Rename")}
                                 </a>
                                 <?php 
                                 switch (fileExtension($files['name'])) {
@@ -344,19 +375,19 @@
                                 default:
                                 ?>
                                 |
-                                <a class="btlink" href="javascript:;" onclick="editFile('{$viewpath}{$key}','{:fileExtension($files['name'])}')">
-                                    编辑
+                                <a class="btlink" href="javascript:;" onclick="editFile('{$viewpath}{$key}','{:fileExtension($files[\'name\'])}')">
+                                    {:__('Edit')}
                                 </a>
                                 <?php
                                 break;
                             }?>
                                 |
                                 <a class="btlink" href="{:url('index/vhost/file_ftp')}?go=1&downfile={$viewpath}{$key}" target="_blank">
-                                    下载
+                                    {:__('Download')}
                                 </a>
                                 |
                                 <a class="btlink" href="javascript:;" onclick="DeleteFile('{$viewpath}{$key}')">
-                                    删除
+                                    {:__('Delete')}
                                 </a>
                             </span>
                         </td>
@@ -377,11 +408,11 @@
 <script type="text/javascript">
     function DeleteFile(file){
         if(!file){
-            layer.msg('请选择文件');
+            layer.msg('{:__("Please select file")}');
             return false;
         }
-        layer.confirm('确定删除？', {
-              btn: ['确定','取消']
+        layer.confirm('{:__("Confirm delete?")}', {
+              btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
               $.post('', {type:'deletefile',file:file}, function(data, textStatus, xhr) {
                     EchoMsg(data.msg);
@@ -393,11 +424,11 @@
     }
     function sqlInput(file){
         if(!file){
-            layer.msg('请选择文件');
+            layer.msg('{:__("Please select file")}');
             return false;
         }
-        layer.confirm('确定要导入数据库？导入会覆盖之前的数据哦~！', {
-              btn: ['确定','取消']
+        layer.confirm('{:__("Are you sure you want to import the database? Importing will overwrite the previous data~!")}', {
+              btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
               $.post('', {type:'sqlinput',file:file}, function(data, textStatus, xhr) {
                     EchoMsg(data.msg);
@@ -409,11 +440,11 @@
     }
     function DeleteDir(file){
         if(!file){
-            layer.msg('请选择文件夹');
+            layer.msg('{:__("Please select dir")}');
             return false;
         }
-        layer.confirm('确定删除？', {
-              btn: ['确定','取消']
+        layer.confirm('{:__("Confirm delete?")}', {
+              btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
               $.post('', {type:'deletedir',file:file}, function(data, textStatus, xhr) {
             EchoMsg(data.msg);
@@ -437,11 +468,11 @@
     
     function MvFile(file){
         if(!file){
-            layer.msg('请选择文件');
+            layer.msg('{:__("Please select file")}');
             return false;
         }
         path = '{$viewpath}';
-          layer.prompt({title: '重命名', formType: 3,value:file}, function(text, index){
+          layer.prompt({title: '{:__("Rename")}', formType: 3,value:file}, function(text, index){
             layer.close(index);
             $.post('', {type:'MvFile',path: path,oldName:file,newName:text}, function(data, textStatus, xhr) {
                 EchoMsg(data.msg);
@@ -450,7 +481,7 @@
     }
     function getSize(path,obj){
         if(!path){
-            layer.msg('请选择文件');
+            layer.msg('{:__("Please select file")}');
             return false;
         }
         layer.msg('Loading……');
@@ -462,7 +493,7 @@
     }
     function CutFile(file,name='',copy=''){
         if(!file){
-            layer.msg('请选择文件');
+            layer.msg('{:__("Please select file")}');
             return false;
         }
         $.post('', {file: file,type:'cut',name:name,copy:copy}, function(data, textStatus, xhr) {
@@ -471,7 +502,7 @@
     }
     function PasteFile(path,copy){
         if(!path){
-            layer.msg('请选择粘贴文件');
+            layer.msg('{:__("Please select paste file")}');
             return false;
         }
         layer.load(2);
@@ -482,7 +513,7 @@
     }
     function PasteFiles(path,copy){
         if(!path){
-            layer.msg('请选择粘贴文件');
+            layer.msg('{:__("Please select paste file")}');
             return false;
         }
         layer.load(2);
@@ -521,20 +552,20 @@
                 if (ps) {
                     other_ps = ' --- <span style="color:red;">' + ps + '</span>'
                 } else {
-                    other_ps = ' --- 支持断点续传'
+                    other_ps = ' --- {:__("Support breakpoint resume")}'
                 }
                 if (collback_to) {
                     bt_upload_file.collback_to = collback_to
                 }
                 bt_upload_file._loadT = layer.open({
                     type: 1,
-                    title: '上传文件到[{$viewpath}]' + other_ps,
+                    title: '{:__("Upload files to")}[{$viewpath}]' + other_ps,
                     area: ['','90%'],
                     // shadeClose: false,
                     shift: 5,
                     closeBtn: 1,
                     maxmin: true,
-                    content: '<div class="fileUploadDiv"><div class="row example-box"><div class="col-lg-6"><input type="file" id="file_input" onchange="bt_upload_file.list(this.files)"  multiple="true" autocomplete="off" ' + accept_ext + '  class="btn btn-sm btn-info"/><button type="button"  id="opt" onclick="$(\'#file_input\').click()" autocomplete="off" class="btn btn-sm btn-primary" >选择文件</button>' + btn_dir + '<span><button type="button" id="up" autocomplete="off" onclick="bt_upload_file.start(0)" class="btn btn-sm btn-success">开始上传</button><!--<button type="button" id="filesClose" autocomplete="off" onClick="layer.close(bt_upload_file._loadT)" class="btn btn-sm btn-danger">关闭</button>--></span></div><div class="col-md-6"><span id="totalProgress"></span></div></div></div><div class="table-responsive"><table  class="table"><thead><tr><th>文件名</th><th>大小</th><th>状态</th></tr></thead><tbody id="up_box"></tbody></table></div>'
+                    content: '<div class="fileUploadDiv"><div class="row example-box"><div class="col-lg-6"><input type="file" id="file_input" onchange="bt_upload_file.list(this.files)"  multiple="true" autocomplete="off" ' + accept_ext + '  class="btn btn-sm btn-info"/><button type="button"  id="opt" onclick="$(\'#file_input\').click()" autocomplete="off" class="btn btn-sm btn-primary" >{:__("Select file")}</button>' + btn_dir + '<span><button type="button" id="up" autocomplete="off" onclick="bt_upload_file.start(0)" class="btn btn-sm btn-success">开始上传</button><!--<button type="button" id="filesClose" autocomplete="off" onClick="layer.close(bt_upload_file._loadT)" class="btn btn-sm btn-danger">{:__("Close")}</button>--></span></div><div class="col-md-6"><span id="totalProgress"></span></div></div></div><div class="table-responsive"><table  class="table"><thead><tr><th>{:__("File name")}</th><th>大小</th><th>{:__("Status")}</th></tr></thead><tbody id="up_box"></tbody></table></div>'
                 })
                 // 强制全屏
                 layer.full(bt_upload_file._loadT);
@@ -543,7 +574,7 @@
                 bt_upload_file._files = _files;
                 var up_box = $("#up_box");
                 $("#up_box").html('');
-                var loadT = layer.msg('正在加载文件列表...', {
+                var loadT = layer.msg('{:__("Loading file list...")}', {
                     time: 0,
                     icon: 16,
                     shade: 0.3
@@ -553,7 +584,7 @@
                     if (_files[i].webkitRelativePath) {
                         f_name = _files[i].webkitRelativePath
                     }
-                    up_box.append('<tr class="offset-' + i + '"><td class="filename" title="上传到: ' + bt_upload_file.f_path + '/' + f_name + '">' + f_name + '</td><td class="filesize">' + bt_upload_file.to_size(_files[i].size) + '</td><td class="emmmm">等待上传</td></tr>')
+                    up_box.append('<tr class="offset-' + i + '"><td class="filename" title="{:__("Upload to")}: ' + bt_upload_file.f_path + '/' + f_name + '">' + f_name + '</td><td class="filesize">' + bt_upload_file.to_size(_files[i].size) + '</td><td class="emmmm">{:__("Waiting for upload")}</td></tr>')
                 }
                 layer.close(loadT)
             },
@@ -570,7 +601,7 @@
             start: function (i) {
                 var len = bt_upload_file._files.length;
                 if (len === 0) {
-                    layer.msg('请选择文件!', {
+                    layer.msg('{:__("Please select file")}!', {
                         icon: 2
                     });
                     return false
@@ -580,9 +611,9 @@
                 }
                 $("#filesClose,#up,#opt").attr("disabled", "disabled");
                 var total_time = bt_upload_file.diff_time(bt_upload_file._t_start_time, new Date());
-                $("#totalProgress").html('<p>已上传(' + i + '/' + len + '),' + total_time + '</p> <div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
+                $("#totalProgress").html('<p>{:__("Uploaded")}(' + i + '/' + len + '),' + total_time + '</p> <div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
                 if (len <= i) {
-                    $("#totalProgress").html('<p>上传完成(' + i + '/' + len + '), ' + total_time + '</p> <div class="progress"><div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="' + i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
+                    $("#totalProgress").html('<p>{:__("Upload success")}(' + i + '/' + len + '), ' + total_time + '</p> <div class="progress"><div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="' + i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
                     bt_upload_file._files = [];
                     $("#filesClose,#up,#opt").removeAttr("disabled");
                     if (bt_upload_file.collback_to) {
@@ -626,15 +657,15 @@
                         if (typeof (data) === "number") {
                             var progress = parseInt(data / bt_upload_file.f.size * 100);
                             var total_time = bt_upload_file.diff_time(bt_upload_file._t_start_time, new Date());
-                            $("#totalProgress").html('<p>已上传(' + i + '/' + len + '),' + total_time + '</p> <div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
-                            $("#up_box tr .emmmm")[i].outerHTML = '<td class="emmmm" style="color:green;">上传进度:' + progress + '%</td>';
+                            $("#totalProgress").html('<p>{:__("Uploaded")}(' + i + '/' + len + '),' + total_time + '</p> <div class="progress"><div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="' + i + '" aria-valuemin="0" aria-valuemax="' + len + '" style="width: ' + GetPercent(i,len) + '"><span class="sr-only">' + i + '% Complete</span></div></div>');
+                            $("#up_box tr .emmmm")[i].outerHTML = '<td class="emmmm" style="color:green;">{:__("Upload progress")}:' + progress + '%</td>';
                             $("#up_box tr .filesize")[i].outerHTML = '<td class="filesize">' + bt_upload_file.to_size(data) + '/' + bt_upload_file.to_size(bt_upload_file.f.size) + '</td>';
                             $("#up_box tr .emmmm")[i].focus();
                             bt_upload_file.upload(data, i)
                         } else {
                             if (data.code==1) {
                                 var f_time = bt_upload_file.diff_time(bt_upload_file._start_time, new Date());
-                                $("#up_box tr .emmmm")[i].outerHTML = '<td class="emmmm" style="color:green;">已完成(' + f_time + ')</td>';
+                                $("#up_box tr .emmmm")[i].outerHTML = '<td class="emmmm" style="color:green;">{:__("Completed")}(' + f_time + ')</td>';
                                 $("#up_box tr .filesize")[i].outerHTML = '<td class="filesize">' + bt_upload_file.to_size(bt_upload_file.f.size) + '/' + bt_upload_file.to_size(bt_upload_file.f.size) + '</td>'
                             } else {
                                 $("#up_box tr .emmmm")[i].outerHTML = '<td class="emmmm" style="color:red;">' + data.msg + '</td>'
@@ -644,7 +675,7 @@
                     },
                     error: function (e) {
                         if (bt_upload_file._error > 5) {
-                            $("#up_box li .emmmm")[i].outerHTML = '<td class="emmmm" style="color:red;">上传失败</td>';
+                            $("#up_box li .emmmm")[i].outerHTML = '<td class="emmmm" style="color:red;">{:__("Upload failed")}</td>';
                             bt_upload_file.start(i + 1);
                             return
                         }
@@ -671,13 +702,13 @@
         function scs(){
                 var file = $('#zunfile').get(0).files[0]; //获取上传的文件  
                 var fileSize = file.size;           //获取上传的文件大小  
-                var maxSize = {$php_upload_max?$php_upload_max:'0'};              //最大上传(字节)  
+                var maxSize = "{$php_upload_max?$php_upload_max:'0'}"; //最大上传(字节)
                 if(parseInt(fileSize) >= parseInt(maxSize)){  
                   max = bytes2mb({$php_upload_max});
                   parent.alert('上传的文件不能超过'+max+'M');  
                   return false;  
               }else{
-                  layer.msg('正在上传');
+                  layer.msg('{:__("Uploading")}');
                   
                   var data = new FormData($('#btyUploadFile')[0]);
                   $.ajax({
@@ -710,34 +741,45 @@
     }
     //文件编辑
     function editFile(file,fileType){
-        if(!file){
-            layer.msg('请选择文件');
+        if (!file) {
+            $.notify({
+                message: '{:__("Please select file")}',
+            }, {
+                type: 'warning'
+            });
             return false;
         }
         randMath = randomNum(1111,9999);
-        layer.msg('获取中……');
+        layer.msg('{:__("Loading")}');
         $.post('', {file:file,type:'getfile'}, function(data, textStatus, xhr) {
             if(data.code==1){
                 var u = ["utf-8", "GBK", "GB2312", "BIG5"];
+                var theme = ['default','monokai','3024-day','3024-night','abcdef','ambiance','base16-dark','bespin','base16-light','blackboard','cobalt','colorforth','dracula','duotone-dark','duotone-light','eclipse','elegant','erlang-dark','hopscotch','icecoder','isotope','lesser-dark','liquibyte','material','mbo','mdn-like','midnight','monokai','neat','neo','night','panda-syntax','paraiso-dark','paraiso-light','pastel-on-dark','railscasts','rubyblue','seti','solarized','the-matrix','tomorrow-night-bright','tomorrow-night-eighties','ttcn','twilight','vibrant-ink','xq-dark','xq-light','yeti','zenburn','darcula'];
                 var n = "";
                 var m = "";
                 var o = "";
                 var t = "";
+                var th = "";
+                var is_theme = localStorage.getItem('theme')?localStorage.getItem('theme'):'default';
                 for(var p = 0; p < u.length; p++) {
                     m = data.encoding == u[p] ? "selected" : "";
                     n += '<option value="' + u[p] + '" ' + m + ">" + u[p] + "</option>"
                 }
-                content = '<form class="bt-form pd20 pb70" id="codemirror'+randMath+'"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">提示：Ctrl+F 搜索关键字，Ctrl+G 查找下一个，Ctrl+S 保存，Ctrl+Shift+R 查找替换!<select class="bt-input-text hidden" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' + n + '</select></p><textarea id="textBody'+randMath+'" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
+                for (var p1 = 0; p1 < theme.length; p1++) {
+                    m = is_theme == theme[p1] ? "selected" : "";
+                    th += '<option value="' + theme[p1] + '" ' + m + ">" + theme[p1] + "</option>"
+                }
+                content = '<form class="bt-form pd20 pb70" id="codemirror'+randMath+'"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">{:__("Tip: Ctrl+F searches for keywords, Ctrl+G finds the next one, Ctrl+S saves, Ctrl+Shift+R finds and replaces, Ctrl code hint!")}<select class="bt-input-text hidden" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' + n + '</select><span style="font-size:xx-small;color:#8d6658;padding:0 5px;">{:__("Theme")}:</span><select class="bt-input-text" id="select_theme" name="theme" style="width: 74px;position: absolute;height: 22px;z-index: 9999;border-radius: 0;">'+th+'</select></p><textarea id="textBody'+randMath+'" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
                 //content = '<pre style="width:100%;height:100%;" file="'+file+'"><code  class="php">'+data.data+'</code></pre>';
                 var index = layer.open({
                   type: 1
-                  ,title: '在线编辑'+file
+                  ,title: '{:__("Edit")}'+file
                   ,shade: 0
                   ,area: ["90%", "90%"]
                   ,offset: 'auto'
                   ,maxmin: true
                   ,content: content
-                  ,btn: ['保存', '关闭']
+                  ,btn: ['{:__("Save")}', '{:__("Close")}']
                   ,yes: function(){
                     $("#textBody"+randMath).text(t.getValue());
                     content = t.getValue();
@@ -758,9 +800,6 @@
                 switch(fileType)
                 {
                     case "html":
-                    var mixedMode = {name: "htmlmixed",scriptTypes: [{matches: /\/x-handlebars-template|\/x-mustache/i,mode: null}, {matches: /(text|application)\/(x-)?vb(a|script)/i,mode: "vbscript"}]};
-                    doctype = mixedMode;
-                    break;
                     case "htm":
                     var mixedMode = {name: "htmlmixed",scriptTypes: [{matches: /\/x-handlebars-template|\/x-mustache/i,mode: null},{matches: /(text|application)\/(x-)?vb(a|script)/i,mode: "vbscript"}]};
                     doctype = mixedMode;
@@ -801,6 +840,7 @@
                     extraKeys: {
                         "Ctrl-F": "findPersistent",
                         "Ctrl-H": "replaceAll",
+                        "Ctrl": "autocomplete",
                         "Ctrl-S": function() {
                             $("#textBody"+randMath).text(t.getValue());
                             content = t.getValue();
@@ -810,15 +850,24 @@
                         }
                     },
                     lineNumbers: true,
-                    //mode: 'application/x-httpd-php',
-                    //styleActiveLine: true,
+                    mode: doctype,
+                    styleActiveLine: true,
                     matchBrackets: true,
                     indentUnit: 4,
                     indentWithTabs: true,
                     matchtags: true,
-                    autoMatchParens: true
-            
+                    autoMatchParens: true,
+                    hintOptions: {
+                        completeSingle: false
+                    }
                     //readOnly:true
+                });
+                $(function(){
+                    // showCodeHint(t);
+                    $('#select_theme').change(function(){
+                        localStorage.setItem('theme',$(this).val());
+                        t.setOption("theme", $(this).val());
+                    })
                 });
                 //console.log(t.getValue());
                 
@@ -827,7 +876,7 @@
                     $("#textBody"+randMath).text(data.data);
                     t.setValue(data.data)
                 },500);
-                t.setOption("theme", 'default');
+                t.setOption("theme", is_theme);
                 t.focus();
             }else{
                 EchoMsg(data.msg);
@@ -838,7 +887,7 @@
     // 保存文件
     function saveFile(file,content,encoding){
         if(!file){
-            layer.msg('请选择文件');
+            layer.msg('{:__("Please select file")}');
             return false;
         }
         
@@ -870,7 +919,7 @@
     //新建文件夹
     function newdir(){
         path = '{$viewpath}';
-        layer.prompt({title: '新建文件夹', formType: 3}, function(text, index){
+        layer.prompt({title:  '{:__("Create dir")}', formType: 3}, function(text, index){
             layer.close(index);
             
             $.post('', {type:'newdir',path: path,newdir:text}, function(data, textStatus, xhr) {
@@ -882,7 +931,7 @@
     //新建文件
     function newfile(){
         path = '{$viewpath}';
-        layer.prompt({title: '新建文件', formType: 3}, function(text, index){
+        layer.prompt({title: '{:__("Create file")}', formType: 3}, function(text, index){
             layer.close(index);
             
             $.post('', {type:'newfile',path: path,newfile:text}, function(data, textStatus, xhr) {
@@ -928,23 +977,23 @@
         path = '{$viewpath}';
         data = batch();
         
-        var msg = '标题';
+        var msg = '{:__("Title")}';
         switch(batchType){
             case 'del':
-            msg = '确定删除？';
+            msg = '{:__("Confirm delete?")}';
             break;
             case 'CutFile':
-            msg = '剪切？';
+            msg = '{:__("Cut")}？';
             break;
             case 'CutFiles':
-            msg = '复制？';
+            msg = '{:__("Copy")}？';
             break;
             default:
             msg = '?????????'
             break;
         }
         layer.confirm(msg, {
-              btn: ['确定','取消']
+              btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
                 
                 $.post('', {type:'batch',path: path,data:data,batch:batchType}, function(data, textStatus, xhr) {
@@ -971,7 +1020,7 @@
         });
         var arrystr = arry.join(',');
         if(!arrystr){
-            layer.msg('没有勾选内容');
+            layer.msg('{:__("No content selected")}');
             return false;
         }
         return arrystr;
@@ -982,7 +1031,7 @@
             a = $(this).val();
         });
         if(!a){
-            layer.msg('没有勾选内容');
+            layer.msg('{:__("No content selected")}');
             return false;
         }
         return a;
@@ -994,55 +1043,6 @@
         $.post('', {type: 'BatchPaste',path:path,ty:type}, function(data) {
             
                 EchoMsg(data.msg)
-        });
-    }
-    function openDown(){
-        var strVar = "";
-        path = '{$viewpath}';
-        strVar += "<form id=\"DownloadFile\"><div class=\"bt-form pd20 pb70 row\" style=\"padding:20px;\">\n";
-        strVar += " <div class=\"line unzipdiv form-group\">\n";
-        strVar += "<input type=\"hidden\" name=\"type\" value=\"DownloadFile\" class=\"form-control\"/>\n";
-        strVar += "     <label class=\"tname\">URL地址<\/label><input type=\"text\" class=\"bt-input-text form-control\" id=\"mUrl\" name=\"mUrl\"  placeholder=\"URL地址\" >\n";
-        strVar += "     <label class=\"tname\">下载到<\/label><input type=\"text\" class=\"bt-input-text form-control\" name=\"path\" value=\""+path+"\" placeholder=\"下载到目录路径\" >\n";
-        strVar += " <\/div>\n";
-        strVar += " <div class=\"line form-group\">\n";
-        strVar += "     <label class=\"tname\">文件名<\/label><input type=\"text\" class=\"bt-input-text form-control\" id=\"dfilename\" name=\"dfilename\" placeholder=\"文件名\" >\n";
-        strVar += " <\/div>\n";
-        strVar += " <div class=\"bt-form-submit-btn\" style=\"text-align:right;margin-top:10px;\">\n";
-        strVar += "     <button type=\"button\" class=\"btn btn-danger btn-sm btn-title\" onclick=\"layer.closeAll()\">关闭<\/button><button type=\"button\" id=\"ReNameBtn\" class=\"btn btn-success btn-sm btn-title\" onclick=\"DownloadFile()\">下载<\/button>\n";
-        strVar += " <\/div>\n";
-        strVar += "<\/div><\/form>\n";
-
-        layer.open({
-            type: 1,
-            shift: 5,
-            closeBtn: 2,
-            area: ['',"90%"],
-            title: '远程下载',
-            content: strVar
-        });
-        $("#mUrl").change(function () {
-            durl = $(this).val();
-            console.log(durl);
-            tmp = durl.split('/')
-            $("#dfilename").val(tmp[tmp.length-1])
-        });
-    }
-    // 远程下载文件
-    function DownloadFile(){
-        data = $('#DownloadFile').serialize();
-        mUrl = $('#mUrl').val();
-        dfilename = $('#dfilename').val();
-        if(mUrl==''){
-            lay.msg('下载地址不能为空');
-            return false;
-        }
-        if(dfilename==''){
-            lay.msg('文件名不能为空');
-            return false;
-        }
-        $.post('', data, function(data, textStatus, xhr) {
-            EchoMsg(data.msg);
         });
     }
 </script>

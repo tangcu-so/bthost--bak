@@ -5,15 +5,19 @@
 		<div class="card" id="loading_off">
 			<div class="card-header">
 				<header class="card-title">
-					域名跳转
+					{:__('Rewrite 301')}
 				</header>
 			</div>
 			<div class="card-body">
 				<table class="table table-bordered">
 					<thead>
 						<tr>
-							<th colspan="2">状态：{$rewriteInfo.status ? '<span style="color:green">已开启</span><a
-									href="javascript:rewriteOff()">[关闭]</a>' : '<span style="color:#2288cc">未开启</span>'}
+							<th colspan="2">{:__('Status')}：
+								{if $rewriteInfo.status }
+									<span style="color:green">{:__('Open')}</span><a href="javascript:rewriteOff()">[{:__('Close')}]</a>
+									{else /}
+									<span style="color:#2288cc">{:__('Close')}</span>
+								{/if}
 							</th>
 						</tr>
 					</thead>
@@ -30,16 +34,16 @@
 		<div class="card" id="loading_box">
 			<div class="card-header">
 				<header class="card-title">
-					301重定向设置
+					{:__('Rewrite 301 setting')}
 				</header>
 			</div>
 			<div class="card-body">
 				<form action="" method="post">
 					<div class="form-group">
-						<label for="domains">访问域名：</label>
+						<label for="domains">{:__('Domain')}：</label>
 						<select class="bt-input-text mr5 domains form-control" name="domains" id="domains"
 							style="width:260px" {$rewriteInfo.status ? 'disabled' :''}>
-							<option value="all">整站</option>
+							<option value="all">{:__('All domain')}</option>
 							{volist name="rewriteInfo.domain" id="domain"}
 							<option value="{$domain}" {$domain==$rewriteInfo.src ? 'selected=""' : '' }>
 								{$domain}</option>
@@ -47,19 +51,20 @@
 						</select>
 					</div>
 					<div class="form-group">
-						<label for="toUrl">目标URL：</label>
+						<label for="toUrl">{:__('Target Url')}：</label>
 						<input name="toUrl" id="toUrl" class="span3 form-control" value="{$rewriteInfo.url}"
 							style="width:260px;" {$rewriteInfo.status ? 'disabled' :''}>
 					</div>
 					<div class="form-group">
-						<input type="button" value="保存并开启" class="btn btn-warning" {$rewriteInfo.status ? 'disabled'
+						<input type="button" value="{:__('Save')}" class="btn btn-warning" {$rewriteInfo.status ? 'disabled'
 							:''} onclick="rewriteUp()">
 					</div>
 				</form>
 				<hr>
 				<small class="text-muted">
-					<li>选择[整站]时请不要将目标URL设为同一站点下的域名.</li>
-					<li>取消301重定向后，需清空浏览器缓存才能看到生效结果.</li>
+					<li>{:__('When selecting [Entire Site], please do not set the target URL to the domain name under the same site.')}</li>
+					<li>{:__('After canceling the 301 redirect, you need to clear the browser cache to see the effective result.')}</li>
+					<li>{:__('This function has been merged with <code>%s</code>',__('Redir'))}</li>
 				</small>
 			</div>
 		</div>
@@ -73,7 +78,7 @@
 		domains = $('#domains option:selected').val();
 		toUrl = $('#toUrl').val();
 		if (!domains) {
-			EchoMsg('意外的错误');
+			EchoMsg('{:__("Request error, please try again later")}');
 			return false;
 		}
 		var l = $('#loading_box').lyearloading({
@@ -87,7 +92,7 @@
 				EchoMsg(res.msg, 1);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();
@@ -105,7 +110,7 @@
 				EchoMsg(res.msg, 1);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();

@@ -388,7 +388,7 @@
                     <a href="#!" class="js-create-tab" data-title="{:__('protection')}" data-url="{:url('index/vhost/protection')}" >
                       <div class="box-placeholder" align="center">
                         <p class="mdi mdi-minus-network"></p>
-                        <p>{:__('protection')}</p>
+                        <p>{:__('Protection')}</p>
                       </div>
                     </a>
                   </div>
@@ -655,7 +655,7 @@
   function setPhpVer() {
     version = $("#phpSet option:selected").val();
     if (!version) {
-      EchoMsg('意外的情况');
+      EchoMsg('{:__("Unexpected situation")}');
       return false;
     }
 

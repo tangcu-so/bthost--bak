@@ -1,36 +1,36 @@
 {extend name="common/base" /}
 {block name="content"}
-<link href="__CDN____STATIC/Light-Year/js/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
 <div class="row">
 
     <div class="col-lg-12">
         <div class="card" id="loading_box">
             <header class="card-header">
-                <div class="card-title">Mysql工具箱</div>
+                <div class="card-title">{:__('Sql tools')}</div>
             </header>
             <div class="card-body">
                 <div id="toolbar" class="toolbar-btn-action">
                     <button id="btn_retable" type="button" class="btn btn-primary m-r-5 btn_retable"
                         data-type="retable">
-                        修复
+                        {:__('Repair')}
                     </button>
                     <button id="btn_optable" type="button" class="btn btn-success m-r-5 btn_optable"
                         data-type="optable">
-                        优化
+                        {:__('Optimization')}
                     </button>
                     <button id="btn_aitable" type="button" class="btn btn-warning m-r-5 btn_aitable" data-type="InnoDB">
-                        转为InnoDB
+                        {:__('Convert to InnoDB')}
                     </button>
                     <button type="button" class="btn btn-danger btn_aitable" data-type="MyISAM">
-                        转为MyISAM
+                        {:__('Convert to MyISAM')}
                     </button>
                 </div>
                 <table id="tb_departments"></table>
                 <hr>
                 <small class="text-muted">
-                    <span class="text-danger">!</span> 【修复】尝试使用REPAIR命令修复损坏的表，仅能做简单修复，若修复不成功请考虑使用myisamchk工具<br>
-                    <span class="text-danger">!</span> 【优化】执行OPTIMIZE命令，可回收未释放的磁盘空间，建议每月执行一次<br>
-                    <span class="text-danger">!</span> 【转为InnoDB/MyISAM】转换数据表引擎，建议将所有表转为InnoDB<br>
+                    <span class="text-danger">!</span> {:__('[Repair] Try to use the REPAIR command to repair the damaged table. Only a simple repair can be done. If the repair is not successful, please consider using the myisamchk tool')}<br>
+                    <span class="text-danger">!</span> {:__('[Optimization] Execute the OPTIMIZE command to reclaim unreleased disk space. It is recommended to execute it once a month')}<br>
+                    <span class="text-danger">!</span> {:__('[Convert to InnoDB/MyISAM] Convert data table engine, it is recommended to convert all tables to InnoDB')}<br>
                 </small>
             </div>
         </div>
@@ -38,8 +38,8 @@
 </div>
 {/block}
 {block name="script"}
-<script type="text/javascript" src="__CDN____STATIC/Light-Year/js/bootstrap-table/bootstrap-table.min.js"></script>
-<script type="text/javascript" src="__CDN____STATIC/Light-Year/js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js">
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js">
 </script>
 <script type="text/javascript">
     $('#tb_departments').bootstrapTable({
@@ -76,35 +76,35 @@
 
         //showExport: true,        // 是否显示导出按钮, 导出功能需要导出插件支持(tableexport.min.js)
         //exportDataType: "basic", // 导出数据类型, 'basic':当前页, 'all':所有数据, 'selected':选中的数据
-
+        locale:Config.language == 'zh-cn' ? 'zh-CN' : 'en-US',
         columns: [{
             field: 'example',
             checkbox: true // 是否显示复选框
         }, {
             field: 'table_name',
-            title: '表名'
+            title: '{:__("Table name")}'
         }, {
             field: 'type',
-            title: '引擎',
+            title: '{:__("Drive engine")}',
         }, {
             field: 'collation',
-            title: '字符集'
+            title: '{:__("Character set")}'
         }, {
             field: 'rows_count',
-            title: '行数'
+            title: '{:__("Lines")}'
         }, {
             field: 'data_size',
-            title: '大小'
+            title: '{:__("Size")}'
         }, {
             field: 'operate',
-            title: '操作',
+            title: '{;__("Operation")}',
             formatter: function (value, item, index) {
                 tables_type = item.type == 'InnoDB' ? 'MyISAM' : 'InnoDB';
                 let html =
-                    '<a href="#!" class="btn btn-xs btn-default m-r-5 retable-btn" title="修复" data-toggle="tooltip">修复</a>' +
-                    '<a href="#!" class="btn btn-xs btn-default m-r-5 optable-btn" title="优化" data-toggle="tooltip">优化</a>' +
-                    '<a href="#!" class="btn btn-xs btn-default aitable-btn" title="转为' +
-                    tables_type + '" data-toggle="tooltip">转为' + tables_type + '</a>';
+                    '<a href="#!" class="btn btn-xs btn-default m-r-5 retable-btn" title="{:__("Repair")}" data-toggle="tooltip">{:__("Repair")}</a>' +
+                    '<a href="#!" class="btn btn-xs btn-default m-r-5 optable-btn" title="{:__("Optimization")}" data-toggle="tooltip">{:__("Optimization")}</a>' +
+                    '<a href="#!" class="btn btn-xs btn-default aitable-btn" title="{:__("Convert to")}' +
+                    tables_type + '" data-toggle="tooltip">{:__("Convert to")}' + tables_type + '</a>';
                 return html;
             }, // 自定义方法
             events: {
@@ -132,7 +132,7 @@
                 tabels += l[index]['table_name'] + ',';
             }
             if (!tabels) {
-                EchoMsg('请先选择表名');
+                EchoMsg('{:__("Please select the table name first")}');
                 return false;
             }
             var l = $('#loading_box').lyearloading({
@@ -148,7 +148,7 @@
                     EchoMsg(res.msg);
                 })
                 .fail(function () {
-                    EchoMsg('请求错误，请稍候重试');
+                    EchoMsg('{:__("Request error, please try again later")}');
                 })
                 .always(function () {
                     l.destroy();
@@ -172,7 +172,7 @@
                 EchoMsg(res.msg);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -191,7 +191,7 @@
                 EchoMsg(res.msg);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -212,7 +212,7 @@
                 EchoMsg(res.msg);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();

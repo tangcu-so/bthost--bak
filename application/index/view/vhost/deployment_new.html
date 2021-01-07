@@ -3,34 +3,34 @@
 <div class="row">
 	<div class="col-md-12">
 		<div class="card">
-			<div class="card-body">
+			<div class="card-body" id="loading_box">
 				<small class="text-muted">
-					<span style="color:red">！</span> 注意：请按照推荐PHP版本进行安装，如果程序在运行中出现异常，请调整PHP版本的设置。<br>
-					<span style="color:red">！</span> 部署时长不定，取决于网络状况，所以如果出现很久没有响应的也不要紧张。<br>
-					<span style="color:red">！</span> 一键部署程序不会清空网站内容，所以在部署前请尽量保证网站内容为空，避免造成文件/文件夹丢失。<br>
-					<span style="color:red">！</span> 该功能由宝塔提供技术支持，如果多次出现程序部署失败，请联系本站管理员。<br>
+					<span style="color:red">！</span> {:__('Note: Please install according to the recommended PHP version. If the program runs abnormally, please adjust the PHP version settings.')}<br>
+					<span style="color:red">！</span> {:__("The deployment time is variable and depends on the network conditions, so don\'t be nervous if there is no response for a long time.")}<br>
+					<span style="color:red">！</span> {:__('The automatic deployment program will not clear the website content, so please try to ensure that the website content is empty before deployment to avoid file/folder loss.')}<br>
+					<span style="color:red">！</span> {:__('This feature is provided by bt.cn with technical support. If the program deployment fails repeatedly, please contact the site administrator.')}<br>
 				</small>
 				<hr>
-				<div class="table-responsive" id="loading_box">
+				<div class="table-responsive">
 
 					<form action="" method="post">
 						<table class="table  table-striped table-hover table-sm">
 							<thead>
 								<tr>
-									<th style="border:0" colspan="2">一键部署程序列表</th>
+									<th style="border:0" colspan="2">{:__('List of automatic deployment programs')}</th>
 								</tr>
 								<tr>
-									<th>名称</th>
-									<th>版本</th>
-									<th>简介</th>
-									<th>支持PHP版本</th>
-									<th>提供者</th>
-									<th>安装量</th>
-									<th>操作</th>
+									<th>{:__('Name')}</th>
+									<th>{:__('Version')}</th>
+									<th>{:__('Introduction')}</th>
+									<th>{:__('Php version')}</th>
+									<th>{:__('Author')}</th>
+									<th>{:__('Installed')}</th>
+									<th>{:__('Operation')}</th>
 								</tr>
 							</thead>
 							<tbody>
-								{volist name="deploymentList.list" id="program" empty="当前无可用程序"}
+								{volist name="deploymentList.list" id="program" empty="__('Empty')"}
 								<tr>
 									<td>{$program.title}</td>
 									<td>{$program.version|default="--"}</td>
@@ -41,7 +41,7 @@
 									<td>
 										<a href="javascript:deploymentSet('{$program.name}')"
 										class="btn btn-success btn-xs btn-label"><label><i
-												class="mdi mdi-checkbox-marked-circle-outline"></i></label>一键部署</a></td>
+												class="mdi mdi-checkbox-marked-circle-outline"></i></label>{:__('Execute')}</a></td>
 								</tr>
 								{/volist}
 							</tbody>
@@ -57,18 +57,18 @@
 <script type="text/javascript">
 	function deploymentSet(dep) {
 		if (!dep) {
-			EchoMsg('意外的错误，请稍候刷新页面后重试',1);
+			EchoMsg('{:__("Unexpected situation")}',1);
 			return false;
 		}
 		$.confirm({
-			title: '温馨提醒',
-			content: '一键部署将覆盖站点原有内容，请确认',
+			title: '{:__("Reminder")}',
+			content: '{:__("Automatic deployment will overwrite the original content of the site, please confirm")}',
 			icon: 'mdi mdi-alert',
 			animation: 'scale',
 			closeAnimation: 'zoom',
 			buttons: {
 				confirm: {
-					text: '确定',
+					text: '{:__("Confirm")}',
 					btnClass: 'btn-orange',
 					action: function () {
 						var l = $('#loading_box').lyearloading({
@@ -82,14 +82,14 @@
 							EchoMsg(res.msg,1);
 						})
 						.fail(function(){
-							EchoMsg('请求超时，请稍候查看网站是否部署完成');
+							EchoMsg('{:__("Request timed out, please wait to see if the website is deployed")}');
 						})
 						.always(function(){
 							l.destroy();
 						})
 					}
 				},
-				'取消': function () {
+				'{:__("Cancel")}': function () {
 
 				}
 			}

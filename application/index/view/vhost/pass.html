@@ -5,25 +5,25 @@
         <div class="card" id="loading_box">
             <div class="card-header">
                 <header class="card-title">
-                    管理密码配置
+                    {:__('%s pass setting',__('Host'))}
                 </header>
             </div>
             <div class="card-body">
                 <form action="" method="post" id="panel">
                     <div class="form-group">
-                        <label for="">用户名：</label>
+                        <label for="">{:__('Username')}：</label>
                         <input name="username" class="span3 form-control" value="{$userInfo.username}" disabled="">
                     </div>
                     <div class="form-group">
-                        <label for="">旧密码：</label>
+                        <label for="">{:__('Old password')}：</label>
                         <input name="oldpass" class="span3 form-control" value="" type="password">
                     </div>
                     <div class="form-group">
-                        <label for="">新密码：</label>
+                        <label for="">{:__('New password')}：</label>
                         <input name="password" class="span3 form-control" value="" type="password">
                     </div>
                     <div class="form-group">
-                        <input type="button" value="修改" class="btn btn-warning" onclick="newPass()">
+                        <input type="button" value="{:__('Change')}" class="btn btn-warning" onclick="newPass()">
                     </div>
                 </form>
             </div>
@@ -34,21 +34,21 @@
         <div class="card" id="loading_box1">
             <div class="card-header">
                 <header class="card-title">
-                    FTP密码配置
+                    {:__('%s pass setting',__('Ftp'))}
                 </header>
             </div>
             <div class="card-body">
                 <form action="" method="post" id="ftp">
                     <div class="form-group">
-                        <label for="">用户名：</label>
+                        <label for="">{:__('Username')}：</label>
                         <input name="username" class="span3 form-control" value="{$hostInfo.ftp.username}" disabled="">
                     </div>
                     <div class="form-group">
-                        <label for="">密码：</label>
+                        <label for="">{:__('Password')}：</label>
                         <input name="password" class="span3 form-control" value="">
                     </div>
                     <div class="form-group">
-                        <input type="button" value="修改" class="btn btn-warning" onclick="ftpUp()">
+                        <input type="button" value="{:__('Change')}" class="btn btn-warning" onclick="ftpUp()">
                     </div>
                 </form>
             </div>
@@ -60,21 +60,21 @@
         <div class="card" id="loading_box2">
             <div class="card-header">
                 <header class="card-title">
-                    SQL密码配置
+                    {:__('%s pass setting',__('Sql'))}
                 </header>
             </div>
             <div class="card-body">
                 <form action="" method="post" id="sql">
                     <div class="form-group">
-                        <label for="">用户名：</label>
+                        <label for="">{:__('Username')}：</label>
                         <input name="username" class="span3 form-control" value="{$hostInfo.sql.username}" disabled="">
                     </div>
                     <div class="form-group">
-                        <label for="">密码：</label>
+                        <label for="">{:__('Password')}：</label>
                         <input name="password" class="span3 form-control" value="">
                     </div>
                     <div class="form-group">
-                        <input type="button" value="修改" class="btn btn-warning" onclick="sqlUp()">
+                        <input type="button" value="{:__('Change')}" class="btn btn-warning" onclick="sqlUp()">
                     </div>
                 </form>
             </div>
@@ -89,7 +89,7 @@
         oldpass = $('#panel input[name="oldpass"]').val();
         password = $('#panel input[name="password"]').val();
         if (!password) {
-            EchoMsg('都不能为空');
+            EchoMsg('{:__("Can not be empty")}');
             return false;
         }
         var l = $('#loading_box').lyearloading({
@@ -103,7 +103,7 @@
                 EchoMsg(res.msg, 1);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -113,7 +113,7 @@
     function ftpUp() {
         password = $('#ftp input[name="password"]').val();
         if (!password) {
-            EchoMsg('密码不能为空');
+            EchoMsg('{:__("%s can not be empty",__("Password"))}');
             return false;
         }
         var l = $('#loading_box1').lyearloading({
@@ -126,7 +126,7 @@
                 EchoMsg(res.msg, 1);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();
@@ -136,7 +136,7 @@
     function sqlUp() {
         password = $('#sql input[name="password"]').val();
         if (!password) {
-            EchoMsg('密码不能为空');
+            EchoMsg('{:__("%s can not be empty",__("Password"))}');
             return false;
         }
         var l = $('#loading_box2').lyearloading({
@@ -149,7 +149,7 @@
                 EchoMsg(res.msg, 1);
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
             .always(function () {
                 l.destroy();

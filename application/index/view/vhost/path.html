@@ -5,17 +5,17 @@
 		<div class="card" id="loading_box">
 			<div class="card-header">
 				<header class="card-title">
-					运行目录
+					{:__('Run path')}
 				</header>
 			</div>
 			<div class="card-body">
 				<form action="" method="post">
 					<div class="form-group">
-						<label for="path">当前运行目录：</label>
+						<label for="path">{:__('Current running directory')}：</label>
 						<input name="path" id="path" class="span3 form-control" value="{$runPath.runPath}" disabled="">
 					</div>
 					<div class="form-group">
-						<label for="dirs">选择运行目录：</label>
+						<label for="dirs">{:__('Select run directory')}：</label>
 						<select name="dirs" id="dirs" class="form-control">
 							{volist name="$runPath.dirs" id="dirs"}
 							<option value="{$dirs}">{$dirs}</option>
@@ -23,13 +23,13 @@
 						</select>
 					</div>
 					<div class="form-group">
-						<input type="button" value="修 改" class="btn btn-warning" onclick="set_path()">
+						<input type="button" value="{:__('Save')}" class="btn btn-warning" onclick="set_path()">
 					</div>
 				</form>
 				<hr>
 				<small class="text-muted">
-					<li>部分程序需要指定二级目录作为运行目录，如ThinkPHP5，Laravel</li>
-					<li>选择您的运行目录，点保存即可</li>
+					<li>{:__('Some programs need to specify a secondary directory as the running directory, such as ThinkPHP5, Laravel')}</li>
+					<li>{:__('Select your run directory, click save')}</li>
 				</small>
 			</div>
 		</div>
@@ -42,7 +42,7 @@
 	function set_path() {
 		dirs = $('#dirs').val();
 		if (!dirs) {
-			EchoMg('目录不能为空');
+			EchoMg('{:__("%s can not be empty",__("Dir"))}');
 			return false;
 		}
 		var l = $('#loading_box').lyearloading({
@@ -59,7 +59,7 @@
 				}
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();

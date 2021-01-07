@@ -70,11 +70,11 @@ class User extends Frontend
             }
         }
         if (!$list) {
-            $this->error('当前无可用站点<a href="' . url('index/user/logout') . '">退出登录</a>', '');
+            $this->error(__('No site currently available') . '<a href="' . url('index/user/logout') . '">' . __('Logout') . '</a>', '');
         }
         $this->view->assign('list', $list);
         // 站点选择页
-        $this->view->assign('title', __('站点选择'));
+        $this->view->assign('title', __('Site selection'));
         return $this->view->fetch();
     }
 

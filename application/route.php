@@ -31,6 +31,7 @@ return [
     'logout'=>'index/user/logout',
     'main'=>'index/vhost/main',
     'domain'=>'index/vhost/domain',
+    'hostreset' => 'index/vhost/hostreset',
     'pass'=>'index/vhost/pass',
     'speed'=>'index/vhost/speed',
     'Rewrite301'=>'index/vhost/Rewrite301',

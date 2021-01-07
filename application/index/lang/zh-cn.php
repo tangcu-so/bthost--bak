@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'Logout' => '退出登录',
     'Keep login'                                             => '保持会话',
     'Forgot password'                                        => '忘记密码?',
     'Username'                                               => '用户名',
@@ -139,4 +140,21 @@ return [
     'You have no permission'                                 => '你没有权限访问',
     'An unexpected error occurred'                           => '发生了一个意外错误,程序猿正在紧急处理中',
     'This page will be re-directed in %s seconds'            => '页面将在 %s 秒后自动跳转',
+    'Host status' => '主机状态',
+    'normal' => '正常',
+    'stop' => '停止',
+    'locked' => '锁定',
+    'expired' => '过期',
+    'excess' => '超量',
+    'error' => '异常',
+    'Web size'                              => '网页空间',
+    'Sql size'                              => '数据空间',
+    'Flow size'                             => '流量资源',
+    '∞' => '无限制',
+    'Enter' => '管理',
+    'Please enter %s'                       => '请输入%s',
+    'Console center'                        => '控制台',
+    'Site selection' => '站点选择',
+    'No site currently available' => '当前无可用站点',
+    'Host resources' => '主机资源',
 ];

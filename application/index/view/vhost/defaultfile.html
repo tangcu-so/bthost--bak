@@ -5,20 +5,20 @@
 		<div class="card" id="loading-box">
 			<div class="card-header">
 				<header class="card-title">
-					网站默认文件
+					{:__('Default file')}
 				</header>
 			</div>
 			<div class="card-body">
 				<div class="table-responsive">
 					<form action="" method="post">
 						<div class="form-group">
-							<label for="Dindex">默认文件后缀：</label>
+							<label for="Dindex">{:__('Default file suffix')}：</label>
 							<input type="text" name="Dindex" id="Dindex" value="{$indexfile}" class="form-control">
-							<small class="text-muted"><span style="color:red">！</span>优先级由前至后。使用英文,分隔</small>
+							<small class="text-muted"><span style="color:red">！</span>{:__('The priority is from front to back. Use English, separate')}</small>
 						</div>
 
 						<div class="form-group">
-							<input type="button" value="提交" class="btn btn-warning" onclick="fileUp()">
+							<input type="button" value="{:__('Submit')}" class="btn btn-warning" onclick="fileUp()">
 						</div>
 					</form>
 				</div>
@@ -32,7 +32,7 @@
 	function fileUp() {
 		Dindex = $('#Dindex').val();
 		if (!Dindex) {
-			EchoMsg('不能为空');
+			EchoMsg('{:__("Can not be empty")}');
 			return false;
 		}
 		var l = $('#loading-box').lyearloading({
@@ -45,7 +45,7 @@
 				EchoMsg(res.msg, 1);
 			})
 			.fail(function () {
-				EchoMsg('请求错误，请稍候重试');
+				EchoMsg('{:__("Request error, please try again later")}');
 			})
 			.always(function () {
 				l.destroy();

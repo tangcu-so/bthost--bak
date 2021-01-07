@@ -5,23 +5,23 @@
 		<div class="card" id="loading_box">
 			<div class="card-header">
 				<header class="card-title">
-					备份
+					{:__('Backup')}
 				</header>
 			</div>
 			<div class="card-body">
-				<a href="javascript:webBackInc()" class="btn btn-warning btn-w-md">站点备份</a>
+				<a href="javascript:webBackInc()" class="btn btn-warning btn-w-lg">{:__('Web backup')}</a>
 				<p>
 					<small id="passwordHelpInline" class="text-muted">
-						剩余手动备份次数：{if $hostInfo.web_back_num!=0}{$hostInfo.web_back_num-$countback_site}次{if ($hostInfo.web_back_num -
-						$countback_site) < 1}，请先删除原有备份再进行备份{/if}{else/}无限制{/if}
+						{:__('Remaining manual backup num')}：{if $hostInfo.web_back_num!=0}{$hostInfo.web_back_num-$countback_site}{if ($hostInfo.web_back_num -
+						$countback_site) < 1}，{:__('Please delete the original backup before backup')}{/if}{else/}{:__('Unlimited')}{/if}
 					</small>
 				</p>
 				{if $hostInfo.sql.username}
-				<a href="javascript:sqlBackInc()" class="btn btn-warning btn-w-md">数据库备份</a>
+				<a href="javascript:sqlBackInc()" class="btn btn-warning btn-w-lg">{:__('Sql backup')}</a>
                 <p>
                     <small id="passwordHelpInline" class="text-muted">
-                        剩余手动备份次数：{if $hostInfo.sql_back_num!=0}{$hostInfo.sql_back_num-$countback_sql}次{if
-                        ($hostInfo.sql_back_num - $countback_sql) < 1}，请先删除原有备份再进行备份{/if}{else/}无限制{/if}
+                        {:__('Remaining manual backup num')}：{if $hostInfo.sql_back_num!=0}{$hostInfo.sql_back_num-$countback_sql}{if
+                        ($hostInfo.sql_back_num - $countback_sql) < 1}，{:__('Please delete the original backup before backup')}{/if}{else/}{:__('Unlimited')}{/if}
 					</small>
 				</p>
 				{/if}
@@ -34,7 +34,7 @@
 		<div class="card" id="loading_list">
 			<div class="card-header">
 				<header class="card-title">
-					备份列表
+					{:__('Backup list')}
 				</header>
 			</div>
 			<div class="card-body">
@@ -43,23 +43,23 @@
 						<table class="table">
 							<thead>
 								<tr>
-									<th>文件名称</th>
-									<th>文件大小</th>
-									<th>备份时间</th>
-									<th>操作</th>
+									<th>{:__('File name')}</th>
+									<th>{:__('File size')}</th>
+									<th>{:__('Backup time')}</th>
+									<th>{:__('Operation')}</th>
 								</tr>
 							</thead>
 							<tbody>
 								{volist name="WebBackupList.data" id="web"}
 								<tr>
 									<td>{$web.name} <span
-											class="badge badge-info">网站备份</span></td>
+											class="badge badge-info">{:__('Web backup')}</span></td>
 									<td>{$web.size}</td>
 									<td>{$web.addtime}</td>
 									<td>
 										<a href="{:url('index/vhost/back')}?down_back_file={$web.name}"
-											target="_blank" class="btn btn-label btn-info btn-xs"><label><i class="mdi mdi-arrow-down-bold-hexagon-outline"></i></label> 下载</a>
-											<a class="btn btn-label btn-danger btn-xs" onclick="webBackDel('{$web.id}')"><label><i class="mdi mdi-close"></i></label> 删除</a>
+											target="_blank" class="btn btn-label btn-info btn-xs"><label><i class="mdi mdi-arrow-down-bold-hexagon-outline"></i></label> {:__('Download')}</a>
+											<a class="btn btn-label btn-danger btn-xs" onclick="webBackDel('{$web.id}')"><label><i class="mdi mdi-close"></i></label> {:__('Delete')}</a>
 									</td>
 								</tr>
 								{/volist}
@@ -67,19 +67,19 @@
 								{volist name="SqlBackupList.data" id="sql"}
 								<tr>
 									<td>{$sql.name} <span
-											class="badge badge-purple">数据库备份</span></td>
+											class="badge badge-purple">{:__('Sql backup')}</span></td>
 									<td>{$sql.size}</td>
 									<td>{$sql.addtime}</td>
 									<td>
 										<a href="{:url('index/vhost/sqlBackDown')}?down_back_sql={$sql.name}"
                                             target="_blank" class="btn btn-label btn-info btn-xs">
-                                            <label><i class="mdi mdi-arrow-down-bold-hexagon-outline"></i></label> 下载
+                                            <label><i class="mdi mdi-arrow-down-bold-hexagon-outline"></i></label> {:__('Download')}
                                         </a>
                                         <a class="btn btn-label btn-warning btn-xs" onclick="sqlInputSql('{$sql.name}')">
-                                            <label><i class="mdi mdi-close"></i></label> 恢复
+                                            <label><i class="mdi mdi-close"></i></label> {:__('Restore')}
                                         </a>
                                         <a class="btn btn-label btn-danger btn-xs" onclick="sqlBackDel('{$sql.id}')">
-                                            <label><i class="mdi mdi-close"></i></label> 删除
+                                            <label><i class="mdi mdi-close"></i></label> {:__('Delete')}
                                         </a>
 									</td>
 								</tr>
@@ -98,14 +98,14 @@
 <script type="text/javascript">
 	function webBackInc() {
 		$.confirm({
-			title: '温馨提醒',
-			content: '备份时间依照网站大小而定',
+			title: '{:__("Reminder")}',
+			content: '{:__("The backup time depends on the size of the %s",__("Site Size"))}',
 			icon: 'mdi mdi-alert',
 			animation: 'scale',
 			closeAnimation: 'zoom',
 			buttons: {
 				confirm: {
-					text: '备份',
+					text: '{:__("Backup")}',
 					btnClass: 'btn-orange',
 					action: function () {
 						var l = $('#loading_box').lyearloading({
@@ -118,14 +118,14 @@
 							EchoMsg(res.msg, 1);
 						})
 						.fail(function () {
-							EchoMsg('请求错误，请稍候重试');
+							EchoMsg('{:__("Request error, please try again later")}');
 						})
 						.always(function () {
 							l.destroy();
 						})
 					}
 				},
-				'取消': function () {
+				'{:__("Cancel")}': function () {
 
 				}
 			}
@@ -134,14 +134,14 @@
 
 	function webBackDel(id) {
 		$.confirm({
-			title: '温馨提醒',
-			content: '确定删除？',
+			title: '{:__("Reminder")}',
+			content: '{:__("Confirm delete?")}',
 			icon: 'mdi mdi-alert',
 			animation: 'scale',
 			closeAnimation: 'zoom',
 			buttons: {
 				confirm: {
-					text: '确定',
+					text: '{:__("Confirm")}',
 					btnClass: 'btn-orange',
 					action: function () {
 						var l = $('#loading_list').lyearloading({
@@ -154,14 +154,14 @@
 							EchoMsg(res.msg, 1);
 						})
 						.fail(function () {
-							EchoMsg('请求错误，请稍候重试');
+							EchoMsg('{:__("Request error, please try again later")}');
 						})
 						.always(function () {
 							l.destroy();
 						})
 					}
 				},
-				'取消': function () {
+				'{:__("Cancel")}': function () {
 
 				}
 			}
@@ -175,14 +175,14 @@
 			EchoMsg(res.msg, 1);
 		})
 		.fail(function () {
-			EchoMsg('请求错误，请稍候重试');
+			EchoMsg('{:__("Request error, please try again later")}');
 		})
 	}
 
 	function sqlBackInc() {
         $.confirm({
-            title: '温馨提醒',
-            content: '备份时间依照数据库大小而定',
+            title: '{:__("Reminder")}',
+            content: '{:__("The backup time depends on the size of the %s",__("Sql"))}',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
@@ -201,14 +201,14 @@
                             EchoMsg(res.msg, 1);
                         })
                         .fail(function () {
-                            EchoMsg('请求错误，请稍候重试');
+                            EchoMsg('{:__("Request error, please try again later")}');
                         })
                         .always(function () {
                             l.destroy();
                         })
                     }
                 },
-                '取消': function () {
+                '{:__("Cancel")}': function () {
 
                 }
             }
@@ -217,14 +217,14 @@
 
     function sqlBackDel(id) {
         $.confirm({
-            title: '温馨提醒',
-            content: '确定删除？',
+            title: '{:__("Reminder")}',
+            content: '{:__("Confirm delete?")}',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
             buttons: {
                 confirm: {
-                    text: '确定',
+                    text: '{:__("Confirm")}',
                     btnClass: 'btn-orange',
                     action: function () {
                         var l = $('#loading_list').lyearloading({
@@ -237,14 +237,14 @@
                             EchoMsg(res.msg, 1);
                         })
                         .fail(function () {
-                            EchoMsg('请求错误，请稍候重试');
+                            EchoMsg('{:__("Request error, please try again later")}');
                         })
                         .always(function () {
                             l.destroy();
                         })
                     }
                 },
-                '取消': function () {
+                '{:__("Cancel")}': function () {
 
                 }
             }
@@ -256,19 +256,19 @@
 			EchoMsg(res.msg,1);
 		})
         .fail(function () {
-            EchoMsg('请求错误，请稍候重试');
+            EchoMsg('{:__("Request error, please try again later")}');
         })
 	}
 	function sqlInputSql(file){
         $.confirm({
-            title: '温馨提醒',
-            content: '原有数据将被覆盖，且不可恢复，继续吗?',
+            title: '{:__("Reminder")}',
+            content: '{:__("The original data will be overwritten and not recoverable. Continue?")}',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
             buttons: {
                 confirm: {
-                    text: '确定',
+                    text: '{:__("Confirm")}',
                     btnClass: 'btn-orange',
                     action: function () {
                         var l = $('#loading_list').lyearloading({
@@ -279,14 +279,14 @@
                             EchoMsg(res.msg,1);
                         })
                         .fail(function () {
-                            EchoMsg('请求错误，请稍候重试');
+                            EchoMsg('{:__("Request error, please try again later")}');
                         })
                         .always(function () {
                             l.destroy();
                         })
                     }
                 },
-                '取消': function () {
+                '{:__("Cancel")}': function () {
 
                 }
             }

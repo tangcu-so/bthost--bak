@@ -5,17 +5,17 @@
         <div class="card">
             <div class="card-header">
                 <header class="card-title">
-                    域名绑定
+                    {:__('Domain bind')}
                 </header>
             </div>
             <div class="card-body">
                 <form action="" method="post">
                     <div class="form-group">
                         <textarea id="domain" name="domain" rows="5" class="form-control"
-                            placeholder="每行填写一个域名&#10;泛解析添加方法：*.domain.com&#10;"></textarea>
+                            placeholder="{:__('Fill in a domain name per line.&#10;Pan-resolution adding method: *.domain.com&#10;')}"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="dirs">绑定目录：</label>
+                        <label for="dirs">{:__('Dir')}：</label>
                         <select name="dirs" id="dirs" class="form-control">
                             <option value="/">/</option>
                             {if $sub_bind}
@@ -26,13 +26,13 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <input type="button" value="增加" class="btn btn-warning" onclick="incDomain()">
+                        <input type="button" value="{:__('Submit')}" class="btn btn-warning" onclick="incDomain()">
                     </div>
                     <small class="text-muted">
-                        <span style="color:red">！</span> 解析地址：{if
+                        <span style="color:red">！</span> {:__('Resolve address')}：{if
                         $Think.config.site.default_analysis==0}{$hostInfo.bt_name}{else/}{$Think.config.site.dnspod_analysis_url}{/if}
                         <br>
-                        <span class="text-danger">！</span> 剩余可绑定域名：{$hostInfo.domain_max==0?'无限制':$sys}
+                        <span class="text-danger">！</span> {:__('Bindable domain name')}：{$hostInfo.domain_max==0?__('Unlimited'):$sys}
                         <hr>
                         {$Think.config.site.analysis_desc}
                     </small>
@@ -46,7 +46,7 @@
         <div class="card">
             <div class="card-header">
                 <header class="card-title">
-                    域名列表
+                    {:__('Domain list')}
                 </header>
             </div>
             <div class="card-body">
@@ -54,36 +54,36 @@
                     <table class="table">
                         <thead>
                             <tr>
-                                <td>域名</td>
-                                <td>状态</td>
-                                <td>目录</td>
-                                <td>操作</td>
+                                <td>{:__('Domain')}</td>
+                                <td>{:__('Status')}</td>
+                                <td>{:__('Dir')}</td>
+                                <td>{:__('Operation')}</td>
                             </tr>
                         </thead>
                         <tbody>
                             {volist name="domainList" id="domain"}
                             <tr id="domain_{$domain.name}">
                                 <td><a href="http://{$domain.name}" target="_blank">{$domain.name}</a></td>
-                                <td>正常</td>
+                                <td>{:__('normal')}</td>
                                 <td>/</td>
-                                <td><a href="javascript:delDomain('{$domain.name}','domain')">删除</a></td>
+                                <td><a href="javascript:delDomain('{$domain.name}','domain')">{:__('Delete')}</a></td>
                             </tr>
                             {/volist}
                             {volist name="dirList.binding" id="domain"}
                             <tr id="domain_{$domain.id}">
                                 <td><a href="http://{$domain.domain}" target="_blank">{$domain.domain}</a></td>
-                                <td>正常</td>
+                                <td>{:__('normal')}</td>
                                 <td>{$domain.path}</td>
-                                <td><a href="javascript:delDomain('{$domain.domain}','dir','{$domain.id}')">删除</a>
+                                <td><a href="javascript:delDomain('{$domain.domain}','dir','{$domain.id}')">{:__('Delete')}</a>
                                 </td>
                             </tr>
                             {/volist}
                             {volist name="auditList" id="audit"}
                             <tr id="domain_{$audit.domain}">
                                 <td><a href="http://{$audit.domain}" target="_blank">{$audit.domain}</a></td>
-                                <td>待审核</td>
+                                <td>{:__('Pending')}</td>
                                 <td>{$audit.dir}</td>
-                                <td><a href="javascript:delDomain('{$audit.domain}','domain')">删除</a></td>
+                                <td><a href="javascript:delDomain('{$audit.domain}','domain')">{:__('Delete')}</a></td>
                             </tr>
                             {/volist}
                         </tbody>
@@ -100,7 +100,7 @@
         domain = $('#domain').val();
         dirs = $('#dirs option:selected').val();
         if (!domain || !dirs) {
-            EchoMsg('域名不能为空');
+            EchoMsg('{:__("%s can not be empty",__("Domain"))}');
             return false;
         }
         $.post('{:url("index/vhost/incDomain")}', {
@@ -114,24 +114,24 @@
                 }
             })
             .fail(function () {
-                EchoMsg('请求错误，请稍候重试');
+                EchoMsg('{:__("Request error, please try again later")}');
             })
     }
 
     function delDomain(domain, type, id = '') {
         if (!domain || !type) {
-            EchoMsg('意外的情况');
+            EchoMsg('{:__("Unexpected situation")}');
             return false;
         }
         $.confirm({
-            title: '温馨提醒',
-            content: '确定删除？',
+            title: '{:__("Reminder")}',
+            content: '{:__("Confirm delete?")}',
             icon: 'mdi mdi-alert',
             animation: 'scale',
             closeAnimation: 'zoom',
             buttons: {
                 confirm: {
-                    text: '确定',
+                    text: '{:__("Confirm")}',
                     btnClass: 'btn-orange',
                     action: function () {
                         $.post('{:url("index/vhost/delDomain")}', {
@@ -146,13 +146,21 @@
                                 }
                             })
                             .fail(function () {
-                                EchoMsg('请求错误，请稍候重试');
+                                EchoMsg('{:__("Request error, please try again later")}');
                             })
                     }
                 },
-                '取消': function () {}
+                '{:__("Cancel")}': function () {}
             }
         });
     }
+    $(function(){
+        $('#domain').blur(function(){
+            var content = $(this).val();
+            var AllReplace = new RegExp("https|http|ftp|。|：| |/","g");
+            content=content.replace(AllReplace,"");
+            $(this).val(content);
+        });
+    });
 </script>
 {/block}

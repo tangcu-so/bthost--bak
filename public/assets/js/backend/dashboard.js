@@ -125,7 +125,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
     }
     server.getnet = function(){
         $.post('ajax/getNet', {type: 'getGetNetWork'}, function(data, textStatus, xhr) {
-            if(data){
+            if(data&&data.system){
                 $('#loadOne').html(server.toPercent(data.load.one));
                 if(data.load.one<0.5){
                     $('#loadStatus').html('运行流畅');
@@ -167,6 +167,8 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                             data: Orderdata.createdata
                         }]
                 });
+            }else if(data.msg){
+                layer.alert(data.msg);
             }else{
                 layer.msg('请求错误');
             }

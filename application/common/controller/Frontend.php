@@ -94,6 +94,10 @@ class Frontend extends Controller
             $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
         }
 
+        if (!Config('site.debug')) {
+            error_reporting(E_ALL ^ E_NOTICE);
+        }
+
         $this->auth_check_local();
 
         // 已登录用户信息
@@ -213,7 +217,8 @@ class Frontend extends Controller
             $ipInfo = $bt->getIp();
             $ip = $ipInfo;
             if (!$ip) {
-                return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确');
+                $msg = __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct');
+                return $is_ajax ? $this->error($msg) : sysmsg($msg);
             }
             // ip需要密文加密
             $ip_encode = encode($ipInfo, 'ZD4wNqBVN0Gn');
@@ -222,38 +227,75 @@ class Frontend extends Controller
             $ip_encode = Cache::get('auth_check_ip');
             $ip = decode($ip_encode, 'ZD4wNqBVN0Gn');
             if (!$ip) {
-                return $is_ajax ? $this->error('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确，或尝试删除目录/runtime/cache后重试！') : sysmsg('当前服务器公网IP获取失败，请确保你的面板有公网能力，并检查服务器通讯及密钥是否正确，或尝试删除目录/runtime/cache后重试！');
+                $msg = __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct') . '，' . __('Or try to delete the directory /runtime/cache and try again!');
+                return $is_ajax ? $this->error($msg) : sysmsg($msg);
             }
         }
 
-
-        if (!Cache::get('auth_check')) {
-            $json = $this->auth_check($ip);
-            $curl = Cache::remember('auth_check', $json, 0);
+        // 离线授权
+        if (Config::get('auth.code')) {
+            $security_code = Config::get('auth.code');
         } else {
-            $curl = Cache::get('auth_check');
+            // 线上授权
+            $curl = $this->auth_check($ip);
+            if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+                $security_code = $curl['encode'];
+            } elseif (isset($curl['msg'])) {
+                $msg = $ip . $curl['msg'];
+                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+            } else {
+                $msg = $ip . __('Authorization check failed');
+                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+            }
         }
 
-        if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+        if ($security_code) {
             // 解密信息获取域名及有效期
             // 公钥解密
-            $decode = $rsa->pubDecrypt($curl['encode']);
+            $decode = $rsa->pubDecrypt($security_code);
             if (!$decode) {
-                return $is_ajax ? $this->error('授权信息错误') : sysmsg('授权信息错误');
+                return $is_ajax ? $this->error(__('security_code error')) : sysmsg(__('security_code error'));
             }
             $decode_arr = explode('|', $decode);
+
+            list($domain, $auth_expiration_time) = $decode_arr;
+
             // 检查授权域名是否为当前域名
-            if ($decode_arr[0] != '9527' && $decode_arr[0] !== $ip) {
-                return $is_ajax ? $this->error($ip . '授权信息不正确') : sysmsg($ip . '授权信息不正确');
+            if (
+                $domain != '9527' && $domain !== $ip
+            ) {
+                return $is_ajax ? $this->error($ip . __('Authorization information error, please request authorization again or obtain authorization code')) : sysmsg($ip . __('Authorization information error, please request authorization again or obtain authorization code'));
             }
+
             // 检查授权是否过期
-            if ($decode_arr[1] != 0 && time() > $decode_arr[1]) {
-                return $is_ajax ? $this->error($ip . '授权已过期') : sysmsg($ip . '授权已过期');
+            if (
+                $auth_expiration_time != 0 && time() > $auth_expiration_time
+            ) {
+                return $is_ajax ? $this->error($ip . __('Authorization expired')) : sysmsg($ip . __('Authorization expired'));
             }
-        } elseif (isset($curl['msg'])) {
-            return $is_ajax ? $this->error($ip . $curl['msg']) : sysmsg($ip . $curl['msg']);
+
+            // 记录离线授权码
+            if ($security_code && !Config::get('auth.code')) {
+                $auth_file = APP_PATH . 'extra' . DS . 'auth.php';
+                // 判断文件是否存在
+                if (!file_exists($auth_file)) {
+                    // 不存在则创建
+                    $createfile = @fopen($auth_file, "a+");
+                    $content = "<?php return ['code' => '',];";
+                    @fputs($createfile, $content);
+                    @fclose($createfile);
+                    if (!$createfile) {
+                        $msg = __('The current permissions are insufficient to write the file %s', $auth_file);
+                        return $is_ajax ? $this->error($msg) : sysmsg($msg);
+                    }
+                }
+                // 写入code
+                $config = include $auth_file;
+                $config['code'] = $security_code;
+                file_put_contents($auth_file, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
+            }
         } else {
-            return $is_ajax ? $this->error($ip . '授权检查失败') : sysmsg($ip . '授权检查失败');
+            return $is_ajax ? $this->error($ip . __('Authorization check failed')) : sysmsg($ip . __('Authorization check failed'));
         }
     }
 }

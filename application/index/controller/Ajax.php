@@ -4,6 +4,7 @@ namespace app\index\controller;
 
 use app\common\controller\Frontend;
 use think\Lang;
+use think\Cookie;
 
 /**
  * Ajax异步请求接口
@@ -43,4 +44,30 @@ class Ajax extends Frontend
         return action('api/common/upload');
     }
 
+
+    public function getResources()
+    {
+        $querytime = $this->request->param('querytime', null);
+        $starttime = $this->request->param('starttime', null);
+        $endtime = $this->request->param('endtime', null);
+        $limit = ($querytime || $starttime || $endtime) ? 0 : ($this->request->param('init') ? 30 : 1);
+        $host_id = Cookie::get('host_id_' . $this->auth->id);
+        if (!$host_id) {
+            $this->error(__('error'));
+        }
+        $where['host_id'] = $host_id;
+        if ($starttime && $endtime) {
+            $where['createtime'] = ['between time', [$starttime, $endtime]];
+        }
+        if ($querytime) {
+            $where['createtime'] = ['between', [strtotime($querytime), strtotime($querytime) + 60 * 60 * 24]];
+        }
+        $list = \app\common\model\ResourcesLog::where($where)->order('createtime desc')->limit($limit)->field('id,host_id', true)->select();
+        // var_dump(\app\common\model\ResourcesLog::getLastSql());
+        // exit;
+        if ($list) {
+            $list  = array_column(array_reverse($list), null, 'createtime');
+        }
+        return json($list);
+    }
 }
