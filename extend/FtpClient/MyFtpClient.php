@@ -181,11 +181,9 @@ class MyFtpClient extends \FtpClient\FtpClient
         $dir  = array();
         $file = array();
         foreach ($rawlist as $k => $v) {
-            if ($v['chmod']{
-                0} == "d") {
+            if ($v['chmod'][0] == "d") {
                 $dir[$k] = $v;
-            } elseif ($v['chmod']{
-                0} == "-") {
+            } elseif ($v['chmod'][0] == "-") {
                 $file[$k] = $v;
             }
         }
