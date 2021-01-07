@@ -226,6 +226,11 @@
 
             <div class="form-group">
                 <div class="form-field">
+                    <label>{:__('security_code')}</label>
+                    <input type="text" name="security_code" placeholder="{:__('If you do not fill in the offline authorization code, you will use the online authorization')}" required=""/>
+                </div>
+
+                <div class="form-field">
                     <label>{:__('http')}</label>
                     <select name="http" id="">
                         <option value="http://">http</option>
@@ -240,11 +245,6 @@
                 <div class="form-field">
                     <label>{:__('api_port')}</label>
                     <input type="number" name="api_port" value="8888" required="" />
-                </div>
-
-                <div class="form-field">
-                    <label>{:__('security_code')}</label>
-                    <input type="text" name="security_code" placeholder="{:__('If you do not fill in the offline authorization code, you will use the online authorization')}" required=""/>
                 </div>
             </div>
 

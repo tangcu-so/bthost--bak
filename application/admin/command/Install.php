@@ -279,7 +279,7 @@ class Install extends Command
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
-        // 记录api密钥、端口
+        // 记录api密钥
         if ($api_token != '') {
             $api_token_encode = encode($api_token);
             $instance->name('config')->where('name', 'api_token')->update(['value' => $api_token_encode]);
@@ -299,6 +299,7 @@ class Install extends Command
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
+        // 记录API端口
         if ($api_port != '' && $api_port != 8888) {
             $instance->name('config')->where('name', 'api_port')->update(['value' => $api_port]);
             $configFile = APP_PATH . 'extra' . DS . 'site.php';
@@ -317,6 +318,7 @@ class Install extends Command
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
+        // 记录http协议
         if ($http != '' && $http != 'http://') {
             $instance->name('config')->where('name', 'http')->update(['value' => $http]);
             $configFile = APP_PATH . 'extra' . DS . 'site.php';
@@ -333,6 +335,26 @@ class Install extends Command
             }
             $config['http'] = $http;
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
+        }
+
+        // 记录离线授权码
+        if ($security_code) {
+            $auth_file = APP_PATH . 'extra' . DS . 'auth.php';
+            // 判断文件是否存在
+            if (!file_exists($auth_file)) {
+                // 不存在则创建
+                $createfile = @fopen($auth_file, "a+");
+                $content = "<?php return ['code' => '',];";
+                @fputs($createfile, $content);
+                @fclose($createfile);
+                if (!$createfile) {
+                    throw new Exception(__('The current permissions are insufficient to write the file %s', $auth_file));
+                }
+            }
+            // 写入code
+            $config = include $auth_file;
+            $config['code'] = $security_code;
+            file_put_contents($auth_file, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
         $installLockFile = INSTALL_PATH . "install.lock";
@@ -427,6 +449,7 @@ class Install extends Command
         if ($this->request->post('security_code')) {
             $security_code = $this->request->post('security_code');
         } else {
+            // 线上授权
             $curl = $this->auth_check($ip);
             if ($curl && isset($curl['code']) && $curl['code'] == 1) {
                 $security_code = $curl['encode'];
