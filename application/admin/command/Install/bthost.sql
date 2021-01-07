@@ -933,7 +933,9 @@ ADD COLUMN `limit_rate`  int(10) NOT NULL DEFAULT 0 COMMENT '限制流量' AFTER
 ADD COLUMN `sub_bind`  enum('0','1') NOT NULL DEFAULT '1' COMMENT '绑定子目录' AFTER `is_vsftpd`;
 INSERT INTO `bth_product` (`id`, `pid`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`) VALUES (null, '1', 'sub_bind', 'btpanel', '子目录绑定', '是否允许绑定域名到子目录', 'radio', '1', '{\"1\":\"允许\",\"0\":\"不允许\"}', NULL, NULL);
 
--- 新版待添加
+-- 1.3.0+20210107
+INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/hostreset', '站点重置', '站点重置', '1', '1609135243', '1609135406', '88', 'normal');
+
 -- ----------------------------
 -- Table structure for bth_hostreset_log
 -- ----------------------------
