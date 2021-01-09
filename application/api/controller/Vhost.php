@@ -24,9 +24,10 @@ class Vhost extends Api
     {
         parent::_initialize();
         $this->access_token = Config::get('site.access_token');
-        if(!$this->token_check()){
-            // TODO 上线需要验证签名
-            $this->error('签名错误');
+        try {
+            $this->token_check();
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
         }
         $this->hostModel = model('host');
         $this->sqlModel = model('sql');
@@ -1155,15 +1156,24 @@ class Vhost extends Api
     
     // 签名验证
     private function token_check(){
+        // TODO 上线需要验证签名
+        // return true;
         // 时间戳
         $time = $this->request->param('time/d');
-        if((time()-$time)>10){
-            return false;
-        }
+        $signature_time = Config::get('site.signature_time') ? Config::get('site.signature_time') : 10;
+        
         // 随机数
         $random = $this->request->param('random');
         // 签名
         $signature = $this->request->param('signature');
+
+        if (!$time || !$random || !$signature) {
+            throw new \Exception(__('Signature fail'));
+        }
+
+        if ((time() - $time) > $signature_time) {
+            throw new \Exception(__('Signature expired'));
+        }
 
         $data = [
             'time' => $time,
@@ -1179,7 +1189,7 @@ class Vhost extends Api
         if($sig_key===$signature){
             return true;
         }else{
-            return false;
+            throw new \Exception(__('Signature fail'));
         }
     }
 }

@@ -962,3 +962,20 @@ CREATE TABLE `bth_hostresources_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='主机资源记录表';
 
+
+-- 新版待添加
+ALTER TABLE `bth_config` ADD COLUMN `weigh`  int(10) NOT NULL DEFAULT 0 COMMENT '排序' AFTER `setting`;
+
+INSERT INTO `bthost`.`bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'signature_time', 'secret', 'signature_time', '签名有效时长,单位s', 'number', '10', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '100');
+
+UPDATE `bth_config` SET `weigh`='101' WHERE (`name`='access_token');
+UPDATE `bth_config` SET `weigh`='100' WHERE (`name`='api_token');
+UPDATE `bth_config` SET `weigh`='101' WHERE (`name`='http');
+UPDATE `bth_config` SET `weigh`='10' WHERE (`name`='split_size');
+UPDATE `bth_config` SET `weigh`='100' WHERE (`name`='mail_type');
+UPDATE `bth_config` SET `weigh`='95' WHERE (`name`='mail_smtp_host');
+UPDATE `bth_config` SET `weigh`='93' WHERE (`name`='mail_smtp_port');
+UPDATE `bth_config` SET `weigh`='90' WHERE (`name`='mail_from');
+UPDATE `bth_config` SET `weigh`='85' WHERE (`name`='mail_smtp_pass');
+UPDATE `bth_config` SET `weigh`='83' WHERE (`name`='mail_verify_type');
+UPDATE `bth_config` SET `weigh`='80' WHERE (`name`='mail_smtp_user');
