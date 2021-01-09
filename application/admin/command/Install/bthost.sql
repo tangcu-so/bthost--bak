@@ -580,6 +580,8 @@ CREATE TABLE `bth_ipaddress` (
 -- Records of bth_ipaddress
 -- ----------------------------
 
+INSERT INTO `bth_ipaddress` (`id`, `ip`, `ippools_id`, `mask`, `gateway`, `createtime`, `updatetime`, `deletetime`, `status`) VALUES ('1', '127.0.0.1', '1', '255.255.255.0', '192.168.1.0', '1597804165', '1599029813', NULL, 'normal');
+
 -- ----------------------------
 -- Table structure for bth_ippools
 -- ----------------------------
@@ -599,6 +601,8 @@ CREATE TABLE `bth_ippools` (
 -- ----------------------------
 -- Records of bth_ippools
 -- ----------------------------
+
+INSERT INTO `bth_ippools` (`id`, `name`, `tag`, `content`, `createtime`, `updatetime`, `deletetime`, `status`) VALUES ('1', '测试1', 'test1', '这是测试1的IP池\r\n', '1597303276', '1597303276', NULL, 'normal');
 
 -- ----------------------------
 -- Table structure for bth_plans
