@@ -92,4 +92,10 @@ class Common
             opcache_reset();
         }
     }
+
+    // 备案检查
+    public static function beian_check($domain)
+    {
+        return false;
+    }
 }
