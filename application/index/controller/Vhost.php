@@ -4,6 +4,9 @@ namespace app\index\controller;
 
 use app\common\controller\Frontend;
 use app\common\library\Btaction;
+use app\common\model\Sql;
+use app\common\model\Host;
+use app\common\model\Ftp;
 use think\Config;
 use think\Cookie;
 use think\Hook;
@@ -20,17 +23,11 @@ use think\Cache;
 class Vhost extends Frontend
 {
     protected $layout = 'default';
-    protected $noNeedLogin = ['login', 'register','clear_cache'];
-    // protected $noNeedRight = ['*']; //测试阶段无需鉴权
+    protected $noNeedLogin = ['login', 'register', 'clear_cache'];
     protected $noNeedRight = ['logout'];
 
-    /**
-     * 宝塔站点ID
-     *
-     * @var string
-     */
-    private $bt_id          = '';
-    private $btTend        = null;
+    private $bt_id;
+    private $btTend;
 
     private $reg         = "/(;|{|}|\|)/";
     private $reg_rewrite = "/(root|alias|_by_lua|http_upgrade)/";
