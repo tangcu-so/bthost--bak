@@ -5,6 +5,7 @@ namespace app\index\controller;
 use app\common\controller\Frontend;
 use think\Lang;
 use think\Cookie;
+use think\Cache;
 
 /**
  * Ajax异步请求接口
@@ -44,7 +45,7 @@ class Ajax extends Frontend
         return action('api/common/upload');
     }
 
-
+    // 资源图表
     public function getResources()
     {
         $querytime = $this->request->param('querytime', null);
@@ -69,5 +70,28 @@ class Ajax extends Frontend
             $list  = array_column(array_reverse($list), null, 'createtime');
         }
         return json($list);
+    }
+
+    // 备案检查
+    public function beian_check()
+    {
+        $domain = $this->request->post('domain');
+        $refresh = $this->request->post('refresh', 0);
+        if (!$domain) {
+            $this->error(__('%s can not be empty', __('Domain')));
+        }
+        if ($refresh) {
+            Cache::rm('domain_check_' . md5($domain));
+        }
+
+        $check = Cache::remember('domain_check_' . md5($domain), function ($domain) {
+            return \app\common\library\Common::beian_check($domain);
+        });
+
+        if (!$check) {
+            $this->error(__('%s domain cannot be beian', $domain));
+        } else {
+            $this->success(__('Success'));
+        }
     }
 }
