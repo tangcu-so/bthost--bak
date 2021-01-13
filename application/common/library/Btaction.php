@@ -58,6 +58,10 @@ class Btaction
     // 测试入口
     public function test()
     {
+        $server_config = $this->clear_config();
+        if (!$server_config) {
+            return false;
+        }
         $server_config = Cache::remember('vhost_config', function () {
             return $server_config = $this->clear_config();
         }, 3600 * 24);
@@ -423,7 +427,7 @@ class Btaction
         $rand_password = Random::alnum(12);
 
         // 构建数据
-        $hostSetInfo = array(
+        return array(
             'webname'      => '{"domain":"' . $defaultDomain . '","domainlist":[],"count":0}',
             'path'         => isset($params['WebGetKey']) && $params['WebGetKey'] ? $params['WebGetKey'] : $defaultPath . $set_domain,
             'type_id'      => isset($params['sort_id']) ? $params['sort_id'] : '0',
@@ -446,8 +450,6 @@ class Btaction
             'username'     => $set_domain,
             'password'     => $rand_password,
         );
-
-        return $hostSetInfo;
     }
 
     public function presetProcedure($dname, $btName, $defaultPhp)
@@ -1448,11 +1450,12 @@ class Btaction
     {
         $list = $this->btAction->GetSoftList();
         if ($list) {
-            if ($list['pro'] >= 0) {
+            if (isset($list['pro']) && $list['pro'] >= 0) {
                 return ['type' => 'pro', 'time' => $list['pro']];
-            }
-            if ($list['ltd'] >= 0) {
+            } elseif (isset($list['ltd']) && $list['ltd'] >= 0) {
                 return ['type' => 'ltd', 'time' => $list['ltd']];
+            } else {
+                return ['type' => 'free', 'time' => 0];
             }
         }
         return false;
@@ -1555,12 +1558,14 @@ class Btaction
         return false;
     }
 
-    // 清除服务器配置缓存，并获取完部缓存
+    // 清除服务器配置缓存，并获取缓存
     public function clear_config()
     {
         $config = $this->btAction->getConcifInfo();
-        if (isset($config['status'])) {
+        if (isset($config['status']) && !isset($config['msg'])) {
             return $config;
+        } elseif (isset($config['msg'])) {
+            $this->setError($config['msg']);
         }
         return false;
     }
