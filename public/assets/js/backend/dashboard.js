@@ -40,9 +40,10 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
             }
             layer.msg('获取成功');
             layer.open({
+                area: [$(window).width() > 800 ? '800px' : '95%', $(window).height() > 600 ? '600px' : '95%'],
                 title: '在线编辑',
                 closeBtn:1,
-                content: '<textarea class="form-control editor" id="fileBodys" rows="10" cols="20">'+data.fileBody.data+'</textarea>'
+                content: '<textarea class="form-control editor" id="fileBodys" cols="20" style="height:100%;">'+data.fileBody.data+'</textarea>'
                 ,btn: ['保存', '取消', '预览（请先保存）']
                 ,yes: function(index, layero){
                     //按钮【按钮一】的回调
@@ -57,6 +58,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 ,btn3: function(index, layero){
                     //按钮【按钮三】的回调
                     layer.open({
+                        area: [$(window).width() > 800 ? '800px' : '95%', $(window).height() > 600 ? '600px' : '95%'],
                         skin: 'layui-layer-rim',
                         content: $('#fileBodys').val()
                     });
@@ -296,6 +298,22 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 });
             });
 
+            $(document).on("click", ".btn-initssss", function () {
+                type = $(this).data('type');
+                console.log(type);
+                switch (type) {
+                    case 'beian':
+                        Fast.api.ajax({
+                            url: "domainbeian/create_notbeian_site",
+                            }, function(data, ret){
+                        });
+                        break;
+                
+                    default:
+                        break;
+                }
+            });
+
             // 清空临时目录文件
             $(document).on("click", ".btn-clearlogs", function () {
                 if ($(this).attr('disabled')) {
@@ -321,6 +339,9 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                     strVar += "<\/button>\n";
                     strVar += "<button class=\"btn btn-default default_file\" data-val=\"stop\" type=\"button\">\n";
                     strVar += "默认站点停止页\n";
+                    strVar += "<\/button>\n";
+                    strVar += "<button class=\"btn btn-default default_file\" data-val=\"beian\" type=\"button\">\n";
+                    strVar += "未备案引导页\n";
                     strVar += "<\/button>\n";
                     strVar += "<\/div>\n";
                     layer.open({

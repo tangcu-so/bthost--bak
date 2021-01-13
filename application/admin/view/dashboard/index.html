@@ -242,6 +242,9 @@
         border-radius: 70px;
         padding-bottom: 10px;
     }
+    .hostInfo{
+        border-bottom: 1px solid #d2d6dec2;
+    }
 </style>
 <div class="panel panel-default panel-intro">
     <div class="panel-heading">
@@ -317,31 +320,36 @@
                 </div>
                 <div class="row">
                     <div class="panel">
-                        <div class="panel-heading">
+                        <div class="panel-heading hostInfo">
                             <p>
                                 {if $isWindows}<span class="ico-windows"></span>{else/}<span class="ico-centos"></span>{/if}
-                                {$GetSystemTotal.system|default="--"} (Bt.Ver:{$GetSystemTotal.version|default="--"}) 
-                                {if isset($GetSoftList.pro)&&$GetSoftList.pro!='-1'}
-                                <span class="ispro">到期时间：
-                                    <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
-                                        {if $GetSoftList.pro=='0'}永久授权
-                                        {else/}
-                                        {$GetSoftList.pro|date="Y-m-d",###}
-                                        {/if}
+                                {$GetSystemTotal.system|default="--"} (Bt.Ver:{$GetSystemTotal.version|default="--"})
+                                {switch name="paidVer.type" }
+                                    {case value='free' }
+                                    <span class="notpro">免费版</span>
+                                    {/case}
+                                    {case value='pro'}
+                                    <span class="ispro">到期时间：
+                                        <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
+                                            {if $paidVer.time=='0'}永久授权
+                                            {else/}
+                                            {$paidVer.time|date="Y-m-d",###}
+                                            {/if}
+                                        </span>
                                     </span>
-                                </span>
-                                {elseif isset($GetSoftList.ltd)&&$GetSoftList.ltd!='-1'}
-                                <span class="isltd">到期时间：
-                                    <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
-                                        {if $GetSoftList.ltd=='0'}永久授权
-                                        {else/}
-                                        {$GetSoftList.ltd|date="Y-m-d",###}
-                                        {/if}
+                                    {/case}
+                                    {case value='ltd'}
+                                    <span class="isltd">到期时间：
+                                        <span style="color: #fc6d26;font-weight: bold;margin-right:5px">
+                                            {if $paidVer.time=='0'}永久授权
+                                            {else/}
+                                            {$paidVer.time|date="Y-m-d",###}
+                                            {/if}
+                                        </span>
                                     </span>
-                                </span>
-                                {else/}
-                                <span class="notpro">免费版</span>
-                                {/if}
+                                    {/case}
+                                    {default /}
+                                {/switch}
                                 <span>不间断运行：{$GetSystemTotal.time|default="--"}</span>
                             </p>
                         </div>
@@ -516,7 +524,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-lg-6">
+                <div class="col-lg-4">
                     <div class="box box-danger">
                         <div class="box-header with-border">
                             <h3 class="box-title">{:__('公告')}</h3>
@@ -530,38 +538,102 @@
                         </div>
                     </div>
                 </div>
-                <!-- <div class="col-lg-4">
-                    <div class="box box-warning">
-                        <div class="box-header with-border">
-                            <h3 class="box-title">面板操作日志</h3>
+                <div class="col-lg-4">
+                    <div class="box box-success">
+                        <div class="box-header">
+                            <h3 class="box-title">{:__('Initial detection')}</h3>
                         </div>
-                        <div class="box-body">
-                            <div class="table-responsive">
-                                <table class="table table-condensed table-striped table-hover table-sm">
-                                    <thead>
-                                        <tr>
-                                            <th>用户</th>
-                                            <th>类型</th>
-                                            <th>详情</th>
-                                            <th>操作时间</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {volist name="logsList" id="log"}
-                                        <tr>
-                                            <td>{$log.username}</td>
-                                            <td>{$log.type}</td>
-                                            <td>{$log.log}</td>
-                                            <td>{$log.addtime}</td>
-                                        </tr>
-                                        {/volist}
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="box-body" style="padding-top:0;">
+                            <table class="table table-striped">
+                                <tbody>
+                                    <tr>
+                                        <td>{:__('宝塔面板通讯连接')}</td>
+                                        {if $validate_btpanel}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('失败')}:{$validate_btpanel_error}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('服务器密钥配置')}</td>
+                                        {if $validate_apitoken}
+                                        <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                        {else /}
+                                        <td class="text-danger"><i class="fa fa-remove"></i> {:__('未配置')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('备案引导模块')}</td>
+                                        {if $validate_beian}
+                                        <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                        {else /}
+                                        <td class="text-danger"><i class="fa fa-remove"></i> {:__('失败')}
+                                        <a class="btn-initssss" data-type='beian'>{:__('立即初始化')}</a>
+                                        </td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('FTP服务器配置')}</td>
+                                        {if $validate_ftpserver}
+                                        <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                        {else /}
+                                        <td class="text-danger"><i class="fa fa-remove"></i> {:__('未配置')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('在线Sql管理地址配置')}</td>
+                                        {if $validate_phpmyadmin}
+                                        <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                        {else /}
+                                        <td class="text-danger"><i class="fa fa-remove"></i> {:__('未配置')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('API通信密钥配置')}</td>
+                                        {if $validate_apiaccess_token}
+                                        <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                        {else /}
+                                        <td class="text-danger"><i class="fa fa-remove"></i> {:__('未配置')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('计划任务部署')}</td>
+                                        {if $validate_queue}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未部署')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('计划任务密钥配置')}</td>
+                                        {if $validate_queuekey}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未配置')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('自动检查更新')}</td>
+                                        {if $validate_auto_update}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('自动获取公告')}</td>
+                                        {if $validate_auto_notice}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}</td>
+                                        {/if}
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                </div> -->
-                <div class="col-lg-6">
+                </div>
+                <div class="col-lg-4">
                     <div class="box box-info">
                         <div class="box-header">
                             <h3 class="box-title">{:__('Server info')}</h3>
@@ -626,7 +698,37 @@
             <div class="tab-pane fade" id="two">
                 <div class="row">
                     <div class="col-xs-12">
-                        {:__('Custom zone')}
+                        <div class="col-lg-12">
+                            <div class="box box-warning">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">面板操作日志</h3>
+                                </div>
+                                <div class="box-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-condensed table-striped table-hover table-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th>用户</th>
+                                                    <th>类型</th>
+                                                    <th>详情</th>
+                                                    <th>操作时间</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {volist name="logsList" id="log"}
+                                                <tr>
+                                                    <td>{$log.username}</td>
+                                                    <td>{$log.type}</td>
+                                                    <td>{$log.log}</td>
+                                                    <td>{$log.addtime}</td>
+                                                </tr>
+                                                {/volist}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
