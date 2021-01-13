@@ -203,13 +203,13 @@
                     {volist name="paths" id="path"}
                     / <a href="?path={$path.url}" class="loading_dir">{$path.path}</a>
                     {/volist}
-                    {if cookie('cutFileName')}
+                    {if cookie('vhost_cutcopy_cutFileName')}
                     <a href="javascript:PasteFile('{$viewpath}');">{:__('Paste')}</a>
-                    {elseif cookie('copyFileName')}
+                    {elseif cookie('vhost_cutcopy_copyFileName')}
                     <a href="javascript:PasteFile('{$viewpath}',1);">{:__('Paste')}</a>
-                    {elseif cookie('cutFileNames')}
+                    {elseif cookie('vhost_cutcopy_cutFileNames')}
                     <a href="javascript:PasteFiles('{$viewpath}');">{:__('Paste')}</a>
-                    {elseif cookie('copyFileNames')}
+                    {elseif cookie('vhost_cutcopy_copyFileNames')}
                     <a href="javascript:PasteFiles('{$viewpath}',1);">{:__('Paste')}</a>
                     {/if}
                 </div>

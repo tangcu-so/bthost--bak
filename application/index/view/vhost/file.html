@@ -211,13 +211,13 @@
                     / <a href="?path={$path.url}" class="loading_dir">{$path.path}</a>
                     {/volist}
                     <!-- {$viewpath} -->
-                    {if cookie('cutFileNames')}
-                    <a href="javascript:PasteFile('{$viewpath}{:cookie('cutFileName')}');">{:__('Paste')}</a>
-                    {elseif cookie('copyFileNames')}
-                    <a href="javascript:PasteFile('{$viewpath}{:cookie('cutFileName')}',1);">{:__('Paste')}</a>
-                    {elseif cookie('CutFile')}
+                    {if cookie('vhost_cutcopy_cutFileNames')}
+                    <a href="javascript:PasteFile('{$viewpath}{:cookie(\'vhost_cutcopy_cutFileName\')}');">{:__('Paste')}</a>
+                    {elseif cookie('vhost_cutcopy_copyFileNames')}
+                    <a href="javascript:PasteFile('{$viewpath}{:cookie(\'vhost_cutcopy_cutFileName\')}',1);">{:__('Paste')}</a>
+                    {elseif cookie('vhost_cutcopy_CutFile')}
                     <a href="javascript:BatchPaste('2');">{:__('Paste')}</a>
-                    {elseif cookie('CutFiles')}
+                    {elseif cookie('vhost_cutcopy_CutFiles')}
                     <a href="javascript:BatchPaste('1');">{:__('Paste')}</a>
                     {/if}
                 </div>
@@ -766,7 +766,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                 '<div class="form-group"><label>{:__("File name")}</label><input class="bt-input-text form-control" name="sfile" value="'+sifle+'" placeholder="{:__("File name")}"></div>' +
                 '<div class="form-group"><label>{:__("Unzip to")}</label><input type="text" class="bt-input-text form-control" name="dfile" value="' + path + '" placeholder="{:__("Unzip to")}"/>' +
                 '</div>' +
-                '<div class="form-group"><label>{:__("Unzip password")}</label><input type="text" class="bt-input-text form-control" name="unpass" value="" placeholder="{:__("No password, please leave blank")}"/></div>' +
+                '<div class="form-group"><label>{:__("Unzip password")}</label><input type="text" class="bt-input-text form-control" name="password" value="" placeholder="{:__("No password, please leave blank")}"/></div>' +
                 '<div class="form-group"><label>{:__("Coding")}</label><select class="form-control" name="coding"><option value="UTF-8">UTF-8</option><option value="gb18030">GBK</option></select></div>' +
                 '<p></p><div class="bt-form-submit-btn" style="text-align:right;margin-top:10px;">' +
                 '<button type="button" class="btn btn-danger btn-sm btn-title" onclick="layer.closeAll()">{:__("Close")}</button>' +
@@ -1154,7 +1154,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
                     th += '<option value="' + theme[p1] + '" ' + m + ">" + theme[p1] + "</option>"
                 }
                 content = '<form class="bt-form pd20 pb70" id="codemirror' + randMath +
-                    '"><div class="container-fluid"><p style="color:red;margin-bottom:10px;width: 70%;">{:__("Tip: Ctrl+F searches for keywords, Ctrl+G finds the next one, Ctrl+S saves, Ctrl+Shift+R finds and replaces, Ctrl code hint!")}<select class="bt-input-text" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' +
+                    '"><div class="container-fluid"><p style="color:#ff0000;margin-bottom:10px;width: 70%;">{:__("Tip: Ctrl+F searches for keywords, Ctrl+G finds the next one, Ctrl+S saves, Ctrl+Shift+R finds and replaces, Ctrl code hint!")}<select class="bt-input-text" name="encoding" style="width: 74px;position: absolute;right: 19px;height: 22px;z-index: 9999;border-radius: 0;">' +
                     n + '</select><span style="font-size:xx-small;color:#8d6658;padding:0 5px;">{:__("Theme")}:</span><select class="bt-input-text" id="select_theme" name="theme" style="width: 74px;position: absolute;height: 22px;z-index: 9999;border-radius: 0;">'+th+'</select></p><textarea id="textBody' + randMath +
                     '" style="width: 100%; margin: 0px auto; line-height: 1.8; position: relative; top: 10px; height: 126.8px; display: none;" value=""/></div></form>';
                 //content = '<pre style="width:100%;height:100%;" file="'+file+'"><code  class="php">'+data.data+'</code></pre>';
@@ -1471,7 +1471,9 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
 
                 if (batchType == 'CutFile' || batchType == 'CutFiles') {
                     layer.msg(data.msg);
-                    setTimeout("location.reload();", 1000);
+                    if(batchType=='del'){
+                        setTimeout("location.reload();", 500);
+                    }
                 } else {
                     EchoMsg(data.msg, 1);
                 }
@@ -1517,8 +1519,7 @@ var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? 
             path: path,
             ty: type
         }, function (data) {
-
-            EchoMsg(data.msg, 1)
+            EchoMsg(data.msg);
         });
     }
 
