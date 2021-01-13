@@ -705,7 +705,6 @@ function deep_in_array($value, $array)
  *
  * @param [type] $file_sub_path
  * @param [type] $file_name
- * @return void
  */
 function downloadTemplate($file_sub_path, $file_name)
 {
@@ -778,7 +777,7 @@ function fileExtension($name)
  *
  * @param [type] $sum
  * @param [type] $row
- * @return void
+ * @return float
  */
 function getround($sum, $row)
 {
