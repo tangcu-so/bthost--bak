@@ -148,6 +148,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
 
             // 添加域名解析提醒
             $('#domain').prepend(__('Analysis Tips'));
+            // 添加API文档提醒
+            $('#secret').prepend(__('API Tips'));
             // 字典配置配置提醒
             $('#dictionary').prepend(__('Dictionary Tips'));
             // 服务器配置提醒
