@@ -99,6 +99,7 @@ return [
     'Analysis Tips'               => '<div class="alert alert-info-light"><p class="text-success"><i class="fa fa-bullhorn"></i> 如需使用dnspod智能域名解析(请先在域名管理中完成Dnspod配置)，请严格按照格式填写智能解析地址：选择A时填IP地址，选择CNAME时填域名地址，如不使用dnspod智能解析可使用泛域名解析到服务器IP</p><p class="text-danger"><i class="fa fa-bullhorn"></i> 智能解析地址：可填写服务器公网IP，也可以填写指定的域名，但是需要严格按照上述要求填写，否则报错</p><p class="text-warning"><i class="fa fa-bullhorn"></i> 域名绑定解析地址：自身域名=默认赠送的域名，解析地址=智能解析地址</p></div>',
     'Dictionary Tips'             => '<div class="alert alert-info-light"><p class="text-danger"><i class="fa fa-bullhorn"></i> 请勿编辑该配置，容易出现不可逆操作</p></div>',
     'Server Tips'                 => '<div class="alert alert-info-light"><p class="text-info"><i class="fa fa-bullhorn"></i> 宝塔面板接口密钥保存后默认显示为空，如需更改填写新接口密钥保存即可</p></div>',
+    'API Tips'                    => '<div class="alert alert-info-light"><p class="text-info"><i class="fa fa-bullhorn"></i> API通信密钥可实现第三方财务、系统对接进行开通和管理主机，开发文档请查看《<a href="https://www.kancloud.cn/youngxj/bthost_manual/1926366" target="_blank">API开发文档</a>》</p></div>',
     'authCode'                    => '授权码',
     'description'                 => '站点描述',
     'login_bg'                    => '登录背景图',
@@ -113,4 +114,5 @@ return [
     'auto_update'                 => '自动检查更新',
     'auto_notice'                 => '自动获取公告',
     'signature_time'              => '签名有效期',
+    'ask_beian'                   => '域名备案检测',
 ];
