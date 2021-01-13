@@ -103,6 +103,14 @@
             <small class="text-danger">个别机房域名绑定审核，或白名单要求</small>
         </div>
     </div>
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Sub bind')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            {:build_radios('row[sub_bind]', ['1'=>__('启用'), '0'=>__('禁用')],$row.sub_bind)}
+            <small class="text-danger">绑定子目录容易产生很多主机错误，如非特殊情况，请禁止使用</small>
+        </div>
+    </div>
     
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Is_vsftpd')}:</label>
