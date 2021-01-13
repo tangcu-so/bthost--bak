@@ -2524,7 +2524,7 @@ class Btpanel
      * @param string $all           包含子目录
      * @param string $tojs          默认
      * @param string $showRow       显示文件条数
-     * @return void
+     * @return array|bool
      */
     public function GetDir($path, $p = '1', $search = '', $all = '', $sort = '', $reverse = '', $tojs = 'GetFiles', $showRow = '200')
     {
@@ -2663,7 +2663,7 @@ class Btpanel
      * @param    [type]     $type     压缩包类型
      * @param string $coding 编码
      */
-    public function UnZip($sfile, $dfile, $password = 'undefined', $type, $coding = 'UTF-8')
+    public function UnZip($sfile, $dfile, $password = '', $type, $coding = 'UTF-8')
     {
         $url                = $this->BT_PANEL . config("bt.UnZip");
         $p_data             = [];
@@ -4291,7 +4291,7 @@ class Btpanel
      * 文件查杀
      *
      * @param [type] $filename  文件全路径
-     * @return void
+     * @return array|bool
      */
     public function webshellCheck($filename)
     {
@@ -4580,6 +4580,32 @@ class Btpanel
 
         $data = json_decode($result, true);
         if ($data && isset($data['status']) && $data['status'] == true) {
+            return $data;
+        } elseif (isset($data['msg'])) {
+            $this->_error = $data['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 文件查重
+     * @param $dfile string   目录
+     * @return false|mixed|array
+     * [{"filename": "about-rtl.css", "size": 27151, "mtime": "1605648844"}, {"filename": "php", "size": 0, "mtime": "1610427550"}]
+     */
+    public function CheckExistsFiles($dfile)
+    {
+        $url = $this->BT_PANEL . config("bt.CheckExistsFiles");
+
+        $p_data         = [];
+        $p_data['dfile'] = $dfile;
+        $result         = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        if ($data) {
             return $data;
         } elseif (isset($data['msg'])) {
             $this->_error = $data['msg'];
