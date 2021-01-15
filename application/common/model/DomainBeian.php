@@ -20,9 +20,20 @@ class DomainBeian extends Model
 
     protected static function init()
     {
+        self::beforeUpdate(function ($row) {
+            $changed = $row->getChangedData();
+            if (isset($changed['status']) && $changed['status'] == 'success') {
+                // 先删除
+                \app\common\model\DomainBeian::notbeian_domain_del($row);
+                // 后绑定
+                \app\common\model\DomainBeian::notbeian_audit($row);
+            }
+        });
         // 删除前事件
         self::beforeDelete(function ($row) {
-            \app\common\model\DomainBeian::notbeian_domain_del($row);
+            if ($row->status == 'normal') {
+                \app\common\model\DomainBeian::notbeian_domain_del($row);
+            }
         });
     }
 

@@ -69,10 +69,11 @@ class Domainbeian extends Backend
             $this->error('主机不存在');
         }
         // 先删除
-        $info->delete();
+        $domainInfo->status = 'success';
+        $domainInfo->save();
         // \app\common\model\DomainBeian::notbeian_domain_del($info);
         // 后绑定
-        \app\common\model\DomainBeian::notbeian_audit($domainInfo);
+        // \app\common\model\DomainBeian::notbeian_audit($domainInfo);
 
         // 添加到域名列表数据库中
         $data = [
