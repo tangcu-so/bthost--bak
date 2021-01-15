@@ -983,3 +983,29 @@ UPDATE `bth_config` SET `weigh`='90' WHERE (`name`='mail_from');
 UPDATE `bth_config` SET `weigh`='85' WHERE (`name`='mail_smtp_pass');
 UPDATE `bth_config` SET `weigh`='83' WHERE (`name`='mail_verify_type');
 UPDATE `bth_config` SET `weigh`='80' WHERE (`name`='mail_smtp_user');
+
+ALTER TABLE `bth_domain_block` ADD COLUMN `is_all`  tinyint(1) NOT NULL DEFAULT 0 COMMENT '所有域名';
+
+ALTER TABLE `bth_domain_block` ADD COLUMN `type`  varchar(255) NULL COMMENT '类型:block:拦截,pass:白名单';
+
+CREATE TABLE `bth_domain_beian` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `vhost_id` int(10) NOT NULL DEFAULT '0' COMMENT '主机ID',
+  `bt_id` int(10) NOT NULL COMMENT '原宝塔ID',
+  `bt_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '原站点名',
+  `bt_id_n` int(10) DEFAULT '0' COMMENT '现宝塔ID',
+  `bt_name_n` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '站点名称',
+  `domain` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '域名',
+  `dir` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '绑定目录',
+  `createtime` int(10) NOT NULL COMMENT '创建时间',
+  `updatetime` int(10) DEFAULT NULL COMMENT '更新时间',
+  `deletetime` int(10) DEFAULT NULL,
+  `status` enum('normal','auto','success') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'normal' COMMENT '状态',
+  `beian_info` text COLLATE utf8_unicode_ci COMMENT '备案完整信息',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='未备案域名绑定';
+
+
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'server', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', '', '1', '1610513397', '1610513397', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', '', '1', '1610700743', '1610700743', '0', 'normal');

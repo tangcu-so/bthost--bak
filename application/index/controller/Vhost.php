@@ -516,7 +516,20 @@ class Vhost extends Frontend
             //     var_dump(false);
             // }
 
-            // TODO 域名白名单模块
+            // 域名黑白名单模块
+            $domainblock = model('DomainBlock')->where(['status' => 'normal', 'domain' => $value])->find();
+            if ($domainblock) {
+                if ($domainblock->type == 'block') {
+                    $errorArr[] = __('%s domain cannot be bound', $value);
+                    continue;
+                } else {
+                    // 跳过备案检测、域名手动审核
+                    $domain_pass = 1;
+                    $status = 1;
+                }
+            }
+
+
             // 备案检测
             if (Config::get('site.ask_beian') && Config::get('beian_siteinfo.bt_id') && Config::get('beian_siteinfo.bt_name')) {
                 $is_beian  = \app\common\library\Common::beian_check($value);
