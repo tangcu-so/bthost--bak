@@ -44,7 +44,7 @@
                     {:__('Add dir auth')}
                 </header>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="loading_box">
                 <div class="form-group">
                     <label for="sitedir">{:__('Dir')}</label>
                     <input name="sitedir" id="sitedir" class="bt-input-text mr5 form-control" type="text" value="/"
@@ -76,6 +76,10 @@
 {block name="script"}
 <script type="text/javascript">
     function del(str) {
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('{:url("index/vhost/delDirAuth")}', {
                 delname: str
             }, function (res) {
@@ -88,6 +92,9 @@
             .fail(function () {
                 EchoMsg('{:__("Request error, please try again later")}');
             })
+            .always(function(){
+                l.destroy();
+            })
     }
 
 
@@ -99,6 +106,10 @@
             EchoMsg('{:__("Can not be empty")}');
             return false;
         }
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('{:url("index/vhost/setDirAuth")}', {
                 sitedir: sitedir,
                 username: username,
@@ -112,6 +123,9 @@
             })
             .fail(function () {
                 EchoMsg('{:__("Request error, please try again later")}');
+            })
+            .always(function(){
+                l.destroy();
             })
 
 

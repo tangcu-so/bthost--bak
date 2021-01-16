@@ -17,7 +17,7 @@
 {block name="content"}
 <div class="row">
 	<div class="col-md-12">
-		<div class="card">
+		<div class="card load_status">
 			<div class="card-header">
 				<header class="card-title">
 					{:__('Firewall health')}
@@ -65,7 +65,7 @@
 </div>
 <div class="row">
 	<div class="col-md-12">
-		<div class="card">
+		<div class="card load_option">
 			<div class="card-header">
 				<header class="card-title">
 					{:__('Waf setting')}
@@ -379,14 +379,22 @@
 		});
 	});
 	function wafStatus(type) {
+		n = type=='open'?'.load_status':'.load_option';
+		var l = $(n).lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
 		$.post('{:url("index/vhost/wafStatus")}', {
-				type: type
-			}, function (res) {
-				EchoMsg(res.msg, 1);
-			})
-			.fail(function () {
-				EchoMsg('{:__("Request error, please try again later")}');
-			})
+			type: type
+		}, function (res) {
+			EchoMsg(res.msg, 1);
+		})
+		.fail(function () {
+			EchoMsg('{:__("Request error, please try again later")}');
+		})
+		.always(function () {
+			l.destroy();
+		})
 	}
 
 	function setWafcc(type) {

@@ -1,182 +1,12 @@
 {extend name="common/base" /}
 {block name="css"}
-<style type="text/css">
-    .cm-s-default {
-        height: 100% !important;
-    }
-
-    /*.CodeMirror pre{
-        padding-left: 25px !important;
-    }*/
-    /*分片上传css*/
-    #file_input {
-        display: none;
-    }
-
-    #up_box {
-        background-color: #fafbfe;
-        border: #e4e5e9 1px solid;
-        margin: 0;
-        padding: 10px;
-        clear: both;
-        height: 360px;
-        overflow: auto;
-    }
-
-    #up_box li {
-        list-style-type: none;
-        height: 30px;
-        line-height: 30px;
-        font-size: 12px;
-        width: 100%;
-        margin: 0 0 5px;
-        padding: 0;
-    }
-
-    #up_box li .filename {
-        display: inline-block;
-        height: 30px;
-        margin-right: 20px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        width: 240px;
-    }
-
-    #up_box li .filesize {
-        color: #999;
-        display: inline-block;
-        height: 30px;
-        overflow: hidden;
-    }
-
-    #up_box li em {
-        font-style: normal;
-        color: #06F;
-        float: right;
-        margin-right: 10px;
-    }
-
-    #totalProgress progress {
-        width: 180px;
-        height: 10px;
-        border: 1px solid #ccc;
-        background-color: #e6e6e6;
-        color: #0064b4;
-        opacity: .9;
-    }
-
-    .layui-layer-content {
-        padding: 10px;
-    }
-    .text-middle{
-        vertical-align:middle;
-    }
-
-    .CodeMirror {
-        border: 1px solid #eee;
-        height: auto;
-    }
-
-    .CodeMirror-scroll {
-        height: auto;
-        overflow-y: hidden;
-        overflow-x: auto;
-    }
-    .CodeMirror-hints{
-        z-index:19991017 !important;
-    }
-</style>
+<link rel="stylesheet" href="__CDN____STATIC__/css/host_file.css">
 {/block}
 {block name="content"}
-
-<link href="__CDN____STATIC__/Light-Year/css/animate.min.css" rel="stylesheet">
-<link rel="stylesheet" type="text/css" href="__CDN__/assets/libs/codemirror/lib/codemirror.css">
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/lib/codemirror.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/scroll/annotatescrollbar.js"></script>
-
-
-<!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/edit/editAll.js"></script> -->
-<!-- <script type="text/javascript" src="__CDN__/assets/libs/codemirror/mode/modeAll.js"></script> -->
-<!-- 引入javascript编辑器格式 -->
-<script src="__CDN__/assets/libs/codemirror/mode/clike/clike.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/javascript/javascript.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/php/php.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/htmlmixed/htmlmixed.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/css/css.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/sql/sql.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/xml/xml.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/shell/shell.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/python/python.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/nginx/nginx.js"></script>
-<script src="__CDN__/assets/libs/codemirror/mode/markdown/markdown.js"></script>
-
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/dialog/dialog.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/search/search.js"></script>
-
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/show-hint.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/sql-hint.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/html-hint.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/xml-hint.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/javascript-hint.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/css-hint.js"></script>
-<script type="text/javascript" src="__CDN__/assets/libs/codemirror/addon/hint/anyword-hint.js"></script>
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/hint/show-hint.css">
-<!-- <link rel="stylesheet" href="__CDN__/assets/libs/codemirror/addon/lint/lint.css"> -->
-<!-- 各种主题配色 -->
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-day.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/3024-night.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/abcdef.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/ambiance.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/base16-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/bespin.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/base16-light.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/blackboard.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/cobalt.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/colorforth.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/dracula.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/duotone-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/duotone-light.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/eclipse.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/elegant.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/erlang-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/hopscotch.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/icecoder.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/isotope.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/lesser-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/liquibyte.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/material.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/mbo.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/mdn-like.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/midnight.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/monokai.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/neat.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/neo.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/night.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/panda-syntax.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/paraiso-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/paraiso-light.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/pastel-on-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/railscasts.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/rubyblue.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/seti.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/solarized.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/the-matrix.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/tomorrow-night-bright.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/tomorrow-night-eighties.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/ttcn.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/twilight.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/vibrant-ink.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-dark.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/xq-light.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/yeti.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/zenburn.css">
-<link rel="stylesheet" href="__CDN__/assets/libs/codemirror/theme/darcula.css">
+{include file='common/file_head'/}
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card" id="loading_box">
             <div class="card-body example-box">
                 <button style="float: right;" class="btn btn-sm btn-success" onclick="location.reload()" title="{:__('Refresh')}"><i class="mdi mdi-restore"></i></button>
                 <button style="float: right;" class="btn btn-sm btn-dark" onclick="newdir()">{:__('Create dir')}</button>
@@ -251,7 +81,7 @@
                                 <input type="checkbox" name="ids[]" value="{$key}"><span></span>
                             </label>
                         </td>
-                        <td><span class="mdi mdi-folder text-warning mdi-24px text-middle"></span> <a href="?path={$viewpath}{$dirs.name}">{$dirs.name}</a></td>
+                        <td><span class="mdi mdi-folder text-warning mdi-24px text-middle loading_dir"></span> <a href="?path={$viewpath}{$dirs.name}">{$dirs.name}</a></td>
                         <td><a href="javascript:;" onclick="getSize('{$dirs.name}',this)">{:__('Calculated size')}</a></td>
                         <td>{:monthTosmonth($dirs.month)}-{$dirs.day} {$dirs.time}</td>
                         <td>{$dirs.chmod}</td>
@@ -406,6 +236,19 @@
 <script src="__CDN__/assets/libs/layer/layer.js"></script>
 <script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-notify.min.js"></script>
 <script type="text/javascript">
+// 弹窗自适应宽高
+var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? '' : ''];
+    $(function () {
+        $('.loading_dir,.loading_box').on('click', function () {
+            var l = $('body').lyearloading({
+                opacity: 0.2,
+                spinnerSize: 'lg',
+                spinnerText: '{:__("Loading")}',
+                textColorClass: 'text-info',
+                spinnerColorClass: 'text-info'
+            });
+        });
+    });
     function DeleteFile(file){
         if(!file){
             layer.msg('{:__("Please select file")}');
@@ -414,8 +257,18 @@
         layer.confirm('{:__("Confirm delete?")}', {
               btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
+                var l = $('#loading_box').lyearloading({
+                    opacity: 0.125,
+                    spinnerSize: 'lg'
+                });
               $.post('', {type:'deletefile',file:file}, function(data, textStatus, xhr) {
                     EchoMsg(data.msg);
+                })
+                .fail(function () {
+                    EchoMsg('{:__("Request error, please try again later")}');
+                })
+                .always(function () {
+                    l.destroy();
                 });
             }, function(index){
               layer.close(index);
@@ -430,8 +283,18 @@
         layer.confirm('{:__("Are you sure you want to import the database? Importing will overwrite the previous data~!")}', {
               btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
-              $.post('', {type:'sqlinput',file:file}, function(data, textStatus, xhr) {
+                var l = $('#loading_box').lyearloading({
+                    opacity: 0.125,
+                    spinnerSize: 'lg'
+                });
+                $.post('', {type:'sqlinput',file:file}, function(data, textStatus, xhr) {
                     EchoMsg(data.msg);
+                })
+                .fail(function () {
+                    EchoMsg('{:__("Request error, please try again later")}');
+                })
+                .always(function () {
+                    l.destroy();
                 });
             }, function(index){
               layer.close(index);
@@ -446,9 +309,19 @@
         layer.confirm('{:__("Confirm delete?")}', {
               btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
-              $.post('', {type:'deletedir',file:file}, function(data, textStatus, xhr) {
-            EchoMsg(data.msg);
-        });
+                var l = $('#loading_box').lyearloading({
+                    opacity: 0.125,
+                    spinnerSize: 'lg'
+                });
+                $.post('', {type:'deletedir',file:file}, function(data, textStatus, xhr) {
+                    EchoMsg(data.msg);
+                })
+                .fail(function () {
+                    EchoMsg('{:__("Request error, please try again later")}');
+                })
+                .always(function () {
+                    l.destroy();
+                });
             }, function(index){
               layer.close(index);
         });
@@ -474,8 +347,18 @@
         path = '{$viewpath}';
           layer.prompt({title: '{:__("Rename")}', formType: 3,value:file}, function(text, index){
             layer.close(index);
+            var l = $('#loading_box').lyearloading({
+                opacity: 0.125,
+                spinnerSize: 'lg'
+            });
             $.post('', {type:'MvFile',path: path,oldName:file,newName:text}, function(data, textStatus, xhr) {
                 EchoMsg(data.msg);
+            })
+            .fail(function () {
+                EchoMsg('{:__("Request error, please try again later")}');
+            })
+            .always(function () {
+                l.destroy();
             });
           });
     }
@@ -484,10 +367,19 @@
             layer.msg('{:__("Please select file")}');
             return false;
         }
-        layer.msg('Loading……');
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('', {path:path,type:'getsize'}, function(data, textStatus, xhr) {
             console.log(obj);
             obj.innerHTML = data.msg;
+        })
+        .fail(function () {
+            EchoMsg('{:__("Request error, please try again later")}');
+        })
+        .always(function () {
+            l.destroy();
         });
 
     }
@@ -496,8 +388,18 @@
             layer.msg('{:__("Please select file")}');
             return false;
         }
+        var l = $('#loading_box').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('', {file: file,type:'cut',name:name,copy:copy}, function(data, textStatus, xhr) {
             layer.msg(data.msg);
+        })
+        .fail(function () {
+            EchoMsg('{:__("Request error, please try again later")}');
+        })
+        .always(function () {
+            l.destroy();
         });
     }
     function PasteFile(path,copy){
@@ -560,7 +462,7 @@
                 bt_upload_file._loadT = layer.open({
                     type: 1,
                     title: '{:__("Upload files to")}[{$viewpath}]' + other_ps,
-                    area: ['','90%'],
+                    area: [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? '90%' : '90%'],
                     // shadeClose: false,
                     shift: 5,
                     closeBtn: 1,
@@ -890,7 +792,10 @@
             layer.msg('{:__("Please select file")}');
             return false;
         }
-        
+        var lod = layer.load(2);
+        layer.style(lod, {
+            zIndex: '9999999999',
+        });
         $.post('', {file:file,type:'savefile',content:content,encoding:encoding}, function(data, textStatus, xhr) {
             
             layer.closeAll('loading');
@@ -921,10 +826,19 @@
         path = '{$viewpath}';
         layer.prompt({title:  '{:__("Create dir")}', formType: 3}, function(text, index){
             layer.close(index);
-            
+            var l = $('#loading_box').lyearloading({
+                opacity: 0.125,
+                spinnerSize: 'lg'
+            });
             $.post('', {type:'newdir',path: path,newdir:text}, function(data, textStatus, xhr) {
                 
                 EchoMsg(data.msg);
+            })
+            .fail(function () {
+                EchoMsg('{:__("Request error, please try again later")}');
+            })
+            .always(function () {
+                l.destroy();
             });
         });
     }
@@ -933,10 +847,18 @@
         path = '{$viewpath}';
         layer.prompt({title: '{:__("Create file")}', formType: 3}, function(text, index){
             layer.close(index);
-            
+            var l = $('#loading_box').lyearloading({
+                opacity: 0.125,
+                spinnerSize: 'lg'
+            });
             $.post('', {type:'newfile',path: path,newfile:text}, function(data, textStatus, xhr) {
-                
                 EchoMsg(data.msg);
+            })
+            .fail(function () {
+                EchoMsg('{:__("Request error, please try again later")}');
+            })
+            .always(function () {
+                l.destroy();
             });
         });
     }
@@ -973,6 +895,7 @@
             $('.batchAction').hide();
         }
     });
+    // 批量操作前
     function batchAction(batchType){
         path = '{$viewpath}';
         data = batch();
@@ -995,24 +918,30 @@
         layer.confirm(msg, {
               btn: ['{:__("Confirm")}','{:__("Cancel")}']
             }, function(){
-                
+                var l = $('#loading_box').lyearloading({
+                    opacity: 0.125,
+                    spinnerSize: 'lg'
+                });
                 $.post('', {type:'batch',path: path,data:data,batch:batchType}, function(data, textStatus, xhr) {
-                    
                     if(batchType=='CutFile'||batchType=='CutFiles'){
                         layer.msg(data.msg);
                         // setTimeout("location.reload();", 1000);
                     }else{
                         EchoMsg(data.msg);
-                    }
-                    
-                    
+                    } 
+                })
+                .fail(function () {
+                    EchoMsg('{:__("Request error, please try again later")}');
+                })
+                .always(function () {
+                    l.destroy();
                 });
             }, function(index){
             layer.close(index);
         });
         
     }
-    //批量操作
+    // 批量操作获取内容
     function batch(){
         var arry = new Array();
         $('input[name="ids[]"]:checked').each(function(index, element) {
@@ -1024,26 +953,6 @@
             return false;
         }
         return arrystr;
-    }
-    function getBatchFileName(){
-        var a ='';
-        $('input[name="ids[]"]:checked').each(function(index, element) {
-            a = $(this).val();
-        });
-        if(!a){
-            layer.msg('{:__("No content selected")}');
-            return false;
-        }
-        return a;
-    }
-    // 执行粘贴批量复制/剪切的任务
-    function BatchPaste(type){
-        path = '{$viewpath}';
-        
-        $.post('', {type: 'BatchPaste',path:path,ty:type}, function(data) {
-            
-                EchoMsg(data.msg)
-        });
     }
 </script>
 {/block}

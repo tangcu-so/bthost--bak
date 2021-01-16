@@ -2,7 +2,7 @@
 {block name="content"}
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card"  id="loading_status">
             <div class="card-header">
                 <header class="card-title">
                     {:__('Http auth')}
@@ -37,7 +37,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="card">
+        <div class="card" id="loading_set">
             <div class="card-header">
                 <header class="card-title">
                     {:__('Set http auth')}
@@ -76,26 +76,40 @@
             EchoMsg('{:__("Can not be empty")}');
             return false;
         }
+        var l = $('#loading_set').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('{:url("index/vhost/httpauthSet")}', {
-                username: username,
-                password: password
-            }, function (res) {
-                EchoMsg(res.msg, 1);
-            })
-            .fail(function () {
-                EchoMsg('{:__("Request error, please try again later")}');
-            })
+            username: username,
+            password: password
+        }, function (res) {
+            EchoMsg(res.msg, 1);
+        })
+        .fail(function () {
+            EchoMsg('{:__("Request error, please try again later")}');
+        })
+        .always(function () {
+            l.destroy();
+        })
     }
 
     function httpauthOff() {
+        var l = $('#loading_status').lyearloading({
+            opacity: 0.125,
+            spinnerSize: 'lg'
+        });
         $.post('{:url("index/vhost/httpauthOff")}', {
-                auth: 'off'
-            }, function (res) {
-                EchoMsg(res.msg, 1);
-            })
-            .fail(function () {
-                EchoMsg('{:__("Request error, please try again later")}');
-            })
+            auth: 'off'
+        }, function (res) {
+            EchoMsg(res.msg, 1);
+        })
+        .fail(function () {
+            EchoMsg('{:__("Request error, please try again later")}');
+        })
+        .always(function () {
+            l.destroy();
+        })
     }
 </script>
 {/block}

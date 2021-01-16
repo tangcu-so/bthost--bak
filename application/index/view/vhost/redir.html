@@ -2,7 +2,7 @@
 {block name="content"}
 <div class="row">
 	<div class="col-md-12">
-		<div class="card">
+		<div class="card" id="load_box">
 			<div class="card-header">
 				<header class="card-title">
 					{:__('Redir list')}
@@ -74,7 +74,7 @@
 </div>
 <div class="row">
 	<div class="col-lg-12">
-		<div class="card">
+		<div class="card" id="load_set">
 			<div class="card-header">
 				<header class="card-title">
 					{:__('Redir add')}
@@ -152,18 +152,25 @@
 {block name="script"}
 <script type="text/javascript">
 	function del(str) {
+		var l = $('#load_box').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
 		$.post('{:url("index/vhost/redirDel")}', {
-				redirectname: str
-			}, function (res) {
-				if (res.code == 200) {
-					EchoMsg(res.msg, 1, '{:url("index/vhost/redir")}');
-				} else {
-					EchoMsg('error:' + res.msg);
-				}
-			})
-			.fail(function () {
-				EchoMsg('{:__("Request error, please try again later")}');
-			})
+			redirectname: str
+		}, function (res) {
+			if (res.code == 200) {
+				EchoMsg(res.msg, 1, '{:url("index/vhost/redir")}');
+			} else {
+				EchoMsg('error:' + res.msg);
+			}
+		})
+		.fail(function () {
+			EchoMsg('{:__("Request error, please try again later")}');
+		})
+		.always(function () {
+			l.destroy();
+		})
 	}
 
 	$("#domainortype").bind("change", function () {
@@ -225,26 +232,33 @@
 		} else {
 			redirectname = '';
 		}
+		var l = $('#load_set').lyearloading({
+			opacity: 0.125,
+			spinnerSize: 'lg'
+		});
 		$.post('{:url("index/vhost/redirUp")}', {
-				redirectname: redirectname,
-				type: type,
-				holdpath: holdpath,
-				domainortype: domainortype,
-				redirectdomain: redirectdomain,
-				domainorpath: domainorpath,
-				redirecttype: redirecttype,
-				redirect: redirect,
-				tourl1: tourl1
-			}, function (res) {
-				if (res.code == 200) {
-					EchoMsg(res.msg, 1, '{:url("index/vhost/redir")}');
-				} else {
-					EchoMsg('error:' + res.msg);
-				}
-			})
-			.fail(function () {
-				EchoMsg('{:__("Request error, please try again later")}');
-			})
+			redirectname: redirectname,
+			type: type,
+			holdpath: holdpath,
+			domainortype: domainortype,
+			redirectdomain: redirectdomain,
+			domainorpath: domainorpath,
+			redirecttype: redirecttype,
+			redirect: redirect,
+			tourl1: tourl1
+		}, function (res) {
+			if (res.code == 200) {
+				EchoMsg(res.msg, 1, '{:url("index/vhost/redir")}');
+			} else {
+				EchoMsg('error:' + res.msg);
+			}
+		})
+		.fail(function () {
+			EchoMsg('{:__("Request error, please try again later")}');
+		})
+		.always(function () {
+			l.destroy();
+		})
 
 
 	}
