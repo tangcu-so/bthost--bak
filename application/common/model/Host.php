@@ -94,7 +94,7 @@ class Host extends Model
         $bt = new Btaction();
         // 构建数据
         $data = json_encode([$row->bt_id]);
-        $bt->btAction->set_site_type($data, $changed['sort_id']);
+        $bt->btPanel->set_site_type($data, $changed['sort_id']);
     }
 
     /**

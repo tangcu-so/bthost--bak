@@ -116,7 +116,7 @@ class Domainbeian extends Backend
         // 默认未备案模版
         $notbeian_file = APP_PATH . 'common' . DS . 'view' . DS . 'tpl' . DS . 'notbeian.tpl';
         $content = file_get_contents($notbeian_file);
-        $savefile = $bt->btAction->SaveFileBodys($content, $defaultFile);
+        $savefile = $bt->btPanel->SaveFileBodys($content, $defaultFile);
         if ($savefile && isset($savefile['status']) && $savefile['status'] == true) {
         } elseif (isset($savefile['msg'])) {
             $this->error(__($savefile['msg']));

@@ -433,7 +433,7 @@ class Ajax extends Backend
     public function getNet()
     {
         $bt = new Btaction();
-        return $bt->btAction->GetNetWork();
+        return $bt->btPanel->GetNetWork();
     }
 
     // 测试

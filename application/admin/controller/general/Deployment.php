@@ -71,7 +71,7 @@ class Deployment extends Backend
             }
             // 导入项目包
             $bt = new Btaction();
-            $up = $bt->btAction->AddPackage($name, $title, $php, $enable_functions, $version, $ps, $data);
+            $up = $bt->btPanel->AddPackage($name, $title, $php, $enable_functions, $version, $ps, $data);
             if ($up && isset($up['status']) && $up['status']) {
                 $this->success($up['msg']);
             } elseif (isset($up['msg'])) {

@@ -60,33 +60,33 @@ class Dashboard extends Backend
                 $this->error('清理失败，请检查权限及防篡改.' . $del);
             }
         } elseif ($type == 'getGetNetWork') {
-            return $btpanel->btAction->GetNetWork();
+            return $btpanel->btPanel->GetNetWork();
         } elseif ($type == 're_panel') {
-            if ($btpanel->btAction->RepPanel() == 'true') {
+            if ($btpanel->btPanel->RepPanel() == 'true') {
                 $this->success('修复成功，请刷新当前页面');
             } else {
                 $this->error('修复失败');
             }
         } elseif ($type == 'reweb') {
-            if ($btpanel->btAction->ReWeb()) {
+            if ($btpanel->btPanel->ReWeb()) {
                 $this->success('重启面板成功，请刷新当前页面');
             } else {
                 $this->error('重启失败');
             }
         } elseif ($type == "CloseLogs") {
-            if ($fileSize = $btpanel->btAction->CloseLogs()) {
+            if ($fileSize = $btpanel->btPanel->CloseLogs()) {
                 $this->success('剩余日志大小：' . $fileSize);
             } else {
                 $this->error('失败');
             }
         } elseif ($type == "Close_Recycle_bin") {
-            if ($Close_Recycle = $btpanel->btAction->Close_Recycle_bin()) {
+            if ($Close_Recycle = $btpanel->btPanel->Close_Recycle_bin()) {
                 $this->success('清理成功');
             } else {
                 $this->error('失败');
             }
         } elseif ($type == "reboot") {
-            if ($btpanel->btAction->RestartServer()) {
+            if ($btpanel->btPanel->RestartServer()) {
                 $this->success('服务器已重启，请等待服务器启动');
             } else {
                 $this->error('重启失败');
@@ -126,7 +126,7 @@ class Dashboard extends Backend
                     $this->error('请求错误');
                     break;
             }
-            if ($fileBody = $btpanel->btAction->GetFileBodys($file)) {
+            if ($fileBody = $btpanel->btPanel->GetFileBodys($file)) {
                 return ['code' => 200, 'msg' => '获取成功', 'fileBody' => $fileBody];
             } else {
                 $this->error('获取失败');
@@ -167,23 +167,23 @@ class Dashboard extends Backend
                     $this->error('请求错误');
                     break;
             }
-            if ($fileBody = $btpanel->btAction->SaveFileBodys($value, $file)) {
+            if ($fileBody = $btpanel->btPanel->SaveFileBodys($value, $file)) {
                 $this->success('保存成功');
             } else {
                 $this->error('保存失败');
             }
         } elseif ($type == 'checkUp') {
-            $checkUp = $btpanel->btAction->UpdatePanel('true');
+            $checkUp = $btpanel->btPanel->UpdatePanel('true');
             if ($checkUp && isset($checkUp['status']) && $checkUp['status'] == 'true') {
                 $this->success($checkUp['msg']['updateMsg']);
             } else {
                 $this->error('当前版本：' . $checkUp['msg']["version"] . '.暂无更新');
             }
         } elseif ($type == 'update') {
-            $UpdatePanels = $btpanel->btAction->UpdatePanels();
+            $UpdatePanels = $btpanel->btPanel->UpdatePanels();
             if ($UpdatePanels && isset($UpdatePanels['status']) && $UpdatePanels['status'] == 'true') {
                 //重启面板
-                $btpanel->btAction->ReWeb();
+                $btpanel->btPanel->ReWeb();
                 $this->success($UpdatePanels['msg']);
             } else {
                 $this->error('升级失败');
@@ -195,7 +195,7 @@ class Dashboard extends Backend
                 $this->error('软件名不能为空');
             }
 
-            $install = $btpanel->btAction->InstallPlugin($sName, $version);
+            $install = $btpanel->btPanel->InstallPlugin($sName, $version);
             //dump($install);exit();
             if ($install && isset($install['status']) && $install['status'] == 'true') {
                 $this->success($install['msg']);
@@ -211,7 +211,7 @@ class Dashboard extends Backend
                 $this->error('软件名和版本号不能为空');
             }
 
-            $uninstall = $btpanel->btAction->UnInstallPlugin($sName, $version);
+            $uninstall = $btpanel->btPanel->UnInstallPlugin($sName, $version);
             if ($uninstall && isset($uninstall['status']) && $uninstall['status'] == 'true') {
                 $this->success($uninstall['msg']);
             } elseif ($uninstall && isset($uninstall['status'])) {
@@ -225,7 +225,7 @@ class Dashboard extends Backend
                 $this->error('软件名不能为空');
             }
 
-            $uninstall = $btpanel->btAction->InstallPlugin($sName, '', '', 1);
+            $uninstall = $btpanel->btPanel->InstallPlugin($sName, '', '', 1);
             if ($uninstall && isset($uninstall['status']) && $uninstall['status'] == 'true') {
                 $this->success($uninstall['msg']);
             } elseif ($uninstall && isset($uninstall['status'])) {
@@ -238,12 +238,12 @@ class Dashboard extends Backend
         $dirSize = $this->dirsize(ROOT_PATH . 'logs');
 
 
-        $GetDiskInfo    = $btpanel->btAction->GetDiskInfo(); //获取硬盘及分区大小
-        $GetSystemTotal = $btpanel->btAction->GetSystemTotal(); //获取系统信息
+        $GetDiskInfo    = $btpanel->btPanel->GetDiskInfo(); //获取硬盘及分区大小
+        $GetSystemTotal = $btpanel->btPanel->GetSystemTotal(); //获取系统信息
 
-        $hostCount      = $btpanel->btAction->Websites('', '1', '999'); //获取站点数量
-        $ftpCount       = $btpanel->btAction->WebFtpList('', '1', '999'); //获取ftp数量
-        $sqlCount       = $btpanel->btAction->WebSqlList('', '1', '999'); //获取sql数量
+        $hostCount      = $btpanel->btPanel->Websites('', '1', '999'); //获取站点数量
+        $ftpCount       = $btpanel->btPanel->WebFtpList('', '1', '999'); //获取ftp数量
+        $sqlCount       = $btpanel->btPanel->WebSqlList('', '1', '999'); //获取sql数量
 
         if (isset($GetSystemTotal['system']) && mb_stristr($GetSystemTotal['system'], 'windows')) {
             $isWindows = 1;
@@ -275,7 +275,7 @@ class Dashboard extends Backend
 
         // 面板操作日志
         $logsList = $btpanel->panelLogs();
-        // $logsList = $btpanel->btAction->getPanelLogs();
+        // $logsList = $btpanel->btPanel->getPanelLogs();
         
         // 获取总数及分页数
         // preg_match('/共(.*?)条/',$logsList['page'],$str);
@@ -327,7 +327,7 @@ class Dashboard extends Backend
 
         $btpanel = new Btaction();
 
-        $GetSoftList    = $btpanel->btAction->GetSoftList('', $page, $softType); //获取软件运行环境列表
+        $GetSoftList    = $btpanel->btPanel->GetSoftList('', $page, $softType); //获取软件运行环境列表
 
         $this->view->assign("GetSoftList", $GetSoftList);
         return $this->view->fetch();

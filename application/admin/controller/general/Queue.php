@@ -42,9 +42,9 @@ class Queue extends Backend
             $this->error('任务获取失败', null);
         }
         $log_id = $logsInfo['id'];
-        $logs = $bt->btAction->GetLogs($log_id);
+        $logs = $bt->btPanel->GetLogs($log_id);
         if (!$logs) {
-            $this->error($bt->btAction->_error, null);
+            $this->error($bt->btPanel->_error, null);
         }
         $this->view->assign('logs', $logs);
         return $this->view->fetch('queuelogs');
@@ -83,7 +83,7 @@ class Queue extends Backend
         if ($is_exist) {
             $this->success('已部署');
         }
-        $set = $bt->btAction->AddCrontab([
+        $set = $bt->btPanel->AddCrontab([
             'name' => 'btHost计划任务',
             'sType' => 'toUrl',
             'type' => 'minute-n',
@@ -91,7 +91,7 @@ class Queue extends Backend
             'urladdress' => $url,
         ]);
         if (!$set) {
-            $this->error($bt->btAction->_error);
+            $this->error($bt->btPanel->_error);
         }
         $this->success('部署成功');
     }
