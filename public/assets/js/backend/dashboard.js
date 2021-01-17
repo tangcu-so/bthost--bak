@@ -88,7 +88,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
     server.getnotice = function (tips) {
         Fast.api.ajax({
             url: 'ajax/getNotice',
-            type: 'post',
+            type: 'get',
         }, function (data, ret) {
             if (ret.data && ret.code == 1) {
                 if (ret.data.notice) {
@@ -126,7 +126,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
         });
     }
     server.getnet = function(){
-        $.post('ajax/getNet', {type: 'getGetNetWork'}, function(data, textStatus, xhr) {
+        $.get('ajax/getNet', {type: 'getGetNetWork'}, function(data, textStatus, xhr) {
             if(data&&data.system){
                 $('#loadOne').html(server.toPercent(data.load.one));
                 if(data.load.one<0.5){

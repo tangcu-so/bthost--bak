@@ -970,7 +970,7 @@ CREATE TABLE `bth_hostresources_log` (
 -- 新版待添加
 ALTER TABLE `bth_config` ADD COLUMN `weigh`  int(10) NOT NULL DEFAULT 0 COMMENT '排序' AFTER `setting`;
 
-INSERT INTO `bthost`.`bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'signature_time', 'secret', 'signature_time', '签名有效时长,单位s', 'number', '10', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '100');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'signature_time', 'secret', 'signature_time', '签名有效时长,单位s', 'number', '10', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '100');
 
 UPDATE `bth_config` SET `weigh`='101' WHERE (`name`='access_token');
 UPDATE `bth_config` SET `weigh`='100' WHERE (`name`='api_token');
@@ -983,9 +983,9 @@ UPDATE `bth_config` SET `weigh`='90' WHERE (`name`='mail_from');
 UPDATE `bth_config` SET `weigh`='85' WHERE (`name`='mail_smtp_pass');
 UPDATE `bth_config` SET `weigh`='83' WHERE (`name`='mail_verify_type');
 UPDATE `bth_config` SET `weigh`='80' WHERE (`name`='mail_smtp_user');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'server', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
 
 ALTER TABLE `bth_domain_block` ADD COLUMN `is_all`  tinyint(1) NOT NULL DEFAULT 0 COMMENT '所有域名';
-
 ALTER TABLE `bth_domain_block` ADD COLUMN `type`  varchar(255) NULL COMMENT '类型:block:拦截,pass:白名单';
 
 CREATE TABLE `bth_domain_beian` (
@@ -1006,6 +1006,21 @@ CREATE TABLE `bth_domain_beian` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='未备案域名绑定';
 
 
-INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'server', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
 INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', '', '1', '1610513397', '1610513397', '0', 'normal');
 INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', '', '1', '1610700743', '1610700743', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '主机日志', 'fa fa-list-alt', '', '', '1', '1610888550', '1610888550', '0', 'normal');
+
+CREATE TABLE `bth_host_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '用户ID',
+  `username` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户名字',
+  `url` varchar(1500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '操作页面',
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '日志标题',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '内容',
+  `ip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'IP',
+  `useragent` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'User-Agent',
+  `createtime` int(10) DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`),
+  KEY `name` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='主机日志表';
+

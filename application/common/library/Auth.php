@@ -22,6 +22,7 @@ class Auth
     //Token默认有效时长
     protected $keeptime = 2592000;
     protected $requestUri = '';
+    protected $breadcrumb = [];
     protected $rules = [];
     //默认配置
     protected $config = [];
@@ -480,6 +481,39 @@ class Auth
         }
         unset($v);
         return $datalist;
+    }
+
+    /**
+     * 获得面包屑导航
+     * @param string $path
+     * @return array
+     */
+    public function getBreadCrumb($path = '')
+    {
+        if ($this->breadcrumb || !$path) {
+            return $this->breadcrumb;
+        }
+        $titleArr = [];
+        $menuArr = [];
+        $urlArr = explode('/', $path);
+        foreach ($urlArr as $index => $item) {
+            $pathArr[implode('/', array_slice($urlArr, 0, $index + 1))] = $index;
+        }
+        if (!$this->rules && $this->id) {
+            $this->getRuleList();
+        }
+        foreach ($this->rules as $rule) {
+            if (isset($pathArr[$rule['name']])) {
+                $rule['title'] = __($rule['title']);
+                $rule['url'] = url($rule['name']);
+                $titleArr[$pathArr[$rule['name']]] = $rule['title'];
+                $menuArr[$pathArr[$rule['name']]] = $rule;
+            }
+
+        }
+        ksort($menuArr);
+        $this->breadcrumb = $menuArr;
+        return $this->breadcrumb;
     }
 
     /**

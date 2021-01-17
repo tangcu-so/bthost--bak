@@ -3,6 +3,7 @@
 namespace app\index\controller;
 
 use app\common\controller\Frontend;
+use app\common\model\HostLog;
 use think\Lang;
 use think\Cookie;
 use think\Cache;
@@ -69,6 +70,7 @@ class Ajax extends Frontend
         if ($list) {
             $list  = array_column(array_reverse($list), null, 'createtime');
         }
+        HostLog::setTitle(__('Resources total'));
         return json($list);
     }
 
