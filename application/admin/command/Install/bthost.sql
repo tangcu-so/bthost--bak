@@ -1006,9 +1006,9 @@ CREATE TABLE `bth_domain_beian` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='未备案域名绑定';
 
 
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', '', '1', '1610513397', '1610513397', '0', 'normal');
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', '', '1', '1610700743', '1610700743', '0', 'normal');
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '主机日志', 'fa fa-list-alt', '', '', '1', '1610888550', '1610888550', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', 'Domainbeian tips', '1', '1610513397', '1610513397', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', 'Domainblock tips', '1', '1610700743', '1610700743', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '主机日志', 'fa fa-list-alt', '', 'Hostlog tips', '1', '1610888550', '1610888550', '0', 'normal');
 
 CREATE TABLE `bth_host_log` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -1023,4 +1023,5 @@ CREATE TABLE `bth_host_log` (
   PRIMARY KEY (`id`),
   KEY `name` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='主机日志表';
+
 

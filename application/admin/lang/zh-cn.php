@@ -193,7 +193,7 @@ return [
     'Second group 2'                                        => '二级管理组2',
     'Third group 2'                                         => '三级管理组2',
     'Dashboard tips'                                        => '用于展示当前系统中的统计数据、统计报表及重要实时数据',
-    'Config tips'                                           => '可以在此增改系统的变量和分组,也可以自定义分组和变量',
+    'Config tips'                                           => '',
     'Category tips'                                         => '用于统一管理网站的所有分类,分类可进行无限级分类,分类类型请在常规管理->系统配置->字典配置中添加',
     'Attachment tips'                                       => '主要用于管理上传到服务器或第三方存储的数据',
     'Addon tips'                                            => '可在线安装、卸载、禁用、启用插件，同时支持添加本地插件。',
@@ -203,4 +203,8 @@ return [
     'Rule tips'                                             => '规则通常对应一个控制器的方法,同时左侧的菜单栏数据也从规则中体现,通常建议通过命令行进行生成规则节点',
     'Access is allowed only to the super management group'  => '仅超级管理组能访问',
     'Local addon'                                           => '本地插件',
+    'Domainblock tips'                                      => '用于管理用户绑定域名时检测黑/白名单',
+    'Domainbeian tips'                                      => '开启域名备案检测后，未备案域名将提交到此处，管理员可手动过审决定是否允许绑定访问',
+    'Upgrades tips'                                         => '点击检查更新可效验程序核心文件是否与云端一致，可进行批量文件下载更新，此更新仅用于',
+    'Hostlog tips'                                          => '',
 ];
