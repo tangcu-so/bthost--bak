@@ -88,20 +88,20 @@ class Hostlog extends Backend
     /**
      * 删除
      */
-    public function del($ids = "")
-    {
-        $this->error();
-    }
+    // public function del($ids = "")
+    // {
+    //     $this->error();
+    // }
 
     /**
      * 批量更新
      * @internal
      */
-    public function multi($ids = "")
-    {
-        // 管理员禁止批量操作
-        $this->error();
-    }
+    // public function multi($ids = "")
+    // {
+    //     // 管理员禁止批量操作
+    //     $this->error();
+    // }
 
     public function selectpage()
     {
