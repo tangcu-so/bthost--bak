@@ -3,6 +3,7 @@
 namespace app\index\controller;
 
 use app\common\controller\Frontend;
+use app\common\model\HostLog;
 use think\Config;
 use think\Cookie;
 use think\Hook;
@@ -115,6 +116,7 @@ class User extends Frontend
                 $this->error(__($validate->getError()), null, ['token' => $this->request->token()]);
                 return false;
             }
+            HostLog::setTitle(__('Login'));
             if ($this->auth->login($account, $password)) {
                 if ($this->isAjax) {
                     $this->success(__('Logged in successful'), $url ? $url : url('/'));
