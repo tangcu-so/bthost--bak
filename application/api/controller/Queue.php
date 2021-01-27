@@ -4,6 +4,9 @@ namespace app\api\controller;
 
 use app\common\controller\Api;
 use app\common\library\Btaction;
+use app\common\library\Email;
+use app\common\library\Ftmsg;
+use app\common\library\Message;
 use epanel\Epanel;
 use Exception;
 use think\Config;
@@ -68,7 +71,7 @@ class Queue extends Api
             $this->model->saveAll($list);
         }
         // end
-        
+
         set_time_limit(0);
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '128M');
@@ -131,15 +134,22 @@ class Queue extends Api
             Debug::remark('end');
         }
         if ($n) {
-            // 记录执行日志
-            model('queueLog')->data([
-                'logs'      => json_encode($n),
-                'call_time' => Debug::getRangeTime('begin', 'end'),
-            ])->save();
+            $this->queuelog($n);
         }
 
         $this->success('执行完成', $n);
         // 记录执行结果及执行时间
+    }
+
+    // 记录执行日志
+    private function queuelog($n)
+    {
+
+        model('queueLog')->data([
+            'logs'      => json_encode($n),
+            'call_time' => Debug::getRangeTime('begin', 'end'),
+        ])->save();
+        return true;
     }
 
     /**
@@ -205,15 +215,15 @@ class Queue extends Api
         $errorNum   = [];
         //额定时间分钟数
         $time      = time() - 60 * $checkTime;
-        
+
         $hostList = model('Host')
-            ->alias('h')    
-            ->where('h.check_time','<',$time)
-            ->join('sql s','s.vhost_id = h.id','LEFT')
+            ->alias('h')
+            ->where('h.check_time', '<', $time)
+            ->join('sql s', 's.vhost_id = h.id', 'LEFT')
             ->limit($limit)
             ->field('h.*,s.username as sql_name,s.id as sql_id')
             ->select();
-            
+
         if ($hostList) {
             foreach ($hostList as $key => $value) {
                 // 写入检查时间，防止后面报错导致重复检查
@@ -246,7 +256,7 @@ class Queue extends Api
                     $errorNum[][$value->bt_name] = $v;
                     continue;
                 }
-                
+
                 $value->site_size = $getWebSizes;
                 $value->flow_size = $total_size;
                 $value->sql_size = $getSqlSizes;
@@ -279,13 +289,18 @@ class Queue extends Api
 
                 $successNum[][$value->bt_name] = ['sql_size' => $getSqlSizes, 'site_size' => $getWebSizes, 'flow_size' => $total_size, 'is_excess' => $excess];
             }
+            try {
+                $this->message($successNum, $errorNum, 'btResourceTask');
+            } catch (\Throwable $th) {
+            }
+            
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
         } else {
             return $this->is_index ? '' : $this->success('无有效任务');
         }
     }
 
-    
+
     /**
      * 主机过期监控
      *
@@ -296,7 +311,7 @@ class Queue extends Api
     {
         $successNum = [];
         $errorNum   = [];
-        $hostList = model('Host')->where('endtime','<=',time())->where('status','<>','expired')->select();
+        $hostList = model('Host')->where('endtime', '<=', time())->where('status', '<>', 'expired')->select();
         if ($hostList) {
             foreach ($hostList as $key => $value) {
                 $bt            = new Btaction();
@@ -322,21 +337,25 @@ class Queue extends Api
                         $value->save();
                         break;
                     case 'delete':
-                        $del = $bt->siteDelete($value->bt_id,$value->bt_name);
-                        if(!$del){
+                        $del = $bt->siteDelete($value->bt_id, $value->bt_name);
+                        if (!$del) {
                             $errorNum[][$value->bt_name] = isset($bt->_error) ? $bt->_error : '删除失败';
                             break;
                         }
                         $value->delete(true);
                         break;
                     default:
-                        
+
                         break;
                 }
 
                 $successNum[][$value->bt_name] = 'success';
-                
             }
+            try {
+                $this->message($successNum, $errorNum, 'hostTask');
+            } catch (\Exception $th) {
+            }
+            
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
         } else {
             return $this->is_index ? '' : $this->success('无有效任务');
@@ -348,30 +367,80 @@ class Queue extends Api
      *
      * @return void
      */
-    public function hostClear(){
+    public function hostClear()
+    {
         $successNum = [];
         $errorNum   = [];
 
         //达到指定天数后删除站点并清除所有数据
         $time      = time() - 60 * 60  * 24 * Config('site.recycle_delete');
-        $hostList = model('Host')::onlyTrashed()->where('deletetime','<=',$time)->select();
-        if($hostList){
+        $hostList = model('Host')::onlyTrashed()->where('deletetime', '<=', $time)->select();
+        if ($hostList) {
             foreach ($hostList as $key => $value) {
                 $bt = new Btaction();
                 $bt->bt_id = $value->bt_id;
                 $bt->bt_name = $value->bt_name;
-                $del = $bt->siteDelete($value->bt_id,$value->bt_name);
-                if(!$del){
+                $del = $bt->siteDelete($value->bt_id, $value->bt_name);
+                if (!$del) {
                     $errorNum[][$value->bt_name] = isset($bt->_error) ? $bt->_error : '删除失败';
                     break;
                 }
-    
+
                 $value->delete(true);
                 $successNum[][$value->bt_name] = 'success';
             }
+            try {
+                $this->message($successNum, $errorNum, 'hostClear');
+            } catch (\Exception $th) {
+            }
+            
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
-        }else{
+        } else {
             return $this->is_index ? '' : $this->success('无有效任务');
+        }
+    }
+
+    // 站长通知
+    private function message($successNum, $errorNum, $type)
+    {
+        switch ($type) {
+            case 'hostClear':
+                $title = '回收站清理任务完成';
+                break;
+            case 'hostTask':
+                $title = '主机过期检查任务完成';
+                break;
+            case 'btResourceTask':
+                $title = '主机资源检查任务完成';
+                break;
+            default:
+                $title = '其他任务执行完成';
+                break;
+        }
+        $message = "任务清单如下：<br>\n\n成功:" . arr_to_str($successNum) . "<br>\n\n失败:" . arr_to_str($errorNum);
+        // 邮件通知
+        if (Config::get('site.email')) {
+            $email = new Email();
+            $email->to(Config::get('site.email'))
+                ->subject($title)
+                ->message($message);
+            $message = new Message($email);
+            $result = $message->send();
+            if (!$result) {
+                $this->queuelog(['message' => $message->getError()]);
+            }
+        }
+        // 方糖通知
+        if (Config::get('site.ftqq_sckey')) {
+            $ft = new Ftmsg(Config::get('site.ftqq_sckey'));
+            $ft->setTitle($title);
+            $ft->setMessage($message);
+            $ft->sslVerify();
+            $message = new Message($ft);
+            $result = $message->send();
+            if (!$result) {
+                $this->queuelog(['message' => $message->getError()]);
+            }
         }
     }
 }

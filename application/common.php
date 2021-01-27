@@ -164,9 +164,9 @@ if (!function_exists('copydirs')) {
             mkdir($dest, 0755, true);
         }
         foreach ($iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
-                RecursiveIteratorIterator::SELF_FIRST
-            ) as $item) {
+            new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+            RecursiveIteratorIterator::SELF_FIRST
+        ) as $item) {
             if ($item->isDir()) {
                 $sontDir = $dest . DS . $iterator->getSubPathName();
                 if (!is_dir($sontDir)) {
@@ -984,5 +984,53 @@ if (!function_exists('xss_clean')) {
     function xss_clean($content, $is_image = false)
     {
         return \app\common\library\Security::instance()->xss_clean($content, $is_image);
+    }
+}
+
+if (!function_exists('arr_to_str')) {
+    /**
+     * 二维数组转字符串
+     *
+     * @param array $arr       二维数组
+     * @return void
+     * 0 => ['xxxxxx.cim' => 'success'],
+     * 1 => ['xxxxxx.cim' => 'success'],
+     */
+    function arr_to_str($arr)
+    {
+        if (count($arr) <= 0) {
+            return false;
+        }
+        $t = '';
+        $temp = [];
+        foreach ($arr as $v) {
+            if (is_array($v)) {
+                $k = array_keys($v);
+                $key = join('', $k);
+                $v1 = array_values($v);
+                // 防止二维数组下还有数组类型，强转字符串处理
+                $v1 = is_array($v1)?arrayToString($v1):$v1;
+                $v = $key . ':' . $v1;
+                $temp[] = $v;
+            }
+        }
+        $t = implode(',', $temp);
+        return $t;
+    }
+}
+
+if (!function_exists('arr_to_str')) {
+    /**
+     * 多维数组转字符串
+     *
+     * @param [type] $arr
+     * @return void
+     */
+    function arrayToString($arr)
+    {
+        if (is_array($arr)) {
+            return implode(',', array_map('arrayToString', $arr));
+        }
+        return $arr;
     }
 }
