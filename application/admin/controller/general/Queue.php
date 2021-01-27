@@ -95,4 +95,10 @@ class Queue extends Backend
         }
         $this->success('部署成功');
     }
+
+    public function edit($ids=null){
+        //设置过滤方法
+        $this->request->filter([]);
+        return parent::edit($ids);
+    }
 }
