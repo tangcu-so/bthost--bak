@@ -138,6 +138,9 @@ class Frontend extends Controller
 
         Config::set('upload', array_merge(Config::get('upload'), $upload));
 
+        // 静态资源版本号
+        $static_version = Config::get('app_debug')||Config::get('site.debug')?time():Config::get('bty.version');
+
         // 配置信息后
         Hook::listen("config_init", $config);
         // 加载当前控制器语言包
@@ -145,6 +148,7 @@ class Frontend extends Controller
         $this->assign('auth', $this->auth);
         $this->assign('site', $site);
         $this->assign('config', $config);
+        $this->assign('static_version',$static_version);
     }
 
     /**
