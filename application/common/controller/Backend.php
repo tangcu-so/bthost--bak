@@ -222,7 +222,8 @@ class Backend extends Controller
             error_reporting(E_ALL ^ E_NOTICE);
         }
 
-        
+        // 修复cdn地址
+        $this->view->replace('__CDN__', Config::get('site.cdnurl'));
 
         // 配置信息后
         Hook::listen("config_init", $config);

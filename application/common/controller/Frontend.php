@@ -138,6 +138,9 @@ class Frontend extends Controller
 
         Config::set('upload', array_merge(Config::get('upload'), $upload));
 
+        // 修复cdn地址
+        $this->view->replace('__CDN__', Config::get('site.cdnurl'));
+
         // 静态资源版本号
         $static_version = Config::get('app_debug')||Config::get('site.debug')?time():Config::get('bty.version');
 
