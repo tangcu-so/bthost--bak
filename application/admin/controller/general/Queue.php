@@ -50,10 +50,10 @@ class Queue extends Backend
         return $this->view->fetch('queuelogs');
     }
 
-    public function detail($limit = 10)
+    public function detail($limit = 30)
     {
         $row = model('queueLog')->order('id desc')->paginate($limit)->each(function ($item, $key) {
-            $item['logs'] = json_decode($item['logs'], 1);
+            $item['logs'] = $item->logs."\r\n";
             return $item;
         });
         if (!$row) {
