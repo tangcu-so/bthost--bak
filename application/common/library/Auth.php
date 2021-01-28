@@ -134,9 +134,6 @@ class Auth
             $this->setError('Account is locked');
             return false;
         }
-        // if ($user->password != $this->getEncryptPassword($password, $user->salt)) {
-        // var_dump($password, $user->password,decode($password, $user->salt));exit;
-        // var_dump($password , decode($user->password, $user->salt));exit;
         if ($password != decode($user->password, $user->salt)) {
             $this->setError('Password is incorrect');
             return false;
