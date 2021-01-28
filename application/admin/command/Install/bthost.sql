@@ -1043,4 +1043,14 @@ INSERT INTO `bth_queue` VALUES ('1', 'btresource', '1589730915', '1611800059', '
 INSERT INTO `bth_queue` VALUES ('2', 'hosttask', '1589730915', '1611800069', '1611800020', '43200', 'normal', '5', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
 INSERT INTO `bth_queue` VALUES ('3', 'hostclear', '1589730915', '1611800078', '1611800020', '43200', 'normal', '6', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
 
-
+DROP TABLE IF EXISTS `bth_api_log`;
+CREATE TABLE `bth_api_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `url` varchar(1500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '操作页面',
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '日志标题',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '内容',
+  `ip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'IP',
+  `useragent` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'User-Agent',
+  `createtime` int(10) DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API日志表';
