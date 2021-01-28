@@ -1009,17 +1009,17 @@ if (!function_exists('arr_to_str')) {
                 $key = join('', $k);
                 $v1 = array_values($v);
                 // 防止二维数组下还有数组类型，强转字符串处理
-                $v1 = is_array($v1)?arrayToString($v1):$v1;
-                $v = $key . ':' . $v1;
+                $value = is_array($v1)?arrayToString($v1):join('', $v1);
+                $v = $key . ':' . $value;
                 $temp[] = $v;
             }
         }
-        $t = implode(',', $temp);
+        $t = implode(';', $temp);
         return $t;
     }
 }
 
-if (!function_exists('arr_to_str')) {
+if (!function_exists('arrayToString')) {
     /**
      * 多维数组转字符串
      *

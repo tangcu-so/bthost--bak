@@ -7,11 +7,9 @@ use app\common\library\Btaction;
 use app\common\library\Email;
 use app\common\library\Ftmsg;
 use app\common\library\Message;
-use epanel\Epanel;
 use Exception;
 use think\Config;
 use think\Debug;
-use think\Cache;
 
 /**
  * 计划任务监控接口
@@ -27,6 +25,11 @@ class Queue extends Api
     protected $successNum = [];
 
     protected $errorNum = [];
+
+    protected $limit = 10;
+    protected $ftmsg = 0;
+    protected $email = 0;
+    protected $checkTime = 20;
 
 
     public function _initialize()
@@ -53,25 +56,6 @@ class Queue extends Api
      */
     public function index()
     {
-        // 修正<1.1.2数据错误，判断原有监控任务是否被删除。如果被删除，就添加上
-        $btresourceFind = $this->model->where('function', 'btresource')->find();
-        $hosttaskFind = $this->model->where('function', 'hosttask')->find();
-        $hostclearFind = $this->model->where('function', 'hostclear')->find();
-        $list = [];
-        if (!$btresourceFind) {
-            $list[] = ['function' => 'btresource', 'executetime' => '60', 'status' => 'normal', 'weigh' => '4', 'configgroup' => '[{"key":"limit","value":"10","info":"一次检查多少主机"},{"key":"checkTime","value":"20","info":"单台主机检查间隔（分钟），如主机数量过多，请适当提高检查间隔时间或limit的值"}]'];
-        }
-        if (!$hosttaskFind) {
-            $list[] = ['function' => 'hosttask', 'executetime' => '43200', 'status' => 'normal', 'weigh' => '5', 'configgroup' => ''];
-        }
-        if (!$hostclearFind) {
-            $list[] = ['function' => 'hostclear', 'executetime' => '43200', 'status' => 'normal', 'weigh' => '6', 'configgroup' => ''];
-        }
-        if (!empty($list)) {
-            $this->model->saveAll($list);
-        }
-        // end
-
         set_time_limit(0);
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '128M');
@@ -89,22 +73,24 @@ class Queue extends Api
             try {
                 $e_runtime = $value['runtime'] + $value['executetime'];
                 if (time() >= $e_runtime) {
-                    // 开始执行指定方法
-
-                    if ($value->configgroup) {
+                    // 获取任务配置
+                    if ($value->configgroup && json_decode($value->configgroup, 1)) {
                         $configA = array_column(json_decode($value->configgroup, 1), 'value', 'key');
                     }
-                    $limit     = isset($configA['limit']) ? $configA['limit'] : 10;
-                    $ftqq      = isset($configA['ftqq']) ? $configA['ftqq'] : 0;
-                    $checkTime = isset($configA['checkTime']) ? $configA['checkTime'] : 20;
+                    $this->limit     = isset($configA['limit']) ? $configA['limit'] : 10;
+                    $this->ftmsg      = isset($configA['ftmsg']) ? $configA['ftmsg'] : 0;
+                    $this->email      = isset($configA['email']) ? $configA['email'] : 0;
+                    $this->checkTime = isset($configA['checkTime']) ? $configA['checkTime'] : 20;
 
+
+                    // 开始执行指定方法
                     switch ($value['function']) {
                         case 'email':
-                            $s                          = $this->emailTask($limit);
+                            $s                          = $this->emailTask($this->limit);
                             $s ? $n[$value['function']] = $s : '';
                             break;
                         case 'btresource':
-                            $s                          = $this->btResourceTask($limit, $checkTime);
+                            $s                          = $this->btResourceTask($this->limit, $this->checkTime);
                             $s ? $n[$value['function']] = $s : '';
                             break;
                         case 'hosttask':
@@ -120,10 +106,7 @@ class Queue extends Api
                             break;
                     }
                     // 记录任务最后执行时间
-                    $up = model('queue')->update([
-                        'runtime' => time(),
-                        'id'      => $value->id,
-                    ]);
+                    $this->runtimeUpdate($value);
                 } else {
                     // $n[$value['function']] = 'continue';
                     // 当前方法跳过
@@ -134,22 +117,11 @@ class Queue extends Api
             Debug::remark('end');
         }
         if ($n) {
+            // 记录执行结果及执行时间
             $this->queuelog($n);
         }
 
         $this->success('执行完成', $n);
-        // 记录执行结果及执行时间
-    }
-
-    // 记录执行日志
-    private function queuelog($n)
-    {
-
-        model('queueLog')->data([
-            'logs'      => json_encode($n),
-            'call_time' => Debug::getRangeTime('begin', 'end'),
-        ])->save();
-        return true;
     }
 
     /**
@@ -161,7 +133,7 @@ class Queue extends Api
      * @ApiParams   (name="token", type="string", required=true, description="计划任务监控密钥")
      * @ApiParams   (name="limit", type="int", required=false, description="一次发送多少条", sample="10")
      */
-    public function emailTask($limit = 5)
+    public function emailTask()
     {
         set_time_limit(0);
         ini_set('max_execution_time', 300);
@@ -171,7 +143,7 @@ class Queue extends Api
 
         return $this->is_index ? '' : $this->success('无有效任务');
 
-        $list = model('Email')->where(['status' => '0'])->limit($limit)->select();
+        $list = model('Email')->where(['status' => '0'])->limit($this->limit)->select();
         if ($list) {
             $obj = \app\common\library\Email::instance();
             foreach ($list as $key => $value) {
@@ -292,8 +264,9 @@ class Queue extends Api
             try {
                 $this->message($successNum, $errorNum, 'btResourceTask');
             } catch (\Throwable $th) {
+                $this->queuelog(['message' => $th->getMessage()]);
             }
-            
+
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
         } else {
             return $this->is_index ? '' : $this->success('无有效任务');
@@ -354,8 +327,9 @@ class Queue extends Api
             try {
                 $this->message($successNum, $errorNum, 'hostTask');
             } catch (\Exception $th) {
+                $this->queuelog(['message' => $th->getMessage()]);
             }
-            
+
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
         } else {
             return $this->is_index ? '' : $this->success('无有效任务');
@@ -392,8 +366,9 @@ class Queue extends Api
             try {
                 $this->message($successNum, $errorNum, 'hostClear');
             } catch (\Exception $th) {
+                $this->queuelog(['message' => $th->getMessage()]);
             }
-            
+
             return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
         } else {
             return $this->is_index ? '' : $this->success('无有效任务');
@@ -417,13 +392,13 @@ class Queue extends Api
                 $title = '其他任务执行完成';
                 break;
         }
-        $message = "任务清单如下：<br>\n\n成功:" . arr_to_str($successNum) . "<br>\n\n失败:" . arr_to_str($errorNum);
+        $content = "执行结果清单如下：<br>\n\n成功:" . arr_to_str($successNum) . "<br>\n\n失败:" . arr_to_str($errorNum) . "<br>\n\nTime:" . date("Y-m-d H:i:s", time());
         // 邮件通知
-        if (Config::get('site.email')) {
+        if (Config::get('site.email') && $this->email) {
             $email = new Email();
             $email->to(Config::get('site.email'))
                 ->subject($title)
-                ->message($message);
+                ->message($content);
             $message = new Message($email);
             $result = $message->send();
             if (!$result) {
@@ -431,10 +406,10 @@ class Queue extends Api
             }
         }
         // 方糖通知
-        if (Config::get('site.ftqq_sckey')) {
+        if (Config::get('site.ftqq_sckey') && $this->ftmsg) {
             $ft = new Ftmsg(Config::get('site.ftqq_sckey'));
             $ft->setTitle($title);
-            $ft->setMessage($message);
+            $ft->setMessage($content);
             $ft->sslVerify();
             $message = new Message($ft);
             $result = $message->send();
@@ -442,5 +417,37 @@ class Queue extends Api
                 $this->queuelog(['message' => $message->getError()]);
             }
         }
+    }
+
+    /**
+     * 最后运行时间记录
+     *
+     * @param [type] $value     任务类
+     * @return void
+     */
+    private function runtimeUpdate($value)
+    {
+        $this->model->update([
+            'runtime' => time(),
+            'id'      => $value->id,
+        ]);
+    }
+
+    /**
+     * 记录执行日志
+     *
+     * @param [type] $n     日志数组
+     * @return void
+     */
+    private function queuelog($n)
+    {
+        if (!$n) {
+            return false;
+        }
+        model('queueLog')->data([
+            'logs'      => json_encode($n, JSON_UNESCAPED_UNICODE),
+            'call_time' => Debug::getRangeTime('begin', 'end'),
+        ])->save();
+        return true;
     }
 }

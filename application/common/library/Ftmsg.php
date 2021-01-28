@@ -42,7 +42,6 @@ class Ftmsg
         if($this->ssl){
             $opts = array_merge($opts,$this->ssl);
         }
-        // var_dump($opts);exit;
         $result = false;
         $context  = stream_context_create($opts);
         try {

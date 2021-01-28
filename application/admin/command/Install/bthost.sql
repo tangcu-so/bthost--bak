@@ -1024,4 +1024,23 @@ CREATE TABLE `bth_host_log` (
   KEY `name` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='主机日志表';
 
+-- 重新导入任务队列数据
+DROP TABLE IF EXISTS `bth_queue`;
+CREATE TABLE `bth_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `function` varchar(32) NOT NULL COMMENT '执行方法',
+  `createtime` int(11) NOT NULL COMMENT '添加时间',
+  `updatetime` int(11) DEFAULT NULL COMMENT '修改时间',
+  `runtime` int(11) DEFAULT NULL COMMENT '最后运行时间',
+  `executetime` int(11) NOT NULL DEFAULT '0' COMMENT '执行间隔时间（s）',
+  `status` enum('normal','hidden') NOT NULL DEFAULT 'hidden' COMMENT '状态',
+  `weigh` int(10) DEFAULT '0' COMMENT '执行权重，越大越前',
+  `configgroup` text COMMENT '额外配置',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='任务对列表';
+
+INSERT INTO `bth_queue` VALUES ('1', 'btresource', '1589730915', '1611800059', '1611800025', '60', 'normal', '4', '[{\"key\":\"limit\",\"value\":\"10\",\"info\":\"一次检查多少主机\"},{\"key\":\"checkTime\",\"value\":\"20\",\"info\":\"单台主机检查间隔（分钟），如主机数量过多，请适当提高检查间隔时间或limit的值\"},{\"key\":\"ftmsg\",\"value\":\"1\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"1\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+INSERT INTO `bth_queue` VALUES ('2', 'hosttask', '1589730915', '1611800069', '1611800020', '43200', 'normal', '5', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+INSERT INTO `bth_queue` VALUES ('3', 'hostclear', '1589730915', '1611800078', '1611800020', '43200', 'normal', '6', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+
 
