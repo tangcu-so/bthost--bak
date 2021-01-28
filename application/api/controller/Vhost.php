@@ -10,6 +10,7 @@ use think\Db;
 use think\Cache;
 use app\common\library\Btaction;
 use think\Cookie;
+use think\exception\ValidateException;
 
 /**
  * 主机操作对外接口
@@ -19,19 +20,24 @@ class Vhost extends Api
 
     protected $noNeedLogin = '*';
     protected $noNeedRight = '*';
+    // 跳过签名验证的方法
+    protected $noTokenCheck = ['host_login'];
 
     public function _initialize()
     {
         parent::_initialize();
         $this->access_token = Config::get('site.access_token');
         try {
-            $this->token_check();
+            // 判断是否需要验证权限
+            if (!$this->auth->match($this->noTokenCheck)) {
+                $this->token_check();
+            }
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
-        $this->hostModel = model('host');
-        $this->sqlModel = model('sql');
-        $this->ftpModel = model('ftp');
+        $this->hostModel = model('Host');
+        $this->sqlModel = model('Sql');
+        $this->ftpModel = model('Ftp');
 
         // IP白名单效验
         $ip = request()->ip();
@@ -226,7 +232,13 @@ class Vhost extends Api
 
     // 用户列表
     public function user_list(){
-        $list = model('User')::all();
+        $group_id = $this->request->param('group_id/d');
+        if($group_id){
+            $list = model('User')::all(['group_id'=>$group_id]);
+        }else{
+            $list = model('User')::all();
+        }
+        
         if($list){
             foreach ($list as $key => $value) {
                 $value->password = decode($value->password,$value->salt);
@@ -418,7 +430,16 @@ class Vhost extends Api
 
     // 主机列表
     public function host_list(){
-        $list = $this->hostModel::all();
+        $sortId = $this->request->param('sort_id/d');
+        $userId = $this->request->param('user_id/d');
+        $where = [];
+        if($sortId){
+            $where['sort_id'] = $sortId;
+        }
+        if($userId){
+            $where['user_id'] = $userId;
+        }
+        $list = $this->hostModel->where($where)->select();
         $this->success('请求成功',$list);
     }
 
@@ -611,27 +632,58 @@ class Vhost extends Api
     // 主机登录
     public function host_login()
     {
+        $account = $this->request->param('account');
+        $password = $this->request->param('password');
         $id = $this->request->param('id/d');
-        if (!$id) {
-            $this->error('错误的请求');
-        }
-        $hostInfo = model('Host')::get($id);
-        if (!$hostInfo) {
-            $this->error('没有找到有效主机');
+
+        // 传参验证
+        $validate = $this->validate([
+            'account'=>$account,
+            'password'=>$password,
+            'id'=>$id,
+        ],[
+            'account'=>'require|length:3,50',
+            'password'=>'require|length:6,30',
+            'id'=>'number',
+        ],[
+            'account.require'  => 'Account can not be empty',
+            'account.length'   => 'Account must be 3 to 50 characters',
+            'password.require' => 'Password can not be empty',
+            'password.length'  => 'Password must be 6 to 30 characters',
+            'id.number'=>'主机ID格式错误',
+        ]);
+
+        if($validate!==true){
+            $this->error(__($validate), url('/'));
         }
 
         // 登录用户
         $userAuth = new \app\common\library\Auth();
-        if (!$userAuth->direct($hostInfo->user_id)) {
+
+        if($userAuth->login($account, $password)){
+            if ($this->request->isAjax()) {
+                $this->success(__('Logged in successful'), url('/'));
+            } else {
+                if($id){
+                    $hostInfo = model('Host')::get($id);
+                    if(!$hostInfo){
+                        $this->error('没有找到有效主机', url('/'));
+                    }else{
+                        // cookie切换到主机id
+                        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+                    }
+                }
+                Cookie::set('uid', $userAuth->id);
+                Cookie::set('token', $userAuth->getToken());
+                // cookie切换到主机id
+                Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+        
+                // 跳转首页控制台
+                return redirect('/');
+            }
+        }else{
             $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
         }
-        Cookie::set('uid', $userAuth->id);
-        Cookie::set('token', $userAuth->getToken());
-        // cookie切换到主机id
-        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
-
-        // 跳转首页控制台
-        return redirect('/');
     }
     
     // 主机回收站（软删除）
