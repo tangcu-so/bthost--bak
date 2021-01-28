@@ -20,6 +20,10 @@ class Hostlog extends Backend
     protected $model = null;
     protected $childrenGroupIds = [];
 
+    protected $relationSearch = true;
+    // 通用搜索
+    protected $searchFields = 'url,username,title,content,ip,useragent';
+
     public function _initialize()
     {
         parent::_initialize();

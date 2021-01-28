@@ -8,7 +8,6 @@ return [
     'Authorization information error, please request authorization again or obtain authorization code'      => '授权信息错误，请删除或修改文件/application/extra/auth.php文件中的授权码',
     'security_code failed'                                                                                  => '授权码不正确',
     'Authorization expired'                                                                                 => '授权已过期',
-    'IP'                                                                                                    => '授权IP',
     'Expire date'                                                                                           => '有效期',
     'Or try to delete the directory /runtime/cache and try again!'                                          => '或尝试删除目录/runtime/cache后重试！',
     'The current permissions are insufficient to write the file %s'                                         => '当前权限不足，无法写入文件%s',

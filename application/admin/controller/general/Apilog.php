@@ -1,36 +1,33 @@
 <?php
 
-namespace app\admin\controller\auth;
+namespace app\admin\controller\general;
 
 use app\admin\model\AuthGroup;
 use app\common\controller\Backend;
 
 /**
- * 管理员日志
+ * API日志
  *
  * @icon   fa fa-users
- * @remark 管理员可以查看自己所拥有的权限的管理员日志
+ * @remark 所有用户的主机操作日志
  */
-class Adminlog extends Backend
+class Apilog extends Backend
 {
 
     /**
-     * @var \app\admin\model\AdminLog
+     * @var \app\common\model\ApiLog
      */
     protected $model = null;
     protected $childrenGroupIds = [];
-    protected $childrenAdminIds = [];
-
     protected $relationSearch = true;
     // 通用搜索
-    protected $searchFields = 'url,username,title,content,ip,useragent';
+    protected $searchFields = 'url,title,content,ip,useragent';
 
     public function _initialize()
     {
         parent::_initialize();
-        $this->model = model('AdminLog');
+        $this->model = model('ApiLog');
 
-        $this->childrenAdminIds = $this->auth->getChildrenAdminIds(true);
         $this->childrenGroupIds = $this->auth->getChildrenGroupIds($this->auth->isSuperAdmin() ? true : false);
 
         $groupName = AuthGroup::where('id', 'in', $this->childrenGroupIds)
@@ -50,7 +47,6 @@ class Adminlog extends Backend
             list($where, $sort, $order, $offset, $limit) = $this->buildparams();
             $list = $this->model
                 ->where($where)
-                ->where('admin_id', 'in', $this->childrenAdminIds)
                 ->order($sort, $order)
                 ->paginate($limit);
 
@@ -78,57 +74,37 @@ class Adminlog extends Backend
      * 添加
      * @internal
      */
-    public function add()
-    {
-        $this->error();
-    }
+    // public function add()
+    // {
+    //     $this->error();
+    // }
 
     /**
      * 编辑
      * @internal
      */
-    public function edit($ids = null)
-    {
-        $this->error();
-    }
+    // public function edit($ids = null)
+    // {
+    //     $this->error();
+    // }
 
     /**
      * 删除
      */
-    public function del($ids = "")
-    {
-        if (!$this->request->isPost()) {
-            $this->error(__("Invalid parameters"));
-        }
-        $ids = $ids ? $ids : $this->request->post("ids");
-        if ($ids) {
-            $childrenGroupIds = $this->childrenGroupIds;
-            $adminList = $this->model->where('id', 'in', $ids)->where('admin_id', 'in', function ($query) use ($childrenGroupIds) {
-                $query->name('auth_group_access')->field('uid');
-            })->select();
-            if ($adminList) {
-                $deleteIds = [];
-                foreach ($adminList as $k => $v) {
-                    $deleteIds[] = $v->id;
-                }
-                if ($deleteIds) {
-                    $this->model->destroy($deleteIds);
-                    $this->success();
-                }
-            }
-        }
-        $this->error();
-    }
+    // public function del($ids = "")
+    // {
+    //     $this->error();
+    // }
 
     /**
      * 批量更新
      * @internal
      */
-    public function multi($ids = "")
-    {
-        // 管理员禁止批量操作
-        $this->error();
-    }
+    // public function multi($ids = "")
+    // {
+    //     // 管理员禁止批量操作
+    //     $this->error();
+    // }
 
     public function selectpage()
     {

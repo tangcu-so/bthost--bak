@@ -1008,7 +1008,7 @@ CREATE TABLE `bth_domain_beian` (
 
 INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', 'Domainbeian tips', '1', '1610513397', '1610513397', '0', 'normal');
 INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', 'Domainblock tips', '1', '1610700743', '1610700743', '0', 'normal');
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '主机日志', 'fa fa-list-alt', '', 'Hostlog tips', '1', '1610888550', '1610888550', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '操作日志', 'fa fa-list-alt', '', 'Hostlog tips', '1', '1610888550', '1610888550', '0', 'normal');
 
 CREATE TABLE `bth_host_log` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
@@ -1042,6 +1042,8 @@ CREATE TABLE `bth_queue` (
 INSERT INTO `bth_queue` VALUES ('1', 'btresource', '1589730915', '1611800059', '1611800025', '60', 'normal', '4', '[{\"key\":\"limit\",\"value\":\"10\",\"info\":\"一次检查多少主机\"},{\"key\":\"checkTime\",\"value\":\"20\",\"info\":\"单台主机检查间隔（分钟），如主机数量过多，请适当提高检查间隔时间或limit的值\"},{\"key\":\"ftmsg\",\"value\":\"1\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"1\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
 INSERT INTO `bth_queue` VALUES ('2', 'hosttask', '1589730915', '1611800069', '1611800020', '43200', 'normal', '5', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
 INSERT INTO `bth_queue` VALUES ('3', 'hostclear', '1589730915', '1611800078', '1611800020', '43200', 'normal', '6', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '2', 'general/apilog', 'API日志', 'fa fa-list-alt', '', 'Apilog tips', '1', '1611813879', '1611813879', '0', 'normal');
 
 DROP TABLE IF EXISTS `bth_api_log`;
 CREATE TABLE `bth_api_log` (
