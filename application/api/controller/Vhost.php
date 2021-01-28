@@ -35,9 +35,6 @@ class Vhost extends Api
         } catch (\Exception $e) {
             $this->error($e->getMessage());
         }
-        $this->hostModel = model('Host');
-        $this->sqlModel = model('Sql');
-        $this->ftpModel = model('Ftp');
 
         // IP白名单效验
         $ip = request()->ip();
@@ -48,6 +45,8 @@ class Vhost extends Api
                 $this->error('非白名单IP不允许请求');
             }
         }
+
+        $this->hostModel = model('Host');
     }
 
     public function index(){        
@@ -332,7 +331,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $info = $this->sqlModel::get($id);
+        $info = model('Sql')::get($id);
         $info->console = $info->console ? $info->console : config('site.phpmyadmin');
         $this->success('请求成功',$info);
     }
@@ -366,7 +365,7 @@ class Vhost extends Api
             'console'   => $console,
             'type'   => $type=='bt'?'bt':'custom',
         ];
-        $create = $this->sqlModel::create($sqlData);
+        $create = model('Sql')::create($sqlData);
         $sqlData['id'] = $create->id;
         $this->success('创建成功',$sqlData);
     }
@@ -379,7 +378,7 @@ class Vhost extends Api
         }
         $password = $this->request->post('password',Random::alnum(8));
 
-        $info = $this->sqlModel::get($id);
+        $info = model('Sql')::get($id);
         $info->password = $password;
         $info->save();
         $this->success('修改成功',$info);
@@ -391,7 +390,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $info = $this->ftpModel::get($id);
+        $info = model('Ftp')::get($id);
         $this->success('请求成功',$info);
     }
 
@@ -402,7 +401,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('请求错误');
         }
-        $info = $this->ftpModel::get($id);
+        $info = model('Ftp')::get($id);
         if(!$info){
             $this->error('ftp不存在');
         }
@@ -419,7 +418,7 @@ class Vhost extends Api
         if (!$id) {
             $this->error('请求错误');
         }
-        $info = $this->ftpModel::get($id);
+        $info = model('Ftp')::get($id);
         if (!$info) {
             $this->error('ftp不存在');
         }
@@ -622,8 +621,8 @@ class Vhost extends Api
         }
         $info = $this->getHostInfo($id);
         $info->default_analysis = config('site.default_analysis') == 0 ? $info->bt_name : config('site.dnspod_analysis_url');
-        $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
-        $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
+        $info->sql = model('Sql')::all(['vhost_id'=>$id,'status'=>'normal']);
+        $info->ftp = model('Ftp')::get(['vhost_id'=>$id,'status'=>'normal']);
         $info->domain = model('Domainlist')::all(['vhost_id' => $id]);
 
         $this->success('请求成功 ', $info);
@@ -731,7 +730,7 @@ class Vhost extends Api
         $bt = new Btaction();
         
         if($type=='ftp'||$type=='all'){
-            $ftpFind = $this->ftpModel::get(['vhost_id' => $id]);
+            $ftpFind = model('Ftp')::get(['vhost_id' => $id]);
             $ftpFind->password = $password;
             $ftpFind->save();
         }
@@ -861,7 +860,7 @@ class Vhost extends Api
         }
         $hostFind = $this->getHostInfo($id);
 
-        $sqlFind = $this->sqlModel::get(['vhost_id'=>$id]);
+        $sqlFind = model('Sql')::get(['vhost_id'=>$id]);
         if($sqlFind&&$sqlFind->username){
             $sql_name = $sqlFind->username;
         }else{
