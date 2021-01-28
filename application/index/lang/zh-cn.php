@@ -153,7 +153,7 @@ return [
     '∞' => '无限制',
     'Enter' => '管理',
     'Please enter %s'                       => '请输入%s',
-    'Console center'                        => '控制台',
+    'Console center'                        => '控制面板',
     'Site selection' => '站点选择',
     'No site currently available' => '当前无可用站点',
     'Host resources' => '主机资源',
