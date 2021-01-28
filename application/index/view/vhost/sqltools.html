@@ -1,6 +1,6 @@
 {extend name="common/base" /}
 {block name="content"}
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.css?v={$static_version}" rel="stylesheet">
 <div class="row">
 
     <div class="col-lg-12">
@@ -38,8 +38,8 @@
 </div>
 {/block}
 {block name="script"}
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.js"></script>
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js">
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-table/bootstrap-table.min.js?v={$static_version}"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v={$static_version}">
 </script>
 <script type="text/javascript">
     $('#tb_departments').bootstrapTable({

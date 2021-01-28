@@ -1,6 +1,6 @@
 {extend name="common/base" /}
 {block name="css"}
-<link rel="stylesheet" href="__CDN____STATIC__/css/host_file.css">
+<link rel="stylesheet" href="__CDN____STATIC__/css/host_file.css?v={$static_version}">
 {/block}
 {block name="content"}
 {include file='common/file_head'/}
@@ -330,8 +330,8 @@
 </div>
 {/block}
 {block name="script"}
-<script src="__CDN__/assets/libs/layer/layer.js"></script>
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-notify.min.js"></script>
+<script src="__CDN__/assets/libs/layer/layer.js?v={$static_version}"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-notify.min.js?v={$static_version}"></script>
 <script type="text/javascript">
 // 弹窗自适应宽高
 var area = [$(window).width() > 800 ? '35%' : '90%', $(window).height() > 600 ? '' : ''];

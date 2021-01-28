@@ -1,10 +1,10 @@
 {extend name="common/base" /}
 {block name="css"}
 <!-- 日期选择器 -->
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker3.min.css" rel="stylesheet">
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css" rel="stylesheet">
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-clockpicker/bootstrap-clockpicker.min.css" rel="stylesheet">
-<link rel="stylesheet" href="__CDN____STATIC__/css/host_main.css">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker3.min.css?v={$static_version}" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css?v={$static_version}" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-clockpicker/bootstrap-clockpicker.min.css?v={$static_version}" rel="stylesheet">
+<link rel="stylesheet" href="__CDN____STATIC__/css/host_main.css?v={$static_version}">
 {/block}
 {block name="content"}
 <div class="row">
@@ -462,10 +462,10 @@
 {/block}
 {block name="script"}
 <!-- 图表js -->
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/Chart.min.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/Chart.min.js?v={$static_version}"></script>
 <!--日期选择器-->
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker.min.js?v={$static_version}"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js?v={$static_version}"></script>
 <script type="text/javascript">
   function sitestop() {
     var l = $('#load_site').lyearloading({
