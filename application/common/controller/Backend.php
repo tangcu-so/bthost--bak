@@ -199,7 +199,7 @@ class Backend extends Controller
         Hook::listen("upload_config_init", $upload);
         // 软件配置
         $bty_config = Config::get('bty');
-        unset($bty_config['AUTH_KEY']);
+        unset($bty_config['AUTH_KEY'],$bty_config['api_url'],$bty_config['api_url2'],$bty_config['COOKIE_EXPIRE']);
 
         // 配置信息
         $config = [
