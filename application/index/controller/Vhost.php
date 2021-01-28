@@ -34,10 +34,13 @@ class Vhost extends Frontend
      */
     private $vhost_id;
     /**
-     * @var Btpanel|null
+     * @var Btaction|null
      */
     private $btAction;
-    private $btTend;
+    /**
+     * @var Btpanel|null
+     */
+    private $btPanel;
 
     /**
      * 全局安全规则
@@ -1114,7 +1117,7 @@ class Vhost extends Frontend
     public function rewriteSet()
     {
         $dirdomain = input('post.dirdomain');
-        $rewrite   = input('post.rewrite', '', null);
+        $rewrite   = input('post.rewrite', '', 'trim');
         // var_dump($rewrite);exit;
         if (preg_match($this->reg_rewrite, $rewrite)) {
             $this->error(__('Illegal parameter'));
