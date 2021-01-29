@@ -3486,18 +3486,21 @@ class Vhost extends Frontend
         ]);
     }
 
-    // 防火墙
-    public function Waf()
-    {
-        // 获取防火墙类型
-
-
+    private function getWafType(){
         $isWaf = Cache::remember('getWaf', function () {
             return $this->btAction->getWaf();
         });
         if (!$isWaf) {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
+        return $isWaf;
+    }
+
+    // 防火墙
+    public function Waf()
+    {
+        // 获取防火墙类型
+        $isWaf = $this->getWafType();
         // 获取防火墙插件
         $total = [];
         $waf = $this->btPanel->Getwaf($isWaf);
@@ -3541,11 +3544,8 @@ class Vhost extends Frontend
     // 修改waf功能开关
     public function wafStatus()
     {
-        // TODO 待修改缓存
-        $isWaf = $this->btAction->getWaf();
-        if (!$isWaf) {
-            $this->error(__('Unexpected situation'));
-        }
+        // 获取防火墙类型
+        $isWaf = $this->getWafType();
         $post_str = $this->request->post();
         if ($post_str && $post_str['type']) {
             $type   = $post_str['type'];
@@ -3563,11 +3563,8 @@ class Vhost extends Frontend
     // 修改wafcc
     public function setWafcc()
     {
-        // TODO 待修改缓存
-        $isWaf = $this->btAction->getWaf();
-        if (!$isWaf) {
-            $this->error(__('Unexpected situation'));
-        }
+        // 获取防火墙类型
+        $isWaf = $this->getWafType();
         $post_str = $this->request->post();
         if ($post_str && $post_str['type']) {
             $type = $post_str['type'];
