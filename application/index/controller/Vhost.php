@@ -234,6 +234,8 @@ class Vhost extends Frontend
     {
         // 清除waf类型缓存
         Cache::rm('getWaf');
+        // 清除Proof类型缓存
+        Cache::rm('getProof');
         // 清除php版本列表缓存
         Cache::rm('phpversion_list');
         // 清除伪静态规则缓存
@@ -3341,9 +3343,20 @@ class Vhost extends Frontend
         ]);
     }
 
+    private function ProofType(){
+        $proofType = Cache::remember('getProof', function () {
+            return $this->btAction->getProof();
+        });
+        if (!$proofType) {
+            $this->error(__('The plug-in is not supported by the current host'), '');
+        }
+        $this->btPanel->proofType = $proofType;
+    }
+
     // 防篡改
     public function Proof()
     {
+        $this->ProofType();
         $GetProof = $this->btPanel->GetProof();
         if (isset($GetProof['open']) && $GetProof['open'] == 'true') {
             foreach ($GetProof['sites'] as $key => $value) {
@@ -3362,6 +3375,7 @@ class Vhost extends Frontend
         }
         $this->view->assign('title', __('proof'));
         return $this->view->fetch('proof', [
+            'proof_status'=>$this->btPanel->proofType=='tamper_proof'?(isset($proofInfo['lock'])&&$proofInfo['lock']==2?true:false):(isset($proofInfo['open'])?$proofInfo['open']:0),
             'proofInfo' => $proofInfo,
         ]);
     }
@@ -3369,8 +3383,14 @@ class Vhost extends Frontend
     // 防篡改站点设置开关
     public function proofStatus()
     {
-        if ($this->request->post()) {
-            $SiteProof = $this->btPanel->SiteProof($this->siteName);
+        $this->ProofType();
+        if ($this->request->isPost()) {
+            $lock = $this->request->post('lock/d',0);
+            if($this->btPanel->proofType=='tamper_proof'){
+                $SiteProof = $this->btPanel->LockProof($this->siteName,$lock);
+            }else{
+                $SiteProof = $this->btPanel->SiteProof($this->siteName);
+            }
             if ($SiteProof && $SiteProof['status'] == 'true') {
                 $this->success($SiteProof['msg']);
             } else {
@@ -3384,6 +3404,7 @@ class Vhost extends Frontend
     // 网站防篡改删除规则
     public function delProof()
     {
+        $this->ProofType();
         $post_str = $this->request->post();
         $name     = $post_str['name'];
         $type     = $post_str['type'];
@@ -3408,6 +3429,7 @@ class Vhost extends Frontend
     // 网站防篡改添加规则
     public function incProof()
     {
+        $this->ProofType();
         $post_str = $this->request->post();
         $name     = $post_str['name'];
         $type     = $post_str['type'];
@@ -3519,6 +3541,7 @@ class Vhost extends Frontend
     // 修改waf功能开关
     public function wafStatus()
     {
+        // TODO 待修改缓存
         $isWaf = $this->btAction->getWaf();
         if (!$isWaf) {
             $this->error(__('Unexpected situation'));
@@ -3540,6 +3563,7 @@ class Vhost extends Frontend
     // 修改wafcc
     public function setWafcc()
     {
+        // TODO 待修改缓存
         $isWaf = $this->btAction->getWaf();
         if (!$isWaf) {
             $this->error(__('Unexpected situation'));

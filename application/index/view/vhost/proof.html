@@ -14,7 +14,7 @@
 						<thead>
 							<tr>
 								<th colspan="2">{:__('Status')}：
-									{if $proofInfo.bak_open }
+									{if $proof_status }
 										<span style="color:green">{:__('Open')}</span><a href="javascript:proofStatus(0);">[{:__('Close')}]</a>
 										{else /}
 										<span style="color:#2288cc">{:__('Close')}</span><a href="javascript:proofStatus(1)">[{:__('Open')}]</a>
@@ -32,7 +32,7 @@
 								<td>{:__('Move number')}</td>
 							</tr>
 							<tr>
-								<td>{:__('Total')}</td>
+								<td>{:__('All statistics')}</td>
 								<td>{$proofInfo.total.site.total}</td>
 								<td>{$proofInfo.total.site.create}</td>
 								<td>{$proofInfo.total.site.delete}</td>
@@ -55,6 +55,11 @@
 
 
 				<p style="clear: both;"></p>
+				<hr>
+				<small class="text-muted">
+					<li>{:__('You can edit the unprotected directory name by pressing the [Exclude] button')}</li>
+					<li>{:__('You can edit the protected file type through the [Protect] button')}</li>
+				</small>
 			</div>
 		</div>
 	</div>
@@ -110,7 +115,7 @@
 			spinnerSize: 'lg'
 		});
 		$.post('{:url("index/vhost/proofStatus")}', {
-				type: type
+				lock: type
 			}, function (res) {
 				EchoMsg(res.msg, 1);
 			})

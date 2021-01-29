@@ -17,6 +17,8 @@ class Btpanel
 
     public $_error = ''; // 错误内容收集
 
+    public $proofType = 'tamper_proof'; // 防篡改类型
+
     public function __construct($bt_panel = null, $bt_key = null)
     {
         if ($bt_panel) {
@@ -1923,17 +1925,21 @@ class Btpanel
         return $data;
     }
 
+    // 获取防火墙类型
+    private function GetProofType(){
+        return $this->proofType;
+    }
+
     /**
      * 网站防篡改信息
      * 付费插件
      */
     public function GetProof()
     {
-        $url = $this->BT_PANEL . config("bt.GetProof");
+        $url = $this->BT_PANEL . config("bt.GetProof").'&name='.$this->GetProofType();
 
         $p_data = [];
         $result = $this->HttpPostCookie($url, $p_data);
-
         $data = json_decode($result, true);
         return $data;
     }
@@ -1944,10 +1950,30 @@ class Btpanel
      */
     public function SiteProof($siteName)
     {
-        $url = $this->BT_PANEL . config("bt.SiteProof");
+        $url = $this->BT_PANEL . config("bt.SiteProof").'&name='.$this->GetProofType();
 
         $p_data             = [];
         $p_data['siteName'] = $siteName;
+        $result             = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
+    /**
+     * 网站防篡改站点锁定/解锁
+     *
+     * @param [type] $siteName      站点名
+     * @param integer $lock         状态0:关闭;1:开启
+     * @return void
+     */
+    public function LockProof($siteName,$lock=1)
+    {
+        $url = $this->BT_PANEL . config("bt.LockProof").'&name='.$this->GetProofType();
+
+        $p_data             = [];
+        $p_data['siteName'] = $siteName;
+        $p_data['lock']     = $lock;
         $result             = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
@@ -1960,7 +1986,7 @@ class Btpanel
      */
     public function ServiceProof($serviceStatus)
     {
-        $url = $this->BT_PANEL . config("bt.ServiceProof");
+        $url = $this->BT_PANEL . config("bt.ServiceProof").'&name='.$this->GetProofType();
 
         $p_data                  = [];
         $p_data['serviceStatus'] = $serviceStatus;
@@ -1976,7 +2002,7 @@ class Btpanel
      */
     public function LogProof($siteName)
     {
-        $url = $this->BT_PANEL . config("bt.LogProof");
+        $url = $this->BT_PANEL . config("bt.LogProof").'&name='.$this->GetProofType();
 
         $p_data             = [];
         $p_data['siteName'] = $siteName;
@@ -1992,7 +2018,7 @@ class Btpanel
      */
     public function GetgzProof($siteName)
     {
-        $url = $this->BT_PANEL . config("bt.GetgzProof");
+        $url = $this->BT_PANEL . config("bt.GetgzProof").'&name='.$this->GetProofType();
 
         $p_data             = [];
         $p_data['siteName'] = $siteName;
@@ -2009,7 +2035,7 @@ class Btpanel
      */
     public function AddprotectProof($siteName, $protectExt)
     {
-        $url = $this->BT_PANEL . config("bt.AddprotectProof");
+        $url = $this->BT_PANEL . config("bt.AddprotectProof").'&name='.$this->GetProofType();
 
         $p_data               = [];
         $p_data['siteName']   = $siteName;
@@ -2027,7 +2053,7 @@ class Btpanel
      */
     public function AddexcloudProof($siteName, $excludePath)
     {
-        $url = $this->BT_PANEL . config("bt.AddexcloudProof");
+        $url = $this->BT_PANEL . config("bt.AddexcloudProof").'&name='.$this->GetProofType();
 
         $p_data                = [];
         $p_data['siteName']    = $siteName;
@@ -2045,7 +2071,7 @@ class Btpanel
      */
     public function DelprotectProof($siteName, $protectExt)
     {
-        $url = $this->BT_PANEL . config("bt.DelprotectProof");
+        $url = $this->BT_PANEL . config("bt.DelprotectProof").'&name='.$this->GetProofType();
 
         $p_data               = [];
         $p_data['siteName']   = $siteName;
@@ -2063,7 +2089,7 @@ class Btpanel
      */
     public function DelexcloudProof($siteName, $excludePath)
     {
-        $url = $this->BT_PANEL . config("bt.DelexcloudProof");
+        $url = $this->BT_PANEL . config("bt.DelexcloudProof").'&name='.$this->GetProofType();
 
         $p_data                = [];
         $p_data['siteName']    = $siteName;

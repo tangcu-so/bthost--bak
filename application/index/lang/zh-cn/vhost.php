@@ -548,5 +548,9 @@ return [
     'Original price:%s yuan/year' => '原价:%s元/年',
     '%s yuan/1year' => '%s 元/1年',
     'Resources total' => '资源图表',
+    'You can edit the unprotected directory name by pressing the [Exclude] button'=>'您可以通过【排除】按钮来编辑不受保护的目录名称',
+    'You can edit the protected file type through the [Protect] button'=>'您可以通过【保护】按钮来编辑受保护的文件类型',
+    'Statistical report'=>'统计报告',
+    'All statistics'=>'全部统计',
 ];
  
