@@ -968,6 +968,7 @@ CREATE TABLE `bth_hostresources_log` (
 
 
 -- 新版待添加
+UPDATE `bth_auth_rule` SET `title`='文件更新' WHERE (`name`='general/upgrade/index') LIMIT 1
 ALTER TABLE `bth_config` ADD COLUMN `weigh`  int(10) NOT NULL DEFAULT 0 COMMENT '排序' AFTER `setting`;
 
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'signature_time', 'secret', 'signature_time', '签名有效时长,单位s', 'number', '10', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '100');
