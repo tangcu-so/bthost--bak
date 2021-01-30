@@ -72,7 +72,7 @@ class Vhost extends Api
     // 云服务器状态及监控
     public function server_status(){
         $bt = new Btaction();
-        $info = $bt->btAction->GetNetWork();
+        $info = $bt->btPanel->GetNetWork();
         $this->success('请求成功',$info);
     }
 
@@ -97,9 +97,9 @@ class Vhost extends Api
             $this->error('请求错误');
         }
         $bt = new Btaction();
-        $create = $bt->btAction->add_site_type($name);
+        $create = $bt->btPanel->add_site_type($name);
         if (!$create) {
-            $this->error($bt->btAction->_error);
+            $this->error($bt->btPanel->_error);
         }
         // 刷新网站分类列表
         Cache::rm('site_type_list');
@@ -120,9 +120,9 @@ class Vhost extends Api
             $this->error('请求错误');
         }
         $bt = new Btaction();
-        $edit = $bt->btAction->edit_site_type($id, $name);
+        $edit = $bt->btPanel->edit_site_type($id, $name);
         if (!$edit) {
-            $this->error($bt->btAction->_error);
+            $this->error($bt->btPanel->_error);
         }
         // 刷新网站分类列表
         Cache::rm('site_type_list');
@@ -142,9 +142,9 @@ class Vhost extends Api
             $this->error('请求错误');
         }
         $bt = new Btaction();
-        $del = $bt->btAction->delete_site_type($id);
+        $del = $bt->btPanel->delete_site_type($id);
         if (!$del) {
-            $this->error($bt->btAction->_error);
+            $this->error($bt->btPanel->_error);
         }
         // 刷新网站分类列表
         Cache::rm('site_type_list');
@@ -484,7 +484,7 @@ class Vhost extends Api
         // vsftpd创建
         if (isset($plansInfo['vsftpd']) && $plansInfo['vsftpd'] == 1) {
             // 调用vsftpd进行目录创建
-            $creatVsftpdPath = $bt->btAction->AddVsftpdUser($hostSetInfo['username'], $hostSetInfo['password'], $hostSetInfo['path'], $plansInfo['site_max'], $plansInfo['limit_rate']);
+            $creatVsftpdPath = $bt->btPanel->AddVsftpdUser($hostSetInfo['username'], $hostSetInfo['password'], $hostSetInfo['path'], $plansInfo['site_max'], $plansInfo['limit_rate']);
             if ($creatVsftpdPath && isset($creatVsftpdPath['status']) && $creatVsftpdPath['status'] != 'Success') {
                 $this->error('主机创建失败->' . $creatVsftpdPath['msg'] . '|' . json_encode($hostSetInfo));
             } elseif ($creatVsftpdPath && !isset($creatVsftpdPath['status'])) {
@@ -508,7 +508,7 @@ class Vhost extends Api
         // vsftpd创建
 
         // 修改到期时间
-        $timeSet = $bt->btAction->WebSetEdate($btId, $endtime);
+        $timeSet = $bt->btPanel->WebSetEdate($btId, $endtime);
         if (!$timeSet['status']) {
             $this->error('开通时间设置失败|' . json_encode($endtime));
         }
@@ -524,7 +524,7 @@ class Vhost extends Api
         }
         if (isset($plansInfo['session']) && $plansInfo['session']) {
             // session隔离
-            $bt->btAction->set_php_session_path($btId, 1);
+            $bt->btPanel->set_php_session_path($btId, 1);
         }
 
         // 并发、限速设置
