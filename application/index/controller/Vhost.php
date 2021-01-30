@@ -2506,12 +2506,12 @@ class Vhost extends Frontend
         }
 
         $this->view->assign('title', __('back'));
-
         return view('back', [
-            'countback_site'    => count(@$WebBackupList['data']),
+            'has_sql'           => $this->hostInfo->sql->username?true:false,
+            'countback_site'    => isset($WebBackupList['data'])?count($WebBackupList['data']):0,
             'WebBackupList'     => $WebBackupList,
             'SqlBackupList'     => $SqlBackupList,
-            'countback_sql'     => count(@$SqlBackupList['data']),
+            'countback_sql'     => isset($SqlBackupList['data'])?count($SqlBackupList['data']):0,
         ]);
     }
 
