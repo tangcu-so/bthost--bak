@@ -23,6 +23,7 @@ return [
     'RestartServer'              => '/system?action=RestartServer', //重启服务器
     'GetTaskCount'               => '/ajax?action=GetTaskCount', //检查是否有安装任务
     'UpdatePanel'                => '/ajax?action=UpdatePanel', //检查面板更新
+    'AutoUpdatePanel'            => '/config?action=AutoUpdatePanel', //设置面板自动更新
     'CloseLogs'                  => '/files?action=CloseLogs', //清理Web日志
     'GetRecyclebin'              => '/files?action=Get_Recycle_bin', //回收站
     'Close_Recycle_bin'          => '/files?action=Close_Recycle_bin', //清除回收站
