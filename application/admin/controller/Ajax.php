@@ -474,10 +474,10 @@ class Ajax extends Backend
                 $this->error('不支持zip_open，请尝试切换php版本');
             }
             // TODO 在线升级优化方向
-            // 判断文件写入权限
             // 逻辑判断前置
             // 版号放置数据库(待考虑)
             $config_file = APP_PATH . DS . 'extra' . DS . 'bty.php';
+            // 判断文件写入权限
             if (!is_writable($config_file)) {
                 $this->error('文件不可写，请检查网站目录及文件、权限、网站防篡改、系统加固等问题');
             }
@@ -487,7 +487,6 @@ class Ajax extends Backend
             $data                   = http_build_query(['version' => Config::get('bty.version'), 'domain' => $this->getIP(), 'obj' => Config::get('bty.APP_NAME'), 'rsa' => 1], '', '&');
             $update->updateIni      = '/bthost_update_check.html?' . $data;
 
-            Db::startTrans();
             try {
                 $latest = $update->checkUpdate();
                 if ($latest !== false) {
@@ -504,15 +503,7 @@ class Ajax extends Backend
                         if ($update->sql_file) {
                             // 备份数据库
                             $sql_name = config('bty.version') . '_' . date("His", time()) . '.sql';
-                            if (\app\common\library\Common::sql_back($sql_name)) {
-                                // TODO 数据库备份记录
-                                // $data = [
-                                //     'name'     => $sql_name,
-                                //     'version'  => Config('bty.version'),
-                                //     'filesize' => filesize(self::$filePath . $sql_name),
-                                // ];
-                                // model('sqlback')->data($data)->save();
-                            }
+                            \app\common\library\Common::sql_back($sql_name);
 
                             $stream_opts = [
                                 "ssl" => [
@@ -545,7 +536,6 @@ class Ajax extends Backend
                             // 修改版本号
                             $set = setconfig($config_file, ['version'], [$update->latestVersion]);
                             if (!$set) {
-                                Db::rollback();
                                 throw new Exception('版本号更新错误');
                             }
                             Debug::remark('end');
@@ -558,7 +548,6 @@ class Ajax extends Backend
                                 'updatetime'   => time(),
                             ]);
                         } else {
-                            Db::rollback();
                             throw new Exception('在线更新失败，请尝试手动更新！信息：' . $update->getLastError());
                         }
                     } else {
@@ -569,12 +558,11 @@ class Ajax extends Backend
                 }
             } catch (\Exception $e) {
                 $update->log($e->getMessage());
-                Db::rollback();
 
                 // 升级错误记录
                 $desc = $update->currentVersion . "->" . $update->latestVersion . "，用时：" . Debug::getRangeTime('begin', 'end') . 's';
                 Db::name('version')->insert([
-                    'version' => config('bty.version'),
+                    'version' => $update->latestVersion,
                     'last_version' => $update->currentVersion,
                     'desc' => $desc,
                     'updatetime' => time(),
@@ -590,7 +578,6 @@ class Ajax extends Backend
             Service::refresh();
             \app\common\library\Common::clear_cache();
 
-            Db::commit();
             $this->success('更新成功，欢迎体验最新的系统^_^');
         } else {
             $this->error('非法请求');
