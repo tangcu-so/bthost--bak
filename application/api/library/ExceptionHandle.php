@@ -13,12 +13,17 @@ class ExceptionHandle extends Handle
 
     public function render(Exception $e)
     {
-        try {
-            \app\common\model\ApiLog::record('api_error',$e->getMessage());
-        } catch (\Throwable $th) {
-            //throw $th;
+        // API错误日志记录
+        $msg = 'Error: ' . $e->getMessage().PHP_EOL; // 获取错误信息
+        $msg .= $e->getTraceAsString().PHP_EOL;      // 获取字符串类型的异常追踪信息
+        $msg .= '异常行号：' . $e->getLine().PHP_EOL; // 异常发生所在行
+        $msg .= '所在文件：' . $e->getFile().PHP_EOL; // 异常发生所在文件绝对路径
+        $log = @fopen(ROOT_PATH .  DS . 'logs'.DS.'api_debug.log', 'a+');
+        if ($log) {
+            $message = date('[Y-m-d H:i:s] ') . $msg . "\r\n";
+            @fputs($log, $message);
+            @fclose($log);
         }
-        
         // 在生产环境下返回code信息
         if (!\think\Config::get('app_debug')) {
             $statuscode = $code = 500;
