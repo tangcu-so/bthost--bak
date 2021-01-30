@@ -208,6 +208,19 @@ class Btpanel
         return $data;
     }
 
+    // 设置面板自动更新
+    public function AutoUpdatePanel()
+    {
+        $url = $this->BT_PANEL . config("bt.UpdatePanel");
+
+        $p_data             = [];
+
+        $result = $this->HttpPostCookie($url, $p_data);
+
+        $data = json_decode($result, true);
+        return $data;
+    }
+
     /**
      * 检查专业版
      * @Author   Youngxj
