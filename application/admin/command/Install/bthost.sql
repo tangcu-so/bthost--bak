@@ -963,7 +963,7 @@ CREATE TABLE `bth_hostresources_log` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='主机资源记录表';
 
 
--- 新版待添加
+-- 1.4.0+20210130
 UPDATE `bth_auth_rule` SET `title`='文件更新' WHERE (`name`='general/upgrade/index') LIMIT 1
 ALTER TABLE `bth_config` ADD COLUMN `weigh`  int(10) NOT NULL DEFAULT 0 COMMENT '排序' AFTER `setting`;
 
