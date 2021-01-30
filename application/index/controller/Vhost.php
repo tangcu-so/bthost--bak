@@ -2408,7 +2408,7 @@ class Vhost extends Frontend
         // 最大上传文件大小
         $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
 
-        $this->view->assign('title', __('file'));
+        $this->view->assign('title', __('Web file manager'));
         return view('file', [
             'search'         => $this->request->get('search'),
             'viewpath'       => $path,
