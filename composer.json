@@ -24,7 +24,9 @@
         "phpoffice/phpspreadsheet": "^1.2",
         "overtrue/wechat": "4.2.11",
         "ext-json": "*",
-        "ext-curl": "*"
+        "ext-curl": "*",
+        "ext-iconv": "*",
+        "ext-ftp": "*"
     },
     "config": {
         "preferred-install": "dist"
