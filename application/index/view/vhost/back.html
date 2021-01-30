@@ -16,7 +16,7 @@
 						$countback_site) < 1}，{:__('Please delete the original backup before backup')}{/if}{else/}{:__('Unlimited')}{/if}
 					</small>
 				</p>
-				{if $hostInfo.sql.username}
+				{if $has_sql}
 				<a href="javascript:sqlBackInc()" class="btn btn-warning btn-w-lg">{:__('Sql backup')}</a>
                 <p>
                     <small id="passwordHelpInline" class="text-muted">
@@ -63,7 +63,7 @@
 									</td>
 								</tr>
 								{/volist}
-								{if $hostInfo.sql.username}
+								{if $has_sql}
 								{volist name="SqlBackupList.data" id="sql"}
 								<tr>
 									<td>{$sql.name} <span

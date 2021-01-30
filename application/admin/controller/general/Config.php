@@ -49,7 +49,7 @@ class Config extends Backend
             $siteList[$k]['list'] = [];
         }
 
-        foreach ($this->model->all() as $k => $v) {
+        foreach ($this->model->order('weigh desc')->select() as $k => $v) {
             if (!isset($siteList[$v['group']])) {
                 continue;
             }

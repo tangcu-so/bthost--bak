@@ -2,7 +2,7 @@
 {block name="content"}
 <div class="row">
     <div class="col-md-12">
-        <div class="card" id="loading_box1">
+        <div class="card" id="load_status">
             <div class="card-header">
                 <header class="card-title">
                     {:__('Speed')}
@@ -31,7 +31,7 @@
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="card" id="loading_box">
+        <div class="card" id="load_set">
             <div class="card-header">
                 <header class="card-title">
                     {:__('Speed setting')}
@@ -138,41 +138,41 @@
             EchoMsg('{:__("Can not be empty")}');
             return false;
         }
-        var l = $('#loading_box').lyearloading({
+        var l = $('#load_set').lyearloading({
             opacity: 0.125,
             spinnerSize: 'lg'
         });
         $.post('{:url("index/vhost/speedUp")}', {
-                perserver: perserver,
-                perip: perip,
-                limit_rate: limit_rate
-            }, function (res) {
-                EchoMsg(res.msg, 1);
-            })
-            .fail(function () {
-                EchoMsg('{:__("Request error, please try again later")}');
-            })
-            .always(function () {
-                l.destroy();
-            })
+            perserver: perserver,
+            perip: perip,
+            limit_rate: limit_rate
+        }, function (res) {
+            EchoMsg(res.msg, 1);
+        })
+        .fail(function () {
+            EchoMsg('{:__("Request error, please try again later")}');
+        })
+        .always(function () {
+            l.destroy();
+        })
     }
 
     function speedOff() {
-        var l = $('#loading_box1').lyearloading({
+        var l = $('#load_status').lyearloading({
             opacity: 0.125,
             spinnerSize: 'lg'
         });
         $.post('{:url("index/vhost/speedOff")}', {
-                speed: 'off'
-            }, function (res) {
-                EchoMsg(res.msg, 1);
-            })
-            .fail(function () {
-                EchoMsg('{:__("Request error, please try again later")}');
-            })
-            .always(function () {
-                l.destroy();
-            })
+            speed: 'off'
+        }, function (res) {
+            EchoMsg(res.msg, 1);
+        })
+        .fail(function () {
+            EchoMsg('{:__("Request error, please try again later")}');
+        })
+        .always(function () {
+            l.destroy();
+        })
     }
 </script>
 {/block}

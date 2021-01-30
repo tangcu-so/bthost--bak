@@ -48,7 +48,7 @@ return [
     'GetSitePHPVersion'          => '/site?action=GetSitePHPVersion', //获取指定网站运行的PHP版本
     'SetPHPVersion'              => '/site?action=SetPHPVersion', //修改指定网站的PHP版本
     'SetHasPwd'                  => '/site?action=SetHasPwd', //开启并设置网站密码访问
-    'CloseHasPwd'                => '/site?action=CloseHasPwd', //关闭网站密`码访问
+    'CloseHasPwd'                => '/site?action=CloseHasPwd', //关闭网站密码访问
     'GetDirUserINI'              => '/site?action=GetDirUserINI', //获取网站几项开关（防跨站、日志、密码访问、运行目录）
     'SetSiteRunPath'             => '/site?action=SetSiteRunPath', // 设置网站运行目录
     'WebAddSite'                 => '/site?action=AddSite', //创建网站
@@ -161,15 +161,16 @@ return [
 
     # 付费插件
     //网站防篡改
-    'GetProof'                   => '/plugin?action=a&s=get_index&name=tamper_proof', //信息
-    'SiteProof'                  => '/plugin?action=a&s=set_site_status&name=tamper_proof', //站点设置
-    'ServiceProof'               => '/plugin?action=a&s=service_admin&name=tamper_proof', //功能总开、关
-    'LogProof'                   => '/plugin?action=a&s=get_safe_logs&name=tamper_proof', //站点日志
-    'GetgzProof'                 => '/plugin?action=a&s=get_site_find&name=tamper_proof', //规则查看
-    'AddprotectProof'            => '/plugin?action=a&s=add_protect_ext&name=tamper_proof', //添加保护
-    'AddexcloudProof'            => '/plugin?action=a&s=add_excloud&name=tamper_proof', //添加排除
-    'DelprotectProof'            => '/plugin?action=a&s=remove_protect_ext&name=tamper_proof', //保护删除
-    'DelexcloudProof'            => '/plugin?action=a&s=remove_excloud&name=tamper_proof', //排除删除
+    'GetProof'                   => '/plugin?action=a&s=get_index', //信息
+    'SiteProof'                  => '/plugin?action=a&s=set_site_status', //站点设置
+    'ServiceProof'               => '/plugin?action=a&s=service_admin', //功能总开、关
+    'LogProof'                   => '/plugin?action=a&s=get_safe_logs', //站点日志
+    'GetgzProof'                 => '/plugin?action=a&s=get_site_find', //规则查看
+    'AddprotectProof'            => '/plugin?action=a&s=add_protect_ext', //添加保护
+    'AddexcloudProof'            => '/plugin?action=a&s=add_excloud', //添加排除
+    'DelprotectProof'            => '/plugin?action=a&s=remove_protect_ext', //保护删除
+    'DelexcloudProof'            => '/plugin?action=a&s=remove_excloud', //排除删除
+    'LockProof'                  => '/plugin?action=a&s=SetLockFile', //站点锁定（专业版防篡改专属
 
     //网站监控报表
     'GetTotal'                   => '/plugin?action=a&name=total&s=get_sites', //列表

@@ -117,8 +117,8 @@ class User extends Backend
         if (!$row) {
             $this->error(__('No Results were found'));
         }
-        $this->view->assign("row", $row->toArray());
-        return $this->view->fetch();
+        \app\common\library\Auth::instance()->delete($row->id);
+        $this->success();
     }
 
     /**

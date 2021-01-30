@@ -42,13 +42,13 @@ class Dashboard extends Backend
         // 已到期
         $endCount = Model('Host')->where('endtime','<=',time())->count();
 
-        if(empty(Config::get('site.api_token'))||Config::get('site.api_token')==''){
-            $this->error(__('System not initialize'),'');
-        }
-
+        $validate_btpanel = 1;
+        $validate_btpanel_error = '';
         $btpanel = new Btaction();
         if(!$btpanel->test()){
-            $this->error($btpanel->_error,'');
+            $validate_btpanel = 0;
+            $validate_btpanel_error = $btpanel->_error;
+            // $this->error($btpanel->_error,'');
         }
         $type    = $this->request->post('type');
 
@@ -60,33 +60,33 @@ class Dashboard extends Backend
                 $this->error('清理失败，请检查权限及防篡改.' . $del);
             }
         } elseif ($type == 'getGetNetWork') {
-            return $btpanel->btAction->GetNetWork();
+            return $btpanel->btPanel->GetNetWork();
         } elseif ($type == 're_panel') {
-            if ($btpanel->btAction->RepPanel() == 'true') {
+            if ($btpanel->btPanel->RepPanel() == 'true') {
                 $this->success('修复成功，请刷新当前页面');
             } else {
                 $this->error('修复失败');
             }
         } elseif ($type == 'reweb') {
-            if ($btpanel->btAction->ReWeb()) {
+            if ($btpanel->btPanel->ReWeb()) {
                 $this->success('重启面板成功，请刷新当前页面');
             } else {
                 $this->error('重启失败');
             }
         } elseif ($type == "CloseLogs") {
-            if ($fileSize = $btpanel->btAction->CloseLogs()) {
+            if ($fileSize = $btpanel->btPanel->CloseLogs()) {
                 $this->success('剩余日志大小：' . $fileSize);
             } else {
                 $this->error('失败');
             }
         } elseif ($type == "Close_Recycle_bin") {
-            if ($Close_Recycle = $btpanel->btAction->Close_Recycle_bin()) {
+            if ($Close_Recycle = $btpanel->btPanel->Close_Recycle_bin()) {
                 $this->success('清理成功');
             } else {
                 $this->error('失败');
             }
         } elseif ($type == "reboot") {
-            if ($btpanel->btAction->RestartServer()) {
+            if ($btpanel->btPanel->RestartServer()) {
                 $this->success('服务器已重启，请等待服务器启动');
             } else {
                 $this->error('重启失败');
@@ -107,11 +107,26 @@ class Dashboard extends Backend
                 case 'stop':
                     $file = '/www/server/stop/index.html';
                     break;
+                case 'beian':
+                    // 检测是否初始化成功
+                    if (!Config::get('beian_siteinfo.bt_id') || !Config::get('beian_siteinfo.bt_name')) {
+                        $this->error(__('备案引导模块未初始化，请先初始化'));
+                    }
+                    $btpanel->bt_id = Config::get('beian_siteinfo.bt_id');
+                    $btpanel->bt_name = Config::get('beian_siteinfo.bt_name');
+                    $siteInfo = $btpanel->getSiteInfo();
+                    if (!$siteInfo) {
+                        $this->error($btpanel->getError());
+                    }
+                    // 网站运行目录
+                    $runPath = $siteInfo['path'];
+                    $file = $runPath . '/index.html';
+                    break;
                 default:
                     $this->error('请求错误');
                     break;
             }
-            if ($fileBody = $btpanel->btAction->GetFileBodys($file)) {
+            if ($fileBody = $btpanel->btPanel->GetFileBodys($file)) {
                 return ['code' => 200, 'msg' => '获取成功', 'fileBody' => $fileBody];
             } else {
                 $this->error('获取失败');
@@ -133,27 +148,42 @@ class Dashboard extends Backend
                 case 'stop':
                     $file = '/www/server/stop/index.html';
                     break;
+                case 'beian':
+                    // 检测是否初始化成功
+                    if (!Config::get('beian_siteinfo.bt_id') || !Config::get('beian_siteinfo.bt_name')) {
+                        $this->error(__('备案引导模块未初始化，请先初始化'));
+                    }
+                    $btpanel->bt_id = Config::get('beian_siteinfo.bt_id');
+                    $btpanel->bt_name = Config::get('beian_siteinfo.bt_name');
+                    $siteInfo = $btpanel->getSiteInfo();
+                    if (!$siteInfo) {
+                        $this->error($btpanel->getError());
+                    }
+                    // 网站运行目录
+                    $runPath = $siteInfo['path'];
+                    $file = $runPath . '/index.html';
+                    break;
                 default:
                     $this->error('请求错误');
                     break;
             }
-            if ($fileBody = $btpanel->btAction->SaveFileBodys($value, $file)) {
+            if ($fileBody = $btpanel->btPanel->SaveFileBodys($value, $file)) {
                 $this->success('保存成功');
             } else {
                 $this->error('保存失败');
             }
         } elseif ($type == 'checkUp') {
-            $checkUp = $btpanel->btAction->UpdatePanel('true');
+            $checkUp = $btpanel->btPanel->UpdatePanel('true');
             if ($checkUp && isset($checkUp['status']) && $checkUp['status'] == 'true') {
                 $this->success($checkUp['msg']['updateMsg']);
             } else {
                 $this->error('当前版本：' . $checkUp['msg']["version"] . '.暂无更新');
             }
         } elseif ($type == 'update') {
-            $UpdatePanels = $btpanel->btAction->UpdatePanels();
+            $UpdatePanels = $btpanel->btPanel->UpdatePanels();
             if ($UpdatePanels && isset($UpdatePanels['status']) && $UpdatePanels['status'] == 'true') {
                 //重启面板
-                $btpanel->btAction->ReWeb();
+                $btpanel->btPanel->ReWeb();
                 $this->success($UpdatePanels['msg']);
             } else {
                 $this->error('升级失败');
@@ -165,7 +195,7 @@ class Dashboard extends Backend
                 $this->error('软件名不能为空');
             }
 
-            $install = $btpanel->btAction->InstallPlugin($sName, $version);
+            $install = $btpanel->btPanel->InstallPlugin($sName, $version);
             //dump($install);exit();
             if ($install && isset($install['status']) && $install['status'] == 'true') {
                 $this->success($install['msg']);
@@ -181,7 +211,7 @@ class Dashboard extends Backend
                 $this->error('软件名和版本号不能为空');
             }
 
-            $uninstall = $btpanel->btAction->UnInstallPlugin($sName, $version);
+            $uninstall = $btpanel->btPanel->UnInstallPlugin($sName, $version);
             if ($uninstall && isset($uninstall['status']) && $uninstall['status'] == 'true') {
                 $this->success($uninstall['msg']);
             } elseif ($uninstall && isset($uninstall['status'])) {
@@ -195,7 +225,7 @@ class Dashboard extends Backend
                 $this->error('软件名不能为空');
             }
 
-            $uninstall = $btpanel->btAction->InstallPlugin($sName, '', '', 1);
+            $uninstall = $btpanel->btPanel->InstallPlugin($sName, '', '', 1);
             if ($uninstall && isset($uninstall['status']) && $uninstall['status'] == 'true') {
                 $this->success($uninstall['msg']);
             } elseif ($uninstall && isset($uninstall['status'])) {
@@ -208,12 +238,12 @@ class Dashboard extends Backend
         $dirSize = $this->dirsize(ROOT_PATH . 'logs');
 
 
-        $GetDiskInfo    = $btpanel->btAction->GetDiskInfo(); //获取硬盘及分区大小
-        $GetSystemTotal = $btpanel->btAction->GetSystemTotal(); //获取系统信息
+        $GetDiskInfo    = $btpanel->btPanel->GetDiskInfo(); //获取硬盘及分区大小
+        $GetSystemTotal = $btpanel->btPanel->GetSystemTotal(); //获取系统信息
 
-        $hostCount      = $btpanel->btAction->Websites('', '1', '999'); //获取站点数量
-        $ftpCount       = $btpanel->btAction->WebFtpList('', '1', '999'); //获取ftp数量
-        $sqlCount       = $btpanel->btAction->WebSqlList('', '1', '999'); //获取sql数量
+        $hostCount      = $btpanel->btPanel->Websites('', '1', '999'); //获取站点数量
+        $ftpCount       = $btpanel->btPanel->WebFtpList('', '1', '999'); //获取ftp数量
+        $sqlCount       = $btpanel->btPanel->WebSqlList('', '1', '999'); //获取sql数量
 
         if (isset($GetSystemTotal['system']) && mb_stristr($GetSystemTotal['system'], 'windows')) {
             $isWindows = 1;
@@ -221,6 +251,7 @@ class Dashboard extends Backend
             $isWindows = 0;
         }
 
+        $paidVer = $btpanel->paidVer();
 
         $this->view->assign("GetDiskInfo", $GetDiskInfo);
         $this->view->assign("GetSystemTotal", $GetSystemTotal);
@@ -231,9 +262,20 @@ class Dashboard extends Backend
         $this->view->assign("ftpCount", isset($ftpCount['data']) ? count($ftpCount['data']) : '0');
         $this->view->assign("sqlCount", isset($sqlCount['data']) ? count($sqlCount['data']) : '0');
 
+        // 初始化验证
+        $validate_apitoken = empty(Config::get('site.api_token')) || empty(Config::get('site.api_port')) ? 0 : 1;
+        $validate_beian = empty(Config::get('beian_siteinfo.bt_id')) || empty(Config::get('beian_siteinfo.bt_name')) ? 0 : 1;
+        $validate_ftpserver = empty(Config::get('site.ftp_server')) || empty(Config::get('site.ftp_port')) ? 0 : 1;
+        $validate_phpmyadmin = empty(Config::get('site.phpmyadmin')) ? 0 : 1;
+        $validate_apiaccess_token = empty(Config::get('site.access_token')) ? 0 : 1;
+        $validate_queue = model('QueueLog')->whereTime('createtime', 'today')->find();
+        $validate_queuekey = empty(Config::get('site.queue_key')) ? 0 : 1;
+        $validate_auto_update = empty(Config::get('site.auto_update')) ? 0 : 1;
+        $validate_auto_notice = empty(Config::get('site.auto_notice')) ? 0 : 1;
+
         // 面板操作日志
         $logsList = $btpanel->panelLogs();
-        // $logsList = $btpanel->btAction->getPanelLogs();
+        // $logsList = $btpanel->btPanel->getPanelLogs();
         
         // 获取总数及分页数
         // preg_match('/共(.*?)条/',$logsList['page'],$str);
@@ -261,19 +303,31 @@ class Dashboard extends Backend
             'addonversion'     => $addonVersion,
             'uploadmode'       => $uploadmode,
             'logsSize'         => $dirSize,
+            'validate_apitoken' => $validate_apitoken,
+            'validate_beian' => $validate_beian,
+            'validate_ftpserver' => $validate_ftpserver,
+            'validate_phpmyadmin' => $validate_phpmyadmin,
+            'validate_apiaccess_token' => $validate_apiaccess_token,
+            'validate_queue' => $validate_queue,
+            'validate_queuekey' => $validate_queuekey,
+            'validate_btpanel' => $validate_btpanel,
+            'validate_auto_update' => $validate_auto_update,
+            'validate_auto_notice' => $validate_auto_notice,
+            'paidVer' => $paidVer,
+            'validate_btpanel_error' => $validate_btpanel_error,
         ]);
 
         return $this->view->fetch();
     }
 
-    // 软件管理
+    // TODO 软件管理
     public function soft(){
         $page           = input('get.page') ? input('get.page') : 1;
         $softType       = input('get.softType/d') ? input('get.softType/d') : 5;
 
         $btpanel = new Btaction();
 
-        $GetSoftList    = $btpanel->btAction->GetSoftList('', $page, $softType); //获取软件运行环境列表
+        $GetSoftList    = $btpanel->btPanel->GetSoftList('', $page, $softType); //获取软件运行环境列表
 
         $this->view->assign("GetSoftList", $GetSoftList);
         return $this->view->fetch();

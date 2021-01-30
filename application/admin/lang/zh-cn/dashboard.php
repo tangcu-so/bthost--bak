@@ -55,4 +55,6 @@ return [
     'Logs file'               => '临时文件',
     'Wipe logs'               => '清除临时目录文件',
     'System not initialize'   => '请先完成系统初始化配置',
+    'Initial detection'       => '系统检测',
+    'Please configure the pagoda panel interface key first' => '请先配置宝塔面板接口密钥',
 ];

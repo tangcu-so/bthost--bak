@@ -13,6 +13,12 @@ class ExceptionHandle extends Handle
 
     public function render(Exception $e)
     {
+        try {
+            \app\common\model\ApiLog::record('api_error',$e->getMessage());
+        } catch (\Throwable $th) {
+            //throw $th;
+        }
+        
         // 在生产环境下返回code信息
         if (!\think\Config::get('app_debug')) {
             $statuscode = $code = 500;
@@ -29,6 +35,7 @@ class ExceptionHandle extends Handle
             }
             return json(['code' => $code, 'msg' => $msg, 'time' => time(), 'data' => null], $statuscode);
         }
+        
 
         //其它此交由系统处理
         return parent::render($e);

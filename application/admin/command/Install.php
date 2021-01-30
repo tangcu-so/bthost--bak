@@ -337,6 +337,29 @@ class Install extends Command
             file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
         }
 
+        // 更新随机计划任务密钥/API通信密钥
+        if (1) {
+            $queue_key = Random::alnum(10);
+            $access_token = Random::alnum(10);
+            $instance->name('config')->where('name', 'queue_key')->update(['value' => $queue_key]);
+            $instance->name('config')->where('name', 'access_token')->update(['value' => $access_token]);
+            $configFile = APP_PATH . 'extra' . DS . 'site.php';
+            $config = include $configFile;
+            $configList = $instance->name("config")->select();
+            foreach ($configList as $k => $value) {
+                if (in_array($value['type'], ['selects', 'checkbox', 'images', 'files'])) {
+                    $value['value'] = explode(',', $value['value']);
+                }
+                if ($value['type'] == 'array') {
+                    $value['value'] = (array) json_decode($value['value'], true);
+                }
+                $config[$value['name']] = $value['value'];
+            }
+            $config['queue_key'] = $queue_key;
+            $config['access_token'] = $access_token;
+            file_put_contents($configFile, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
+        }
+
         // 记录离线授权码
         if ($security_code) {
             $auth_file = APP_PATH . 'extra' . DS . 'auth.php';

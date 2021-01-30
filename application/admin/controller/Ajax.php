@@ -409,7 +409,7 @@ class Ajax extends Backend
         $list = Cache::remember('site_type_list', function () {
             $bt   = new Btaction();
             return $list = $bt->getsitetype();
-        });
+        }, 0);
         if ($list) {
             if ($keyValue) {
                 foreach ($list as $key => $value) {
@@ -433,7 +433,7 @@ class Ajax extends Backend
     public function getNet()
     {
         $bt = new Btaction();
-        return $bt->btAction->GetNetWork();
+        return $bt->btPanel->GetNetWork();
     }
 
     // 测试
@@ -631,7 +631,7 @@ class Ajax extends Backend
                 'rsa' => 1,
             ];
             return http::post($url, $data);
-        });
+        }, 3600);
 
         return json_decode($curl, 1);
     }

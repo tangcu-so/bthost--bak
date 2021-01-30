@@ -4,9 +4,11 @@ namespace app\index\controller;
 
 use app\common\controller\Frontend;
 use app\common\library\Btaction;
+use app\common\model\Sql;
+use app\common\model\Host;
+use app\common\model\Ftp;
 use think\Config;
 use think\Cookie;
-use think\Hook;
 use think\Session;
 use think\Validate;
 use btpanel\Btpanel;
@@ -21,47 +23,75 @@ class Vhost extends Frontend
 {
     protected $layout = 'default';
     protected $noNeedLogin = ['login', 'register', 'clear_cache'];
-    // protected $noNeedRight = ['*']; //测试阶段无需鉴权
     protected $noNeedRight = ['logout'];
 
     /**
-     * 宝塔站点ID
-     *
+     * 宝塔ID
+     */
+    private $bt_id;
+    /**
+     * 主机ID
+     */
+    private $vhost_id;
+    /**
+     * @var Btaction|null
+     */
+    private $btAction;
+    /**
+     * @var Btpanel|null
+     */
+    private $btPanel;
+
+    /**
+     * 全局安全规则
      * @var string
      */
-    private $bt_id          = '';
-    private $btTend        = null;
-
-    private $reg         = "/(;|{|}|\|)/";
+    private $global_reg  = "/(;|{|}|\|)/"; // TODO 全局安全规则待完善
+    // 路径/目录安全规则
+    private $path_reg    = "/([.]){2,}/";
+    // 伪静态安全规则
     private $reg_rewrite = "/(root|alias|_by_lua|http_upgrade)/";
+    // 文件/文件夹过滤规则
     private $reg_file    = "/(web_config|web.config|.user.ini)/";
-
+    // 资源检查缓存时间3600=1h
     private $check_time  = 3600;
-
     /**
      * 主机信息聚合
      *
-     * @var [type]
+     * @var object|bool|array
      */
-    private $hostInfo = null;
+    private $hostInfo;
 
-    private $_error = '';
+    // 错误收集
+    private $_error;
 
-    private $vhost_id = null;
-
+    
+    // 服务器操作系统类型linux windows
     private $server_type = 'linux';
-
-    private $webRootPath = null;
-
-    private $serverConfig = null;
-
+    // 服务器面板配置
+    private $serverConfig;
     /**
-     * 宝塔主机信息
+     * 资源超出停用面板
+     * @var int
      */
-    private $hostBtInfo = null;
-
-    // 资源超出停用面板
     public $is_excess_stop = 0;
+    /**
+     * 站点名
+     * @var array|bool|float|int|mixed|object|\stdClass|null
+     */
+    private $siteName;
+    /**
+     * @var Host
+     */
+    private $hostModel;
+    /**
+     * @var Ftp
+     */
+    private $ftpModel;
+    /**
+     * @var Sql
+     */
+    private $sqlModel;
 
     public function _initialize()
     {
@@ -74,32 +104,30 @@ class Vhost extends Frontend
         if (!$host_id) {
             return $this->redirect('/sites');
         }
-        $hostInfo = $this->hostModel::get(['user_id'=>$this->auth->id,'id'=>$host_id]);
-        if(!$hostInfo){
+        $hostInfo = $this->hostModel::get(['user_id' => $this->auth->id, 'id' => $host_id]);
+        if (!$hostInfo) {
             $this->error(__('Site Not found<a href="%s">Switch site</a>', url('index/user/index')), '');
         }
         $ftpInfo = $this->ftpModel::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
         $sqlInfo = $this->sqlModel::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
         $hostInfo->ftp = $ftpInfo ? $ftpInfo : '';
         $hostInfo->sql = $sqlInfo ? $sqlInfo : '';
-        // $hostInfo->vhost_id = $hostInfo->id;
 
         // 用户信息表
-        $this->userInfo = $this->auth->getUserinfo();
+        $userInfo = $this->auth->getUserinfo();
         // 主机信息表
         $this->hostInfo = $hostInfo;
         // 验证主机是否过期
-        if (time() > $this->hostInfo['endtime']) {
+        if (time() > $this->hostInfo->endtime) {
             $this->error(__('Site is %s', __('expired')), '/sites');
         }
 
         $this->is_excess_stop = Config('site.excess_panel');
 
         // 状态甄别
-        switch ($this->hostInfo['status']) {
-            case 'normal':
-                break;
+        switch ($this->hostInfo->status) {
             case 'stop':
+            case 'normal':
                 break;
             case 'locked':
                 $this->error(__('Site is %s', __('locked')), '/sites');
@@ -108,87 +136,56 @@ class Vhost extends Frontend
                 $this->error(__('Site is %s', __('expired')), '/sites');
                 break;
             case 'excess':
-                $this->is_excess_stop ? $this->error(__('Site is %s', __('excess')), '') : '';
+                $this->is_excess_stop ? $this->error(__('Site is %s', __('excess')), '') : null;
                 break;
             case 'error':
-                $this->error(__('Site is %s', __('error')), '/sites');
-                break;
             default:
                 $this->error(__('Site is %s', __('error')), '/sites');
                 break;
         }
 
-        // 获取系统配置
-        $this->Config = Config::get('site');
-
-        $this->btTend   = new Btaction();
-        $this->btAction = $this->btTend->btAction;
-        $this->hostInfo->server_os = $this->server_type = $this->btTend->os;
+        $this->btAction   = new Btaction();
+        $this->btPanel = $this->btAction->btPanel;
+        $this->hostInfo->server_os = $this->server_type = $this->btAction->os;
 
         // 信息初始化
-        $this->btTend->ftp_name = isset($hostInfo->ftp->username) ? $hostInfo->ftp->username : '';
-        $this->btTend->sql_name = isset($hostInfo->sql->username) ? $hostInfo->sql->username : '';
+        $this->btAction->ftp_name = isset($hostInfo->ftp->username) ? $hostInfo->ftp->username : '';
+        $this->btAction->sql_name = isset($hostInfo->sql->username) ? $hostInfo->sql->username : '';
         // 站点名
-        $this->btTend->bt_name = $this->siteName = $this->hostInfo['bt_name'];
+        $this->btAction->bt_name = $this->siteName = $this->hostInfo->bt_name;
         // 宝塔站点id
-        $this->btTend->bt_id = $this->bt_id = $this->hostInfo['bt_id'];
+        $this->btAction->bt_id = $this->bt_id = $this->hostInfo->bt_id;
         // 主机ID
         $this->vhost_id = $this->hostInfo->id;
 
         // 获取并设置服务器配置
         $server_config = Cache::remember('vhost_config', function () {
-            return $server_config = $this->btTend->clear_config();
+            return $server_config = $this->btAction->clear_config();
         });
-        $this->serverConfig = $this->btTend->serverConfig = $server_config;
+        $this->serverConfig = $this->btAction->serverConfig = $server_config;
 
         // 站点初始化
-        $webInit = $this->btTend->webInit();
-        if(!$webInit){
-            $this->error($this->btTend->bt_name . $this->btTend->_error .  ' <a href="' . url('index/user/index') . '">' . __('Switch site') . '</a>', '');
+        $webInit = $this->btAction->webInit();
+        if (!$webInit) {
+            $this->error($this->btAction->bt_name . $this->btAction->_error .  ' <a href="' . url('index/user/index') . '">' . __('Switch site') . '</a>', '');
         }
         // 检查资源使用量
         if (!$this->check()) {
-            $this->is_excess_stop ? $this->error($this->_error, '') : '';
+            $this->is_excess_stop ? $this->error($this->_error, '') : null;
         }
-
-        $this->webRootPath = $this->btTend->webRootPath;
-        $this->dirUserIni = $this->btTend->dirUserIni;
-        $this->hostBtInfo = $this->btTend->hostBtInfo;
-        // var_dump($this->hostBtInfo);
-        // exit;
-
-        // 获取等待连接耗时
-        // $connectTime = $this->btTend->getRequestTime();
-        // if (!$connectTime) {
-        //     $this->error('连接服务器API失败，请检查API配置或防火墙是否正常','/sites');
-        // }
-        // $this->assign('timeOut', $connectTime);
         // php加载时长
-        $this->assign('rangeTime', Debug::getRangeTime('begin', 'end', 6) . 's');
+        $this->assign('rangeTime', Debug::getRangeTime('begin', 'end') . 's');
+        // 主机信息（数据库）
         $this->assign('hostInfo', $this->hostInfo);
-        $this->assign('hostBtInfo', $this->hostBtInfo);
-        $this->assign('userInfo', $this->userInfo);
+        // 主机信息（宝塔面板）
+        $this->assign('hostBtInfo', $this->btAction->hostBtInfo);
+        // 用户信息
+        $this->assign('userInfo', $userInfo);
+        // 服务器配置
         $this->assign('serverConfig', $server_config);
-        $this->assign('phpmyadmin', Config('site.phpmyadmin'));
     }
 
-    /**
-     * 空的请求
-     * @param $name
-     * @return mixed
-     */
-    // public function _empty($name)
-    // {
-    //     $data = Hook::listen("user_request_empty", $name);
-    //     foreach ($data as $index => $datum) {
-    //         $this->view->assign($datum);
-    //     }
-    //     return $this->view->fetch('user/' . $name);
-    // }
-
-    /**
-     * 首页
-     */
+    // 首页
     public function index()
     {
         $this->view->assign('title', __('Console center'));
@@ -198,10 +195,10 @@ class Vhost extends Frontend
     // 控制台
     public function main()
     {
-        $phpVer = isset($this->hostBtInfo['php_version']) && $this->hostBtInfo['php_version'] ? str_replace(".", "", $this->hostBtInfo['php_version']) : $this->btTend->getSitePhpVer($this->siteName);
-        $siteStatus = isset($this->hostBtInfo['status']) && $this->hostBtInfo['status'] ? $this->hostBtInfo['status'] : $this->btTend->getSiteStatus($this->siteName);
+        $phpVer = isset($this->btAction->hostBtInfo['php_version']) && $this->btAction->hostBtInfo['php_version'] ? str_replace(".", "", $this->btAction->hostBtInfo['php_version']) : $this->btAction->getSitePhpVer($this->siteName);
+        $siteStatus = isset($this->btAction->hostBtInfo['status']) && $this->btAction->hostBtInfo['status'] ? $this->btAction->hostBtInfo['status'] : $this->btAction->getSiteStatus($this->siteName);
         if (isset($this->hostInfo->ftp->username) && $this->hostInfo->ftp->username) {
-            $ftpInfo = $this->btTend->getFtpInfo();
+            $ftpInfo = $this->btAction->getFtpInfo();
             if (!$ftpInfo) {
                 $ftpInfo = false;
             }
@@ -210,15 +207,17 @@ class Vhost extends Frontend
         }
 
         $phpversion_list = Cache::remember('phpversion_list', function () {
-            return $this->btAction->GetPHPVersion();
+            return $this->btPanel->GetPHPVersion();
         });
 
         // 转换资源百分比
         $site_getround = $this->hostInfo->site_max != 0 ? getround($this->hostInfo->site_max, $this->hostInfo->site_size) : 0;
         $sql_getround = $this->hostInfo->sql_max != 0 ? getround($this->hostInfo->sql_max, $this->hostInfo->sql_size) : 0;
         $flow_getround = $this->hostInfo->flow_max != 0 ? getround($this->hostInfo->flow_max, $this->hostInfo->flow_size) : 0;
+        // 数据库管理地址
+        $this->assign('phpmyadmin', Config('site.phpmyadmin'));
 
-        $this->view->assign('userLocked', $this->btTend->userini_status);
+        $this->view->assign('userLocked', $this->btAction->userini_status);
         $this->view->assign('title', __('Console center'));
         $this->view->assign('ftpInfo', $ftpInfo);
         $this->view->assign('phpVer', $phpVer);
@@ -230,19 +229,21 @@ class Vhost extends Frontend
         return $this->view->fetch();
     }
 
-    /**
-     * 清除缓存
-     */
+    // 清除缓存
     public function clear_cache()
     {
         // 清除waf类型缓存
         Cache::rm('getWaf');
+        // 清除Proof类型缓存
+        Cache::rm('getProof');
         // 清除php版本列表缓存
         Cache::rm('phpversion_list');
         // 清除伪静态规则缓存
         // Cache::rm('phpversion_list');
         // 清除服务器配置
         Cache::rm('vhost_config');
+        // 清除资源使用检测缓存
+        Cookie::set('vhost_check_' . $this->vhost_id, null);
 
         $this->success(__('Clear success'), '');
     }
@@ -260,35 +261,33 @@ class Vhost extends Frontend
                     'info' => json_encode($this->hostInfo)
                 ]);
                 // 删除原有站点信息，保留数据库、ftp账号，清空域名绑定详情
-                $del = $this->btTend->siteDelete($this->btTend->bt_id, $this->btTend->bt_name, 0, 0, 1);
+                $del = $this->btAction->siteDelete($this->btAction->bt_id, $this->btAction->bt_name, 0, 0, 1);
                 if (!$del) {
-                    throw new \Exception(__('Fail') . '.' . $this->btTend->_error);
+                    throw new \Exception(__('Fail') . '.' . $this->btAction->_error);
                 }
-                $arr = explode('.', $this->btTend->bt_name);
-                $name = isset($arr[0]) ? $arr[0] : \fast\Random::alnum(6);
+                $arr = explode('.', $this->btAction->bt_name);
+                $name = isset($arr[0]) ? $arr[0] : \fast\Random::alnum();
                 // 创建一个新的站点，保持原有信息一致性，如空间大小，IP等
                 $hostSetArr = [
-                    'domains' => $this->btTend->bt_name,
-                    'WebGetKey' => $this->btAction->WebGetKey($this->btTend->bt_id),
+                    'domains' => $this->btAction->bt_name,
+                    'WebGetKey' => $this->btPanel->WebGetKey($this->btAction->bt_id),
                     // 'ftp' => 1,
                     'site_max' => $this->hostInfo->site_max,
                     'sql_max' => $this->hostInfo->sql_max,
                     'flow_max' => $this->hostInfo->flow_max,
                 ];
-                $hostSetInfo = $this->btTend->setInfo(['username' => $name], $hostSetArr);
+                $hostSetInfo = $this->btAction->setInfo(['username' => $name], $hostSetArr);
 
-                // var_dump($hostSetInfo);
-                // exit;
                 // 删除原有域名绑定信息
-                \app\common\model\Domainlist::where(['vhost_id' => $this->hostInfo->id])->where('domain', '<>', $this->btTend->bt_name)->delete();
+                \app\common\model\Domainlist::where(['vhost_id' => $this->hostInfo->id])->where('domain', '<>', $this->btAction->bt_name)->delete();
 
-                $crea = $this->btTend->btBuild($hostSetInfo);
+                $crea = $this->btAction->btBuild($hostSetInfo);
                 if (!$crea) {
-                    throw new \Exception(__('Fail') . '.' . $this->btTend->_error);
+                    throw new \Exception(__('Fail') . '.' . $this->btAction->_error);
                 }
                 // 将数据库中站点信息变更为新站点信息，btid，站点名等
                 $this->hostInfo->allowField(true)->save([
-                    'bt_name' => $this->btTend->bt_name,
+                    'bt_name' => $this->btAction->bt_name,
                     'bt_id' => $crea['siteId'],
                 ]);
 
@@ -310,19 +309,15 @@ class Vhost extends Frontend
         return $this->view->fetch();
     }
 
-    /**
-     * 设置PHP版本
-     * @Author   Youngxj
-     * @DateTime 2019-12-07
-     * @return   [type]     [description]
-     */
+    // 设置PHP版本
     public function phpSet()
     {
         $phpVer = input('post.ver');
         if (!$phpVer) {
             $this->error(__('%s can not be empty', 'php'));
         }
-        $phpversion_list = $this->btAction->GetPHPVersion();
+        $a = false;
+        $phpversion_list = $this->btPanel->GetPHPVersion();
         foreach ($phpversion_list as $key => $value) {
             if (in_array($phpVer, $phpversion_list[$key])) {
                 $a = true;
@@ -332,45 +327,37 @@ class Vhost extends Frontend
             }
         }
         if (!$a) {
-            $this->error(__('Not currently supported %s', ''));
+            $this->error(__('Not currently supported %s', $phpVer));
         }
 
-        $setPHP = $this->btTend->setPhpVer($phpVer);
+        $setPHP = $this->btAction->setPhpVer($phpVer);
         if (!$setPHP) {
-            $this->error($this->btTend->_error);
+            $this->error($this->btAction->_error);
         }
         $this->success(__('Change success'));
     }
 
-    /**
-     * 网站停止运行
-     * @Author   Youngxj
-     * @DateTime 2019-12-14
-     */
+    // 网站停止运行
     public function webStop()
     {
         // 先判断站点状态，防止多次重复操作
-        $set = $this->btTend->webstop();
+        $set = $this->btAction->webstop();
         if (!$set) {
-            $this->error($this->btTend->_error);
+            $this->error($this->btAction->_error);
         }
         $this->hostInfo->allowField(true)->save([
-            'status'=>'stop'
+            'status' => 'stop'
         ]);
         $this->success(__('Success'));
     }
 
-    /**
-     * 网站开启
-     * @Author   Youngxj
-     * @DateTime 2019-12-14
-     */
+    // 网站开启
     public function webStart()
     {
-        switch ($this->hostInfo['status']) {
-            case 'normal':
-                break;
+        // 判断主机状态
+        switch ($this->hostInfo->status) {
             case 'stop':
+            case 'normal':
                 break;
             case 'locked':
                 $this->error(__('Site is %s', __('locked')), '');
@@ -382,19 +369,17 @@ class Vhost extends Frontend
                 $this->error(__('Site is %s', __('excess')), '');
                 break;
             case 'error':
-                $this->error(__('Site is %s', __('error')), '');
-                break;
             default:
                 $this->error(__('Site is %s', __('error')), '');
                 break;
         }
         // 先判断站点状态，防止多次重复操作
-        $set = $this->btTend->webstart();
+        $set = $this->btAction->webstart();
         if (!$set) {
-            $this->error($this->btTend->_error);
+            $this->error($this->btAction->_error);
         }
         $this->hostInfo->allowField(true)->save([
-            'status'=>'normal'
+            'status' => 'normal'
         ]);
         $this->success(__('Success'));
     }
@@ -403,18 +388,21 @@ class Vhost extends Frontend
     public function domain()
     {
         //获取域名绑定列表
-        $domainList = $this->btTend->getSiteDomain();
+        $domainList = $this->btAction->getSiteDomain();
         //获取子目录绑定信息
-        $dirList = $this->btTend->getSiteDirBinding();
+        $dirList = $this->btAction->getSiteDirBinding();
 
         $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
+
         // 剩余可绑定数
 
         // 获取未审核的域名
-        $auditList = model('Domainlist')->where('status', '<>', 1)->select();
+        $auditList = model('Domainlist')->where('status', '<>', 1)->where('vhost_id', $this->hostInfo->id)->select();
+        // 获取未备案域名
+        $not_beianList = model('DomainBeian')->where('status', 'normal')->where('vhost_id', $this->hostInfo->id)->select();
 
         $count = count($domainList) - 1 + count($dirList['binding']) + count($auditList);
-        $sys = $this->hostInfo->domain_max - $count;
+        $sys = $this->hostInfo->domain_max - $count - count($not_beianList);
 
         $this->view->assign('title', __('domain'));
         $this->view->assign('sys', $sys);
@@ -423,162 +411,231 @@ class Vhost extends Frontend
         $this->view->assign('sub_bind', $sub_bind);
         $this->view->assign('domainList', $domainList);
         $this->view->assign('auditList', $auditList);
+        $this->view->assign('not_beianList', $not_beianList);
         return $this->view->fetch();
     }
 
-    /**
-     * 增加域名绑定
-     * @return [type] [description]
-     */
+    // 增加域名绑定
     public function incDomain()
     {
-        $post_str = $this->request->post();
+        $domains = $this->request->post('domain');
+
+        $dirs = $this->request->post('dirs', '/');
+
+        // 限制绑定子目录
         $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
 
-        if (!empty($post_str['domain'])) {
-            $domain_list = trim($post_str['domain']);
-            $domain_arr  = explode("\n", $domain_list);
+        // 限制绑定根目录
+        if ($sub_bind != 1 && $dirs != '/') {
+            $this->error(__('Bind directory error'));
+        }
 
-            $block = model('Domainlist')->where(['status' => 'normal'])->select();
-            if ($block) {
-                foreach ($domain_arr as $k1 => $v1) {
-                    foreach ($block as $k2 => $v2) {
-                        // 正则查找（待扩展）
-                        $reg = "/$v2->domain/i";
-                        preg_match($reg, $v1, $sss);
-                        if ($sss) {
-                            $this->error(__('%s not bind', $v1));
-                        }
-                        // 字符串查找
-                        // if (strpos($v1, $v2->domain) !== false) {
-                        // var_dump(11);
-                        // $this->error(__('%s not bind',$v1));
-                        // }
-                    }
+        // 判断域名是否为空
+        if (empty($domains)) {
+            $this->error(__('%s can not be empty', __('Domain')));
+        }
+
+        // 非法参数过滤
+        if (preg_match($this->global_reg, $dirs) || preg_match($this->global_reg, $domains)) {
+            $this->error(__('Illegal parameter'));
+        }
+
+        $domain_list = trim($domains);
+        $domain_arr  = explode("\n", $domain_list);
+
+        $domainCount = model('Domainlist')->where('vhost_id', $this->vhost_id)->count();
+
+        $notbeian_count = model('DomainBeian')->where('vhost_id', $this->vhost_id)->where('status','normal')->count();
+
+        // 数据库中已有数 + 准备绑定的域名数 + 未备案的域名
+        $x_domain_count = count($domain_arr) + $domainCount + $notbeian_count;
+
+        // 绑定数限制
+        if ($this->hostInfo->domain_max != 0 && $x_domain_count - 1 >= $this->hostInfo->domain_max) {
+            $this->error(__('Exceed the number of available domain name bindings %s', $this->hostInfo->domain_max));
+        }
+        $successArr = $errorArr = $not_beian = $new_domainlist = [];
+        foreach ($domain_arr as $key => $value) {
+            $status = $domain_pass = 0;
+
+            // 判断当前绑定域名是否存在数据库中
+            $domain_find = model('Domainlist')->where('domain', $value)->find();
+            if ($domain_find) {
+                $errorArr[] = __('%s domain has been bound', $value);
+                continue;
+            }
+
+            // 泛解析错误格式拦截
+            $isnot_fjx = preg_match('/\*[a-zA-Z0-9]/', $value);
+            if ($isnot_fjx) {
+                $errorArr[] = __('%s domain format is incorrect, please adjust and resubmit', $value);
+                continue;
+            }
+
+            // 正则匹配法
+            $isnotall = preg_match('/\*\.([a-zA-Z0-9]+[^.])$/', $value);
+            // var_dump($isnotall);
+            if ($isnotall) {
+                $errorArr[] = __('%s domain format is incorrect, please adjust and resubmit', $value);
+                continue;
+            }
+
+            // 拆分数组法匹配
+            // $isnotall = explode('.',$value);
+            // var_dump($isnotall);
+            // if($isnotall){
+            //     if(count($isnotall)<=2&&$isnotall[0]=='*'){
+            //         var_dump(false);
+            //     }else{
+            //         var_dump(true);
+            //     }
+            // }else{
+            //     var_dump(false);
+            // }
+
+            // 域名黑白名单模块
+            $domainblock = model('DomainBlock')->where(['status' => 'normal', 'domain' => $value])->find();
+            if ($domainblock) {
+                if ($domainblock->type == 'block') {
+                    $errorArr[] = __('%s domain cannot be bound', $value);
+                    continue;
+                } else {
+                    // 跳过备案检测、域名手动审核
+                    $domain_pass = 1;
+                    $status = 1;
                 }
             }
 
-            if (!isset($post_str['dirs']) || $post_str['dirs'] == '') {
-                $this->error(__('%s can not be empty', __('Dir')));
-            }
-            if (preg_match($this->reg, $post_str['dirs']) || preg_match($this->reg, $post_str['domain'])) {
-                $this->error(__('Illegal parameter'));
-            }
-            // 限制绑定根目录
-            if ($sub_bind != 1 && $post_str['dirs'] != '/') {
-                $this->error(__('Bind directory error'));
-            }
 
-            if (count($domain_arr)-1 >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != '0') {
-                $this->error(__('Exceed the number of available domain name bindings %s', $this->hostInfo['domain_max']));
-            }
-            $domainCount = model('Domainlist')->where('vhost_id', $this->vhost_id)->count();
-
-            if ($domainCount-1  >= $this->hostInfo['domain_max'] && $this->hostInfo['domain_max'] != 0) {
-                $this->error(__('Exceed the number of available domain name bindings %s', $this->hostInfo['domain_max']));
-            }
-
-            //获取域名绑定列表
-            $domainList = $this->btTend->getSiteDomain();
-            //获取子目录绑定信息
-            $dirList = $this->btTend->getSiteDirBinding();
-            // 读取默认域名，防止被恶意使用泛解析域名
-            // $defaultDomain = $this->hostInfo['default_domain'];
-            // 读取用户绑定的泛解析域名，防止被恶意使用该泛解析域名
-            // 之后从长计议
-
-            // 域名检测
-            foreach ($domain_arr as $key => $value) {
-
-                $isnot_fjx = preg_match('/\*[a-zA-Z0-9]/', $value);
-                if ($isnot_fjx) {
-                    $this->error(__('%s domain format is incorrect, please adjust and resubmit', $value));
-                }
-
-                // 正则匹配法
-                $isnotall = preg_match('/\*\.([a-zA-Z0-9]+[^\.])$/', $value);
-                // var_dump($isnotall);
-                if ($isnotall) {
-                    $this->error(__('%s domain format is incorrect, please adjust and resubmit', $value));
-                }
-
-                // 拆分数组法匹配
-                // $isnotall = explode('.',$value);
-                // var_dump($isnotall);
-                // if($isnotall){
-                //     if(count($isnotall)<=2&&$isnotall[0]=='*'){
-                //         var_dump(false);
-                //     }else{
-                //         var_dump(true);
-                //     }
-                // }else{
-                //     var_dump(false);
-                // }
-
-
-                // 判断当前绑定域名是否存在数据库中
-                $domain_find = model('Domainlist')->where('domain', $value)->find();
-                if ($domain_find) {
-                    $this->error(__('%s domain has been bound', $value));
+            // 备案检测
+            $search_check = model('DomainBeian')->where(['domain' => $value])->where('status', '<>', 'normal')->find();
+            if (Config::get('site.ask_beian') && Config::get('beian_siteinfo.bt_id') && Config::get('beian_siteinfo.bt_name') && !$search_check && !$domain_pass) {
+                $is_beian  = \app\common\library\Common::beian_check($value);
+                if (!$is_beian) {
+                    $not_beian[] = $value;
+                    $errorArr[] = __('%s domain cannot be beian', $value);
+                    $status = 3;
+                } else {
+                    // 写入备案表
+                    model('DomainBeian')::create(
+                        [
+                            'vhost_id' => $this->vhost_id,
+                            'bt_id' => $this->bt_id,
+                            'bt_name' => $this->hostInfo->bt_name,
+                            'dir' => $dirs,
+                            'status' => 'auto',
+                            'domain' => $value,
+                            'beian_info' => json_encode($is_beian),
+                        ]
+                    );
                 }
             }
-
-            if ($post_str['dirs'] == '/') {
-                $isdir = 0;
-                $name  = $this->siteName;
-            } else {
-                $isdir = 1;
-                $name  = $post_str['dirs'];
+            if ($this->hostInfo->is_audit && !$domain_pass) {
+                $errorArr[] = __('%s please wait for review', $value);
+                $status = 0;
             }
-            Db::startTrans();
 
-            foreach ($domain_arr as $key => $value) {
+            if ($status != 3) {
                 // 添加到数据库中
                 $data = [
                     'vhost_id'    => $this->vhost_id,
                     'domain'      => $value,
-                    'dir'         => $post_str['dirs'],
-                    'status'       => $this->hostInfo->is_audit ? 0 : 1,
+                    'dir'         => $dirs,
+                    'status'       => $status,
                 ];
-
-                $add = model('Domainlist')::create($data);
-                if (!$add) {
-                    Db::rollback();
-                    $this->error(__('Unexpected situation'));
-                }
+                model('Domainlist')::create($data);
             }
 
-            if ($this->hostInfo->is_audit) {
-                Db::commit();
-                $this->success(__('Please wait for review'));
+
+            if ($status !== 1) {
+                continue;
             }
+            $successArr[] = $value;
+        }
 
-            $domain_str = str_replace("\n", ',', $post_str['domain']);
+        //获取域名绑定列表
+        // $domainList = $this->btAction->getSiteDomain();
+        //获取子目录绑定信息
+        // $dirList = $this->btAction->getSiteDirBinding();
+        // 读取默认域名，防止被恶意使用泛解析域名
+        // $defaultDomain = $this->hostInfo['default_domain'];
+        // 读取用户绑定的泛解析域名，防止被恶意使用该泛解析域名
+        // 之后从长计议
 
-            $modify_status = $this->btTend->addDomain($domain_str, $name, $isdir);
-
-            if (isset($modify_status) && $modify_status['status'] == 'true') {
-                Db::commit();
-                $this->success($modify_status['msg']);
-            } else {
-                Db::rollback();
-                $this->error(__('Fail') . $modify_status['msg']);
-            }
+        // 子目录处理
+        if ($dirs == '/') {
+            $isdir = 0;
+            $name  = $this->siteName;
         } else {
-            $this->error(__('%s can not be empty', __('Domain')));
+            $isdir = 1;
+            $name  = $dirs;
+        }
+
+        if ($not_beian) {
+            // 绑定未备案站点
+            $not_beian_domain_str = implode(',', $not_beian);
+            $this->btAction->bt_id = Config::get('beian_siteinfo.bt_id');
+            $bt_name = Config::get('beian_siteinfo.bt_name');
+            $modify_status = $this->btAction->addDomain($not_beian_domain_str, $bt_name, 0);
+            if ($modify_status) {
+                foreach ($not_beian as $key => $value) {
+                    model('DomainBeian')::create([
+                        'vhost_id' => $this->vhost_id,
+                        'bt_id' => $this->bt_id,
+                        'bt_name' => $this->hostInfo->bt_name,
+                        'bt_id_n' => $this->btAction->bt_id,
+                        'bt_name_n' => $bt_name,
+                        'dir' => $dirs,
+                        'status' => 'normal',
+                        'domain' => $value,
+                    ]);
+                }
+            } else {
+                array_push($errorArr, __('Fail') . $this->btAction->getError());
+            }
+        }
+
+        if ($successArr) {
+            // 已备案绑定域名
+            $domain_str = implode(',', $successArr);
+
+            $this->btAction->bt_id = $this->bt_id;
+            $modify_status_new = $this->btAction->addDomain($domain_str, $name, $isdir);
+            if (!$modify_status_new) {
+                array_push(
+                    $errorArr,
+                    __('Fail') . $this->btAction->getError()
+                );
+            }
+        }
+        $errorMsg = implode(';', $errorArr);
+        if ($errorMsg) {
+            $this->error($errorMsg);
+        } else {
+            $this->success(__('Success'));
         }
     }
 
-    /**
-     * 删除域名绑定
-     * @return [type] [description]
-     */
+    // 删除域名绑定
     public function delDomain()
     {
         $delete = $this->request->post('delete');
         $type = $this->request->post('type');
         $id = $this->request->post('id/d');
+        $not_beian = $this->request->post('not_beian/d');
+
+
         Db::startTrans();
+        if ($not_beian) {
+            // 删除未备案域名
+            $domainInfo = model('DomainBeian')::get(['vhost_id' => $this->vhost_id, 'domain' => $delete]);
+            if ($domainInfo) {
+                $domainInfo->delete(true);
+            }
+
+            Db::commit();
+            $this->success(__('Success'));
+        }
         $domainInfo = model('Domainlist')::get(['vhost_id' => $this->vhost_id, 'domain' => $delete]);
         // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
         if ($domainInfo) {
@@ -586,17 +643,16 @@ class Vhost extends Frontend
         }
         if (isset($domainInfo->status) && $domainInfo->status != 1) {
         } elseif ($type == 'domain') {
-            $modify_status = $this->btTend->delDomain($this->bt_id, $this->siteName, $delete, 80);
+            $modify_status = $this->btAction->delDomain($this->bt_id, $this->siteName, $delete, 80);
             if (!$modify_status) {
                 Db::rollback();
-                $this->error(__('Delete fail') . $modify_status['msg']);
+                $this->error(__('Delete fail') . $this->btAction->getError());
             }
         } elseif ($type == 'dir') {
-            // 先删除数据库的，如果删除失败就回滚，删除成功之后再删除宝塔面板中的，删除失败就回滚数据库
-            $modify_status = $this->btTend->delDomainDir($id);
+            $modify_status = $this->btAction->delDomainDir($id);
             if (!$modify_status) {
                 Db::rollback();
-                $this->error(__('Delete fail') . $modify_status['msg']);
+                $this->error(__('Delete fail') . $this->btAction->getError());
             }
         }
         Db::commit();
@@ -610,12 +666,7 @@ class Vhost extends Frontend
         return $this->view->fetch();
     }
 
-    /**
-     * 主机密码修改
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 主机密码修改
     public function passVhost()
     {
         if (request()->post()) {
@@ -641,23 +692,14 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 数据库密码修改
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 数据库密码修改
     public function passSql()
     {
-
         if (request()->post()) {
-            if (!$this->hostInfo->sql) {
-                $this->error(__('This service is not currently available'));
-            }
             // 判断是否存在这项业务
-            $sqlInfo = $this->btTend->getSqlInfo();
+            $sqlInfo = $this->btAction->getSqlInfo();
             if (!$sqlInfo) {
-                $this->error(__('%s not found', 'Sql'));
+                $this->error(__('This service is not currently available'));
             }
             $sqlFind = $this->sqlModel::get($this->hostInfo->sql->id);
 
@@ -684,20 +726,12 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * ftp密码修改
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // ftp密码修改
     public function passFtp()
     {
         if (request()->post()) {
             // 判断是否存在这项业务
-            if (!$this->hostInfo->ftp) {
-                $this->error(__('This service is not currently available'));
-            }
-            $ftpInfo = $this->btTend->getFtpInfo();
+            $ftpInfo = $this->btAction->getFtpInfo();
             if (!$ftpInfo) {
                 $this->error(__('This service is not currently available'));
             }
@@ -710,7 +744,7 @@ class Vhost extends Frontend
                 'password' => __('The password does not meet the specification, the length should be greater than %s and less than %s characters', ['6', '12']),
             ]);
             $data = [
-                'password' => input('post.password'),
+                'password' => $this->request->post('password'),
             ];
 
             if (!$validate->check($data)) {
@@ -718,7 +752,7 @@ class Vhost extends Frontend
             }
             Db::startTrans();
             try {
-                $ftpFind->password = $data['password'];
+                $ftpFind->password = $this->request->post('password');
                 $ftpFind->save();
             } catch (\Exception $e) {
                 $this->error($e->getMessage());
@@ -728,16 +762,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 带宽限制
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 带宽限制
     public function speed()
     {
         if ($this->server_type == 'linux') {
-            $netInfo = $this->btAction->GetLimitNet($this->bt_id);
+            $netInfo = $this->btPanel->GetLimitNet($this->bt_id);
             if (empty($netInfo['limit_rate']) && empty($netInfo['perip']) && empty($netInfo['perserver'])) {
                 $netInfo['status'] = false;
             } else {
@@ -745,7 +774,7 @@ class Vhost extends Frontend
             }
             $viewTheme = 'speed';
         } else {
-            $netInfo = $this->btAction->GetLimitNet($this->bt_id);
+            $netInfo = $this->btPanel->GetLimitNet($this->bt_id);
             if (empty($netInfo['limit_rate']) && empty($netInfo['timeout']) && empty($netInfo['perserver'])) {
                 $netInfo['status'] = false;
             } else {
@@ -760,12 +789,7 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 网站限速修改
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 网站限速修改
     public function speedUp()
     {
         $post_str = $this->request->post();
@@ -797,46 +821,15 @@ class Vhost extends Frontend
             $this->error($msg);
         }
         $this->success(__('Success'));
-        
-        // if ($this->server_type == 'linux') {
-        //     if (!empty($post_str['perserver']) && !empty($post_str['perip']) && !empty($post_str['limit_rate'])) {
-        //         $modify_status = $this->btAction->SetLimitNet($this->bt_id, $post_str['perserver'], $post_str['perip'], $post_str['limit_rate']);
-        //         if (isset($modify_status) && $modify_status['status'] == 'true') {
-                    
-        //             $this->success($modify_status['msg']);
-        //         } else {
-        //             $this->error(__('Fail') . '：' . $modify_status['msg']);
-        //         }
-        //     } else {
-        //         $this->error(__('%s can not be empty', __('All')));
-        //     }
-        // } else {
-        //     if (!empty($post_str['perserver']) && !empty($post_str['timeout']) && !empty($post_str['limit_rate'])) {
-        //         $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $post_str['perserver'], $post_str['timeout'], $post_str['limit_rate']);
-        //         if (isset($modify_status) && $modify_status['status'] == 'true') {
-                    
-        //             $this->success($modify_status['msg']);
-        //         } else {
-        //             $this->error(__('Fail') . '：' . $modify_status['msg']);
-        //         }
-        //     } else {
-        //         $this->error(__('%s can not be empty', __('All')));
-        //     }
-        // }
     }
 
-    /**
-     * 关闭网站限速
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 关闭网站限速
     public function speedOff()
     {
         $post_str = $this->request->post();
 
         if (isset($post_str['speed']) && $post_str['speed'] == 'off') {
-            if ($modify_status = $this->btAction->CloseLimitNet($this->bt_id)) {
+            if ($modify_status = $this->btPanel->CloseLimitNet($this->bt_id)) {
                 $this->hostModel->save([
                     'perserver' => 0,
                     'limit_rate' => 0,
@@ -848,15 +841,10 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 默认文件
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 默认文件
     public function defaultfile()
     {
-        $indexFile = $this->btAction->WebGetIndex($this->bt_id);
+        $indexFile = $this->btPanel->WebGetIndex($this->bt_id);
 
         $this->view->assign('title', __('defaultfile'));
         return $this->view->fetch('defaultfile', [
@@ -864,22 +852,17 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 默认文件修改
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 默认文件修改
     public function fileUp()
     {
         $post_str = $this->request->post();
 
         if (!empty($post_str['Dindex'])) {
             // 增加非法字符效验
-            if (!preg_match("/^[\w\s\.\,]+$/i", $post_str['Dindex'])) {
+            if (!preg_match("/^[\w.,]+$/i", $post_str['Dindex'])) {
                 $this->error(__('Illegal parameter'));
             }
-            $modify_status = $this->btAction->WebSetIndex($this->bt_id, $post_str['Dindex']);
+            $modify_status = $this->btPanel->WebSetIndex($this->bt_id, $post_str['Dindex']);
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
@@ -890,18 +873,14 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 301重定向（普通版）
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 301重定向（普通版）
     public function Rewrite301()
     {
         if ($this->hostInfo->server_os != 'linux') {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
 
-        $rewriteInfo           = $this->btAction->Get301Status($this->siteName);
+        $rewriteInfo           = $this->btPanel->Get301Status($this->siteName);
         $rewriteInfo['domain'] = explode(',', $rewriteInfo['domain']);
 
         $this->view->assign('title', __('rewrite301'));
@@ -910,12 +889,7 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 301重定向（普通版）更新
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 301重定向（普通版）更新
     public function r301Up()
     {
         if ($this->hostInfo->server_os == 'windows') {
@@ -924,16 +898,16 @@ class Vhost extends Frontend
         $post_str = $this->request->post();
 
         if (!empty($post_str['domains']) && !empty($post_str['toUrl'])) {
-            $rewriteInfo           = $this->btAction->Get301Status($this->siteName);
+            $rewriteInfo           = $this->btPanel->Get301Status($this->siteName);
             $rewriteInfo['domain'] = explode(',', $rewriteInfo['domain']);
             if ($post_str['domains'] !== 'all' && !deep_in_array($post_str['domains'], $rewriteInfo['domain'])) {
                 $this->error(__('%s parameters', __('Domain')));
             }
 
-            if (preg_match($this->reg, $post_str['domains']) || preg_match($this->reg, $post_str['toUrl'])) {
+            if (preg_match($this->global_reg, $post_str['domains']) || preg_match($this->global_reg, $post_str['toUrl'])) {
                 $this->error(__('Illegal parameter'));
             }
-            $modify_status = $this->btAction->Set301Status($this->siteName, $post_str['toUrl'], $post_str['domains'], 1);
+            $modify_status = $this->btPanel->Set301Status($this->siteName, $post_str['toUrl'], $post_str['domains'], 1);
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
@@ -944,12 +918,7 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 301重定向（普通版）关闭
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 301重定向（普通版）关闭
     public function r301Off()
     {
         if ($this->hostInfo->server_os == 'windows') {
@@ -958,7 +927,7 @@ class Vhost extends Frontend
         $post_str = $this->request->post();
 
         if (isset($post_str['rewrite']) && $post_str['rewrite'] == 'off') {
-            if ($modify_status = $this->btAction->Set301Status($this->siteName, 'http://baidu.cpom$request_uri', 'all', 0)) {
+            if ($modify_status = $this->btPanel->Set301Status($this->siteName, 'http://baidu.cpom$request_uri', 'all', 0)) {
                 $this->success($modify_status['msg']);
             } else {
                 $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -966,21 +935,16 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 重定向（测试版）
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 重定向（测试版）
     public function redir()
     {
         // if ($this->serverConfig['webserver'] != 'nginx') {
         //     $this->error(__('The plug-in is not supported by the current host'),'');
         // }
         // 获取网站下的域名列表
-        $WebsitesList = $this->btAction->Websitess($this->bt_id, 'domain');
+        $WebsitesList = $this->btPanel->Websitess($this->bt_id, 'domain');
         // 获取重定向内测版列表
-        $RedirectList = $this->btAction->GetRedirectList($this->siteName);
+        $RedirectList = $this->btPanel->GetRedirectList($this->siteName);
         // var_dump($RedirectList);
         if ($RedirectList) {
             foreach ($RedirectList as $key => $value) {
@@ -996,12 +960,7 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 重定向（测试版）更新
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 重定向（测试版）更新
     public function redirUp()
     {
         if ($this->request->post()) {
@@ -1024,11 +983,11 @@ class Vhost extends Frontend
             if (!$tourl1) {
                 return ['code' => '-1', 'msg' => __('%s can not be empty', __('Redirect path'))];
             }
-            if (preg_match($this->reg, $redirectname) || preg_match($this->reg, $tourl1) || preg_match($this->reg, $redirectpath) || preg_match($this->reg, $redirectdomains)) {
+            if (preg_match($this->global_reg, $redirectname) || preg_match($this->global_reg, $tourl1) || preg_match($this->global_reg, $redirectpath) || preg_match($this->global_reg, $redirectdomains)) {
                 $this->error(__('Illegal parameter'));
             }
             // 获取网站下的域名列表
-            $WebsitesList = $this->btAction->Websitess($this->bt_id, 'domain');
+            $WebsitesList = $this->btPanel->Websitess($this->bt_id, 'domain');
             if (!empty($redirectdomains) && !deep_in_array($redirectdomains, $WebsitesList)) {
                 $this->error(__('%s parameters', __('Domain')));
             }
@@ -1038,9 +997,9 @@ class Vhost extends Frontend
             $type           = $types ? 1 : '0';
             $holdpath       = $holdpaths ? 1 : '0';
             if (isset($redirectname) && $redirectname) {
-                $redirUp = $this->btAction->ModifyRedirect($this->siteName, $redirectname, $redirecttype, $domainortype, $redirectdomain, $redirectpath, $tourl1, $type, $holdpath);
+                $redirUp = $this->btPanel->ModifyRedirect($this->siteName, $redirectname, $redirecttype, $domainortype, $redirectdomain, $redirectpath, $tourl1, $type, $holdpath);
             } else {
-                $redirUp = $this->btAction->CreateRedirect($this->siteName, $redirecttype, $domainortype, $redirectdomain, $redirectpath, $tourl1, $type, $holdpath);
+                $redirUp = $this->btPanel->CreateRedirect($this->siteName, $redirecttype, $domainortype, $redirectdomain, $redirectpath, $tourl1, $type, $holdpath);
             }
 
             if ($redirUp) {
@@ -1051,19 +1010,14 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 重定向（测试版）删除
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 重定向（测试版）删除
     public function redirDel()
     {
         if (!$this->request->post()) {
             return ['code' => '-1', 'msg' => __('Illegal request')];
         }
         $redirectname = input('post.redirectname');
-        $del          = $this->btAction->DeleteRedirect($this->siteName, $redirectname);
+        $del          = $this->btPanel->DeleteRedirect($this->siteName, $redirectname);
         if ($del) {
             return ['code' => '200', 'msg' => @$del['msg']];
         } else {
@@ -1071,26 +1025,21 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 伪静态规则
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 伪静态规则
     public function rewrite()
     {
         //获取内置伪静态规则名
-        $rewriteList = $this->btAction->GetRewriteList($this->siteName);
+        $rewriteList = $this->btPanel->GetRewriteList($this->siteName);
         //获取当前网站伪静态规则
         if ($this->server_type == 'linux') {
-            $rewriteInfo = $this->btAction->GetFileBody($this->siteName, 1);
+            $rewriteInfo = $this->btPanel->GetFileBody($this->siteName, 1);
         } else {
-            $rewriteInfo = $this->btAction->GetSiteRewrite($this->siteName);
+            $rewriteInfo = $this->btPanel->GetSiteRewrite($this->siteName);
         }
 
         $this->view->assign('title', __('rewrite'));
         //获取子目录绑定信息
-        $dirList = $this->btAction->GetDirBinding($this->bt_id);
+        $dirList = $this->btPanel->GetDirBinding($this->bt_id);
         return view('rewrite', [
             'dirList'     => $dirList,
             'rewriteList' => $rewriteList,
@@ -1098,12 +1047,7 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 伪静态规则获取
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 伪静态规则获取
     public function rewriteGet()
     {
         $post_str = $this->request->post();
@@ -1122,12 +1066,12 @@ class Vhost extends Frontend
                     $type    = 0;
                 }
                 if ($post_str['dirdomain'] == '/') {
-                    $modify_status = $this->btAction->GetFileBody($rewrite, $type);
+                    $modify_status = $this->btPanel->GetFileBody($rewrite, $type);
                 } else {
                     if ($post_str['rewrites'] == '0.当前') {
-                        $modify_status = $this->btAction->GetDirRewrite($post_str['dirdomain']);
+                        $modify_status = $this->btPanel->GetDirRewrite($post_str['dirdomain']);
                     } else {
-                        $modify_status = $this->btAction->GetFileBody($rewrite, $type);
+                        $modify_status = $this->btPanel->GetFileBody($rewrite, $type);
                     }
                 }
                 if (isset($modify_status) && $modify_status['status'] == 'true') {
@@ -1143,7 +1087,7 @@ class Vhost extends Frontend
             $rewrite = $post_str['rewrites'];
             if (isset($rewrite) && !empty($rewrite)) {
                 if ($rewrite == '0.当前') {
-                    $rewriteInfo = $this->btAction->GetSiteRewrite($this->siteName);
+                    $rewriteInfo = $this->btPanel->GetSiteRewrite($this->siteName);
                     return ['code' => '200', 'msg' => __('Success'), 'data' => @$rewriteInfo['data']];
                 }
 
@@ -1151,12 +1095,12 @@ class Vhost extends Frontend
                 $type = 'iis';
 
                 if ($post_str['dirdomain'] == '/') {
-                    $modify_status = $this->btAction->GetFileBody_win($rewrite, $type);
+                    $modify_status = $this->btPanel->GetFileBody_win($rewrite, $type);
                 } else {
                     if ($rewrite == '0.当前') {
-                        $modify_status = $this->btAction->GetDirRewrite($post_str['dirdomain']);
+                        $modify_status = $this->btPanel->GetDirRewrite($post_str['dirdomain']);
                     } else {
-                        $modify_status = $this->btAction->GetFileBody_win($rewrite, $type);
+                        $modify_status = $this->btPanel->GetFileBody_win($rewrite, $type);
                     }
                 }
                 if (isset($modify_status) && $modify_status['status'] == 'true') {
@@ -1171,16 +1115,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 伪静态规则设置
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 伪静态规则设置
     public function rewriteSet()
     {
         $dirdomain = input('post.dirdomain');
-        $rewrite   = input('post.rewrite', '', null);
+        $rewrite   = input('post.rewrite', '', 'trim');
         // var_dump($rewrite);exit;
         if (preg_match($this->reg_rewrite, $rewrite)) {
             $this->error(__('Illegal parameter'));
@@ -1188,21 +1127,21 @@ class Vhost extends Frontend
         if (isset($rewrite)) {
             if ($dirdomain == '/') {
                 if ($this->server_type == 'linux') {
-                    $modify_status = $this->btAction->SaveFileBody($this->siteName, $rewrite, 'utf-8');
+                    $modify_status = $this->btPanel->SaveFileBody($this->siteName, $rewrite, 'utf-8');
                 } else {
-                    $modify_status = $this->btAction->SetSiteRewrite($this->siteName, $rewrite);
+                    $modify_status = $this->btPanel->SetSiteRewrite($this->siteName, $rewrite);
                 }
             } else {
 
-                // $this->btAction->GetDirRewrite($dirdomain, 1);
-                $GetDirRewrite = $this->btAction->GetDirRewrite($dirdomain, 1);
+                // $this->btPanel->GetDirRewrite($dirdomain, 1);
+                $GetDirRewrite = $this->btPanel->GetDirRewrite($dirdomain, 1);
                 // var_dump($GetDirRewrite);exit;
                 if (!$GetDirRewrite || $GetDirRewrite['status'] != 'true') {
                     $this->error(__('Fail') . '：' . @$GetDirRewrite['msg']);
                 } else {
                     $dir_path = $GetDirRewrite['filename'];
                 }
-                $modify_status = $this->btAction->SaveFileBody($dir_path, $rewrite, 'utf-8', 1);
+                $modify_status = $this->btPanel->SaveFileBody($dir_path, $rewrite, 'utf-8', 1);
             }
             // var_dump($modify_status);exit;
             if (isset($modify_status) && $modify_status['status'] == 'true') {
@@ -1215,11 +1154,7 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 文件管理(FTP)
-     *
-     * @return void
-     */
+    // 文件管理(FTP)
     public function file_ftp()
     {
         if (!extension_loaded('ftp')) {
@@ -1233,9 +1168,8 @@ class Vhost extends Frontend
             $this->error(__('This service is not currently available'), '');
         }
         $host     = Config::get('site.ftp_server') ? Config::get('site.ftp_server') : '127.0.0.1';
-        $ssl     = Config::get('site.ftp_ssl') == true ? true : false;
+        $ssl      = Config::get('site.ftp_type') == 'true';
         $port     = Config::get('site.ftp_port') ? Config::get('site.ftp_port') : '21';
-
         $username = $this->hostInfo->ftp->username;
         $password = $this->hostInfo->ftp->password;
         if (!$host || !$port || !$username || !$password) {
@@ -1257,7 +1191,7 @@ class Vhost extends Frontend
                     $this->error(__('%s connection failed', __('Ftp')), '');
                     break;
                 default:
-                    $this->error(__('%s connection failed', __('Ftp')));
+                    $this->error($excMsg);
                     break;
             }
         }
@@ -1308,8 +1242,8 @@ class Vhost extends Frontend
         }
         // 上传文件
         if ($type == 'uploadfile') {
-            $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
-            if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
+            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
+            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
                 $this->error(__('Site size exceeded, resources stopped'));
             }
 
@@ -1337,8 +1271,8 @@ class Vhost extends Frontend
         }
         // 新文件
         if ($type == 'newfile') {
-            $newfile = input('post.newfile') ? preg_replace('/([\.]){2,}||([\/]){1,}/', '', input('post.newfile')) : '';
-            $path    = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '/';
+            $newfile = input('post.newfile') ? preg_replace('/([.]){2,}|([\/]){1,}/', '', input('post.newfile')) : '';
+            $path    = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
 
             // $createFile = fopen($tempDir . $newfile, 'w+');
             $createFile = fopen($tempDir . $newfile, 'w+');
@@ -1397,9 +1331,9 @@ class Vhost extends Frontend
         }
         //文件/目录 重命名
         if ($type == 'MvFile') {
-            // $path        = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '';
-            $oldFileName = input('post.oldName') ? preg_replace('/([\.]){2,}/', '', input('post.oldName')) : '';
-            $newFileName = input('post.newName') ? preg_replace('/([\.]){2,}/', '', input('post.newName')) : '';
+            // $path        = input('post.path') ? preg_replace('/([.]){2,}/', '/', input('post.path')) : '';
+            $oldFileName = input('post.oldName') ? preg_replace($this->path_reg, '', input('post.oldName')) : '';
+            $newFileName = input('post.newName') ? preg_replace($this->path_reg, '', input('post.newName')) : '';
             if (!$oldFileName || !$newFileName) {
                 $this->error(__('Can not be empty'));
             }
@@ -1433,13 +1367,13 @@ class Vhost extends Frontend
                 $this->error(__('%s can not be empty', __('file')));
             }
             $n = $copy ? 'copyFileName' : 'cutFileName';
-            cookie::set($n, json_encode(['file' => $file, 'name' => $name]));
+            Cookie::set($n, json_encode(['file' => $file, 'name' => $name]), ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
             $this->success(__('Success'));
         }
         // 粘贴文件
         if ($type == 'paste') {
-            $cut_file  = cookie::get('cutFileName');
-            $copy_file = cookie::get('copyFileName');
+            $cut_file  = Cookie::get('cutFileName', 'vhost_cutcopy_');
+            $copy_file = Cookie::get('copyFileName', 'vhost_cutcopy_');
             $type      = $copy_file ? 'copy' : 'cut';
             if (!$cut_file && !$copy_file) {
                 $this->error(__('File not found'));
@@ -1473,8 +1407,7 @@ class Vhost extends Frontend
                 if (!$act) {
                     $this->error($ftp->getError());
                 }
-                cookie::set('cutFileName', null);
-                cookie::set('copyFileName', null);
+                $this->clear_cutorcopy_cookie('all');
             } catch (\Exception $e) {
                 $this->error(__('Fail') . $e->getMessage());
             }
@@ -1482,8 +1415,8 @@ class Vhost extends Frontend
         }
         // 批量粘贴文件
         if ($type == 'pastes') {
-            $cut_files  = cookie::get('cutFileNames');
-            $copy_files = cookie::get('copyFileNames');
+            $cut_files  = Cookie::get('cutFileNames', 'vhost_cutcopy_');
+            $copy_files = Cookie::get('copyFileNames', 'vhost_cutcopy_');
 
             $type = $copy_files ? 'copy' : 'cut';
             if (!$cut_files && !$copy_files) {
@@ -1525,14 +1458,12 @@ class Vhost extends Frontend
                     $arr_error[] = $value['name'];
                 }
             }
-            cookie::set('cutFileNames', null);
-            cookie::set('copyFileNames', null);
+            $this->clear_cutorcopy_cookie('all');
             $ms = __('Success') . "(" . count($arr_success) . ")：" . implode(',', $arr_success) . "<br>" . __('Fail') . "(" . count($arr_error) . ")：" . implode(',', $arr_error);
             $this->success(__('Success') . $ms);
         }
         // 批量操作
         if ($type == 'batch') {
-            // $path  = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '/';
             $data  = input('post.data');
             $batch = input('post.batch');
             if ($data == '' || $path == '') {
@@ -1565,10 +1496,8 @@ class Vhost extends Frontend
 
                     break;
                 case 'CutFile':
-                    $file = input('post.file');
-                    $name = input('post.name');
-                    $copy = input('post.copy/d');
-                    $path = input('post.path');
+                    $copy = $this->request->post('copy/d');
+                    $path = $this->request->post('path');
 
                     $data_arr = explode(',', $data);
 
@@ -1578,21 +1507,16 @@ class Vhost extends Frontend
                         $arr[$key]['name'] = $value;
                         $arr[$key]['file'] = $path . $value;
                     }
-                    cookie::set($n, json_encode($arr));
+                    Cookie::set($n, json_encode($arr), ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
                     $this->success(__('Success'));
                     break;
                 case 'CutFiles':
-                    cookie('CutFile', null);
-                    cookie('CutFiles', null);
-                    cookie('cutFileName', null);
-                    cookie('cutFileNames', null);
-                    cookie('copyFileName', null);
-                    cookie('copyFileNames', null);
+                    $this->clear_cutorcopy_cookie('all');
 
-                    $file = input('post.file');
-                    $name = input('post.name');
+                    // $file = input('post.file');
+                    // $name = input('post.name');
                     $copy = 1;
-                    $path = input('post.path');
+                    $path = $this->request->post('path');
 
                     $data_arr = explode(',', $data);
 
@@ -1602,7 +1526,7 @@ class Vhost extends Frontend
                         $arr[$key]['name'] = $value;
                         $arr[$key]['file'] = $path . $value;
                     }
-                    cookie::set($n, json_encode($arr));
+                    Cookie::set($n, json_encode($arr), ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
                     $this->success(__('Success'));
                     break;
                 default:
@@ -1631,7 +1555,7 @@ class Vhost extends Frontend
         }
         //获取文件内容
         if ($type == 'getfile') {
-            $file = input('post.file') ? preg_replace('/([\.]){2,}/', '/', input('post.file')) : '';
+            $file = input('post.file') ? preg_replace($this->path_reg, '/', input('post.file')) : '';
             if (!$file) {
                 $this->error(__('Please select file'));
             }
@@ -1649,12 +1573,11 @@ class Vhost extends Frontend
         }
         //保存文件
         if ($type == 'savefile') {
-            $file = input('post.file') ? preg_replace('/([\.]){2,}/', '/', input('post.file')) : '';
+            $file = input('post.file') ? preg_replace($this->path_reg, '/', input('post.file')) : '';
             if (!$file) {
                 $this->error(__('Please select file'));
             }
-            $content  = input('post.content', '', null);
-            $encoding = input('post.encoding') ? input('post.encoding') : 'utf-8';
+            $content  = $this->request->post('content', '', null);
             try {
                 $put = $ftp->putFromString($file, $content);
             } catch (\Exception $e) {
@@ -1729,27 +1652,22 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 在线文件管理模块
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 在线文件管理模块
     public function file()
     {
         //获取网站根目录
-        $WebGetKey = $this->webRootPath;
+        $WebGetKey = $this->btAction->webRootPath;
         if (!$WebGetKey) {
             $this->error(__('Failed to get root directory'), '');
         }
         // 获取跨域信息
-        $getini = $this->dirUserIni;
+        $getini = $this->btAction->dirUserIni;
         if (!$getini) {
             $this->error(__('Unexpected situation'), '');
         }
 
         //请求路径
-        $path = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '/') : '/';
+        $path = input('get.path') ? preg_replace($this->path_reg, '', input('get.path') . '/') : '/';
         // TODO 要实现的目的是屏蔽[../ ./ //]等字符
         // TODO 搜索后文件访问路径有问题，整个在线文件管理文件及路径安全还需要全部重新做
         // var_dump($path);exit;
@@ -1770,7 +1688,7 @@ class Vhost extends Frontend
         // var_dump($path);exit;
         //var_dump($path);
         //请求文件
-        $file = input('post.file') ? preg_replace('/([\.]){2,}|([\/\/]){2,}/', '', input('post.file')) : '';
+        $file = input('post.file') ? preg_replace('/([.]){2,}|([\/]){2,}/', '', input('post.file')) : '';
 
         //var_dump($file);
         // 防止有心人post删除防跨站文件
@@ -1781,720 +1699,768 @@ class Vhost extends Frontend
             $this->error(__('Illegal request'), '');
         }
 
-        if ($WebGetKey) {
-            //$newWebGetKey = str_replace($WebGetKey,'/',$WebGetKey);
+        //$newWebGetKey = str_replace($WebGetKey,'/',$WebGetKey);
 
-            $Webpath = $WebGetKey . $path;
-            $type    = input('post.type');
-            if ($type == 'mvfile') {
-                $sfile = $Webpath . $file;
-                $dfile = $Webpath . input('post.name');
-                // var_dump($sfile);
-                // var_dump($dfile);
-                // exit();
-                if (!$this->path_root_check($sfile, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                if (!$this->path_root_check($dfile, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                if ($this->MvFile($sfile, $dfile)) {
-                    $this->success(__('Success'));
+        $Webpath = $WebGetKey . $path;
+        $type    = $this->request->post('type');
+        // 数据库导入
+        if ($type == 'sqlinput') {
+            // $file = input('post.file') ? preg_replace('/([.]){2,}/', '/', input('post.file')) : '';
+            if (!$file) {
+                $this->error(__('Please select file'));
+            }
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            if (isset($this->hostInfo->sql->username) && $this->hostInfo->sql->username != '') {
+                $input = $this->btPanel->SQLInputSqlFile($WebGetKey . $file, $this->hostInfo->sql->username);
+                if ($input && isset($input['status']) && $input['status'] == 'true') {
+                    $this->success($input['msg']);
                 } else {
                     $this->error(__('Fail'));
                 }
+            } else {
+                $this->error(__('This service is not currently available'));
             }
-            // 数据库导入
-            if ($type == 'sqlinput') {
-                // $file = input('post.file') ? preg_replace('/([\.]){2,}/', '/', input('post.file')) : '';
-                if (!$file) {
-                    $this->error(__('Please select file'));
-                }
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                if (isset($this->hostInfo->sql->username) && $this->hostInfo->sql->username != '') {
-                    $input = $this->btAction->SQLInputSqlFile($WebGetKey . $file, $this->hostInfo->sql->username);
-                    if ($input && isset($input['status']) && $input['status'] == 'true') {
-                        $this->success($input['msg']);
-                    } else {
-                        $this->error(__('Fail'));
-                    }
-                } else {
-                    $this->error(__('This service is not currently available'));
-                }
-            }
-            if (input('get.go') == 1) {
-                $new_url = url_set_value(request()->url(true), 'go', '0');
-                $this->success(__('Downloading, please do not refresh the page...'), $new_url);
-                exit();
-            }
-            // 文件下载
-            if (input('get.downfile')) {
-                $file = input('get.downfile') ? preg_replace('/([\.]){2,}/', '/', input('get.downfile')) : '/';
-                $info = pathinfo($file);
+        }
+        if (input('get.go') == 1) {
+            $new_url = url_set_value(request()->url(true), 'go', '0');
+            $this->success(__('Downloading, please do not refresh the page...'), $new_url);
+            exit();
+        }
+        // 文件下载
+        if (input('get.downfile')) {
+            $file = input('get.downfile') ? preg_replace($this->path_reg, '/', input('get.downfile')) : '/';
+            $info = pathinfo($file);
 
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $down = $this->btAction->download($WebGetKey . $file, $info['basename']);
-                if ($down && isset($down['status']) && $down['status'] == 'false') {
-                    $this->success($down['msg']);
-                }
-                exit();
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
             }
-            //php文件查杀
-            if ($type == 'webshellcheck') {
-                if (!$file) {
-                    $this->error(__('Please select file'));
-                }
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $check = $this->btAction->webshellCheck($WebGetKey . $file);
-                if ($check && isset($check['status']) && $check['status'] == 'true') {
-                    $this->success($file . $check['msg']);
-                } else {
-                    $this->error(__('Fail'));
-                }
+            $down = $this->btPanel->download($WebGetKey . $file, $info['basename']);
+            if ($down && isset($down['status']) && $down['status'] == 'false') {
+                $this->success($down['msg']);
             }
-            //删除文件
-            if ($type == 'deletefile') {
-                if (!$file) {
-                    $this->error(__('Please select file'));
-                }
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $deleteFile = $this->btAction->DeleteFile($WebGetKey . $file);
-                if ($deleteFile && isset($deleteFile['status']) && $deleteFile['status'] == 'true') {
-                    $this->success(__('%s success', __('Delete')) . $file);
-                } else {
-                    $this->error(__('Delete fail') . $file);
-                }
+            exit();
+        }
+        //php文件查杀
+        if ($type == 'webshellcheck') {
+            if (!$file) {
+                $this->error(__('Please select file'));
             }
-            //删除目录
-            if ($type == 'deletedir') {
-                if (!$file) {
-                    $this->error(__('Please select dirs'));
-                }
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $deleteDir = $this->btAction->DeleteDir($WebGetKey . $file);
-                if ($deleteDir && isset($deleteDir['status']) && $deleteDir['status'] == 'true') {
-                    $this->success(__('%s success', __('Delete')) . $file);
-                } else {
-                    $this->error(__('Delete fail') . $file);
-                }
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
             }
-            //解压
-            if ($type == 'unzip') {
-                $password = input('post.password') ? input('post.password') : 'undefined';
-                $zipType  = input('post.zipType');
-                $sfile    = input('post.sfile') ? preg_replace('/([\.]){2,}/', '', input('post.sfile')) : '';
-                if (!$sfile) {
-                    $this->error(__('Please select file'));
-                }
-                $dfile  = input('post.dfile') ? preg_replace('/([\.]){2,}/', '/', input('post.dfile')) : '/';
-                $unpass = input('post.unpass');
-                $coding = input('post.coding') == 'UTF-8' ? input('post.coding') : 'gb18030';
-                if ($sfile == '' || $dfile == '') {
-                    $this->error(__('%s can not be empty', __('The file path or decompression path')));
-                }
-                // var_dump($WebGetKey . $sfile.'<br/>'. $WebGetKey . $dfile.'<br/>'. $password.'<br/>'. $zipType.'<br/>'. $coding);
-                // exit();
-                $UnZip = $this->btAction->UnZip($WebGetKey . $sfile, $WebGetKey . $dfile, $password, $zipType, $coding);
-                if ($UnZip && isset($UnZip['status']) && $UnZip['status'] == 'true') {
-                    $this->success(__('The decompression task has been added to the message queue, and the decompression time depends on the file size'));
-                } else {
-                    $this->error(__('Fail'));
-                }
+            $check = $this->btPanel->webshellCheck($WebGetKey . $file);
+            if ($check && isset($check['status']) && $check['status'] == 'true') {
+                $this->success($file . $check['msg']);
+            } else {
+                $this->error(__('Fail'));
             }
-            //压缩
-            if ($type == 'zip') {
-                $path    = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '/';
-                $sfile   = input('post.sfile') ? preg_replace('/([\.]){2,}/', '', input('post.sfile')) : '';
-                $dfile   = input('post.dfile') ? preg_replace('/([\.]){2,}/', '', input('post.dfile')) : '';
-                $zipType = input('post.zipType');
-                if (!$sfile || !$dfile || !$zipType) {
+        }
+        //删除文件
+        if ($type == 'deletefile') {
+            if (!$file) {
+                $this->error(__('Please select file'));
+            }
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $deleteFile = $this->btPanel->DeleteFile($WebGetKey . $file);
+            if ($deleteFile && isset($deleteFile['status']) && $deleteFile['status'] == 'true') {
+                $this->success(__('%s success', __('Delete')) . $file);
+            } else {
+                $this->error(__('Delete fail') . $file);
+            }
+        }
+        //删除目录
+        if ($type == 'deletedir') {
+            if (!$file) {
+                $this->error(__('Please select dirs'));
+            }
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $deleteDir = $this->btPanel->DeleteDir($WebGetKey . $file);
+            if ($deleteDir && isset($deleteDir['status']) && $deleteDir['status'] == 'true') {
+                $this->success(__('%s success', __('Delete')) . $file);
+            } else {
+                $this->error(__('Delete fail') . $file);
+            }
+        }
+        //解压
+        if ($type == 'unzip') {
+            $password = $this->request->post('password', '');
+            $zipType  = $this->request->post('zipType');
+            $sfile    = input('post.sfile') ? preg_replace($this->path_reg, '', input('post.sfile')) : '';
+            if (!$sfile) {
+                $this->error(__('Please select file'));
+            }
+            $dfile  = input('post.dfile') ? preg_replace($this->path_reg, '/', input('post.dfile')) : '/';
+            $coding = input('post.coding') == 'UTF-8' ? input('post.coding') : 'gb18030';
+            if ($sfile == '' || $dfile == '') {
+                $this->error(__('%s can not be empty', __('The file path or decompression path')));
+            }
+            $UnZip = $this->btPanel->UnZip($WebGetKey . $sfile, $WebGetKey . $dfile, $password, $zipType, $coding);
+            if ($UnZip && isset($UnZip['status']) && $UnZip['status'] == 'true') {
+                $this->success(__('The decompression task has been added to the message queue, and the decompression time depends on the file size'));
+            } else {
+                $this->error(__('Fail'));
+            }
+        }
+        //压缩
+        if ($type == 'zip') {
+            $path    = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
+            $sfile   = input('post.sfile') ? preg_replace($this->path_reg, '', input('post.sfile')) : '';
+            $dfile   = input('post.dfile') ? preg_replace($this->path_reg, '', input('post.dfile')) : '';
+            $zipType = input('post.zipType');
+            if (!$sfile || !$dfile || !$zipType) {
+                $this->error(__('Illegal request'));
+            }
+            switch ($zipType) {
+                case 'zip':
+                    $zipType = 'zip';
+                    break;
+                case 'rar':
+                    $zipType = 'rar';
+                    break;
+                case 'tar.gz':
+                    $zipType = 'tar.gz';
+                    break;
+                default:
                     $this->error(__('Illegal request'));
-                }
-                // var_dump($sfile . '<br>' . $WebGetKey . $dfile . '<br>' . $zipType . '<br>' . $WebGetKey . $path);
-                // exit();
-                switch ($zipType) {
-                    case 'zip':
-                        $zipType = 'zip';
-                        break;
-                    case 'rar':
-                        $zipType = 'rar';
-                        break;
-                    case 'tar.gz':
-                        $zipType = 'tar.gz';
-                        break;
-                    default:
-                        $this->error(__('Illegal request'));
-                        break;
-                }
+                    break;
+            }
 
-                $zip = $this->btAction->fileZip($sfile, $WebGetKey . $dfile, $zipType, $WebGetKey . $path);
-                if ($zip && isset($zip['status']) && $zip['status'] == 'true') {
-                    $this->success($zip['msg']);
+            $zip = $this->btPanel->fileZip($sfile, $WebGetKey . $dfile, $zipType, $WebGetKey . $path);
+            if ($zip && isset($zip['status']) && $zip['status'] == 'true') {
+                $this->success($zip['msg']);
+            } else {
+                $this->error(__('Fail'));
+            }
+        }
+        //文件重命名/移动
+        if ($type == 'MvFile') {
+            $path        = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
+            $oldFileName = input('post.oldName') ? preg_replace($this->path_reg, '/', input('post.oldName')) : '/';
+            $newFileName = input('post.newName') ? preg_replace($this->path_reg, '/', input('post.newName')) : '/';
+            if (!$oldFileName || !$newFileName) {
+                $this->error(__('Can not be empty'));
+            }
+            if (!$this->path_root_check($WebGetKey . $path . $oldFileName, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            if (!$this->path_root_check($WebGetKey . $path . $newFileName, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $MvFile = $this->btPanel->MvFile($WebGetKey . $path . $oldFileName, $WebGetKey . $path . $newFileName);
+            if ($MvFile && isset($MvFile['status']) && $MvFile['status'] == 'true') {
+                $this->success($MvFile['msg']);
+            } else {
+                $this->error(__('Fail'));
+            }
+        }
+        //获取文件夹大小
+        if ($type == 'getsize') {
+            $path = input('post.path');
+            if (!$path) {
+                $this->error(__('Please select file'));
+            }
+            $paths = $WebGetKey . $path;
+            $size  = $this->btPanel->GetWebSize($paths);
+            if (isset($size['size'])) {
+                $this->success(formatBytes($size['size']));
+            } else {
+                $this->error(__('Fail'));
+            }
+        }
+        //复制/剪切
+        if ($type == 'cut') {
+            $this->clear_cutorcopy_cookie('all');
+            // $file = input('post.file') ? preg_replace('/([.]){2,}/', '/', input('post.file')) : '/';
+            $name = input('post.name') ? preg_replace($this->path_reg, '', input('post.name')) : '';
+            $copy = $this->request->post('copy');
+            if ($copy) {
+                if ($file && $name) {
+                    Cookie::set('copyFileName', $name, ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
+                    Cookie::set('copyFileNames', $file, ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
+                    $this->success(__('Please choose a suitable location to paste'));
+                } else {
+                    $this->error(__('Fail'));
+                }
+            } else {
+                if ($file && $name) {
+                    Cookie::set('cutFileName', $name, ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
+                    Cookie::set('cutFileNames', $file, ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
+                    $this->success(__('Please choose a suitable location to paste'));
                 } else {
                     $this->error(__('Fail'));
                 }
             }
-            //文件重命名/移动
-            if ($type == 'MvFile') {
-                $path        = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '/';
-                $oldFileName = input('post.oldName') ? preg_replace('/([\.]){2,}/', '/', input('post.oldName')) : '/';
-                $newFileName = input('post.newName') ? preg_replace('/([\.]){2,}/', '/', input('post.newName')) : '/';
-                if (!$oldFileName || !$newFileName) {
-                    $this->error(__('Can not be empty'));
-                }
-                // var_dump($WebGetKey . $path . $oldFileName.'<br>'.$WebGetKey . $path . $newFileName);
-                // exit();
-                if (!$this->path_root_check($WebGetKey . $path . $oldFileName, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                if (!$this->path_root_check($WebGetKey . $path . $newFileName, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $MvFile = $this->btAction->MvFile($WebGetKey . $path . $oldFileName, $WebGetKey . $path . $newFileName);
-                if ($MvFile && isset($MvFile['status']) && $MvFile['status'] == 'true') {
-                    $this->success($MvFile['msg']);
-                } else {
-                    $this->error(__('Fail'));
-                }
-            }
-            //获取文件夹大小
-            if ($type == 'getsize') {
-                $path = input('post.path');
-                if (!$path) {
-                    $this->error(__('Please select file'));
-                }
-                $paths = $WebGetKey . $path;
-                $size  = $this->btAction->GetWebSize($paths);
-                if (isset($size['size'])) {
-                    $this->success(formatBytes($size['size']));
-                } else {
-                    $this->error(__('Fail'));
-                }
-            }
-            //复制/剪切
-            if ($type == 'cut') {
-                cookie('CutFile', null);
-                cookie('CutFiles', null);
-                cookie('cutFileName', null);
-                cookie('cutFileNames', null);
-                cookie('copyFileName', null);
-                cookie('copyFileNames', null);
-                // $file = input('post.file') ? preg_replace('/([\.]){2,}/', '/', input('post.file')) : '/';
-                $name = input('post.name') ? preg_replace('/([\.]){2,}/', '', input('post.name')) : '';
-                $copy = input('post.copy');
-                if ($copy) {
-                    if ($file && $name) {
-                        cookie('copyFileName', $name);
-                        cookie('copyFileNames', $file);
-                        $this->success(__('Please choose a suitable location to paste'));
-                    } else {
-                        $this->error(__('Fail'));
-                    }
-                } else {
-                    if ($file && $name) {
-                        cookie('cutFileName', $name);
-                        cookie('cutFileNames', $file);
-                        $this->success(__('Please choose a suitable location to paste'));
-                    } else {
-                        $this->error(__('Fail'));
-                    }
-                }
-            }
-            //粘贴
-            if ($type == 'paste') {
-                $path = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '/';
+        }
+        //粘贴
+        if ($type == 'paste') {
+            $path = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
 
-                $copy = input('post.copy');
-                if ($copy) {
-                    $copyFileNames = cookie('copyFileNames') ? preg_replace('/([\.]){2,}/', '', cookie('copyFileNames')) : '';
-                    $copyFileName  = cookie('copyFileName') ? preg_replace('/([\.]){2,}/', '', cookie('copyFileName')) : '';
-                    if ($copyFileNames) {
-                        $sfile = $WebGetKey . $copyFileNames;
-                        $dfile = $WebGetKey . $path . $copyFileName;
-                        if (!$this->path_root_check($sfile, $WebGetKey)) {
-                            $this->error(__('Illegal operation'));
-                        }
-                        if (!$this->path_root_check($dfile, $WebGetKey)) {
-                            $this->error(__('Illegal operation'));
-                        }
+            $copy = $this->request->post('copy');
+            if ($copy) {
+                $copyFileNames = Cookie::get('copyFileNames', 'vhost_cutcopy_') ? preg_replace($this->path_reg, '', Cookie::get('copyFileNames', 'vhost_cutcopy_')) : '';
+                $copyFileName  = Cookie::get('copyFileName', 'vhost_cutcopy_') ? preg_replace($this->path_reg, '', Cookie::get('copyFileName', 'vhost_cutcopy_')) : '';
+                if ($copyFileNames) {
+                    $sfile = $WebGetKey . $copyFileNames;
+                    $dfile = $WebGetKey . $path . $copyFileName;
+                    if (!$this->path_root_check($sfile, $WebGetKey)) {
+                        $this->error(__('Illegal operation'));
+                    }
+                    if (!$this->path_root_check($dfile, $WebGetKey)) {
+                        $this->error(__('Illegal operation'));
+                    }
 
-                        $mv = $this->btAction->CopyFile($sfile, $dfile);
-                    } else {
-                        $this->error(__('Empty'));
+                    $mv = $this->btPanel->CopyFile($sfile, $dfile);
+                } else {
+                    $this->error(__('Empty'));
+                }
+            } else {
+                $cutFileNames = Cookie::get('cutFileNames', 'vhost_cutcopy_') ? preg_replace($this->path_reg, '', Cookie::get('cutFileNames', 'vhost_cutcopy_')) : '';
+                if ($cutFileNames) {
+                    $sfile = $WebGetKey . $cutFileNames;
+                    $dfile = $WebGetKey . $path;
+                    if (!$this->path_root_check($sfile, $WebGetKey)) {
+                        $this->error(__('Illegal operation'));
                     }
-                } else {
-                    $cutFileNames = cookie('cutFileNames') ? preg_replace('/([\.]){2,}/', '', cookie('cutFileNames')) : '';
-                    if ($cutFileNames) {
-                        $sfile = $WebGetKey . $cutFileNames;
-                        $dfile = $WebGetKey . $path;
-                        $mv    = $this->btAction->MvFile($sfile, $dfile);
-                    } else {
-                        $this->error(__('Empty'));
+                    if (!$this->path_root_check($dfile, $WebGetKey)) {
+                        $this->error(__('Illegal operation'));
                     }
-                }
-                cookie('CutFile', null);
-                cookie('CutFiles', null);
-                cookie('cutFileName', null);
-                cookie('cutFileNames', null);
-                cookie('copyFileName', null);
-                cookie('copyFileNames', null);
-                if ($mv && isset($mv['status']) && $mv['status'] == 'true') {
-                    $this->success(__('Success'));
-                } elseif ($mv && isset($mv['status']) && $mv['status'] != 'true') {
-                    $this->error($mv['msg']);
+                    $mv    = $this->btPanel->MvFile($sfile, $dfile);
                 } else {
-                    $this->error(__('Fail'));
+                    $this->error(__('Empty'));
                 }
             }
-            // 新文件夹
-            if ($type == 'newdir') {
-                $newdir = input('post.newdir') ? preg_replace('/([\.]){1,}||([\/]){1,}/', '', input('post.newdir')) : '';
-                $path   = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '/';
-                if (!$this->path_root_check($WebGetKey . $path . $newdir, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $new = $this->btAction->CreateDir($WebGetKey . $path . $newdir);
-                if ($new && isset($new['status']) && $new['status'] == 'true') {
-                    $this->success(__('%s success', __('Create dir')));
-                } else {
-                    $this->error(__('%s fail', __('Create dir')));
-                }
+            $this->clear_cutorcopy_cookie('all');
+            if ($mv && isset($mv['status']) && $mv['status'] == 'true') {
+                $this->success(__('Success'));
+            } elseif ($mv && isset($mv['status']) && $mv['status'] != 'true') {
+                $this->error($mv['msg']);
+            } else {
+                $this->error(__('Fail'));
             }
-            // 新文件
-            if ($type == 'newfile') {
-                $newfile = input('post.newfile') ? preg_replace('/([\.]){2,}||([\/]){1,}/', '', input('post.newfile')) : '';
-                $path    = input('post.path') ? preg_replace('/([\.]){2,}/', '/', input('post.path')) : '/';
-                if (!$this->path_root_check($WebGetKey . $path . $newfile, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $new = $this->btAction->CreateFile($WebGetKey . $path . $newfile);
-                if ($new && isset($new['status']) && $new['status'] == 'true') {
-                    $this->success(__('%s success', __('Create file')));
-                } else {
-                    $this->error(__('%s fail', __('Create file')));
-                }
+        }
+        // 新文件夹
+        if ($type == 'newdir') {
+            $newdir = input('post.newdir') ? preg_replace('/([.])+|([\/])+/', '', input('post.newdir')) : '';
+            $path   = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
+            if (!$this->path_root_check($WebGetKey . $path . $newdir, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
             }
-            // 新版分片上传
-            if ($files = request()->file('blob')) {
-                header("Content-type: text/html; charset=utf-8");
-                $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
+            $new = $this->btPanel->CreateDir($WebGetKey . $path . $newdir);
+            if ($new && isset($new['status']) && $new['status'] == 'true') {
+                $this->success(__('%s success', __('Create dir')));
+            } else {
+                $this->error(__('%s fail', __('Create dir')));
+            }
+        }
+        // 新文件
+        if ($type == 'newfile') {
+            $newfile = input('post.newfile') ? preg_replace('/([.]){2,}|([\/])+/', '', input('post.newfile')) : '';
+            $path    = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
+            if (!$this->path_root_check($WebGetKey . $path . $newfile, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $new = $this->btPanel->CreateFile($WebGetKey . $path . $newfile);
+            if ($new && isset($new['status']) && $new['status'] == 'true') {
+                $this->success(__('%s success', __('Create file')));
+            } else {
+                $this->error(__('%s fail', __('Create file')));
+            }
+        }
+        // 新版分片上传
+        if ($files = request()->file('blob')) {
+            header("Content-type: text/html; charset=utf-8");
+            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
+            $this->hostInfo->allowField(true)->save([
+                'site_size' => $websize,
+            ]);
+            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
                 $this->hostInfo->allowField(true)->save([
-                    'site_size'=>$websize,
+                    'status' => 'excess',
                 ]);
-                if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
-                    $this->hostInfo->allowField(true)->save([
-                        'status'=>'excess',
-                    ]);
-                    $this->error(__('Site size exceeded, resources stopped'));
-                }
-                $path     = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '') : '/';
-                $filePath = ROOT_PATH . 'logs' . DS . 'uploads';
-
-                if (!is_dir($filePath)) {
-                    // 判断临时目录是否存在，不存在则创建
-                    mkdir(iconv("UTF-8", "GBK", $filePath), 0755, true);
-                }
-
-                // 获取文件扩展名
-                $temp_arr = explode(".", input('post.f_name'));
-                $file_ext = array_pop($temp_arr);
-                $file_ext = trim($file_ext);
-                $file_ext = strtolower($file_ext);
-
-                // 获取加密文件名
-                $file_name  = md5(input('post.f_name')) . '.' . $file_ext;
-                // 由于中文名上传失败
-                // $info = $files->move($filePath, input('post.f_name'));
-                $info = $files->move($filePath, $file_name);
-                $data = '';
-                if ($info) {
-                    $postFile = $filePath . DS . $info->getFilename();
-                    // $postFile = $filePath.DS.'1235556.png';
-                    // iconv("UTF-8","gb2312",$postFile);
-                    // var_dump($postFile);exit;
-                    if (class_exists('CURLFile')) {
-                        // php 5.5
-                        $data = new \CURLFile(realpath($postFile));
-                    } else {
-                        $data = '@' . realpath($postFile);
-                    }
-                    // $data->postname = $info->getFilename();
-                    // $fileName       = $info->getFilename();
-                    // 传递原始文件名到服务器中
-                    $fileName       = input('post.f_name');
-                    $f_size  = input('post.f_size');
-                    $f_start = input('post.f_start');
-                    $up      = $this->btAction->UploadFiles($WebGetKey . $path, $fileName, $f_size, $f_start, $data);
-                    if ($up && is_numeric($up)) {
-                        return $up;
-                    } elseif (isset($up['status']) && $up['status'] == 'true') {
-                        $this->success(__('Success'));
-                    } else {
-                        $this->error(__('Fail'));
-                    }
-                } else {
-                    $this->error(__('%s fail', __('file')));
-                }
+                $this->error(__('Site size exceeded, resources stopped'));
             }
-            //老上传接口
-            if ($files = request()->file('zunfile')) {
-                $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
-                //$this->error('功能未写完');
-                $path     = input('get.path') ? preg_replace('/([\.]){2,}/', '', input('get.path') . '') : '/';
-                $filePath = ROOT_PATH . 'logs' . DS . 'uploads';
+            $path     = input('get.path') ? preg_replace($this->path_reg, '', input('get.path') . '') : '/';
+            $filePath = ROOT_PATH . 'logs' . DS . 'uploads';
 
-                if (!is_dir($filePath)) {
-                    // 判断临时目录是否存在，不存在则创建
-                    mkdir(iconv("UTF-8", "GBK", $filePath), 0755, true);
-                }
-
-                $info = $files->validate(['size' => $php_upload_max])->move($filePath, '');
-
-                if ($info) {
-                    $postFile = $filePath . DS . $info->getFilename();
-                    if (class_exists('CURLFile')) {
-                        // php 5.5
-                        $data['zunfile'] = new \CURLFile(realpath($postFile));
-                    } else {
-                        $data['zunfile'] = '@' . realpath($postFile);
-                    }
-                    $data['zunfile']->postname = $info->getFilename();
-                    $up                        = $this->btAction->UploadFile($WebGetKey . $path, $data);
-                    if ($up && isset($up['status']) && $up['status'] == 'true') {
-                        $this->success(__('Success'));
-                    } else {
-                        $this->error(__('Fail'));
-                    }
-                } else {
-                    $this->error(__('%s fail', __('file')));
-                }
+            if (!is_dir($filePath)) {
+                // 判断临时目录是否存在，不存在则创建
+                mkdir(iconv("UTF-8", "GBK", $filePath), 0755, true);
             }
-            //获取文件内容
-            if ($type == 'getfile') {
-                if (!$file) {
-                    $this->error(__('Please select file'));
+
+            // 获取文件扩展名
+            $temp_arr = explode(".", input('post.f_name'));
+            $file_ext = array_pop($temp_arr);
+            $file_ext = trim($file_ext);
+            $file_ext = strtolower($file_ext);
+
+            // 获取加密文件名
+            $file_name  = md5(input('post.f_name')) . '.' . $file_ext;
+            // 由于中文名上传失败
+            // $info = $files->move($filePath, input('post.f_name'));
+            $info = $files->move($filePath, $file_name);
+            $data = '';
+            if ($info) {
+                $postFile = $filePath . DS . $info->getFilename();
+                // $postFile = $filePath.DS.'1235556.png';
+                // iconv("UTF-8","gb2312",$postFile);
+                // var_dump($postFile);exit;
+                if (class_exists('CURLFile')) {
+                    // php 5.5
+                    $data = new \CURLFile(realpath($postFile));
+                } else {
+                    $data = '@' . realpath($postFile);
                 }
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $fileContent = $this->btAction->GetFileBodys($WebGetKey . $file);
-                if ($fileContent && isset($fileContent['status']) && $fileContent['status'] == 'true') {
-                    return ['code' => 1, 'msg' => __('Success'), 'data' => $fileContent['data'], 'encoding' => $fileContent['encoding']];
-                }elseif($fileContent && isset($fileContent['msg'])){
-                    return ['code' => 0, 'msg' => $fileContent['msg']];
+                // $data->postname = $info->getFilename();
+                // $fileName       = $info->getFilename();
+                // 传递原始文件名到服务器中
+                $fileName       = input('post.f_name');
+                $f_size  = input('post.f_size');
+                $f_start = input('post.f_start');
+                $up      = $this->btPanel->UploadFiles($WebGetKey . $path, $fileName, $f_size, $f_start, $data);
+                if ($up && is_numeric($up)) {
+                    return $up;
+                } elseif (isset($up['status']) && $up['status'] == 'true') {
+                    $this->success(__('Success'));
                 } else {
                     $this->error(__('Fail'));
                 }
+            } else {
+                $this->error(__('%s fail', __('file')));
             }
-            //保存文件
-            if ($type == 'savefile') {
-                // $file = input('post.file') ? preg_replace('/([\.]){2,}/', '/', input('post.file')) : '';
-                if (!$file) {
-                    $this->error(__('Please select file'));
+        }
+        //老上传接口
+        if ($files = request()->file('zunfile')) {
+            $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
+            $path     = input('get.path') ? preg_replace($this->path_reg, '', input('get.path') . '') : '/';
+            $filePath = ROOT_PATH . 'logs' . DS . 'uploads';
+
+            if (!is_dir($filePath)) {
+                // 判断临时目录是否存在，不存在则创建
+                mkdir(iconv("UTF-8", "GBK", $filePath), 0755, true);
+            }
+
+            $info = $files->validate(['size' => $php_upload_max])->move($filePath, '');
+
+            if ($info) {
+                $postFile = $filePath . DS . $info->getFilename();
+                if (class_exists('CURLFile')) {
+                    // php 5.5
+                    $data['zunfile'] = new \CURLFile(realpath($postFile));
+                } else {
+                    $data['zunfile'] = '@' . realpath($postFile);
                 }
-                $content  = input('post.content', '', null);
-                $encoding = input('post.encoding') ? input('post.encoding') : 'utf-8';
-                if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $savefile = $this->btAction->SaveFileBodys($content, $WebGetKey . $file, $encoding);
-                // var_dump($fileContent);
-                if ($savefile && isset($savefile['status']) && $savefile['status'] == 'true') {
+                $data['zunfile']->postname = $info->getFilename();
+                $up                        = $this->btPanel->UploadFile($WebGetKey . $path, $data);
+                if ($up && isset($up['status']) && $up['status'] == 'true') {
                     $this->success(__('Success'));
                 } else {
-                    $this->error(__('Fail') . @$savefile['msg']);
+                    $this->error(__('Fail'));
                 }
+            } else {
+                $this->error(__('%s fail', __('file')));
             }
-            //查看图片
-            if (input('post.type') == 'images') {
-                // XXX 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
-                // XXX WIndows下查看中文图片失败，原因带空格
-                // 经过urlencode编码后双系统使用正常
-                $file = input('post.file') ? preg_replace('/([\.]){2,}|([\/\/]){2,}/', '', input('post.file')) : '';
-                // var_dump($WebGetKey . $file, $file);
-                // exit;
-                $images = $this->btAction->images_view($WebGetKey . $file, $file);
-                // header('Content-type: image/jpeg');
-                return json(['image' => $images]);
-                // print_r($images);exit;
+        }
+        //获取文件内容
+        if ($type == 'getfile') {
+            if (!$file) {
+                $this->error(__('Please select file'));
             }
-            // 批量操作
-            if ($type == 'batch') {
-                $path  = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '/';
-                $data  = input('post.data');
-                $batch = input('post.batch');
-                if ($data == '' || $path == '') {
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $fileContent = $this->btPanel->GetFileBodys($WebGetKey . $file);
+            if ($fileContent && isset($fileContent['status']) && $fileContent['status'] == 'true') {
+                return ['code' => 1, 'msg' => __('Success'), 'data' => $fileContent['data'], 'encoding' => $fileContent['encoding']];
+            } elseif ($fileContent && isset($fileContent['msg'])) {
+                return ['code' => 0, 'msg' => $fileContent['msg']];
+            } else {
+                $this->error(__('Fail'));
+            }
+        }
+        //保存文件
+        if ($type == 'savefile') {
+            if (!$file) {
+                $this->error(__('Please select file'));
+            }
+            $content  = input('post.content', '', null);
+            $encoding = input('post.encoding') ? input('post.encoding') : 'utf-8';
+            if (!$this->path_root_check($WebGetKey . $file, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $savefile = $this->btPanel->SaveFileBodys($content, $WebGetKey . $file, $encoding);
+            // var_dump($fileContent);
+            if ($savefile && isset($savefile['status']) && $savefile['status'] == 'true') {
+                $this->success(__('Success'));
+            } else {
+                $this->error(__('Fail') . @$savefile['msg']);
+            }
+        }
+        //查看图片
+        if (input('post.type') == 'images') {
+            // XXX 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
+            // XXX WIndows下查看中文图片失败，原因带空格
+            // 经过urlencode编码后双系统使用正常
+            $file = input('post.file') ? preg_replace('/([.]){2,}|([\/]){2,}/', '', input('post.file')) : '';
+            // var_dump($WebGetKey . $file, $file);
+            // exit;
+            $images = $this->btPanel->images_view(
+                $WebGetKey . $file,
+                $file
+            );
+            // header('Content-type: image/jpeg');
+            return json(['image' => $images]);
+            // print_r($images);exit;
+        }
+        // 批量操作
+        if ($type == 'batch') {
+            $path  = input('post.path') ? preg_replace($this->path_reg, '', input('post.path') . '') : '/';
+            $data  = $this->request->post('data');
+            $batch = $this->request->post('batch');
+            if ($data == '' || $path == '') {
+                $this->error(__('Request error'));
+            }
+            switch ($batch) {
+                case 'del':
+                    // 批量删除
+                    $data_arr = explode(',', $data);
+
+                    foreach ($data_arr as $key => $value) {
+                        if ($data_arr[$key] == $WebGetKey) {
+                            $this->error(__('Illegal operation'));
+                        }
+                        if ($data_arr[$key] == $WebGetKey . '/') {
+                            $this->error(__('Illegal operation'));
+                        }
+                    }
+                    $data = json_encode($data_arr);
+
+                    $del = $this->btPanel->SetBatchData($WebGetKey . $path, 4, $data);
+                    if ($del && isset($del['status']) && $del['status'] == 'true') {
+                        $this->success(__('Success'));
+                    } elseif (isset($del['msg'])) {
+                        $this->error(__('Fail') . $del['msg']);
+                    } else {
+                        $this->error(__('Fail'));
+                    }
+                    break;
+                case 'openZip':
+
+                    break;
+                case 'CutFile':
+                case 'CutFiles':
+                    // 批量复制/剪切
+                    $this->clear_cutorcopy_cookie('all');
+                    $data_arr = explode(',', $data);
+
+                    $data = json_encode($data_arr);
+                    // var_dump($data);exit;
+                    $cookie_name = $batch == 'CutFile' ? 'batchcutFileName' : 'batchcopyFileName';
+                    $cookie_name1 = $batch == 'CutFile' ? 'CutFile' : 'CutFiles';
+                    // 缓存复制/剪切文件/目录名
+                    Cookie::set(
+                        $cookie_name,
+                        $data,
+                        ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]
+                    );
+                    // 缓存所在目录
+                    Cookie::set('batch_path_name', $path, ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
+                    $type = $batch == 'CutFile' ? 2 : 1;
+                    Cookie::set($cookie_name1, 1, ['prefix' => 'vhost_cutcopy_', 'expire' => 3600]);
+                    $msgs = $batch == 'CutFile' ? 'Cut success .%s' : 'Copy success .%s';
+                    $this->success(__($msgs, __('Please choose a suitable location to paste')));
+
+                    // 以下接口失效
+                    // $CutFiles = $this->btPanel->SetBatchData($WebGetKey . $path, $type, $data);
+                    // if ($CutFiles && isset($CutFiles['status']) && $CutFiles['status'] == 'true') {
+                    //
+                    // }elseif(isset($CutFiles['msg'])){
+                    //     $this->error(__('Fail').$CutFiles['msg']);
+                    // }else {
+                    //     $this->error(__('Fail'));
+                    // }
+                    // end
+
+                    break;
+                default:
                     $this->error(__('Request error'));
-                }
-                switch ($batch) {
-                    case 'del':
-                        $data_arr = explode(',', $data);
+                    break;
+            }
+        }
+        // 执行粘贴批量复制/剪切的任务
+        if ($type == 'BatchPaste') {
+            $ty   = $this->request->post('ty/d', 1);
+            $path = input('post.path') ? preg_replace($this->path_reg, '', input('post.path') . '') : '/';
+            // if (!$path) {
+            //     $this->error(__('Illegal operation'));
+            // }
+            $arr_success = $arr_error = [];
+            // 遍历法移动或复制相关文件
+            // 获取剪切板文件名
+            if ($ty == 1) {
+                // 拷贝粘贴
+                $filelist = Cookie::get('batchcopyFileName', 'vhost_cutcopy_');
+                $data_arr = json_decode($filelist, 1);
+            } else {
+                // 移动粘贴
+                $filelist = Cookie::get('batchcutFileName', 'vhost_cutcopy_');
+                $data_arr = json_decode($filelist, 1);
+            }
+            if ($data_arr) {
+                foreach ($data_arr as $key => $value) {
+                    // 检查文件/文件名安全性
+                    $value = preg_replace($this->path_reg, '', $value . '');
+                    $batch_path_name = $filelist = Cookie::get('batch_path_name', 'vhost_cutcopy_');
+                    $sfile = $WebGetKey . $batch_path_name . $value;
+                    $dfile = $WebGetKey . $path . $value;
+                    if (!$this->path_root_check($sfile, $WebGetKey)) {
+                        $this->error(__('Illegal operation'));
+                    }
+                    if (!$this->path_root_check($dfile, $WebGetKey)) {
+                        $this->error(__('Illegal operation'));
+                    }
 
-                        foreach ($data_arr as $key => $value) {
-                            if ($data_arr[$key] == $WebGetKey) {
-                                $this->error(__('Illegal operation'));
-                            }
-                            if ($data_arr[$key] == $WebGetKey . '/') {
-                                $this->error(__('Illegal operation'));
-                            }
-                        }
-                        $data = json_encode($data_arr);
-
-                        $del = $this->btAction->SetBatchData($WebGetKey . $path, 4, $data);
-                        if ($del && isset($del['status']) && $del['status'] == 'true') {
-                            $this->success(__('Success'));
-                        } else {
-                            $this->success(__('Fail'));
-                        }
-                        break;
-                    case 'openZip':
-
-                        break;
-                    case 'CutFile':
-                        cookie('CutFile', null);
-                        cookie('CutFiles', null);
-                        cookie('cutFileName', null);
-                        cookie('cutFileNames', null);
-                        cookie('copyFileName', null);
-                        cookie('copyFileNames', null);
-                        $data_arr = explode(',', $data);
-
-                        $data = json_encode($data_arr);
-
-                        $del = $this->btAction->SetBatchData($WebGetKey . $path, 2, $data);
-                        if ($del && isset($del['status']) && $del['status'] == 'true') {
-                            cookie('CutFile', 1);
-                            $this->success(__('Cut success .%s', __('Please choose a suitable location to paste')));
-                        } else {
-                            $this->success(__('Fail'));
-                        }
-                        break;
-                    case 'CutFiles':
-                        cookie('CutFile', null);
-                        cookie('CutFiles', null);
-                        cookie('cutFileName', null);
-                        cookie('cutFileNames', null);
-                        cookie('copyFileName', null);
-                        cookie('copyFileNames', null);
-                        $data_arr = explode(',', $data);
-
-                        $data = json_encode($data_arr);
-
-                        $del = $this->btAction->SetBatchData($WebGetKey . $path, 1, $data);
-                        if ($del && isset($del['status']) && $del['status'] == 'true') {
-                            cookie('CutFiles', 1);
-                            $this->success(__('Copy success .%s', __('Please choose a suitable location to paste')));
-                        } else {
-                            $this->success(__('Fail'));
-                        }
-                        break;
-                    default:
-                        $this->error(__('Request error'));
-                        break;
+                    if ($ty == 1) {
+                        $set = $this->CopyFile($sfile, $dfile);
+                    } else {
+                        $set = $this->MvFile($sfile, $dfile);
+                    }
+                    if ($set) {
+                        $arr_success[] = __('%s success', $value);
+                    } else {
+                        $arr_error[] = __('%s fail', $value) . $this->_error;
+                    }
                 }
             }
-            // 执行粘贴批量复制/剪切的任务
-            if ($type == 'BatchPaste') {
-                cookie('CutFile', null);
-                cookie('CutFiles', null);
-                cookie('cutFileName', null);
-                cookie('cutFileNames', null);
-                cookie('copyFileName', null);
-                cookie('copyFileNames', null);
-                $ty   = input('post.ty') ? input('post.ty') : 1;
-                $path = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '/';
-                // if (!$path) {
-                //     $this->error(__('Illegal operation'));
-                // }
-                $bat = $this->btAction->BatchPaste($WebGetKey . $path, $ty);
-                if ($bat && isset($bat['status']) && $bat['status'] == 'true') {
-                    $this->success($bat['msg']);
-                } else {
-                    $this->error(__('Fail'));
-                }
+            // if($data_arr){
+            //     foreach($data_arr as $key=>$value){
+            //         $value = preg_replace($this->path_reg,'',$value . '');
+            //         $sfile = $WebGetKey . '/'.$value;
+            //         $dfile = $WebGetKey . $path.$value;
+            //         if (!$this->path_root_check($sfile, $WebGetKey)) {
+            //             $this->error(__('Illegal operation'));
+            //         }
+            //         if (!$this->path_root_check($dfile, $WebGetKey)) {
+            //             $this->error(__('Illegal operation'));
+            //         }
+            //         // 检查文件/文件名安全性
+            //
+            //         if($set){
+            //             $successArr[] = __('%s success',$value);
+            //         }else{
+            //             $errorArr[] = __('%s fail',$value);
+            //         }
+            //     }
+            // }
+            // $this->clear_cutorcopy_cookie('all');
+            $ms = __('Success') . "(" . count($arr_success) . ")：" . implode(',', $arr_success) . "<br>" . __('Fail') . "(" . count($arr_error) . ")：" . implode(',', $arr_error);
+            $this->success($ms);
+
+            // 循环移动到指定目录
+
+            // $bat = $this->btPanel->BatchPaste($WebGetKey . $path, $ty);
+            // if ($bat && isset($bat['status']) && $bat['status'] == 'true') {
+            //     $this->success($bat['msg']);
+            // } elseif (isset($bat['msg'])) {
+            //     $this->error($bat['msg']);
+            // } else {
+            //     $this->error(__('Fail'));
+            // }
+        }
+        // 远程下载
+        if ($type == 'DownloadFile') {
+            // TODO 下载后文件权限为root，可能存在安全隐患
+            // 队列ID出来之后再进行队列监控转换文件组权限
+            $this->error(__('Not currently supported %s', ''));
+            $path      = input('post.path') ? preg_replace($this->path_reg, '', input('post.path') . '') : '';
+            $mUrl      = input('post.mUrl') ? preg_replace($this->path_reg, '', input('post.mUrl') . '') : '';
+            $dfilename = input('post.dfilename') ? preg_replace($this->path_reg, '', input('post.dfilename') . '') : '';
+            if (!$mUrl) {
+                $this->error(__('%s error', __('Download url')));
             }
-            // 远程下载
-            if ($type == 'DownloadFile') {
-                // TODO 下载后文件权限为root，可能存在安全隐患
-                // 队列ID出来之后再进行队列监控转换文件组权限
-                $this->error(__('Not currently supported %s', ''));
-                $path      = input('post.path') ? preg_replace('/([\.]){2,}/', '', input('post.path') . '') : '';
-                $mUrl      = input('post.mUrl') ? preg_replace('/([\.]){2,}/', '', input('post.mUrl') . '') : '';
-                $dfilename = input('post.dfilename') ? preg_replace('/([\.]){2,}/', '', input('post.dfilename') . '') : '';
-                if (!$mUrl) {
-                    $this->error(__('%s error', __('Download url')));
-                }
-                if (!$dfilename) {
-                    $this->error(__('%s error', __('File name')));
-                }
-                if (!$this->path_root_check($WebGetKey . $path, $WebGetKey)) {
-                    $this->error(__('Illegal operation'));
-                }
-                $websize = bytes2mb($this->btTend->getWebSizes($this->hostInfo['bt_name']));
+            if (!$dfilename) {
+                $this->error(__('%s error', __('File name')));
+            }
+            if (!$this->path_root_check($WebGetKey . $path, $WebGetKey)) {
+                $this->error(__('Illegal operation'));
+            }
+            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
+            $this->hostInfo->allowField(true)->save([
+                'site_size' => $websize,
+            ]);
+            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
                 $this->hostInfo->allowField(true)->save([
-                    'site_size'=>$websize,
+                    'status' => 'excess',
                 ]);
-                if ($this->hostInfo['site_max'] != '0' && $websize > $this->hostInfo['site_max']) {
-                    $this->hostInfo->allowField(true)->save([
-                        'status'=>'excess',
-                    ]);
-                    $this->error(__('Site size exceeded, resources stopped'));
-                }
-                $down = $this->btAction->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
-                if ($down && isset($down['status']) && $down['status'] == 'true') {
-                    $this->success($down['msg']);
+                $this->error(__('Site size exceeded, resources stopped'));
+            }
+            $down = $this->btPanel->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
+            if ($down && isset($down['status']) && $down['status'] == 'true') {
+                $this->success($down['msg']);
+            } else {
+                $this->error(__('Fail'));
+            }
+        }
+        // TODO 获取队列（目前没有任务ID对应）
+        if ($type == 'get_task_lists') {
+        }
+
+        $search = $this->request->get('search');
+        // 目前子目录搜索有问题
+        // $all = $this->request->get('all')?'True':'';
+        $dirList = $this->btPanel->GetDir($Webpath, 1, $search);
+        if (isset($dirList['status']) && $dirList['status'] != 'true') {
+            $this->error(__('%s not found', __('Dir')), '');
+        }
+
+        //文件夹列表
+        if (isset($dirList['DIR']) && $dirList['DIR'] != '') {
+            foreach ($dirList['DIR'] as $key => $value) {
+                if (preg_match($this->reg_file, $dirList['DIR'][$key])) {
+                    unset($dirList['DIR'][$key]);
                 } else {
-                    $this->error(__('Fail'));
+                    $dirList['DIR'][$key] = preg_grep("/\S+/i", explode(';', $dirList['DIR'][$key]));
                 }
             }
-            // TODO 获取队列（目前没有任务ID对应）
-            if ($type == 'get_task_lists') {
-            }
+        }
+        //文件列表
+        if (isset($dirList['FILES']) && $dirList['FILES'] != '') {
+            foreach ($dirList['FILES'] as $key => $value) {
 
-            $search = $this->request->get('search');
-            // 目前子目录搜索有问题
-            // $all = $this->request->get('all')?'True':'';
-            $dirList = $this->btAction->GetDir($Webpath, 1, $search);
-            if (isset($dirList['status']) && $dirList['status'] != 'true') {
-                $this->error(__('%s not found', __('Dir')), '');
-            }
-
-            //文件夹
-            if (isset($dirList['DIR']) && $dirList['DIR'] != '') {
-                foreach ($dirList['DIR'] as $key => $value) {
-                    if (preg_match($this->reg_file, $dirList['DIR'][$key])) {
-                        unset($dirList['DIR'][$key]);
-                    } else {
-                        $dirList['DIR'][$key] = preg_grep("/\S+/i", explode(';', $dirList['DIR'][$key]));
-                    }
+                if (preg_match($this->reg_file, $dirList['FILES'][$key])) {
+                    unset($dirList['FILES'][$key]);
+                } else {
+                    $dirList['FILES'][$key] = preg_grep("/\S+/i", explode(';', $dirList['FILES'][$key]));
                 }
             }
-            //文件
-            if (isset($dirList['FILES']) && $dirList['FILES'] != '') {
-                foreach ($dirList['FILES'] as $key => $value) {
-
-                    if (preg_match($this->reg_file, $dirList['FILES'][$key])) {
-                        unset($dirList['FILES'][$key]);
-                    } else {
-                        $dirList['FILES'][$key] = preg_grep("/\S+/i", explode(';', $dirList['FILES'][$key]));
-                    }
-                }
-            }
-            // api文件接口
-            if ($this->request->get('callback')) {
-                // 处理目录与文件数据
-                $path_file_arr_paths = $path_file_arr_files = $list = [];
-                foreach ($dirList['DIR'] as $key => $value) {
-                    if (1 || $value['4'] != 'root') {
-                        foreach ($value as $key2 => $value2) {
-                            if (in_array($value2, ['.well-known', 'web_config', '../', '..'])) {
-                                break;
-                            }
-                            switch ($key2) {
-                                case '0':
-                                    $path_file_arr_paths[$key]['name'] = $value2;
-                                    break;
-                                case '1':
-                                    $path_file_arr_paths[$key]['size'] = $value2;
-                                    break;
-                                case '2':
-                                    $path_file_arr_paths[$key]['time'] = $value2 ? date("Y-m-d", $value2) : $value2;
-                                    break;
-                                case '3':
-                                    $path_file_arr_paths[$key]['auths'] = $value2;
-                                    break;
-                                case '4':
-                                    $path_file_arr_paths[$key]['group'] = $value2;
-                                    break;
-                                default:
-                                    $path_file_arr_paths[$key][] = $value2;
-                                    break;
-                            }
-                        }
-                    }
-                }
-                foreach ($dirList['FILES'] as $key => $value) {
+        }
+        // api版文件接口（未完善）
+        if ($this->request->get('callback')) {
+            // 处理目录与文件数据
+            $path_file_arr_paths = $path_file_arr_files = $list = [];
+            foreach ($dirList['DIR'] as $key => $value) {
+                if (1 || $value['4'] != 'root') {
                     foreach ($value as $key2 => $value2) {
-                        if (in_array($value2, ['.user.ini'])) {
+                        if (in_array($value2, ['.well-known', 'web_config', '../', '..'])) {
                             break;
                         }
                         switch ($key2) {
                             case '0':
-                                $path_file_arr_files[$key]['name'] = $value2;
+                                $path_file_arr_paths[$key]['name'] = $value2;
                                 break;
                             case '1':
-                                $path_file_arr_files[$key]['size'] = $value2 && is_numeric($value2) ? formatBytes($value2) : $value2;
+                                $path_file_arr_paths[$key]['size'] = $value2;
                                 break;
                             case '2':
-                                $path_file_arr_files[$key]['time'] = $value2 && is_numeric($value2) ? date("Y-m-d", $value2) : $value2;
+                                $path_file_arr_paths[$key]['time'] = $value2 ? date("Y-m-d", $value2) : $value2;
                                 break;
                             case '3':
-                                $path_file_arr_files[$key]['auths'] = $value2;
+                                $path_file_arr_paths[$key]['auths'] = $value2;
                                 break;
                             case '4':
-                                $path_file_arr_files[$key]['group'] = $value2;
+                                $path_file_arr_paths[$key]['group'] = $value2;
                                 break;
                             default:
-                                $path_file_arr_files[$key][] = $value2;
+                                $path_file_arr_paths[$key][] = $value2;
                                 break;
                         }
                     }
                 }
-
-                $list = array_merge($path_file_arr_paths, $path_file_arr_files);
-
-                $total = count($list);
-                return jsonp(['rows' => $list, 'total' => $total], 200);
             }
-            $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
+            foreach ($dirList['FILES'] as $key => $value) {
+                foreach ($value as $key2 => $value2) {
+                    if (in_array($value2, ['.user.ini'])) {
+                        break;
+                    }
+                    switch ($key2) {
+                        case '0':
+                            $path_file_arr_files[$key]['name'] = $value2;
+                            break;
+                        case '1':
+                            $path_file_arr_files[$key]['size'] = $value2 && is_numeric($value2) ? formatBytes($value2) : $value2;
+                            break;
+                        case '2':
+                            $path_file_arr_files[$key]['time'] = $value2 && is_numeric($value2) ? date("Y-m-d", $value2) : $value2;
+                            break;
+                        case '3':
+                            $path_file_arr_files[$key]['auths'] = $value2;
+                            break;
+                        case '4':
+                            $path_file_arr_files[$key]['group'] = $value2;
+                            break;
+                        default:
+                            $path_file_arr_files[$key][] = $value2;
+                            break;
+                    }
+                }
+            }
 
-            $this->view->assign('title', __('file'));
-            return view('file', [
-                'search'         => $this->request->get('search'),
-                'viewpath'       => $path,
-                'dirList'        => $dirList,
-                'php_upload_max' => $php_upload_max,
-            ]);
-        } else {
-            $this->error(__('%s error', __('Root')), '');
+            $list = array_merge($path_file_arr_paths, $path_file_arr_files);
+
+            $total = count($list);
+            return jsonp(['rows' => $list, 'total' => $total], 200);
         }
+        // 最大上传文件大小
+        $php_upload_max = byteconvert(ini_get('upload_max_filesize'));
+
+        $this->view->assign('title', __('Web file manager'));
+        return view('file', [
+            'search'         => $this->request->get('search'),
+            'viewpath'       => $path,
+            'dirList'        => $dirList,
+            'php_upload_max' => $php_upload_max,
+        ]);
     }
 
     /**
      * 文件移动
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
+     * @param $sfile    原文件路径
+     * @param $dfile    新文件路径
+     * @return bool
      */
-    private function MvFile()
+    private function MvFile($sfile, $dfile)
     {
-        $MvFile = $this->btAction->MvFile();
+        $MvFile = $this->btPanel->MvFile($sfile, $dfile);
         if ($MvFile && isset($MvFile['status']) && $MvFile['status'] == 'true') {
             return true;
+        } elseif (isset($MvFile['msg'])) {
+            $this->_error = $MvFile['msg'];
+            return false;
         } else {
             return false;
         }
     }
 
     /**
-     * 网站备份
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
+     * 文件拷贝
+     * @param $sfile    原文件路径
+     * @param $dfile    新文件路径
+     * @return bool
      */
+    private function CopyFile($sfile, $dfile)
+    {
+        $copy = $this->btPanel->CopyFile($sfile, $dfile);
+        if ($copy && isset($copy['status']) && $copy['status'] == 'true') {
+            return true;
+        } elseif (isset($copy['msg'])) {
+            $this->_error = $copy['msg'];
+            return false;
+        } else {
+            return false;
+        }
+    }
+
+    // 网站备份
     public function back()
     {
         $WebBackupList = $SqlBackupList = [];
 
-        $WebBackupList = $this->btAction->WebBackupList($this->bt_id);
+        $WebBackupList = $this->btPanel->WebBackupList($this->bt_id);
         if (isset($WebBackupList['data'][0])) {
             foreach ($WebBackupList['data'] as $key => $value) {
                 $WebBackupList['data'][$key]['size'] = formatBytes($WebBackupList['data'][$key]['size']);
@@ -2502,7 +2468,7 @@ class Vhost extends Frontend
                 if (input('get.down_back_file') == $WebBackupList['data'][$key]['name']) {
                     $filePath = $WebBackupList['data'][$key]['filename'];
                     $fileName = $WebBackupList['data'][$key]['name'];
-                    $down     = $this->btAction->download($filePath, $fileName);
+                    $down     = $this->btPanel->download($filePath, $fileName);
                     if ($down && isset($down['status']) && $down['status'] == 'false') {
                         $this->success($down['msg']);
                     }
@@ -2513,13 +2479,13 @@ class Vhost extends Frontend
 
         if (isset($this->hostInfo->sql->username) || $this->hostInfo->sql->username) {
             //获取数据库ID
-            $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+            $WebSqlList = $this->btPanel->WebSqlList($this->hostInfo->sql->username);
             if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
                 $SqlBackupList['data'] = [];
                 // $this->error(__('Database not found'),'');
-            }else{
+            } else {
                 //获取数据库备份列表
-                $SqlBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
+                $SqlBackupList = $this->btPanel->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
                 if (isset($SqlBackupList['data'][0])) {
                     foreach ($SqlBackupList['data'] as $key => $value) {
@@ -2528,7 +2494,7 @@ class Vhost extends Frontend
                         if (input('get.down_back_sql') == $SqlBackupList['data'][$key]['name']) {
                             $filePath = $SqlBackupList['data'][$key]['filename'];
                             $fileName = $SqlBackupList['data'][$key]['name'];
-                            $down     = $this->btAction->download($filePath, $fileName);
+                            $down     = $this->btPanel->download($filePath, $fileName);
                             if ($down && isset($down['status']) && $down['status'] == 'false') {
                                 $this->success($down['msg']);
                             }
@@ -2540,34 +2506,28 @@ class Vhost extends Frontend
         }
 
         $this->view->assign('title', __('back'));
-
         return view('back', [
-            'countback_site'    => count(@$WebBackupList['data']),
+            'has_sql'           => $this->hostInfo->sql->username?true:false,
+            'countback_site'    => isset($WebBackupList['data'])?count($WebBackupList['data']):0,
             'WebBackupList'     => $WebBackupList,
             'SqlBackupList'     => $SqlBackupList,
-            'countback_sql'     => count(@$SqlBackupList['data']),
+            'countback_sql'     => isset($SqlBackupList['data'])?count($SqlBackupList['data']):0,
         ]);
     }
 
-    /**
-     * 网站备份创建
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 网站备份创建
     public function webBackInc()
     {
-
-        $WebBackupList = $this->btAction->WebBackupList($this->bt_id);
+        $WebBackupList = $this->btPanel->WebBackupList($this->bt_id);
         $securityArray = [];
         foreach ($WebBackupList['data'] as $key => $value) {
             $securityArray[$key] = $WebBackupList['data'][$key]['id'];
         }
         $post_str = $this->request->post();
         if (isset($post_str['to']) && $post_str['to'] == 'back') {
-            $back_num = isset($this->hostInfo['web_back_num']) ? $this->hostInfo['web_back_num'] : 5;
+            $back_num = isset($this->hostInfo->web_back_num) ? $this->hostInfo->web_back_num : 5;
             if ($back_num == 0 || count($WebBackupList['data']) < $back_num) {
-                if ($modify_status = $this->btAction->WebToBackup($this->bt_id)) {
+                if ($modify_status = $this->btPanel->WebToBackup($this->bt_id)) {
                     $this->success($modify_status['msg']);
                 } else {
                     $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -2580,16 +2540,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 网站备份删除
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 网站备份删除
     public function webBackDel()
     {
 
-        $WebBackupList = $this->btAction->WebBackupList($this->bt_id);
+        $WebBackupList = $this->btPanel->WebBackupList($this->bt_id);
         $securityArray = [];
         foreach ($WebBackupList['data'] as $key => $value) {
             $securityArray[$key] = $WebBackupList['data'][$key]['id'];
@@ -2597,7 +2552,7 @@ class Vhost extends Frontend
         $post_str = $this->request->post();
         if (isset($post_str['del'])) {
             if (in_array($post_str['del'], $securityArray)) {
-                if ($modify_status = $this->btAction->WebDelBackup($post_str['del'])) {
+                if ($modify_status = $this->btPanel->WebDelBackup($post_str['del'])) {
                     $this->success($modify_status['msg']);
                 } else {
                     $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -2610,54 +2565,42 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * FTP开关
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // FTP开关
     public function ftpStatus()
     {
-
-        $ftpInfo = $this->btAction->WebFtpList($this->hostInfo->ftp->username);
-        if (!$ftpInfo || !isset($ftpInfo['data']['0'])) {
+        $ftpId = $this->btAction->getFtpInfo('id');
+        if(!$ftpId){
             $this->error(__('This service is not currently available'));
         }
-        $post_str = $this->request->post();
-        if (isset($post_str['ftp']) && $post_str['ftp'] == 'off') {
-            if ($modify_status = $this->btAction->SetStatus($ftpInfo['data'][0]['id'], $ftpInfo['data'][0]['name'], 0)) {
-                $this->success($modify_status['msg']);
-            } else {
-                $this->error(__('Fail') . '：' . $modify_status['msg']);
-            }
-        } elseif (isset($post_str['ftp']) && $post_str['ftp'] == 'on') {
-            if ($modify_status = $this->btAction->SetStatus($ftpInfo['data'][0]['id'], $ftpInfo['data'][0]['name'], 1)) {
-                $this->success($modify_status['msg']);
-            } else {
-                $this->error(__('Fail') . '：' . $modify_status['msg']);
-            }
+        $ftp = $this->request->post('ftp');
+        if ($ftp && $ftp == 'off') {
+            $status = 0;
+        } elseif ($ftp && $ftp == 'on') {
+            $status = 1;
         } else {
             $this->error(__('Illegal request'));
         }
+        $modify_status = $this->btAction->FtpStatus($status);
+        if (!$modify_status) {
+            $this->error(__('Fail') . '：' . $this->btAction->getError());
+        }
+        $this->success(__('Success'));
     }
 
-    /**
-     * Mysql数据库工具箱
-     *
-     * @return void
-     */
-    public function sqlTools(){
-        if($this->hostInfo->server_os=='windows'){
+    // Mysql数据库工具箱
+    public function sqlTools()
+    {
+        if ($this->hostInfo->server_os == 'windows') {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
             $this->error(__('This service is not currently available'), '');
         }
-        $sqlInfo = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+        $sqlInfo = $this->btPanel->WebSqlList($this->hostInfo->sql->username);
         if (!$sqlInfo || !isset($sqlInfo['data']['0'])) {
             $this->error(__('This service is not currently available'), '');
         }
-        $mysql_list = $this->btAction->GetSqlSize($this->hostInfo->sql->username);
+        $mysql_list = $this->btPanel->GetSqlSize($this->hostInfo->sql->username);
         if ($this->request->get('callback')) {
             $list = $mysql_list['tables'];
             $count = count($list);
@@ -2669,73 +2612,64 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * Mysql工具箱操作
-     *
-     * @return void
-     */
+    // Mysql工具箱操作
     public function sqlToolsAction()
     {
         $type = $this->request->post('type');
         $tables = $this->request->post('tables');
-        if(!$tables){
+        if (!$tables) {
             $this->error(__('Please select table name'));
         }
         $tables = array_filter(explode(',', $tables));
         if ($type == 'retable') {
             // 修复表
-            $re = $this->btAction->ReTable($this->hostInfo->sql->username, json_encode($tables));
+            $re = $this->btPanel->ReTable($this->hostInfo->sql->username, json_encode($tables));
             if ($re && isset($re['status']) && $re['status'] == 'true') {
                 $this->success($re['msg']);
             } elseif ($re && isset($re['msg'])) {
                 $this->error($re['msg']);
-            }else{
+            } else {
                 $this->error(__('Fail'));
             }
         } elseif ($type == 'optable') {
             // 优化表
-            $op = $this->btAction->OpTable($this->hostInfo->sql->username, json_encode($tables));
+            $op = $this->btPanel->OpTable($this->hostInfo->sql->username, json_encode($tables));
             if ($op && isset($op['status']) && $op['status'] == 'true') {
                 $this->success($op['msg']);
             } elseif ($op && isset($op['msg'])) {
                 $this->error($op['msg']);
-            }else{
+            } else {
                 $this->error(__('Fail'));
             }
         } elseif ($type == 'aitable' || $type == 'InnoDB' || $type == 'MyISAM') {
             // 转换类型
             $table_type = $this->request->post('table_type') == 'MyISAM' ? 'MyISAM' : 'InnoDB';
-            $al = $this->btAction->AlTable($this->hostInfo->sql->username, json_encode($tables), $table_type);
+            $al = $this->btPanel->AlTable($this->hostInfo->sql->username, json_encode($tables), $table_type);
             if ($al && isset($al['status']) && $al['status'] == 'true') {
                 $this->success($al['msg']);
             } elseif ($al && isset($al['msg'])) {
                 $this->error($al['msg']);
-            }else{
+            } else {
                 $this->error(__('Fail'));
             }
-        }else{
+        } else {
             $this->error(__('Request error, please try again later'));
         }
     }
 
-    /**
-     * 数据库备份生成
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 数据库备份生成
     public function sqlBackInc()
     {
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
             $this->error(__('This service is not currently available'), '');
         }
         //获取数据库ID
-        $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+        $WebSqlList = $this->btPanel->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
             $this->error(__('This service is not currently available'));
         }
         //获取数据库备份列表
-        $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
+        $WebBackupList = $this->btPanel->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
         $securityArray = [];
         foreach ($WebBackupList['data'] as $key => $value) {
@@ -2743,9 +2677,9 @@ class Vhost extends Frontend
         }
         $post_str = $this->request->post();
         if (isset($post_str['to']) && $post_str['to'] == 'back') {
-            $back_num = isset($this->hostInfo['sql_back_num']) ? $this->hostInfo['sql_back_num'] : 5;
+            $back_num = isset($this->hostInfo->sql_back_num) ? $this->hostInfo->sql_back_num : 5;
             if ($back_num == 0 || count($WebBackupList['data']) < $back_num) {
-                if ($modify_status = $this->btAction->SQLToBackup($WebSqlList['data'][0]['id'])) {
+                if ($modify_status = $this->btPanel->SQLToBackup($WebSqlList['data'][0]['id'])) {
                     $this->success($modify_status['msg']);
                 } else {
                     $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -2758,24 +2692,19 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 数据库备份删除
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 数据库备份删除
     public function sqlBackDel()
     {
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
             $this->error(__('This service is not currently available'), '');
         }
         //获取数据库ID
-        $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+        $WebSqlList = $this->btPanel->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
             $this->error(__('This service is not currently available'));
         }
         //获取数据库备份列表
-        $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
+        $WebBackupList = $this->btPanel->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
         $securityArray = [];
         foreach ($WebBackupList['data'] as $key => $value) {
@@ -2783,7 +2712,7 @@ class Vhost extends Frontend
         }
         $post_str = $this->request->post();
         if (in_array($post_str['del'], $securityArray)) {
-            if ($modify_status = $this->btAction->SQLDelBackup($post_str['del'])) {
+            if ($modify_status = $this->btPanel->SQLDelBackup($post_str['del'])) {
                 $this->success($modify_status['msg']);
             } else {
                 $this->error(__('Delete fail') . $modify_status['msg']);
@@ -2793,12 +2722,7 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 数据库备份下载
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 数据库备份下载
     public function sqlBackDown()
     {
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
@@ -2806,12 +2730,12 @@ class Vhost extends Frontend
         }
 
         //获取数据库ID
-        $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+        $WebSqlList = $this->btPanel->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
             $this->error(__('Database not found'));
         }
         //获取数据库备份列表
-        $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
+        $WebBackupList = $this->btPanel->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
         if (isset($WebBackupList['data'][0])) {
             foreach ($WebBackupList['data'] as $key => $value) {
@@ -2820,7 +2744,7 @@ class Vhost extends Frontend
                 if (input('get.down_back_sql') == $WebBackupList['data'][$key]['name']) {
                     $filePath = $WebBackupList['data'][$key]['filename'];
                     $fileName = $WebBackupList['data'][$key]['name'];
-                    $down     = $this->btAction->download($filePath, $fileName);
+                    $down     = $this->btPanel->download($filePath, $fileName);
                     if ($down && isset($down['status']) && $down['status'] == 'false') {
                         $this->success($down['msg']);
                     }
@@ -2830,53 +2754,44 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 数据库备份还原
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 数据库备份还原
     public function sqlInputSql()
     {
         //获取数据库ID
-        $WebSqlList = $this->btAction->WebSqlList($this->hostInfo->sql->username);
+        $WebSqlList = $this->btPanel->WebSqlList($this->hostInfo->sql->username);
         if (!$WebSqlList || !isset($WebSqlList['data'][0])) {
             $this->error(__('This service is not currently available'), '');
         }
         //获取数据库备份列表
-        $WebBackupList = $this->btAction->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
+        $WebBackupList = $this->btPanel->WebBackupList($WebSqlList['data'][0]['id'], '1', '5', '1');
 
         if (isset($WebBackupList['data'][0])) {
             foreach ($WebBackupList['data'] as $key => $value) {
                 // 下载备份文件
                 if (input('post.file') == $value['name']) {
-                    if ($modify_status = $this->btAction->SQLInputSqlFile($value['filename'], $this->hostInfo->sql->username)) {
+                    if ($modify_status = $this->btPanel->SQLInputSqlFile($value['filename'], $this->hostInfo->sql->username)) {
                         $this->success($modify_status['msg']);
                     } else {
                         $this->error(__('Fail') . '：' . $modify_status['msg']);
                     }
                 }
             }
-        }else{
+        } else {
             $this->error(__('File acquisition failed'));
         }
     }
 
-    /**
-     * SSl
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // SSl
     public function Ssl()
     {
-        $GetSSL  = $this->btAction->GetSSL($this->siteName);
-        $Domains = $this->btAction->GetSiteDomains($this->bt_id);
+        $GetSSL  = $this->btPanel->GetSSL($this->siteName);
+        $Domains = $this->btPanel->GetSiteDomains($this->bt_id);
         // var_dump($GetSSL);var_dump($Domains);exit;
         //获取域名绑定列表
-        $domainList = $this->btAction->WebDoaminList($this->bt_id);
+        $domainList = $this->btPanel->WebDoaminList($this->bt_id);
 
         // 获取商用证书列表及价格
-        $GetProductList = $this->btAction->GetProductList();
+        $GetProductList = $this->btPanel->GetProductList();
         // var_dump($GetProductList);
         // exit;
         $this->view->assign('title', __('ssl'));
@@ -2888,23 +2803,18 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 强制https
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 强制https
     public function toHttps()
     {
         $post_str = $this->request->post();
         if ($post_str['toHttps'] == '1') {
-            if ($HttpToHttps = $this->btAction->HttpToHttps($this->siteName)) {
+            if ($HttpToHttps = $this->btPanel->HttpToHttps($this->siteName)) {
                 $this->success($HttpToHttps['msg']);
             } else {
                 $this->error(__('Fail') . '：' . $HttpToHttps['msg']);
             }
         } else {
-            if ($HttpToHttps = $this->btAction->CloseToHttps($this->siteName)) {
+            if ($HttpToHttps = $this->btPanel->CloseToHttps($this->siteName)) {
                 $this->success($HttpToHttps['msg']);
             } else {
                 $this->error(__('Fail') . '：' . $HttpToHttps['msg']);
@@ -2912,12 +2822,7 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * SSL配置
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // SSL配置
     public function sslSet()
     {
         $key = input('post.key');
@@ -2928,7 +2833,7 @@ class Vhost extends Frontend
         if (preg_match($this->reg_rewrite, $key) || preg_match($this->reg_rewrite, $csr)) {
             $this->error(__('Illegal parameter'));
         }
-        $modify_status = $this->btAction->SetSSL(1, $this->siteName, $key, $csr);
+        $modify_status = $this->btPanel->SetSSL(1, $this->siteName, $key, $csr);
         if (isset($modify_status) && $modify_status['status'] == 'true') {
             $this->success($modify_status['msg']);
         } else {
@@ -2936,17 +2841,12 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 关闭SSL
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 关闭SSL
     public function sslOff()
     {
         $post_str = $this->request->post();
         if (isset($post_str['ssl']) && $post_str['ssl'] == 'off') {
-            if ($modify_status = $this->btAction->CloseSSLConf(1, $this->siteName)) {
+            if ($modify_status = $this->btPanel->CloseSSLConf(1, $this->siteName)) {
                 $this->success($modify_status['msg']);
             } else {
                 $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -2954,12 +2854,7 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * ssl证书一键申请
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // ssl证书一键申请
     public function sslApply()
     {
         set_time_limit(120);
@@ -2971,21 +2866,21 @@ class Vhost extends Frontend
         if (!$domainFind) {
             $this->error(__('%s parameters', __('Domain')));
         }
-        $WebGetKey = $this->webRootPath;
+        $WebGetKey = $this->btAction->webRootPath;
         if (!$WebGetKey) {
             $this->error(__('Failed to get root directory'));
         }
         // var_dump($WebGetKey);exit();
-        $GetDVSSL = $this->btAction->GetDVSSL($domain, $WebGetKey);
+        $GetDVSSL = $this->btPanel->GetDVSSL($domain, $WebGetKey);
         // 提交ssl证书申请
         if ($GetDVSSL && isset($GetDVSSL['status']) && $GetDVSSL['status'] == 'true') {
             // 证书申请效验码
             $partnerOrderId = $GetDVSSL['data']['partnerOrderId'];
             // 检查中
-            $Completed = $this->btAction->Completed($this->siteName, $partnerOrderId);
+            $Completed = $this->btPanel->Completed($this->siteName, $partnerOrderId);
             if ($Completed && isset($Completed['status']) && $Completed['status'] == 'true') {
                 // 设置域名证书
-                $GetSSLInfo = $this->btAction->GetSSLInfo($this->siteName, $partnerOrderId);
+                $GetSSLInfo = $this->btPanel->GetSSLInfo($this->siteName, $partnerOrderId);
                 if ($GetSSLInfo && isset($GetSSLInfo['status']) && $GetSSLInfo['status'] == 'true') {
                     $this->success(__('Application is successful, please refresh'));
                 } elseif ($GetSSLInfo && isset($GetSSLInfo['status']) && $GetSSLInfo['status'] == 'false') {
@@ -2998,7 +2893,9 @@ class Vhost extends Frontend
             } else {
                 $this->error(__('Checking, please confirm that the domain name is resolved correctly and can be accessed'));
             }
-        } elseif ($GetDVSSL && isset($GetDVSSL['msg'])) {
+        } elseif (
+            $GetDVSSL && isset($GetDVSSL['msg'])
+        ) {
             // 申请失败
             $this->error($GetDVSSL['msg']);
         } else {
@@ -3007,16 +2904,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * lets证书一键申请
-     * @Author   Youngxj
-     * @DateTime 2019-12-05
-     * @return   [type]     [description]
-     */
+    // lets证书一键申请
     public function sslApplyLets()
     {
         set_time_limit(120);
-        if (!$this->Config['email']) {
+        if (!Config::get('site.email')) {
             $this->error(__('The webmaster’s mailbox is not configured'));
         }
         $domains = $this->request->post();
@@ -3030,13 +2922,13 @@ class Vhost extends Frontend
         if (!$domainFind) {
             $this->error(__('%s not found', __('Domain')));
         }
-        $WebGetKey = $this->webRootPath;
+        $WebGetKey = $this->btAction->webRootPath;
         if (!$WebGetKey) {
             $this->error(__('Failed to get root directory'));
         }
         // 标记当前用户正在进行这项业务
         Session::set('is_lets', '1');
-        $let = $this->btAction->CreateLet($this->siteName, json_encode($domains_arr), $this->Config['email']);
+        $let = $this->btPanel->CreateLet($this->siteName, json_encode($domains_arr), Config::get('site.email'));
 
         if (isset($let['status']) && $let['status'] == true) {
             // 删除标记
@@ -3053,19 +2945,14 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 获取lets证书申请日志
-     * @Author   Youngxj
-     * @DateTime 2019-12-07
-     * @return   [type]     [description]
-     */
+    // 获取lets证书申请日志
     public function getFileLog()
     {
         // 判断是否正在请求这项业务
         if (Session::get('is_lets')) {
             $num  = 10;
             $file = '/www/server/panel/logs/letsencrypt.log';
-            $arr  = $this->btAction->getFileLog($file, $num);
+            $arr  = $this->btPanel->getFileLog($file, $num);
             if ($arr && isset($arr['status']) && $arr['status'] == true) {
                 $this->success($arr['msg']);
             } elseif (isset($arr['status']) && $arr['status'] == false) {
@@ -3078,16 +2965,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * Lets域名证书续签
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // Lets域名证书续签
     public function sslRenewLets()
     {
         set_time_limit(120);
-        $renew = $this->btAction->RenewLets();
+        $renew = $this->btPanel->RenewLets();
         if ($renew && isset($renew['status']) && $renew['status'] == 'true') {
             $this->success(__('Loading'));
         } elseif ($renew && isset($renew['msg'])) {
@@ -3097,15 +2979,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 网站防盗链
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 网站防盗链
     public function Protection()
     {
 
-        $GetSecurity = $this->btAction->GetSecurity($this->bt_id, $this->siteName);
+        $GetSecurity = $this->btPanel->GetSecurity($this->bt_id, $this->siteName);
 
         $this->view->assign('title', __('protection'));
 
@@ -3114,43 +2992,35 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 网站防盗链设置
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 网站防盗链设置
     public function ProtectionSet()
     {
         $post_str = $this->request->post();
         if (!empty($post_str['sec_fix']) || !empty($post_str['sec_domains'])) {
-            if (preg_match($this->reg, $post_str['sec_fix']) || preg_match($this->reg, $post_str['sec_domains'])) {
+            if (preg_match($this->global_reg, $post_str['sec_fix']) || preg_match($this->global_reg, $post_str['sec_domains'])) {
                 $this->error(__('Illegal parameter'));
             }
 
-            $modify_status = $this->btAction->SetSecurity($this->bt_id, $this->siteName, $post_str['sec_fix'], $post_str['sec_domains']);
+            $modify_status = $this->btPanel->SetSecurity($this->bt_id, $this->siteName, $post_str['sec_fix'], $post_str['sec_domains']);
 
 
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
-                $this->error(__('Fail') . '：' . $modify_status['msg']);
+                $this->error(__('Fail') . '��' . $modify_status['msg']);
             }
         } else {
             $this->error(__('%s can not be empty', ''));
         }
     }
 
-    /**
-     * 防盗链关闭
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 防盗链关闭
     public function ProtectionOff()
     {
-        $GetSecurity = $this->btAction->GetSecurity($this->bt_id, $this->siteName);
+        $GetSecurity = $this->btPanel->GetSecurity($this->bt_id, $this->siteName);
         $post_str    = $this->request->post();
         if (isset($post_str['protection']) && $post_str['protection'] == 'off') {
-            $modify_status = $this->btAction->SetSecurity($this->bt_id, $this->siteName, $GetSecurity['fix'], $GetSecurity['domains'], false);
+            $modify_status = $this->btPanel->SetSecurity($this->bt_id, $this->siteName, $GetSecurity['fix'], $GetSecurity['domains'], false);
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
@@ -3159,15 +3029,10 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 网站日志
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 网站日志
     public function Sitelog()
     {
-
-        $logList = $this->btAction->GetSiteLogs($this->siteName);
+        $logList = $this->btPanel->GetSiteLogs($this->siteName);
         if ($logList['msg']) {
             if (isset($logList['status']) && $logList['status'] == 'true') {
                 $logArr = explode("\n", $logList['msg']);
@@ -3179,9 +3044,9 @@ class Vhost extends Frontend
         }
         if ($this->request->get('down')) {
             // 导出日志文件excel
-            $logs = $this->btTend->getLogsFileName();
+            $logs = $this->btAction->getLogsFileName();
             if ($logs === false) {
-                $this->error($this->btTend->_error);
+                $this->error($this->btAction->_error);
             }
             // 拆分成数组
             // $arr = explode("\n",$logs);
@@ -3205,18 +3070,14 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 密码访问
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 密码访问
     public function Httpauth()
     {
-        if($this->hostInfo->server_os=='windows'){
+        if ($this->hostInfo->server_os == 'windows') {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
-        $vhost_url = $this->webRootPath;
-        $setting   = $this->btAction->GetDirUserINI($this->bt_id, $vhost_url);
+        $vhost_url = $this->btAction->webRootPath;
+        $setting   = $this->btPanel->GetDirUserINI($this->bt_id, $vhost_url);
 
         $this->view->assign('title', __('httpauth'));
         return view('httpauth', [
@@ -3224,23 +3085,18 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 密码访问配置
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 密码访问配置
     public function httpauthSet()
     {
-        if($this->hostInfo->server_os=='windows'){
+        if ($this->hostInfo->server_os == 'windows') {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
         $post_str = $this->request->post();
         if (!empty($post_str['username']) && !empty($post_str['password'])) {
-            if (preg_match($this->reg, $post_str['username']) || preg_match($this->reg, $post_str['password'])) {
+            if (preg_match($this->global_reg, $post_str['username']) || preg_match($this->global_reg, $post_str['password'])) {
                 $this->error(__('Illegal parameter'));
             }
-            $modify_status = $this->btAction->SetHasPwd($this->bt_id, $post_str['username'], $post_str['password']);
+            $modify_status = $this->btPanel->SetHasPwd($this->bt_id, $post_str['username'], $post_str['password']);
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
@@ -3251,20 +3107,15 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 密码访问关闭
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 密码访问关闭
     public function httpauthOff()
     {
-        if($this->hostInfo->server_os=='windows'){
+        if ($this->hostInfo->server_os == 'windows') {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
         $post_str = $this->request->post();
         if (isset($post_str['auth']) && $post_str['auth'] == 'off') {
-            if ($modify_status = $this->btAction->CloseHasPwd($this->bt_id)) {
+            if ($modify_status = $this->btPanel->CloseHasPwd($this->bt_id)) {
                 $this->success($modify_status['msg']);
             } else {
                 $this->error(__('Fail') . '：' . $modify_status['msg']);
@@ -3274,14 +3125,10 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 目录保护
-     *
-     * @return void
-     */
+    // 目录保护
     public function dirAuth()
     {
-        $list = $this->btAction->get_dir_auth($this->bt_id);
+        $list = $this->btPanel->get_dir_auth($this->bt_id);
         if ($list && isset($list['status']) && $list['status'] == false) {
             $this->error($list['msg']);
         }
@@ -3292,11 +3139,7 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 添加目录保护
-     *
-     * @return void
-     */
+    // 添加目录保护
     public function setDirAuth()
     {
         $siteDir  = input('post.sitedir');
@@ -3305,36 +3148,32 @@ class Vhost extends Frontend
         if (!$siteDir || !$username || !$passwd) {
             $this->error(__('%s can not be empty', ''));
         }
-        $siteDir = preg_replace('/([\.|\/]){2,}/', '', $siteDir);
+        $siteDir = preg_replace('/([.|\/]){2,}/', '', $siteDir);
 
         if (!$this->path_safe_check($siteDir)) {
             $this->error(__('Illegal parameter'));
         }
 
-        if (preg_match($this->reg, $siteDir) || preg_match($this->reg, $username) || preg_match($this->reg, $passwd)) {
+        if (preg_match($this->global_reg, $siteDir) || preg_match($this->global_reg, $username) || preg_match($this->global_reg, $passwd)) {
             $this->error(__('Illegal parameter'));
         }
         // $randName = Random::alnum(6);
 
-        if ($add = $this->btAction->set_dir_auth($this->bt_id, $username, $siteDir, $username, $passwd)) {
+        if ($add = $this->btPanel->set_dir_auth($this->bt_id, $username, $siteDir, $username, $passwd)) {
             $this->success($add['msg']);
         } else {
             $this->error(__('Fail') . '：' . $add['msg']);
         }
     }
 
-    /**
-     * 删除目录保护
-     *
-     * @author Youngxj <blog@youngxj.cn>
-     */
+    // 删除目录保护
     public function delDirAuth()
     {
         $delName = input('post.delname');
         if (!$delName) {
             $this->error(__('Request error'));
         }
-        $del = $this->btAction->delete_dir_auth($this->bt_id, $delName);
+        $del = $this->btPanel->delete_dir_auth($this->bt_id, $delName);
         if (isset($del) && $del['status'] == 'true') {
             $this->success($del['msg']);
         } else {
@@ -3342,19 +3181,14 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 获取网站运行目录
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 获取网站运行目录
     public function runPath()
     {
-        $WebGetKey = $this->webRootPath;
+        $WebGetKey = $this->btAction->webRootPath;
         if (!$WebGetKey) {
             $this->error(__('Failed to get root directory'));
         }
-        $path = $this->dirUserIni;
+        $path = $this->btAction->dirUserIni;
         if ($path && isset($path['runPath']) && $path['runPath'] != '') {
             if (isset($path['runPath']['dirs'])) {
                 // 轮询过滤网站重要配置目录，防止意外错误
@@ -3376,14 +3210,10 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 网站运行目录配置
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 网站运行目录配置
     public function setSiteRunPath()
     {
-        switch ($this->hostInfo['status']) {
+        switch ($this->hostInfo->status) {
             case 'normal':
                 break;
             case 'stop':
@@ -3406,9 +3236,9 @@ class Vhost extends Frontend
                 break;
         }
         if ($this->request->post()) {
-            $dirs = input('post.dirs') ? preg_replace('/([\.]){2,}/', '', input('post.dirs')) : '';
+            $dirs = input('post.dirs') ? preg_replace('/([.]){2,}/', '', input('post.dirs')) : '';
             // 增加非法参数过滤
-            if (preg_match($this->reg, $dirs) || preg_match($this->reg_rewrite, $dirs)) {
+            if (preg_match($this->global_reg, $dirs) || preg_match($this->reg_rewrite, $dirs)) {
                 $this->error(__('Illegal parameter'));
             }
             // 过滤危险目录
@@ -3420,13 +3250,13 @@ class Vhost extends Frontend
                 './/',
                 '..//',
             ];
-            
-            if(in_array($dirs,$dir_arr)){
+
+            if (in_array($dirs, $dir_arr)) {
                 $this->error(__('Hazard dir %s', $dirs));
             }
 
-            $runPath = $dirs ? preg_replace('/([\.]){2,}/', '', $dirs) : '';
-            $set     = $this->btAction->SetSiteRunPath($this->bt_id, $runPath);
+            $runPath = $dirs ? preg_replace('/([.]){2,}/', '', $dirs) : '';
+            $set     = $this->btPanel->SetSiteRunPath($this->bt_id, $runPath);
             if ($set && isset($set['status']) && $set['status'] == 'true') {
                 $this->success($set['msg']);
             } else {
@@ -3437,18 +3267,12 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 一键部署
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 一键部署
     public function deployment()
     {
-
-        // $deploymentList = $this->btAction->deployment();
+        // $deploymentList = $this->btPanel->deployment();
         $deploymentList =  Cache::remember('deploymentlist', function () {
-            return $this->btAction->deployment();
+            return $this->btPanel->deployment();
         });
         if (!$deploymentList || isset($deploymentList['status']) && $deploymentList['status'] == false) {
             $this->error(__('This service is not currently available'), '');
@@ -3463,20 +3287,15 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 一键部署到网站(兼容老版和新版)
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 一键部署到网站(兼容老版和新版)
     public function deploymentSet()
     {
         $post_str       = $this->request->post();
         $is_new         = input('post.is_new') ? input('post.is_new') : 0;
-        // $deploymentList = $is_new ? $this->btAction->GetList() : $this->btAction->deployment();
+        // $deploymentList = $is_new ? $this->btPanel->GetList() : $this->btPanel->deployment();
 
         $deploymentList =  Cache::remember($is_new ? 'deploymentlist_new' : 'deploymentlist', function ($is_new) {
-            return $is_new ? $this->btAction->GetList() : $this->btAction->deployment();
+            return $is_new ? $this->btPanel->GetList() : $this->btPanel->deployment();
         });
         if (!$deploymentList || isset($deploymentList['status']) && $deploymentList['status'] == false) {
             $is_new ? '' : $this->error(__('This service is not currently available'));
@@ -3492,8 +3311,8 @@ class Vhost extends Frontend
                 }
             }
             if ($is_inarray) {
-                // var_dump($dep, $this->siteName, $this->btTend->getSitePhpVer($this->siteName));exit;
-                $SetupPackage = $is_new ? $this->btAction->SetupPackageNew($dep, $this->siteName, $this->btTend->getSitePhpVer($this->siteName)) : $this->btAction->SetupPackage($dep, $this->siteName, $this->btTend->getSitePhpVer($this->siteName));
+                // var_dump($dep, $this->siteName, $this->btAction->getSitePhpVer($this->siteName));exit;
+                $SetupPackage = $is_new ? $this->btPanel->SetupPackageNew($dep, $this->siteName, $this->btAction->getSitePhpVer($this->siteName)) : $this->btPanel->SetupPackage($dep, $this->siteName, $this->btAction->getSitePhpVer($this->siteName));
                 // var_dump($SetupPackage);exit;
                 if ($SetupPackage && isset($SetupPackage['status']) && $SetupPackage['status'] == true) {
                     $this->success(__('Completed'));
@@ -3510,18 +3329,13 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 一键部署列表（新版）
-     * @Author   Youngxj
-     * @DateTime 2019-12-07
-     * @return   [type]     [description]
-     */
+    // 一键部署列表（新版）
     public function deployment_new()
     {
         $deploymentList =  Cache::remember('deploymentlist_new', function () {
-            return $this->btAction->GetList();
+            return $this->btPanel->GetList();
         });
-        // $deploymentList = $this->btAction->GetList();
+        // $deploymentList = $this->btPanel->GetList();
 
         $this->view->assign('title', __('deployment_new'));
         return view('deployment_new', [
@@ -3529,14 +3343,21 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 防篡改
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    private function ProofType(){
+        $proofType = Cache::remember('getProof', function () {
+            return $this->btAction->getProof();
+        });
+        if (!$proofType) {
+            $this->error(__('The plug-in is not supported by the current host'), '');
+        }
+        $this->btPanel->proofType = $proofType;
+    }
+
+    // 防篡改
     public function Proof()
     {
-        $GetProof = $this->btAction->GetProof();
+        $this->ProofType();
+        $GetProof = $this->btPanel->GetProof();
         if (isset($GetProof['open']) && $GetProof['open'] == 'true') {
             foreach ($GetProof['sites'] as $key => $value) {
                 if ($GetProof['sites'][$key]['siteName'] == $this->siteName) {
@@ -3554,20 +3375,22 @@ class Vhost extends Frontend
         }
         $this->view->assign('title', __('proof'));
         return $this->view->fetch('proof', [
+            'proof_status'=>$this->btPanel->proofType=='tamper_proof'?(isset($proofInfo['lock'])&&$proofInfo['lock']==2?true:false):(isset($proofInfo['open'])?$proofInfo['open']:0),
             'proofInfo' => $proofInfo,
         ]);
     }
 
-    /**
-     * 防篡改站点设置开关
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 防篡改站点设置开关
     public function proofStatus()
     {
-        if ($this->request->post()) {
-            $SiteProof = $this->btAction->SiteProof($this->siteName);
+        $this->ProofType();
+        if ($this->request->isPost()) {
+            $lock = $this->request->post('lock/d',0);
+            if($this->btPanel->proofType=='tamper_proof'){
+                $SiteProof = $this->btPanel->LockProof($this->siteName,$lock);
+            }else{
+                $SiteProof = $this->btPanel->SiteProof($this->siteName);
+            }
             if ($SiteProof && $SiteProof['status'] == 'true') {
                 $this->success($SiteProof['msg']);
             } else {
@@ -3578,24 +3401,20 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 网站防篡改删除规则
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 网站防篡改删除规则
     public function delProof()
     {
+        $this->ProofType();
         $post_str = $this->request->post();
         $name     = $post_str['name'];
         $type     = $post_str['type'];
-        if (preg_match($this->reg, $name) || preg_match($this->reg, $type)) {
+        if (preg_match($this->global_reg, $name) || preg_match($this->global_reg, $type)) {
             $this->error(__('Illegal parameter'));
         }
         if ($type == 'protect') {
-            $SiteProof = $this->btAction->DelprotectProof($this->siteName, $name);
+            $SiteProof = $this->btPanel->DelprotectProof($this->siteName, $name);
         } elseif ($type == 'excloud') {
-            $SiteProof = $this->btAction->DelexcloudProof($this->siteName, $name);
+            $SiteProof = $this->btPanel->DelexcloudProof($this->siteName, $name);
         } else {
             $this->error(__('Illegal request'));
         }
@@ -3607,21 +3426,17 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 网站防篡改添加规则
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 网站防篡改添加规则
     public function incProof()
     {
+        $this->ProofType();
         $post_str = $this->request->post();
         $name     = $post_str['name'];
         $type     = $post_str['type'];
         if ($type == 'protect') {
-            $SiteProof = $this->btAction->AddprotectProof($this->siteName, $name);
+            $SiteProof = $this->btPanel->AddprotectProof($this->siteName, $name);
         } elseif ($type == 'excloud') {
-            $SiteProof = $this->btAction->AddexcloudProof($this->siteName, $name);
+            $SiteProof = $this->btPanel->AddexcloudProof($this->siteName, $name);
         } else {
             $this->error(__('Illegal request'));
         }
@@ -3633,34 +3448,29 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 监控报表
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 监控报表
     public function total()
     {
-        $Total = $this->btAction->GetTotal();
+        $Total = $this->btPanel->GetTotal();
         $day = $this->request->get('time', date('Y-m-d', time()));
         if ($Total && @$Total['open'] == 'true') {
-            $siteTotal = $this->btAction->SiteTotal($this->siteName, $day);
+            $siteTotal = $this->btPanel->SiteTotal($this->siteName, $day);
             if (!$siteTotal) {
                 $this->error(__('Unexpected situation'), '');
             }
         } else {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
-        $Network = $this->btAction->SiteNetworkTotal($this->siteName);
+        $Network = $this->btPanel->SiteNetworkTotal($this->siteName);
         if (isset($Network['days']) && $Network['days'] != '') {
             foreach ($Network['days'] as $key => $value) {
                 $Network['days'][$key]['size'] = formatBytes($Network['days'][$key]['size']);
             }
             $Network['total_size'] = formatBytes($Network['total_size']);
         }
-        $Spider = $this->btAction->SiteSpiderTotal($this->siteName);
+        $Spider = $this->btPanel->SiteSpiderTotal($this->siteName);
 
-        $Client = $this->btAction->Siteclient($this->siteName);
+        $Client = $this->btPanel->Siteclient($this->siteName);
 
         if (request()->isAjax()) {
             return ['network' => $Network, 'spider' => $Spider, 'client' => $Client];
@@ -3676,31 +3486,30 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 防火墙
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
-    public function Waf()
-    {
-        // 获取防火墙类型
-
-
+    private function getWafType(){
         $isWaf = Cache::remember('getWaf', function () {
-            return $this->btTend->getWaf();
+            return $this->btAction->getWaf();
         });
         if (!$isWaf) {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
+        return $isWaf;
+    }
+
+    // 防火墙
+    public function Waf()
+    {
+        // 获取防火墙类型
+        $isWaf = $this->getWafType();
         // 获取防火墙插件
         $total = [];
-        $waf = $this->btAction->Getwaf($isWaf);
+        $waf = $this->btPanel->Getwaf($isWaf);
         if (isset($waf['open']) && $waf['open'] == 'true') {
-            $Sitewaf = $this->btAction->Sitewaf($isWaf, $this->siteName);
+            $Sitewaf = $this->btPanel->Sitewaf($isWaf, $this->siteName);
             if (!$Sitewaf) {
                 $this->error(__('Unexpected situation'), '');
             }
-            $SitewafConfig = $this->btAction->SitewafConfig($isWaf);
+            $SitewafConfig = $this->btPanel->SitewafConfig($isWaf);
             if ($SitewafConfig) {
                 foreach ($SitewafConfig as $key => $value) {
                     if ($SitewafConfig[$key]['siteName'] == $this->siteName) {
@@ -3718,8 +3527,8 @@ class Vhost extends Frontend
         }
 
         // 获取四层防御状态
-        $ip_stop = $isWaf != 'free_waf' ? $this->btTend->getIpstopStatus($isWaf) : false;
-        $GetLog  = $this->btAction->GetwafLog($isWaf, $this->siteName, date('Y-m-d', time()));
+        $ip_stop = $isWaf != 'free_waf' ? $this->btAction->getIpstopStatus($isWaf) : false;
+        $GetLog  = $this->btPanel->GetwafLog($isWaf, $this->siteName, date('Y-m-d', time()));
 
         $this->view->assign('title', __('waf'));
 
@@ -3732,22 +3541,15 @@ class Vhost extends Frontend
         ]);
     }
 
-    /**
-     * 修改waf功能开关
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 修改waf功能开关
     public function wafStatus()
     {
-        $isWaf = $this->btTend->getWaf();
-        if (!$isWaf) {
-            $this->error(__('Unexpected situation'));
-        }
+        // 获取防火墙类型
+        $isWaf = $this->getWafType();
         $post_str = $this->request->post();
         if ($post_str && $post_str['type']) {
             $type   = $post_str['type'];
-            $Status = $this->btAction->SitewafStatus($isWaf, $this->siteName, $type);
+            $Status = $this->btPanel->SitewafStatus($isWaf, $this->siteName, $type);
             if ($Status && $Status['status']) {
                 $this->success($Status['msg']);
             } else {
@@ -3758,17 +3560,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 修改wafcc
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     */
+    // 修改wafcc
     public function setWafcc()
     {
-        $isWaf = $this->btTend->getWaf();
-        if (!$isWaf) {
-            $this->error(__('Unexpected situation'));
-        }
+        // 获取防火墙类型
+        $isWaf = $this->getWafType();
         $post_str = $this->request->post();
         if ($post_str && $post_str['type']) {
             $type = $post_str['type'];
@@ -3787,16 +3583,16 @@ class Vhost extends Frontend
                 // 设置四层防御
                 if ($cc_four_defense) {
                     // 开启
-                    $this->btAction->SetIPStop($isWaf);
+                    $this->btPanel->SetIPStop($isWaf);
                 } else {
-                    $this->btAction->SetIPStopStop($isWaf);
+                    $this->btPanel->SetIPStopStop($isWaf);
                 }
-                $Setwafcc = $this->btAction->Setwafcc($isWaf, $this->siteName, $cycle, $limit, $endtime, $increase, $cc_mode, $cc_increase_type, $increase_wu_heng, $is_open_global);
+                $Setwafcc = $this->btPanel->Setwafcc($isWaf, $this->siteName, $cycle, $limit, $endtime, $increase, $cc_mode, $cc_increase_type, $increase_wu_heng, $is_open_global);
             } elseif ($type == 'retry') {
                 $retry       = input('post.retry/d');
                 $retry_time  = input('post.retry_time/d');
                 $retry_cycle = input('post.retry_cycle/d');
-                $Setwafcc    = $this->btAction->SetwafRetry($isWaf, $this->siteName, $retry, $retry_time, $retry_cycle);
+                $Setwafcc    = $this->btPanel->SetwafRetry($isWaf, $this->siteName, $retry, $retry_time, $retry_cycle);
             } else {
                 $this->error(__('Illegal request'));
             }
@@ -3805,7 +3601,7 @@ class Vhost extends Frontend
             } else {
                 $this->error($Setwafcc['msg']);
             }
-            $Status = $this->btAction->SitewafStatus($isWaf, $this->siteName, $type);
+            $Status = $this->btPanel->SitewafStatus($isWaf, $this->siteName, $type);
             if ($Status && $Status['status']) {
                 $this->success($Status['msg']);
             } else {
@@ -3816,16 +3612,11 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 反向代理
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 反向代理
     public function proxy()
     {
         if ($post_str = $this->request->post()) {
-            if (preg_match($this->reg, input('post.proxyname')) || preg_match($this->reg, input('post.proxysite')) || preg_match($this->reg, input('post.todomain')) || preg_match($this->reg, input('post.subfiltera')) || preg_match($this->reg, input('post.subfilterb'))) {
+            if (preg_match($this->global_reg, input('post.proxyname')) || preg_match($this->global_reg, input('post.proxysite')) || preg_match($this->global_reg, input('post.todomain')) || preg_match($this->global_reg, input('post.subfiltera')) || preg_match($this->global_reg, input('post.subfilterb'))) {
                 $this->error(__('Illegal parameter'));
             }
             if ($this->server_type == 'windows') {
@@ -3846,7 +3637,7 @@ class Vhost extends Frontend
                     'sub2'         => '',
                     'open'         => 1,
                 ];
-                $CreateProxy = $this->btAction->CreateProxy_win($data);
+                $CreateProxy = $this->btPanel->CreateProxy_win($data);
 
                 if ($CreateProxy && isset($CreateProxy['status'])) {
                     $this->success($CreateProxy['msg']);
@@ -3860,7 +3651,7 @@ class Vhost extends Frontend
                 $type      = isset($post_str['type']) ? '1' : '0';
                 $subfilter = '[{"sub1":"' . $post_str['subfiltera'] . '","sub2":"' . $post_str['subfilterb'] . '"},{"sub1":"","sub2":""},{"sub1":"","sub2":""}]';
 
-                $CreateProxy = $this->btAction->CreateProxy($cache, $post_str['proxyname'], $cachetime, $post_str['proxydir'], $post_str['proxysite'], $post_str['todomain'], $advanced, $this->siteName, $subfilter, $type);
+                $CreateProxy = $this->btPanel->CreateProxy($cache, $post_str['proxyname'], $cachetime, $post_str['proxydir'], $post_str['proxysite'], $post_str['todomain'], $advanced, $this->siteName, $subfilter, $type);
                 if ($CreateProxy && isset($CreateProxy['status'])) {
                     $this->success($CreateProxy['msg']);
                 } else {
@@ -3870,14 +3661,14 @@ class Vhost extends Frontend
         } else {
             if ($this->server_type == 'windows') {
                 // 如果是iis需要判断是否安装插件
-                $proxyList = $this->btTend->GetProxy($this->siteName);
+                $proxyList = $this->btAction->GetProxy($this->siteName);
                 if ($proxyList === false) {
-                    $this->error($this->btTend->_error, '');
+                    $this->error($this->btAction->_error, '');
                 }
                 // 可选域名列表
-                $domainList = $this->btAction->Websitess($this->bt_id, 'domain');
+                $domainList = $this->btPanel->Websitess($this->bt_id, 'domain');
             } else {
-                $proxyList  = $this->btAction->GetProxyList($this->siteName);
+                $proxyList  = $this->btPanel->GetProxyList($this->siteName);
                 $domainList = '';
             }
             if ($this->server_type == 'linux') {
@@ -3895,19 +3686,14 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * 反代删除
-     * @Author   Youngxj
-     * @DateTime 2019-12-03
-     * @return   [type]     [description]
-     */
+    // 反代删除
     public function proxyDel()
     {
         $proxyname = input('post.proxyname');
         if (!$proxyname) {
             $this->error(__('Request error, please try again later'));
         }
-        $del = $this->btAction->RemoveProxy($this->siteName, $proxyname);
+        $del = $this->btPanel->RemoveProxy($this->siteName, $proxyname);
         if ($del) {
             $this->success(__('%s success', __('Delete')));
         } else {
@@ -3915,42 +3701,36 @@ class Vhost extends Frontend
         }
     }
 
-    /**
-     * Nginx免费防火墙
-     *
-     * @return void
-     */
+    // Nginx免费防火墙
     public function free_waf()
     {
         // 判断环境是否为nginx
         if (isset($this->serverConfig['webserver']) && $this->serverConfig['webserver'] == 'nginx') {
             // 判断是否安装该插件
-            $pluginInfo = $this->btTend->softQuery('free_waf');
-            if(!$pluginInfo){
+            $pluginInfo = $this->btAction->softQuery('free_waf');
+            if (!$pluginInfo) {
                 $this->error(__('The plug-in is not supported by the current host'), '');
             }
             // waf站点信息
-            $waf = $this->btTend->free_waf_site_info();
+            $waf = $this->btAction->free_waf_site_info();
             // waf站点日志
-            $logs = $this->btAction->free_waf_get_logs_list($this->siteName);
-            $this->view->assign('waf',$waf);
-            $this->view->assign('logs',$logs);
-            $this->view->assign('total',$waf['total']);
+            $logs = $this->btPanel->free_waf_get_logs_list($this->siteName);
+            $this->view->assign(
+                'waf',
+                $waf
+            );
+            $this->view->assign(
+                'logs',
+                $logs
+            );
+            $this->view->assign('total', $waf['total']);
             $this->view->assign('title', __('Waf'));
-        }else{
+        } else {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
-        
-        // return $this->view->fetch();
     }
 
-    /**
-     * 文件路径安全检查
-     * @Author   阿良
-     * @DateTime 2019-12-03
-     * @param    [type]     $path [description]
-     * @return   [type]           [description]
-     */
+    // 文件路径安全检查
     private function path_safe_check($path)
     {
         $names = array("./", "%", "&", "*", "^", "!", "\\", ".user.ini");
@@ -3959,18 +3739,13 @@ class Vhost extends Frontend
                 return false;
             }
         }
+        // Windows下不能包含：< > / \ | :  * ?
+        // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
+        // 记录排除规则：@#
+        $reg = $this->server_type == 'windows'?'/^[\x7f-\xff\w\s.\/:~,@#-]+$/i':'/^[\x7f-\xff\w\s.\/~,-]+$/i';
 
-        if ($this->server_type == 'windows') {
-            // Windows下不能包含：< > / \ | :  * ?
-            if (!preg_match("/^[\x7f-\xff\w\s\.\/\:~,@#-]+$/i", $path)) {
-                return false;
-            }
-        } else {
-            // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
-            // 记录排除规则：@#
-            if (!preg_match("/^[\x7f-\xff\w\s\.\/~,-]+$/i", $path)) {
-                return false;
-            }
+        if (!preg_match($reg, $path)) {
+            return false;
         }
 
         return true;
@@ -3980,9 +3755,9 @@ class Vhost extends Frontend
      * 检查根目录合法性
      * @Author   阿良
      * @DateTime 2019-12-03
-     * @param    [type]     $path [description]
-     * @param    [type]     $root [description]
-     * @return   [type]           [description]
+     * @param    string     $path 路径
+     * @param    string     $root 网站根目录
+     * @return   bool
      */
     private function path_root_check($path, $root)
     {
@@ -4008,17 +3783,17 @@ class Vhost extends Frontend
     private function check()
     {
         if (Cookie('vhost_check_' . $this->vhost_id) < time()) {
-            $list = $this->btTend->getResourceSize();
+            $list = $this->btAction->getResourceSize();
             $msg = $excess = '';
-            if ($this->hostInfo['flow_max'] != 0 && $list['total_size'] > $this->hostInfo['flow_max']) {
+            if ($this->hostInfo->flow_max != 0 && $list['total_size'] > $this->hostInfo->flow_max) {
                 $msg .= __('Flow');
                 $excess = 1;
             }
-            if ($this->hostInfo['site_max'] != 0 && $list['websize'] > $this->hostInfo['site_max']) {
+            if ($this->hostInfo->site_max != 0 && $list['websize'] > $this->hostInfo->site_max) {
                 $msg .= __('Host');
                 $excess = 1;
             }
-            if ($this->hostInfo['sql_max'] != 0 && $list['sqlsize'] > $this->hostInfo['sql_max']) {
+            if ($this->hostInfo->sql_max != 0 && $list['sqlsize'] > $this->hostInfo->sql_max) {
                 $msg .= __('Sql');
                 $excess = 1;
             }
@@ -4028,26 +3803,49 @@ class Vhost extends Frontend
                 'sql_size' => $list['sqlsize'],
                 'check_time' => time(),
             ];
+
             if ($excess) {
                 $host_data['status'] = 'excess';
-            } elseif ($this->hostInfo['status'] == 'excess') {
+            } elseif ($this->hostInfo->status == 'excess') {
                 // 恢复主机状态
                 $host_data['status'] = 'normal';
             }
 
-            // 连接宝塔停用站点
-            if ($excess) {
-                $this->btTend->webstop();
-            } elseif ($this->hostInfo['status'] == 'excess') {
-                // 恢复主机状态
-                $this->btTend->webstart();
-            }
             $this->hostInfo->allowField(true)->save($host_data);
-            if($msg){
+            // 记录站点资源日志入库
+            \app\common\model\ResourcesLog::create([
+                'host_id' => $this->hostInfo->id,
+                'site_size' => $this->hostInfo->site_size,
+                'flow_size' => $this->hostInfo->flow_size,
+                'sql_size' => $this->hostInfo->sql_size,
+            ]);
+            if ($msg) {
                 $this->_error  = $msg . ($excess ? __('Exceeded, resource disabled') : '');
                 return false;
             }
             Cookie('vhost_check_' . $this->vhost_id, time() + $this->check_time, 3600);
+        }
+        return true;
+    }
+
+    /**
+     * 清除剪切板cookie
+     * @param $name string cookie名称
+     * @return bool
+     */
+    private function clear_cutorcopy_cookie($name)
+    {
+        switch ($name) {
+            case 'CutFile':
+            case 'CutFile':
+            case 'CutFiles':
+            case 'cutFileName':
+            case 'cutFileNames':
+            case 'copyFileName':
+            case 'copyFileNames':
+            case 'all':
+                Cookie::clear('vhost_cutcopy_');
+                break;
         }
         return true;
     }

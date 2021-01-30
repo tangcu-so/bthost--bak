@@ -127,7 +127,7 @@ class Host extends Backend
                 if (isset($plansInfo['vsftpd']) && $plansInfo['vsftpd'] == 1
                 ) {
                     // 调用vsftpd进行目录创建
-                    $creatVsftpdPath = $bt->btAction->AddVsftpdUser($hostSetInfo['username'], $hostSetInfo['password'], $hostSetInfo['path'], $plansInfo['site_max'], $plansInfo['limit_rate']);
+                    $creatVsftpdPath = $bt->btPanel->AddVsftpdUser($hostSetInfo['username'], $hostSetInfo['password'], $hostSetInfo['path'], $plansInfo['site_max'], $plansInfo['limit_rate']);
                     if ($creatVsftpdPath && isset($creatVsftpdPath['status']) && $creatVsftpdPath['status'] != 'Success') {
                         throw new \think\Exception('主机创建失败->' . $creatVsftpdPath['msg'] . '|' . json_encode($hostSetInfo));
                     } elseif ($creatVsftpdPath && !isset($creatVsftpdPath['status'])) {
@@ -151,7 +151,7 @@ class Host extends Backend
 
 
                 // 修改到期时间
-                $timeSet = $bt->btAction->WebSetEdate($btId, $params['endtime']);
+                $timeSet = $bt->btPanel->WebSetEdate($btId, $params['endtime']);
                 if (!$timeSet['status']) {
                     throw new \think\Exception('开通时间设置失败|' . json_encode($params['endtime']));
                 }
@@ -168,7 +168,7 @@ class Host extends Backend
 
                 if ($plansInfo['session']) {
                     // session隔离
-                    $bt->btAction->set_php_session_path($btId, 1);
+                    $bt->btPanel->set_php_session_path($btId, 1);
                 }
 
 
@@ -585,7 +585,7 @@ class Host extends Backend
                 }
             } elseif (input('param.speedget')) {
                 // 获取限速
-                $speedInfo = $bt->btAction->GetLimitNet($btid);
+                $speedInfo = $bt->btPanel->GetLimitNet($btid);
                 // 区分linux和windows
                 if (isset($speedInfo['limit_rate']) && isset($speedInfo['perip']) && isset($speedInfo['perserver'])) {
                     return [
@@ -604,7 +604,7 @@ class Host extends Backend
                 $perip      = input('param.perip/d') ? input('param.perip/d') : 0;
                 $limit_rate = input('param.limit_rate/d') ? input('param.limit_rate/d') : 0;
                 // 区分linux和windows
-                $modify_status = $bt->btAction->SetLimitNet($btid, $perserver, $perip, $limit_rate);
+                $modify_status = $bt->btPanel->SetLimitNet($btid, $perserver, $perip, $limit_rate);
                 if (isset($modify_status) && $modify_status['status'] == 'true') {
                     $this->success($modify_status['msg']);
                 } else {

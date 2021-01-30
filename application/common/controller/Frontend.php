@@ -94,6 +94,7 @@ class Frontend extends Controller
             $this->request->isAjax() ? $this->error('网站维护中，请稍候再试') : sysmsg('网站维护中，请稍候再试');
         }
 
+        // 屏蔽错误
         if (!Config('site.debug')) {
             error_reporting(E_ALL ^ E_NOTICE);
         }
@@ -120,7 +121,7 @@ class Frontend extends Controller
         Hook::listen("upload_config_init", $upload);
         // 软件配置
         $bty_config = Config::get('bty');
-        unset($bty_config['AUTH_KEY']);
+        unset($bty_config['AUTH_KEY'],$bty_config['api_url'],$bty_config['api_url2'],$bty_config['COOKIE_EXPIRE']);
 
         // 配置信息
         $config = [
@@ -138,6 +139,12 @@ class Frontend extends Controller
 
         Config::set('upload', array_merge(Config::get('upload'), $upload));
 
+        // 修复cdn地址
+        $this->view->replace('__CDN__', Config::get('site.cdnurl'));
+
+        // 静态资源版本号
+        $static_version = Config::get('app_debug')||Config::get('site.debug')?time():Config::get('bty.version');
+
         // 配置信息后
         Hook::listen("config_init", $config);
         // 加载当前控制器语言包
@@ -145,6 +152,7 @@ class Frontend extends Controller
         $this->assign('auth', $this->auth);
         $this->assign('site', $site);
         $this->assign('config', $config);
+        $this->assign('static_version',$static_version);
     }
 
     /**

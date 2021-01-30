@@ -580,6 +580,8 @@ CREATE TABLE `bth_ipaddress` (
 -- Records of bth_ipaddress
 -- ----------------------------
 
+INSERT INTO `bth_ipaddress` (`id`, `ip`, `ippools_id`, `mask`, `gateway`, `createtime`, `updatetime`, `deletetime`, `status`) VALUES ('1', '127.0.0.1', '1', '255.255.255.0', '192.168.1.0', '1597804165', '1599029813', NULL, 'normal');
+
 -- ----------------------------
 -- Table structure for bth_ippools
 -- ----------------------------
@@ -599,6 +601,8 @@ CREATE TABLE `bth_ippools` (
 -- ----------------------------
 -- Records of bth_ippools
 -- ----------------------------
+
+INSERT INTO `bth_ippools` (`id`, `name`, `tag`, `content`, `createtime`, `updatetime`, `deletetime`, `status`) VALUES ('1', '测试1', 'test1', '这是测试1的IP池\r\n', '1597303276', '1597303276', NULL, 'normal');
 
 -- ----------------------------
 -- Table structure for bth_plans
@@ -962,3 +966,93 @@ CREATE TABLE `bth_hostresources_log` (
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='主机资源记录表';
 
+
+-- 新版待添加
+ALTER TABLE `bth_config` ADD COLUMN `weigh`  int(10) NOT NULL DEFAULT 0 COMMENT '排序' AFTER `setting`;
+
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'signature_time', 'secret', 'signature_time', '签名有效时长,单位s', 'number', '10', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '100');
+
+UPDATE `bth_config` SET `weigh`='101' WHERE (`name`='access_token');
+UPDATE `bth_config` SET `weigh`='100' WHERE (`name`='api_token');
+UPDATE `bth_config` SET `weigh`='101' WHERE (`name`='http');
+UPDATE `bth_config` SET `weigh`='10' WHERE (`name`='split_size');
+UPDATE `bth_config` SET `weigh`='100' WHERE (`name`='mail_type');
+UPDATE `bth_config` SET `weigh`='95' WHERE (`name`='mail_smtp_host');
+UPDATE `bth_config` SET `weigh`='93' WHERE (`name`='mail_smtp_port');
+UPDATE `bth_config` SET `weigh`='90' WHERE (`name`='mail_from');
+UPDATE `bth_config` SET `weigh`='85' WHERE (`name`='mail_smtp_pass');
+UPDATE `bth_config` SET `weigh`='83' WHERE (`name`='mail_verify_type');
+UPDATE `bth_config` SET `weigh`='80' WHERE (`name`='mail_smtp_user');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'server', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
+
+ALTER TABLE `bth_domain_block` ADD COLUMN `is_all`  tinyint(1) NOT NULL DEFAULT 0 COMMENT '所有域名';
+ALTER TABLE `bth_domain_block` ADD COLUMN `type`  varchar(255) NULL COMMENT '类型:block:拦截,pass:白名单';
+
+CREATE TABLE `bth_domain_beian` (
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `vhost_id` int(10) NOT NULL DEFAULT '0' COMMENT '主机ID',
+  `bt_id` int(10) NOT NULL COMMENT '原宝塔ID',
+  `bt_name` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '原站点名',
+  `bt_id_n` int(10) DEFAULT '0' COMMENT '现宝塔ID',
+  `bt_name_n` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '站点名称',
+  `domain` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '域名',
+  `dir` varchar(255) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT '绑定目录',
+  `createtime` int(10) NOT NULL COMMENT '创建时间',
+  `updatetime` int(10) DEFAULT NULL COMMENT '更新时间',
+  `deletetime` int(10) DEFAULT NULL,
+  `status` enum('normal','auto','success') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'normal' COMMENT '状态',
+  `beian_info` text COLLATE utf8_unicode_ci COMMENT '备案完整信息',
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='未备案域名绑定';
+
+
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', 'Domainbeian tips', '1', '1610513397', '1610513397', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', 'Domainblock tips', '1', '1610700743', '1610700743', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '操作日志', 'fa fa-list-alt', '', 'Hostlog tips', '1', '1610888550', '1610888550', '0', 'normal');
+
+CREATE TABLE `bth_host_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_id` int(10) unsigned NOT NULL DEFAULT '0' COMMENT '用户ID',
+  `username` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '用户名字',
+  `url` varchar(1500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '操作页面',
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '日志标题',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '内容',
+  `ip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'IP',
+  `useragent` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'User-Agent',
+  `createtime` int(10) DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`),
+  KEY `name` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='主机日志表';
+
+-- 重新导入任务队列数据
+DROP TABLE IF EXISTS `bth_queue`;
+CREATE TABLE `bth_queue` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `function` varchar(32) NOT NULL COMMENT '执行方法',
+  `createtime` int(11) NOT NULL COMMENT '添加时间',
+  `updatetime` int(11) DEFAULT NULL COMMENT '修改时间',
+  `runtime` int(11) DEFAULT NULL COMMENT '最后运行时间',
+  `executetime` int(11) NOT NULL DEFAULT '0' COMMENT '执行间隔时间（s）',
+  `status` enum('normal','hidden') NOT NULL DEFAULT 'hidden' COMMENT '状态',
+  `weigh` int(10) DEFAULT '0' COMMENT '执行权重，越大越前',
+  `configgroup` text COMMENT '额外配置',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='任务对列表';
+
+INSERT INTO `bth_queue` VALUES ('1', 'btresource', '1589730915', '1611800059', '1611800025', '60', 'normal', '4', '[{\"key\":\"limit\",\"value\":\"10\",\"info\":\"一次检查多少主机\"},{\"key\":\"checkTime\",\"value\":\"20\",\"info\":\"单台主机检查间隔（分钟），如主机数量过多，请适当提高检查间隔时间或limit的值\"},{\"key\":\"ftmsg\",\"value\":\"1\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"1\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+INSERT INTO `bth_queue` VALUES ('2', 'hosttask', '1589730915', '1611800069', '1611800020', '43200', 'normal', '5', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+INSERT INTO `bth_queue` VALUES ('3', 'hostclear', '1589730915', '1611800078', '1611800020', '43200', 'normal', '6', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '2', 'general/apilog', 'API日志', 'fa fa-list-alt', '', 'Apilog tips', '1', '1611813879', '1611813879', '0', 'normal');
+
+DROP TABLE IF EXISTS `bth_api_log`;
+CREATE TABLE `bth_api_log` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `url` varchar(1500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '操作页面',
+  `title` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT '日志标题',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '内容',
+  `ip` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'IP',
+  `useragent` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' COMMENT 'User-Agent',
+  `createtime` int(10) DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API日志表';

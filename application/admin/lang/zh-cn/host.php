@@ -21,6 +21,7 @@ return [
     'Domain_max'       => '域名绑定数',
     'Default_analysis' => '默认解析地址',
     'Is_audit'         => '域名绑定审核',
+    'Sub bind'         => '绑定子目录',
     'Check_time'       => '最后检查时间',
     'Analysis_type'    => '解析方式及说明',
     'Web_back_num'     => '网站备份数',

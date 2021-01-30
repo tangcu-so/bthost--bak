@@ -1,8 +1,8 @@
 {extend name="common/base" /}
 {block name="content"}
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker3.min.css" rel="stylesheet">
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css" rel="stylesheet">
-<link href="__CDN____STATIC__/Light-Year/js/bootstrap-clockpicker/bootstrap-clockpicker.min.css" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker3.min.css?v={$static_version}" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-datetimepicker/bootstrap-datetimepicker.min.css?v={$static_version}" rel="stylesheet">
+<link href="__CDN____STATIC__/Light-Year/js/bootstrap-clockpicker/bootstrap-clockpicker.min.css?v={$static_version}" rel="stylesheet">
 <div class="row">
 	<div class="col-md-12">
 		<div class="card">
@@ -200,8 +200,8 @@
 {/block}
 {block name="script"}
 <!--日期选择器-->
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker.min.js"></script>
-<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/bootstrap-datepicker.min.js?v={$static_version}"></script>
+<script type="text/javascript" src="__CDN____STATIC__/Light-Year/js/bootstrap-datepicker/locales/bootstrap-datepicker.zh-CN.min.js?v={$static_version}"></script>
 <script type="text/javascript">
 	$(function(){
 		$('.dayTime').on('change',function(){

@@ -21,6 +21,10 @@ class Adminlog extends Backend
     protected $childrenGroupIds = [];
     protected $childrenAdminIds = [];
 
+    protected $relationSearch = true;
+    // 通用搜索
+    protected $searchFields = 'url,username,title,content,ip,useragent';
+
     public function _initialize()
     {
         parent::_initialize();

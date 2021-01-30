@@ -46,7 +46,7 @@ class Btaction
 
         $apiToken_config = decode(Config('site.api_token'));
         $this->api_token = $api_token ? $api_token : $apiToken_config;
-        $this->btAction = new Btpanel($this->api_url, $this->api_token);
+        $this->btPanel = new Btpanel($this->api_url, $this->api_token);
         // TODO 正式环境下切换到自动获取服务器操作系统类型
         // $this->os = 'linux';
         $this->os = $os ? $os : getOs();
@@ -55,6 +55,10 @@ class Btaction
     // 测试入口
     public function test()
     {
+        $server_config = $this->clear_config();
+        if (!$server_config) {
+            return false;
+        }
         $server_config = Cache::remember('vhost_config', function () {
             return $server_config = $this->clear_config();
         }, 3600 * 24);
@@ -123,7 +127,7 @@ class Btaction
     // 获取网站全部分类
     public function getsitetype()
     {
-        $list = $this->btAction->Webtypes();
+        $list = $this->btPanel->Webtypes();
         if ($list) {
             return $list;
         } else {
@@ -169,14 +173,14 @@ class Btaction
     // 检查运行目录及跨站锁
     public function examineDir()
     {
-        $this->dirUserIni = $this->btAction->GetDirUserINI($this->bt_id, $this->webRootPath);
+        $this->dirUserIni = $this->btPanel->GetDirUserINI($this->bt_id, $this->webRootPath);
         // 检查运行目录
         if (isset($this->dirUserIni['runPath']['dirs'])) {
             $path = $this->dirUserIni['runPath']['runPath'];
             // 修正网站停止时目录变更
             if (!in_array($path, $this->dirUserIni['runPath']['dirs']) && $this->dirUserIni['runPath']['runPath'] != '/www/server/stop/') {
                 // 还原运行目录为/
-                $this->btAction->SetSiteRunPath($this->bt_id, '/');
+                $this->btPanel->SetSiteRunPath($this->bt_id, '/');
             }
         } else {
             $this->setError('网站目录错误，请联系管理员');
@@ -189,7 +193,7 @@ class Btaction
                 $this->userini_status = false;
                 if ($this->userini) {
                     // 当防跨站锁丢失时，强制打开跨站锁
-                    $setUserIni = $this->btAction->SetDirUserINI($this->webRootPath);
+                    $setUserIni = $this->btPanel->SetDirUserINI($this->webRootPath);
                     if (!$setUserIni || $setUserIni['status'] != true) {
                         $this->setError('当前站点安全锁打开失败');
                         return false;
@@ -204,7 +208,7 @@ class Btaction
             if ($this->dirUserIni['locking'] != 'true') {
                 if ($this->iis_locking) {
                     // 锁定IIS配置文件(windows)
-                    $this->btAction->SetConfigLocking($this->bt_name);
+                    $this->btPanel->SetConfigLocking($this->bt_name);
                 }
             }
         }
@@ -216,7 +220,7 @@ class Btaction
     {
         set_time_limit(60);
         // 流量
-        $Total = $this->btAction->GetTotal();
+        $Total = $this->btPanel->GetTotal();
         if ($Total && isset($Total['open']) && $Total['open'] == 'true') {
             $total_size = $this->getNetNumber_month($this->bt_name);
             if (!$total_size || !isset($total_size['month_total'])) {
@@ -248,7 +252,7 @@ class Btaction
             $this->setError('id获取有误');
             return false;
         }
-        $reset = $this->btAction->ResDatabasePass($id, $name, $newpassword);
+        $reset = $this->btPanel->ResDatabasePass($id, $name, $newpassword);
         if (isset($reset['status']) && $reset['status'] == true) {
             return true;
         } elseif (isset($reset['status']) && isset($reset['msg'])) {
@@ -274,7 +278,7 @@ class Btaction
             $this->setError('id获取有误');
             return false;
         }
-        $reset = $this->btAction->SetUserPassword($id, $name, $newpassword);
+        $reset = $this->btPanel->SetUserPassword($id, $name, $newpassword);
         if (isset($reset['status']) && $reset['status'] == true) {
             return true;
         } elseif (isset($reset['status']) && isset($reset['msg'])) {
@@ -298,7 +302,7 @@ class Btaction
             $this->setError('id获取有误');
             return false;
         }
-        $del = $this->btAction->DeleteUser($id, $this->ftp_name);
+        $del = $this->btPanel->DeleteUser($id, $this->ftp_name);
         if (isset($del['status']) && $del['status'] == true) {
             return true;
         } elseif (isset($del['msg'])) {
@@ -323,7 +327,7 @@ class Btaction
             $this->setError('id获取有误');
             return false;
         }
-        $s = $this->btAction->SetStatus($id, $this->ftp_name, $status);
+        $s = $this->btPanel->SetStatus($id, $this->ftp_name, $status);
         if (isset($s['status']) && $s['status'] == true) {
             return true;
         } elseif (isset($s['msg'])) {
@@ -344,7 +348,7 @@ class Btaction
     public function btBuild($hostSetInfo)
     {
         //使用宝塔创建网站
-        $btInfo = $this->btAction->AddSite($hostSetInfo);
+        $btInfo = $this->btPanel->AddSite($hostSetInfo);
 
         if (isset($btInfo['status']) && $btInfo['status'] != true) {
             $this->setError('主机创建失败->' . @$btInfo['msg'] . '|' . json_encode($hostSetInfo));
@@ -420,7 +424,7 @@ class Btaction
         $rand_password = Random::alnum(12);
 
         // 构建数据
-        $hostSetInfo = array(
+        return array(
             'webname'      => '{"domain":"' . $defaultDomain . '","domainlist":[],"count":0}',
             'path'         => isset($params['WebGetKey']) && $params['WebGetKey'] ? $params['WebGetKey'] : $defaultPath . $set_domain,
             'type_id'      => isset($params['sort_id']) ? $params['sort_id'] : '0',
@@ -443,13 +447,11 @@ class Btaction
             'username'     => $set_domain,
             'password'     => $rand_password,
         );
-
-        return $hostSetInfo;
     }
 
     public function presetProcedure($dname, $btName, $defaultPhp)
     {
-        $setUp = $this->btAction->SetupPackageNew($dname, $btName, $defaultPhp);
+        $setUp = $this->btPanel->SetupPackageNew($dname, $btName, $defaultPhp);
         if ($setUp && isset($setUp['status']) && $setUp['status'] != 'true') {
             $setMsg = isset($setUp['msg']) ? $setUp['msg'] : '';
             // 有错误，记录，防止开通被打断
@@ -478,14 +480,14 @@ class Btaction
         $perip = isset($data['perip']) ? $data['perip'] : 25;
         $timeout = isset($data['timeout']) ? $data['timeout'] : 120;
         if ($this->os == 'linux') {
-            $modify_status = $this->btAction->SetLimitNet($this->bt_id, $data['perserver'], $perip, $data['limit_rate']);
+            $modify_status = $this->btPanel->SetLimitNet($this->bt_id, $data['perserver'], $perip, $data['limit_rate']);
             if (isset($modify_status) && $modify_status['status'] != 'true') {
                 // 有错误，记录，防止开通被打断
                 $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], $perip, $data['limit_rate']]]));
                 return false;
             }
         } else {
-            $modify_status = $this->btAction->SetLimitNet_win($this->bt_id, $data['perserver'], $timeout, $data['limit_rate']);
+            $modify_status = $this->btPanel->SetLimitNet_win($this->bt_id, $data['perserver'], $timeout, $data['limit_rate']);
             if (isset($modify_status) && $modify_status['status'] != 'true') {
                 // 有错误，记录，防止开通被打断
                 $this->setError($modify_status['msg'] . '|' . json_encode(['info' => [$this->bt_id, $data['perserver'], $timeout, $data['limit_rate']]]));
@@ -503,7 +505,7 @@ class Btaction
      */
     public function closeLimit()
     {
-        $set = $this->btAction->CloseLimitNet($this->bt_id);
+        $set = $this->btPanel->CloseLimitNet($this->bt_id);
         if (isset($set['status']) && $set['status'] == true) {
             return true;
         } elseif (isset($set['msg'])) {
@@ -525,10 +527,10 @@ class Btaction
     public function set_open_basedir($btid, $rootpath)
     {
         // 获取网站目录信息
-        $dirUserIni = $this->btAction->GetDirUserINI($btid, $rootpath);
+        $dirUserIni = $this->btPanel->GetDirUserINI($btid, $rootpath);
         if (isset($dirUserIni['userini']) && $dirUserIni['userini'] != true) {
             // 当防跨站锁丢失时，强制打开跨站锁
-            $setUserIni = $this->btAction->SetDirUserINI($rootpath);
+            $setUserIni = $this->btPanel->SetDirUserINI($rootpath);
             if (!$setUserIni || $setUserIni['status'] != true) {
                 return false;
             }
@@ -543,7 +545,7 @@ class Btaction
      */
     public function getServerConfig($value = '')
     {
-        $config = $this->btAction->GetConfig();
+        $config = $this->btPanel->GetConfig();
         if ($config) {
             if ($value) {
                 return isset($config[$value]) ? $config[$value] : false;
@@ -563,7 +565,7 @@ class Btaction
      */
     public function getPanelConfig($value = '')
     {
-        $config = $this->btAction->GetSystemTotal();
+        $config = $this->btPanel->GetSystemTotal();
         if ($config) {
             if ($value) {
                 return isset($config[$value]) ? $config[$value] : false;
@@ -583,7 +585,7 @@ class Btaction
     public function getIp()
     {
         if ($this->os != 'windows') {
-            $soft = $this->btAction->GetSoftList();
+            $soft = $this->btPanel->GetSoftList();
             if ($soft && isset($soft['ip']) && $soft['ip']) {
                 return $soft['ip'];
             }
@@ -617,7 +619,7 @@ class Btaction
      */
     public function getSiteInfo()
     {
-        $siteInfo = $this->btAction->Websites($this->bt_name);
+        $siteInfo = $this->btPanel->Websites($this->bt_name);
         if (isset($siteInfo['status']) && $siteInfo['status'] === false) {
 
             $this->setError($siteInfo['msg']);
@@ -669,7 +671,7 @@ class Btaction
      */
     public function getSitePhpVer($siteName)
     {
-        $phpver = $this->btAction->GetSitePHPVersion($siteName);
+        $phpver = $this->btPanel->GetSitePHPVersion($siteName);
         if (!$phpver) {
             return false;
         }
@@ -703,7 +705,7 @@ class Btaction
      */
     public function getSiteList($search = '', $p = 1, $maxNum = 999)
     {
-        $list = $this->btAction->Websites($search, $p, $maxNum);
+        $list = $this->btPanel->Websites($search, $p, $maxNum);
         if (isset($list['data']) && !empty($list['data'])) {
             return $list;
         } else {
@@ -719,7 +721,7 @@ class Btaction
      */
     public function getSqlList($search = '', $p = 1, $maxNum = 999)
     {
-        $list = $this->btAction->WebSqlList($search, $p, $maxNum);
+        $list = $this->btPanel->WebSqlList($search, $p, $maxNum);
         if (isset($list['data']) && !empty($list['data'])) {
             return $list;
         } else {
@@ -730,7 +732,7 @@ class Btaction
     // 获取全部ftp列表
     public function getFtpList($search = '', $p = 1, $maxNum = 999)
     {
-        $list = $this->btAction->WebFtpList($search, $p, $maxNum);
+        $list = $this->btPanel->WebFtpList($search, $p, $maxNum);
         if (isset($list['data']) && !empty($list['data'])) {
             return $list;
         } else {
@@ -774,7 +776,7 @@ class Btaction
             $this->setError('id获取有误');
             return false;
         }
-        $del = $this->btAction->DeleteDatabase($id, $this->sql_name);
+        $del = $this->btPanel->DeleteDatabase($id, $this->sql_name);
         if (isset($del['status']) && $del['status'] == true) {
             return true;
         } elseif (isset($del['msg'])) {
@@ -795,7 +797,7 @@ class Btaction
      */
     public function getSiteConfig($siteName)
     {
-        $webInfo = $this->btAction->Websites($siteName);
+        $webInfo = $this->btPanel->Websites($siteName);
         if (isset($webInfo['data']) && !empty($webInfo['data'])) {
             return $webInfo;
         } else {
@@ -811,7 +813,7 @@ class Btaction
      */
     public function getSiteDomain()
     {
-        $domainList = $this->btAction->WebDoaminList($this->bt_id);
+        $domainList = $this->btPanel->WebDoaminList($this->bt_id);
         if ($domainList) {
             return $domainList;
         } else {
@@ -827,7 +829,10 @@ class Btaction
      */
     public function getFtpInfo($k = '')
     {
-        $ftp = $this->btAction->WebFtpList($this->ftp_name);
+        if(!$this->ftp_name){
+            return false;
+        }
+        $ftp = $this->btPanel->WebFtpList($this->ftp_name);
         if ($ftp && isset($ftp['data'])) {
             // 遍历效验
             foreach ($ftp['data'] as $key => $value) {
@@ -847,7 +852,10 @@ class Btaction
      */
     public function getSqlInfo($k = '')
     {
-        $sql = $this->btAction->WebSqlList($this->sql_name);
+        if(!$this->sql_name){
+            return false;
+        }
+        $sql = $this->btPanel->WebSqlList($this->sql_name);
         if ($sql && isset($sql['data'])) {
             // 遍历效验
             foreach ($sql['data'] as $key => $value) {
@@ -868,7 +876,7 @@ class Btaction
      */
     public function getSiteDirBinding()
     {
-        $domainList = $this->btAction->GetDirBinding($this->bt_id);
+        $domainList = $this->btPanel->GetDirBinding($this->bt_id);
         if ($domainList) {
             return $domainList;
         } else {
@@ -889,10 +897,10 @@ class Btaction
     {
         // 绑定网站
         if ($is_dir) {
-            $add = $this->btAction->AddDirBinding($this->bt_id, $domain_str, $siteName);
+            $add = $this->btPanel->AddDirBinding($this->bt_id, $domain_str, $siteName);
         } else {
             // 绑定目录
-            $add = $this->btAction->WebAddDomain($this->bt_id, $siteName, $domain_str);
+            $add = $this->btPanel->WebAddDomain($this->bt_id, $siteName, $domain_str);
         }
         if (isset($add['status']) && $add['status'] == true) {
             return $add;
@@ -917,7 +925,7 @@ class Btaction
      */
     public function delDomain($btId, $webname, $domain, $port = '80')
     {
-        $del = $this->btAction->WebDelDomain($btId, $webname, $domain, $port);
+        $del = $this->btPanel->WebDelDomain($btId, $webname, $domain, $port);
         if (isset($del['status']) && $del['status'] == 'true') {
             return true;
         } elseif (isset($del['msg'])) {
@@ -938,7 +946,7 @@ class Btaction
      */
     public function delDomainDir($id)
     {
-        $del = $this->btAction->DelDirBinding($id);
+        $del = $this->btPanel->DelDirBinding($id);
         if ($del) {
             return $del;
         } else {
@@ -958,7 +966,7 @@ class Btaction
      */
     public function siteDelete($id, $webname, $ftp = 1, $database = 1, $path = 1)
     {
-        $del = $this->btAction->WebDeleteSite($id, $webname, $ftp, $database, $path);
+        $del = $this->btPanel->WebDeleteSite($id, $webname, $ftp, $database, $path);
         if ($del && isset($del['status']) && $del['status'] == 'true') {
             return true;
         } elseif (isset($del['status'])) {
@@ -977,7 +985,7 @@ class Btaction
      */
     public function getphplist($is_all = 0)
     {
-        $list = $this->btAction->GetSoftList('php是');
+        $list = $this->btPanel->GetSoftList('php是');
         if ($list && isset($list['list']['data']) && $list['list']['data']) {
             $arr = [];
             $arr[0]['id'] = '00';
@@ -1008,7 +1016,7 @@ class Btaction
     // 获取一键部署列表
     public function getdeploymentlist($search = '')
     {
-        $list = $this->btAction->GetList($search);
+        $list = $this->btPanel->GetList($search);
         if ($list && isset($list['list']) && $list['list']) {
             $arr = [];
             foreach ($list['list'] as $key => $value) {
@@ -1056,7 +1064,7 @@ class Btaction
      */
     public function softQuery($name)
     {
-        $GetSoftList = $this->btAction->GetSoftList($name);
+        $GetSoftList = $this->btPanel->GetSoftList($name);
         if ($GetSoftList) {
             foreach ($GetSoftList['list']['data'] as $key => $value) {
                 if ($GetSoftList['list']['data'][$key]['name'] == $name && $GetSoftList['list']['data'][$key]['setup'] == 'true') {
@@ -1076,7 +1084,7 @@ class Btaction
      */
     public function GetProxy($sitename)
     {
-        $fx = $this->btAction->GetProxyList($sitename);
+        $fx = $this->btPanel->GetProxyList($sitename);
         if ($fx && isset($fx['status']) && $fx['status'] == false) {
             $this->setError($fx['msg']);
             return false;
@@ -1096,7 +1104,7 @@ class Btaction
      */
     public function getNetNumber($domain)
     {
-        $SiteNetworkTotal = $this->btAction->SiteNetworkTotal($domain);
+        $SiteNetworkTotal = $this->btPanel->SiteNetworkTotal($domain);
         if ($SiteNetworkTotal) {
             return $SiteNetworkTotal;
         } else {
@@ -1113,7 +1121,7 @@ class Btaction
     public function getNetNumber_month($domain)
     {
         $size             = 0;
-        $SiteNetworkTotal = $this->btAction->SiteNetworkTotal($domain);
+        $SiteNetworkTotal = $this->btPanel->SiteNetworkTotal($domain);
         if (isset($SiteNetworkTotal['status']) && $SiteNetworkTotal['status'] == false) {
             return $SiteNetworkTotal;
         }
@@ -1147,9 +1155,9 @@ class Btaction
      */
     public function getWebSizes($domain)
     {
-        $search = $this->btAction->Websites($domain);
+        $search = $this->btPanel->Websites($domain);
         if (isset($search['data']['0']['path'])) {
-            $pathSize = $this->btAction->GetWebSize($search['data']['0']['path']);
+            $pathSize = $this->btPanel->GetWebSize($search['data']['0']['path']);
             if ($pathSize) {
                 return toBytes($pathSize['size']);
             } else {
@@ -1167,7 +1175,7 @@ class Btaction
      */
     public function getSqlSizes($sqlname)
     {
-        $sqlSize = $this->btAction->GetSqlSize($sqlname);
+        $sqlSize = $this->btPanel->GetSqlSize($sqlname);
         if ($sqlSize && isset($sqlSize['data_size']) && $sqlSize['data_size'] != "") {
             $size = strtolower($sqlSize['data_size']);
             return $size ? toBytes($size) : '0';
@@ -1214,7 +1222,7 @@ class Btaction
         if (!$siteStatus) {
             return true;
         }
-        $stop = $this->btAction->WebSiteStop($this->bt_id, $this->bt_name);
+        $stop = $this->btPanel->WebSiteStop($this->bt_id, $this->bt_name);
         if ($stop && isset($stop['status']) && $stop['status'] == true) {
             return true;
         } elseif ($stop && isset($stop['msg'])) {
@@ -1237,7 +1245,7 @@ class Btaction
         if ($siteStatus) {
             return true;
         }
-        $start = $this->btAction->WebSiteStart($this->bt_id, $this->bt_name);
+        $start = $this->btPanel->WebSiteStart($this->bt_id, $this->bt_name);
         if ($start && isset($start['status']) && $start['status'] == true) {
             return true;
         } elseif ($start && isset($start['msg'])) {
@@ -1250,7 +1258,7 @@ class Btaction
     // 宝塔面板日志列表
     public function panelLogs()
     {
-        $los = $this->btAction->getPanelLogs();
+        $los = $this->btPanel->getPanelLogs();
         if (!$los) {
             return false;
         }
@@ -1260,7 +1268,7 @@ class Btaction
     // 获取四层防御状态
     public function getIpstopStatus($wafType)
     {
-        $get = $this->btAction->GetIPStop($wafType);
+        $get = $this->btPanel->GetIPStop($wafType);
         if (isset($get['status']) && $get['status']) {
             return true;
         } else {
@@ -1276,7 +1284,7 @@ class Btaction
      */
     public function setPhpVer($ver)
     {
-        $set = $this->btAction->SetPHPVersion($this->bt_name, $ver);
+        $set = $this->btPanel->SetPHPVersion($this->bt_name, $ver);
         if ($set && isset($set['status']) && $set['status'] == 'true') {
             return true;
         } elseif ($set && isset($set['msg'])) {
@@ -1291,7 +1299,7 @@ class Btaction
     // Nginx免费防火墙（暂无用）
     public function free_waf_site_info()
     {
-        $list = $this->btAction->free_waf_site_config();
+        $list = $this->btPanel->free_waf_site_config();
         if ($list) {
             foreach ($list as $key => $value) {
                 if ($list[$key]['siteName'] == $this->bt_name) {
@@ -1310,7 +1318,7 @@ class Btaction
      */
     public function setEndtime($endtime)
     {
-        $set = $this->btAction->WebSetEdate($this->bt_id, $endtime);
+        $set = $this->btPanel->WebSetEdate($this->bt_id, $endtime);
         if (isset($set['status']) && $set['status'] == true) {
             return true;
         } elseif (isset($set['msg'])) {
@@ -1330,7 +1338,7 @@ class Btaction
      */
     public function setPs($ps)
     {
-        $set = $this->btAction->WebSetPs($this->bt_id, $ps);
+        $set = $this->btPanel->WebSetPs($this->bt_id, $ps);
         if (isset($set['status']) && $set['status'] == true) {
             return true;
         } elseif (isset($set['msg'])) {
@@ -1345,7 +1353,7 @@ class Btaction
     // 获取软件介绍
     public function getSoftInfo($name)
     {
-        $info = $this->btAction->GetSoftFind($name);
+        $info = $this->btPanel->GetSoftFind($name);
         if ($info) {
             return $info;
         }
@@ -1382,7 +1390,7 @@ class Btaction
         //     return false;
         // }
 
-        // $file_content = $this->btAction->GetFileBodys($file_path);
+        // $file_content = $this->btPanel->GetFileBodys($file_path);
         // 正则提取？
         // 直接拼接？
         if ($server == 'nginx') {
@@ -1395,7 +1403,7 @@ class Btaction
         if (!$file_path) {
             $this->setError('日志文件不存在');
         }
-        $logs_list = $this->btAction->GetFileBodys($file_path);
+        $logs_list = $this->btPanel->GetFileBodys($file_path);
         if (isset($logs_list['status']) && $logs_list['status'] == 'true') {
             return $logs_list['data'];
         } elseif (isset($logs_list['msg'])) {
@@ -1415,7 +1423,7 @@ class Btaction
      */
     public function isPro()
     {
-        $list = $this->btAction->GetSoftList();
+        $list = $this->btPanel->GetSoftList();
         if ($list && isset($list['pro'])) {
             switch ($list['pro']) {
                 case '-1':
@@ -1443,13 +1451,14 @@ class Btaction
      */
     public function paidVer()
     {
-        $list = $this->btAction->GetSoftList();
+        $list = $this->btPanel->GetSoftList();
         if ($list) {
-            if ($list['pro'] >= 0) {
+            if (isset($list['pro']) && $list['pro'] >= 0) {
                 return ['type' => 'pro', 'time' => $list['pro']];
-            }
-            if ($list['ltd'] >= 0) {
+            } elseif (isset($list['ltd']) && $list['ltd'] >= 0) {
                 return ['type' => 'ltd', 'time' => $list['ltd']];
+            } else {
+                return ['type' => 'free', 'time' => 0];
             }
         }
         return false;
@@ -1464,7 +1473,7 @@ class Btaction
      */
     public function isLtd()
     {
-        $list = $this->btAction->GetSoftList();
+        $list = $this->btPanel->GetSoftList();
         if ($list && isset($list['ltd'])) {
             switch ($list['ltd']) {
                 case '-1':
@@ -1494,7 +1503,7 @@ class Btaction
      */
     public function buildSql($username, $database, $password, $type = 'MySQL')
     {
-        $set = $this->btAction->AddDatabase($database, $username, $password, $type);
+        $set = $this->btPanel->AddDatabase($database, $username, $password, $type);
         if ($set && isset($set['status']) && $set['status'] == true) {
             return true;
         } elseif (isset($set['msg'])) {
@@ -1514,9 +1523,9 @@ class Btaction
      */
     public function exist_cron($name)
     {
-        $list = $this->btAction->GetCrontab();
+        $list = $this->btPanel->GetCrontab();
         if (!$list) {
-            $this->_error = $this->btAction->_error;
+            $this->_error = $this->btPanel->_error;
             return false;
         }
         if ($list) {
@@ -1537,9 +1546,9 @@ class Btaction
      */
     public function get_cron($name)
     {
-        $list = $this->btAction->GetCrontab();
+        $list = $this->btPanel->GetCrontab();
         if (!$list) {
-            $this->_error = $this->btAction->_error;
+            $this->_error = $this->btPanel->_error;
             return false;
         }
         if ($list) {
@@ -1552,12 +1561,14 @@ class Btaction
         return false;
     }
 
-    // 清除服务器配置缓存，并获取完部缓存
+    // 清除服务器配置缓存，并获取缓存
     public function clear_config()
     {
-        $config = $this->btAction->getConcifInfo();
-        if (isset($config['status'])) {
+        $config = $this->btPanel->getConcifInfo();
+        if (isset($config['status']) && !isset($config['msg'])) {
             return $config;
+        } elseif (isset($config['msg'])) {
+            $this->setError($config['msg']);
         }
         return false;
     }

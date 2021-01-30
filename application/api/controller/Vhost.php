@@ -10,6 +10,7 @@ use think\Db;
 use think\Cache;
 use app\common\library\Btaction;
 use think\Cookie;
+use think\exception\ValidateException;
 
 /**
  * 主机操作对外接口
@@ -19,18 +20,21 @@ class Vhost extends Api
 
     protected $noNeedLogin = '*';
     protected $noNeedRight = '*';
+    // 跳过签名验证的方法
+    protected $noTokenCheck = ['host_login'];
 
     public function _initialize()
     {
         parent::_initialize();
         $this->access_token = Config::get('site.access_token');
-        if(!$this->token_check()){
-            // TODO 上线需要验证签名
-            $this->error('签名错误');
+        try {
+            // 判断是否需要验证权限
+            if (!$this->auth->match($this->noTokenCheck)) {
+                $this->token_check();
+            }
+        } catch (\Exception $e) {
+            $this->error($e->getMessage());
         }
-        $this->hostModel = model('host');
-        $this->sqlModel = model('sql');
-        $this->ftpModel = model('ftp');
 
         // IP白名单效验
         $ip = request()->ip();
@@ -41,6 +45,8 @@ class Vhost extends Api
                 $this->error('非白名单IP不允许请求');
             }
         }
+
+        $this->hostModel = model('Host');
     }
 
     public function index(){        
@@ -225,7 +231,13 @@ class Vhost extends Api
 
     // 用户列表
     public function user_list(){
-        $list = model('User')::all();
+        $group_id = $this->request->param('group_id/d');
+        if($group_id){
+            $list = model('User')::all(['group_id'=>$group_id]);
+        }else{
+            $list = model('User')::all();
+        }
+        
         if($list){
             foreach ($list as $key => $value) {
                 $value->password = decode($value->password,$value->salt);
@@ -319,7 +331,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $info = $this->sqlModel::get($id);
+        $info = model('Sql')::get($id);
         $info->console = $info->console ? $info->console : config('site.phpmyadmin');
         $this->success('请求成功',$info);
     }
@@ -353,7 +365,7 @@ class Vhost extends Api
             'console'   => $console,
             'type'   => $type=='bt'?'bt':'custom',
         ];
-        $create = $this->sqlModel::create($sqlData);
+        $create = model('Sql')::create($sqlData);
         $sqlData['id'] = $create->id;
         $this->success('创建成功',$sqlData);
     }
@@ -366,7 +378,7 @@ class Vhost extends Api
         }
         $password = $this->request->post('password',Random::alnum(8));
 
-        $info = $this->sqlModel::get($id);
+        $info = model('Sql')::get($id);
         $info->password = $password;
         $info->save();
         $this->success('修改成功',$info);
@@ -378,7 +390,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('错误的请求');
         }
-        $info = $this->ftpModel::get($id);
+        $info = model('Ftp')::get($id);
         $this->success('请求成功',$info);
     }
 
@@ -389,7 +401,7 @@ class Vhost extends Api
         if(!$id){
             $this->error('请求错误');
         }
-        $info = $this->ftpModel::get($id);
+        $info = model('Ftp')::get($id);
         if(!$info){
             $this->error('ftp不存在');
         }
@@ -406,7 +418,7 @@ class Vhost extends Api
         if (!$id) {
             $this->error('请求错误');
         }
-        $info = $this->ftpModel::get($id);
+        $info = model('Ftp')::get($id);
         if (!$info) {
             $this->error('ftp不存在');
         }
@@ -417,7 +429,16 @@ class Vhost extends Api
 
     // 主机列表
     public function host_list(){
-        $list = $this->hostModel::all();
+        $sortId = $this->request->param('sort_id/d');
+        $userId = $this->request->param('user_id/d');
+        $where = [];
+        if($sortId){
+            $where['sort_id'] = $sortId;
+        }
+        if($userId){
+            $where['user_id'] = $userId;
+        }
+        $list = $this->hostModel->where($where)->select();
         $this->success('请求成功',$list);
     }
 
@@ -600,8 +621,8 @@ class Vhost extends Api
         }
         $info = $this->getHostInfo($id);
         $info->default_analysis = config('site.default_analysis') == 0 ? $info->bt_name : config('site.dnspod_analysis_url');
-        $info->sql = $this->sqlModel::all(['vhost_id'=>$id,'status'=>'normal']);
-        $info->ftp = $this->ftpModel::get(['vhost_id'=>$id,'status'=>'normal']);
+        $info->sql = model('Sql')::all(['vhost_id'=>$id,'status'=>'normal']);
+        $info->ftp = model('Ftp')::get(['vhost_id'=>$id,'status'=>'normal']);
         $info->domain = model('Domainlist')::all(['vhost_id' => $id]);
 
         $this->success('请求成功 ', $info);
@@ -610,27 +631,58 @@ class Vhost extends Api
     // 主机登录
     public function host_login()
     {
+        $account = $this->request->param('account');
+        $password = $this->request->param('password');
         $id = $this->request->param('id/d');
-        if (!$id) {
-            $this->error('错误的请求');
-        }
-        $hostInfo = model('Host')::get($id);
-        if (!$hostInfo) {
-            $this->error('没有找到有效主机');
+
+        // 传参验证
+        $validate = $this->validate([
+            'account'=>$account,
+            'password'=>$password,
+            'id'=>$id,
+        ],[
+            'account'=>'require|length:3,50',
+            'password'=>'require|length:6,30',
+            'id'=>'number',
+        ],[
+            'account.require'  => 'Account can not be empty',
+            'account.length'   => 'Account must be 3 to 50 characters',
+            'password.require' => 'Password can not be empty',
+            'password.length'  => 'Password must be 6 to 30 characters',
+            'id.number'=>'主机ID格式错误',
+        ]);
+
+        if($validate!==true){
+            $this->error(__($validate), url('/'));
         }
 
         // 登录用户
         $userAuth = new \app\common\library\Auth();
-        if (!$userAuth->direct($hostInfo->user_id)) {
+
+        if($userAuth->login($account, $password)){
+            if ($this->request->isAjax()) {
+                $this->success(__('Logged in successful'), url('/'));
+            } else {
+                if($id){
+                    $hostInfo = model('Host')::get($id);
+                    if(!$hostInfo){
+                        $this->error('没有找到有效主机', url('/'));
+                    }else{
+                        // cookie切换到主机id
+                        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+                    }
+                }
+                Cookie::set('uid', $userAuth->id);
+                Cookie::set('token', $userAuth->getToken());
+                // cookie切换到主机id
+                Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
+        
+                // 跳转首页控制台
+                return redirect('/');
+            }
+        }else{
             $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
         }
-        Cookie::set('uid', $userAuth->id);
-        Cookie::set('token', $userAuth->getToken());
-        // cookie切换到主机id
-        Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
-
-        // 跳转首页控制台
-        return redirect('/');
     }
     
     // 主机回收站（软删除）
@@ -678,7 +730,7 @@ class Vhost extends Api
         $bt = new Btaction();
         
         if($type=='ftp'||$type=='all'){
-            $ftpFind = $this->ftpModel::get(['vhost_id' => $id]);
+            $ftpFind = model('Ftp')::get(['vhost_id' => $id]);
             $ftpFind->password = $password;
             $ftpFind->save();
         }
@@ -808,7 +860,7 @@ class Vhost extends Api
         }
         $hostFind = $this->getHostInfo($id);
 
-        $sqlFind = $this->sqlModel::get(['vhost_id'=>$id]);
+        $sqlFind = model('Sql')::get(['vhost_id'=>$id]);
         if($sqlFind&&$sqlFind->username){
             $sql_name = $sqlFind->username;
         }else{
@@ -1155,15 +1207,24 @@ class Vhost extends Api
     
     // 签名验证
     private function token_check(){
+        // TODO 上线需要验证签名
+        // return true;
         // 时间戳
         $time = $this->request->param('time/d');
-        if((time()-$time)>10){
-            return false;
-        }
+        $signature_time = Config::get('site.signature_time') ? Config::get('site.signature_time') : 10;
+        
         // 随机数
         $random = $this->request->param('random');
         // 签名
         $signature = $this->request->param('signature');
+
+        if (!$time || !$random || !$signature) {
+            throw new \Exception(__('Signature fail'));
+        }
+
+        if ((time() - $time) > $signature_time) {
+            throw new \Exception(__('Signature expired'));
+        }
 
         $data = [
             'time' => $time,
@@ -1179,7 +1240,7 @@ class Vhost extends Api
         if($sig_key===$signature){
             return true;
         }else{
-            return false;
+            throw new \Exception(__('Signature fail'));
         }
     }
 }

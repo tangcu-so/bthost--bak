@@ -8,7 +8,7 @@ $lang = [
     'Home' => '返回主页',
     'Feedback' => '反馈错误',
     'The page you are looking for is temporarily unavailable' => '你所浏览的页面暂时无法访问',
-    'You can return to the previous page and try again' => '你可以返回上一页重试，或直接向我们反馈错误报告'
+    'You can return to the previous page and try again' => '你可以返回上一页重试，或直接向我们反馈错误报告<br><small>如果你是站长，请打开调试模式查看具体错误</small>'
 ];
 
 $langSet = '';
