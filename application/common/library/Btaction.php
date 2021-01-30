@@ -1060,6 +1060,29 @@ class Btaction
     }
 
     /**
+     * 获取防篡改类型
+     * @Author   Youngxj
+     * @DateTime 2019-12-05
+     * @return   [type]     [description]
+     */
+    public function getProof()
+    {
+        $list = ['tamper_drive', 'tamper_proof'];
+        $isProof = '';
+        foreach ($list as $key => $value) {
+            if ($this->softQuery($value) !== false) {
+                $isProof = $value;
+                break;
+            }
+        }
+        if ($isProof != '') {
+            return $isProof;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * 查询是否安装某个插件
      *
      * @param [type] $name
@@ -1564,7 +1587,7 @@ class Btaction
         return false;
     }
 
-    // 清除服务器配置缓存，并获取缓存
+    // 清除服务器配置缓存
     public function clear_config()
     {
         $config = $this->btPanel->getConcifInfo();
