@@ -2257,7 +2257,7 @@ class Vhost extends Frontend
             //         }
             //     }
             // }
-            // $this->clear_cutorcopy_cookie('all');
+            $this->clear_cutorcopy_cookie('all');
             $ms = __('Success') . "(" . count($arr_success) . ")：" . implode(',', $arr_success) . "<br>" . __('Fail') . "(" . count($arr_error) . ")：" . implode(',', $arr_error);
             $this->success($ms);
 
