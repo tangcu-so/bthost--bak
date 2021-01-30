@@ -500,10 +500,6 @@ CREATE TABLE `bth_domain_block` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='域名阻拦名单表';
 
 -- ----------------------------
--- Records of bth_domain_block
--- ----------------------------
-
--- ----------------------------
 -- Table structure for bth_ftp
 -- ----------------------------
 DROP TABLE IF EXISTS `bth_ftp`;
@@ -984,7 +980,8 @@ UPDATE `bth_config` SET `weigh`='90' WHERE (`name`='mail_from');
 UPDATE `bth_config` SET `weigh`='85' WHERE (`name`='mail_smtp_pass');
 UPDATE `bth_config` SET `weigh`='83' WHERE (`name`='mail_verify_type');
 UPDATE `bth_config` SET `weigh`='80' WHERE (`name`='mail_smtp_user');
-INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'server', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
+
+-- INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'server', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
 
 ALTER TABLE `bth_domain_block` ADD COLUMN `is_all`  tinyint(1) NOT NULL DEFAULT 0 COMMENT '所有域名';
 ALTER TABLE `bth_domain_block` ADD COLUMN `type`  varchar(255) NULL COMMENT '类型:block:拦截,pass:白名单';
