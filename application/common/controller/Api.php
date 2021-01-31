@@ -94,13 +94,16 @@ class Api
      */
     protected function _initialize()
     {
-        //跨域请求检测
-        check_cors_request();
-
         //移除HTML标签
         $this->request->filter('trim,strip_tags,htmlspecialchars');
 
         $this->auth = Auth::instance();
+
+        // 免签跳过跨域检测
+        if (!$this->auth->match($this->noTokenCheck)) {
+            // 跨域请求检测
+            check_cors_request();
+        }
 
         $modulename = $this->request->module();
         $controllername = Loader::parseName($this->request->controller());

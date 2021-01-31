@@ -653,7 +653,10 @@ class Vhost extends Api
         ]);
 
         if($validate!==true){
-            $this->error(__($validate), url('/'));
+            if ($this->request->isAjax()){
+                $this->error(__($validate), url('/'));
+            }
+            return redirect('/');
         }
 
         // 登录用户
@@ -1209,6 +1212,8 @@ class Vhost extends Api
     private function token_check(){
         // TODO 上线需要验证签名
         // return true;
+
+        // TODO 接口签名需要传递具体要调用的接口方法，防止跨方法传递，导致安全问题，或者研究更好的签名方案
         // 时间戳
         $time = $this->request->param('time/d');
         $signature_time = Config::get('site.signature_time') ? Config::get('site.signature_time') : 10;
