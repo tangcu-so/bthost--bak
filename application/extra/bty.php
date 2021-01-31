@@ -12,13 +12,13 @@ return [
     // 项目名
     'APP_NAME'          => 'bthost',
     // 应用版本
-    'app_version'       => '1.4.1',
+    'app_version'       => '1.4.2',
     // 发布时间
-    'release_time'      => '20210130',
+    'release_time'      => '20210131',
     // 修订版本
-    'revise_version'    => '1',
+    'revise_version'    => '2',
     // 完整版本号
-    'version'           => '1.4.1+20210130',
+    'version'           => '1.4.2+20210131',
     // API接口地址
     'api_url'           => 'https://auths.yum6.cn',
     'api_url2'          => 'https://auths.apip.wang',
