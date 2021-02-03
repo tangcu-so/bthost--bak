@@ -143,12 +143,16 @@ class Queue extends Api
         ];
         $curl = http::post($url, $data);
         $result = json_decode($curl,1);
+        // var_dump($result);exit;
         if($result  && isset($result ['code']) && $result ['code']==1 && isset($result ['data']) && $result ['data']){
             $title = '[btHost检测到新版本]';
             $content = '';
             $content.= '当前版本：'.$result ['data']['version'];
             $content.= "\n\n更新版本：".$result ['data']['newversion'];
-            $content.= "\n\n更新内容：".$result ['data']['upgradetext'];
+            if(isset($result ['data']['upgradetext'])){
+                $upgradetext = str_replace("\n","\n\n",$result ['data']['upgradetext']);
+            }
+            $content.= "\n\n更新内容：\n\n".$upgradetext;
             $content.= "\n\nTime：".date('Y-m-d H:i:s',time());
             // 方糖通知
             if (Config::get('site.ftqq_sckey') && $this->ftmsg) {
