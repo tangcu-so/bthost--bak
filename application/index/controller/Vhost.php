@@ -401,8 +401,8 @@ class Vhost extends Frontend
         // 获取未备案域名
         $not_beianList = model('DomainBeian')->where('status', 'normal')->where('vhost_id', $this->hostInfo->id)->select();
 
-        $count = count($domainList) - 1 + count($dirList['binding']) + count($auditList);
-        $sys = $this->hostInfo->domain_max - $count - count($not_beianList);
+        $count = count($domainList) + count($dirList['binding']) + count($auditList);
+        $sys = $this->hostInfo->domain_max - $count - count($not_beianList) + 1;
 
         $this->view->assign('title', __('domain'));
         $this->view->assign('sys', $sys);
@@ -448,10 +448,9 @@ class Vhost extends Frontend
         $notbeian_count = model('DomainBeian')->where('vhost_id', $this->vhost_id)->where('status','normal')->count();
 
         // 数据库中已有数 + 准备绑定的域名数 + 未备案的域名
-        $x_domain_count = count($domain_arr) + $domainCount + $notbeian_count;
-
+        $x_domain_count = count($domain_arr) + $domainCount + $notbeian_count - 1;
         // 绑定数限制
-        if ($this->hostInfo->domain_max != 0 && $x_domain_count - 1 >= $this->hostInfo->domain_max) {
+        if ($this->hostInfo->domain_max != 0 && $x_domain_count > $this->hostInfo->domain_max) {
             $this->error(__('Exceed the number of available domain name bindings %s', $this->hostInfo->domain_max));
         }
         $successArr = $errorArr = $not_beian = $new_domainlist = [];
@@ -502,10 +501,17 @@ class Vhost extends Frontend
                 } else {
                     // 跳过备案检测、域名手动审核
                     $domain_pass = 1;
-                    $status = 1;
                 }
             }
 
+            if($domain_pass){
+                $status = 1;
+            }elseif($this->hostInfo->is_audit==0){
+                $status = 1;
+            }else{
+                $errorArr[] = __('%s please wait for review', $value);
+                $status = 0;
+            }
 
             // 备案检测
             $search_check = model('DomainBeian')->where(['domain' => $value])->where('status', '<>', 'normal')->find();
@@ -530,10 +536,6 @@ class Vhost extends Frontend
                     );
                 }
             }
-            if ($this->hostInfo->is_audit && !$domain_pass) {
-                $errorArr[] = __('%s please wait for review', $value);
-                $status = 0;
-            }
 
             if ($status != 3) {
                 // 添加到数据库中
@@ -545,7 +547,6 @@ class Vhost extends Frontend
                 ];
                 model('Domainlist')::create($data);
             }
-
 
             if ($status !== 1) {
                 continue;
@@ -596,7 +597,7 @@ class Vhost extends Frontend
         }
 
         if ($successArr) {
-            // 已备案绑定域名
+            // 允许的域名绑定域名
             $domain_str = implode(',', $successArr);
 
             $this->btAction->bt_id = $this->bt_id;
