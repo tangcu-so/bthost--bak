@@ -15,6 +15,7 @@ use btpanel\Btpanel;
 use think\Debug;
 use think\Db;
 use think\Cache;
+use think\Hook;
 
 /**
  * 控制中心
@@ -549,6 +550,9 @@ class Vhost extends Frontend
             }
 
             if ($status !== 1) {
+                // 站长通知
+                $tz_data =['username'=>$this->auth->username,'domain'=>$value,'bt_name'=>$this->hostInfo->bt_name];
+                Hook::listen('action_domain_check_msg',$tz_data);
                 continue;
             }
             $successArr[] = $value;
