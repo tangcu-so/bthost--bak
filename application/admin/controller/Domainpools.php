@@ -18,6 +18,9 @@ class Domainpools extends Backend
      */
     protected $model = null;
 
+    protected $relationSearch = true;
+    protected $searchFields = ['id','name','tag'];
+
     public function _initialize()
     {
         parent::_initialize();

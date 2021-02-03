@@ -19,7 +19,9 @@ class Sql extends Backend
      */
     protected $model = null;
 
-    protected $searchFields = ['username'];
+    protected $relationSearch = true;
+
+    protected $searchFields = ['id','username','vhost.bt_name'];
 
     public function _initialize()
     {

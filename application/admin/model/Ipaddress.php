@@ -47,7 +47,7 @@ class Ipaddress extends Model
 
     public function ippools()
     {
-        return $this->belongsTo('Ippools', 'ippools_id', 'id', [], 'LEFT');
+        return $this->belongsTo('Ippools', 'ippools_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
 
     /**

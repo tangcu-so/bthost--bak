@@ -14,7 +14,7 @@ class Ippools extends Backend
     protected $relationSearch = true;
 
     // 通用搜索
-    protected $searchFields = 'id,name,tag';
+    protected $searchFields = ['id','name','tag'];
     
     /**
      * Ippools模型对象

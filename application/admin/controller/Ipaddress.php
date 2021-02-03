@@ -15,7 +15,7 @@ class Ipaddress extends Backend
     protected $relationSearch = true;
 
     // 通用搜索
-    protected $searchFields = 'id,ip';
+    protected $searchFields = ['id','ip','ippools.name','mask','gateway'];
 
     /**
      * Ipaddress模型对象

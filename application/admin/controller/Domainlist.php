@@ -19,7 +19,8 @@ class Domainlist extends Backend
      */
     protected $model = null;
 
-    protected $searchFields = ['domain'];
+    protected $relationSearch = true;
+    protected $searchFields = ['id','domain','vhost.bt_name'];
 
     public function _initialize()
     {

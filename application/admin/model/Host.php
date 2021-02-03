@@ -144,7 +144,7 @@ class Host extends Model
 
     public function user()
     {
-        return $this->belongsTo('User', 'user_id', 'id', [], 'LEFT');
+        return $this->belongsTo('User', 'user_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
 
     public function getUserAttr($value,$data){

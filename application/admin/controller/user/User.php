@@ -16,7 +16,7 @@ class User extends Backend
     protected $relationSearch = true;
 
     // 通用搜索
-    protected $searchFields = 'id,username,nickname';
+    protected $searchFields = 'id,username,nickname,group.name,loginip';
 
     /**
      * User模型对象

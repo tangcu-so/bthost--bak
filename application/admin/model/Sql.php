@@ -85,7 +85,7 @@ class Sql extends Model
 
     public function vhost()
     {
-        return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT');
+        return $this->belongsTo('Host', 'vhost_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
 
     public function getVhostAttr($value,$data){
