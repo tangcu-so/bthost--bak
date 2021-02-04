@@ -1577,14 +1577,71 @@ class Btaction
             $this->_error = $this->btPanel->_error;
             return false;
         }
-        if ($list) {
-            foreach ($list as $key => $value) {
-                if (isset($value['name']) && $value['name'] == $name) {
-                    return $value;
-                }
+        foreach ($list as $key => $value) {
+            if (isset($value['name']) && $value['name'] == $name) {
+                return $value;
             }
         }
         return false;
+    }
+
+    /**
+     * 获取所有加速站点
+     *
+     * @return array|bool
+     */
+    public function get_speed_site_list(){
+        $list = $this->btPanel->SiteSpeed();
+        if (!$list) {
+            $this->_error = $this->btPanel->_error;
+            return false;
+        }
+
+        return $list;
+    }
+
+    /**
+     * 获取站点加速站点信息
+     *
+     * @param [type] $bt_name   站点名
+     * @return array|bool
+     */
+    public function get_speed_site($bt_name){
+        $info = $this->btPanel->GetSiteSpeed($bt_name);
+        if(!$info){
+            $this->_error = $this->btPanel->_error;
+            return false;
+        }
+        return $info;
+    }
+
+    /**
+     * 获取站点加速站点状态
+     *
+     * @param [type] $bt_name   站点名
+     * @return void
+     */
+    public function get_speed_site_status($bt_name){
+        $get = $this->get_speed_site($bt_name);
+        if(!$get){
+            return false;
+        }
+        return $get['open']??0;
+    }
+
+    /**
+     * 设置站点加速站点状态开关
+     *
+     * @param [type] $bt_name   站点名
+     * @return void
+     */
+    public function set_speed_site_status($bt_name){
+        $set = $this->btPanel->SiteSpeedStatus($bt_name);
+        if(!$set){
+            $this->_error = $this->btPanel->_error;
+            return false;
+        }
+        return $set;
     }
 
     // 清除服务器配置缓存

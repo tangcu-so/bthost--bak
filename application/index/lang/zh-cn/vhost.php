@@ -552,5 +552,14 @@ return [
     'You can edit the protected file type through the [Protect] button'=>'您可以通过【保护】按钮来编辑受保护的文件类型',
     'Statistical report'=>'统计报告',
     'All statistics'=>'全部统计',
+    'speedCache'=>'缓存加速',
+    'Today Hit'=>'今日命中率',
+    'Total Hit'=>'全部命中率',
+    'Acceleration strategy'=>'加速策略',
+    'If your site does not allow anonymous access, please do not enable site acceleration'=>'若您的站点不允许匿名访问，请不要开启站点加速',
+    'If your site is an interactive site, the hit rate may be low'=>'若您的站点是交互型站点，则可能命中率较低',
+    'After enabling site acceleration, if site acceleration is found, please turn off site acceleration'=>'开启站点加速后，若发现站点异常，请关闭站点加速',
+    'After enabling site acceleration, the update frequency of your website page content depends on the [Cache Period] time'=>'开启站点加速后，您的网站页面内容更新频率取决于【缓存周期】时间',
+    'Rule error, please try again later'=>'规则错误，请稍候重试',
 ];
  

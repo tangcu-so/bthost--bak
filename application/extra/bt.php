@@ -36,6 +36,7 @@ return [
     'AddCrontab'                 => '/crontab?action=AddCrontab', // 添加计划任务
     'GetCrontab'                 => '/crontab?action=GetCrontab', // 计划任务列表
     'GetLogs'                    => '/crontab?action=GetLogs',// 获取计划任务执行日志
+    'CheckInstalled'             => '/ajax?action=CheckInstalled', //检查是否完成程序初始化['nginx','apache','php','pure-ftpd','mysql']
 
     # 网站管理相关接口
     'Websites'                   => '/data?action=getData&table=sites', //获取网站列表
@@ -261,6 +262,15 @@ return [
     'free_waf_get_logs_list'     => '/plugin?action=a&name=free_waf&s=get_logs_list', // 查看日志
     'free_waf_set_site_cc_conf'  => '/plugin?action=a&name=free_waf&s=set_site_cc_conf', // cc配置
     'free_waf_set_open'          => '/plugin?action=a&name=free_waf&s=set_open', // 总开关
+
+    // 宝塔网站加速
+    'SiteSpeed'                  => '/plugin?action=a&s=get_site_list&name=site_speed', // 宝塔网站加速列表
+    'SiteSpeedStatus'            => '/plugin?action=a&s=set_site_status&name=site_speed',// 站点加速开关
+    'GetSiteSpeed'               => '/plugin?action=a&s=get_site_find&name=site_speed',// 站点加速站点详情
+    'CreateSpeedRule'            => '/plugin?action=a&s=create_rule&name=site_speed',// 设置缓存目录
+    'SetSpeedRule'               => '/plugin?action=a&s=set_site_rule&name=site_speed',// 添加规则
+    'GetRuleList'                => '/plugin?action=a&s=get_rule_list&name=site_speed',// 加速规则列表
+
 
     # windows
     'GetSiteRewrite'             => '/site?action=GetSiteRewrite', // 获取站点伪静态规则

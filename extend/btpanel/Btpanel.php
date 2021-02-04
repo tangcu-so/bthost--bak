@@ -4655,6 +4655,120 @@ class Btpanel
         }
     }
 
+    /**
+     * 堡塔网站加速列表
+     *
+     * @return array|bool
+     */
+    public function SiteSpeed(){
+        $result = $this->request_get('SiteSpeed');
+        if($result&&isset($result['data'])){
+            return $result['data'];
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 站点加速开关
+     *
+     * @param [type] $siteName  站点名
+     * @return array|bool
+     */
+    public function SiteSpeedStatus($siteName){
+        $result = $this->request_get('SiteSpeedStatus',['siteName'=>$siteName]);
+        if($result&&isset($result['status'])&&$result['status']==true){
+            return true;
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 获取站点加速站点信息
+     *
+     * @param [type] $siteName  站点名
+     * @return array|bool
+     */
+    public function GetSiteSpeed($siteName){
+        $result = $this->request_get('GetSiteSpeed',['siteName'=>$siteName]);
+        if($result&&isset($result['open'])){
+            return $result;
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 配置缓存目录(疑似需要先执行移除之前的规则才能正常使用)
+     *
+     * @param [type] $siteName  站点名
+     * @param [type] $rules     缓存目录  {"white":{"not_uri":["/"]}}
+     * @return void
+     */
+    public function CreateSpeedRule($siteName,$path){
+        $rules = json_encode(['not_uri'=>$path]);
+        $result = $this->request_get('CreateSpeedRule',['siteName'=>$siteName,'rules'=>$rules]);
+        if($result&&isset($result['status'])&&$result['status']==true){
+            return true;
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 设置加速规则
+     *
+     * @param [type] $siteName      站点名
+     * @param [type] $ruleName      规则名
+     * @return void
+     */
+    public function SetSpeedRule($siteName,$ruleName){
+        $result = $this->request_get('CreateSpeedRule',['siteName'=>$siteName,'ruleName'=>$ruleName]);
+        if($result&&isset($result['status'])&&$result['status']==true){
+            return true;
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 获取内置加速规则列表
+     *
+     * @return array|bool
+     */
+    public function GetRuleList(){
+        $result = $this->request_get('GetRuleList');
+        if($result&&isset($result['rule_list'])){
+            return $result['rule_list'];
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
 
 
     /**

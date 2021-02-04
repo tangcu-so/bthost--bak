@@ -43,6 +43,7 @@
             <li> <a class="multitabs {:$auth->check('vhost/deployment_new')?'':'d-none'}" href="{:url('index/vhost/deployment_new')}">{:__('Deployment(new)')}</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/total')?'':'d-none'}" href="{:url('index/vhost/total')}">{:__('Total')}</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/proxy')?'':'d-none'}" href="{:url('index/vhost/proxy')}">{:__('Proxy')}</a> </li>
+            <li> <a class="multitabs {:$auth->check('vhost/speed_cache')?'':'d-none'}" href="{:url('index/vhost/speed_cache')}">{:__('speedCache')}</a> </li>
             <li> <a class="multitabs {:$auth->check('vhost/hostreset')?'':'d-none'}" href="{:url('index/vhost/hostreset')}">{:__('Host reset')}</a> </li>
         </ul>
         </li>

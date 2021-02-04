@@ -243,6 +243,10 @@ class Vhost extends Frontend
         // Cache::rm('phpversion_list');
         // 清除服务器配置
         Cache::rm('vhost_config');
+        // 清除加速规则
+        Cache::rm('speed_rule_list');
+        // 清除加速规则列表
+        Cache::rm('speed_rule_name_list');
         // 清除资源使用检测缓存
         Cookie::set('vhost_check_' . $this->vhost_id, null);
 
@@ -3733,6 +3737,64 @@ class Vhost extends Frontend
         } else {
             $this->error(__('The plug-in is not supported by the current host'), '');
         }
+    }
+
+    // 站点加速
+    public function speed_cache(){
+        $info = $this->btAction->get_speed_site($this->siteName);
+        if(!$info){
+            Config('app_debug')?$this->error(__($this->btAction->_error), ''):$this->error(__('The plug-in is not supported by the current host'), '');
+        }
+
+        if($this->request->post('status')){
+            $set = $this->btAction->set_speed_site_status($this->siteName);
+            if(!$set){
+                Config('app_debug')?$this->error(__($this->btAction->_error), ''):$this->error(__('The plug-in is not supported by the current host'), '');
+            }
+            $this->success(__('Success'));
+        }
+
+        if($this->request->post('ruleName')){
+            $ruleName = $this->request->post('ruleName');
+            if(!$ruleName){
+                $this->error(__('Can not be empty')); 
+            }
+            if(!in_array($ruleName,Cache::get('speed_rule_name_list'))){
+                $this->error(__('Rule error, please try again later'));
+            }
+            $set = $this->btPanel->SetSpeedRule($this->siteName,$ruleName);
+            if(!$set){
+                Config('app_debug')?$this->error(__($this->btPanel->_error), ''):$this->error(__('The plug-in is not supported by the current host'), '');
+            }
+            $this->success(__('Success'));
+        }
+        
+        $this->view->assign('status',$info['open']??0);
+        $this->view->assign('domainlist',$info['domainlist']??0);
+        $this->view->assign('cache_expire',$info['expire']??0);
+        $this->view->assign('request_num_day',$info['total'][2]??0);
+        $today_hit = $info['total'][3]<=0?0:round($info['total'][2]/$info['total'][3]*100,2);
+        $total_hit = $info['total'][1]<=0?0:round($info['total'][0]/$info['total'][1]*100,2);
+        $this->view->assign('today_hit',$today_hit);
+        $this->view->assign('total_hit',$total_hit);
+        $this->view->assign('total_hit',$total_hit);
+        $this->view->assign('rule',$info['rule']??'');
+
+        $this->view->assign('title',__('speedCache'));
+        return $this->view->fetch();
+    }
+
+    // 获取内置加速规则
+    public function speed_cache_list(){
+        Cache::remember('speed_rule_name_list',function(){
+            return ['Default','WordPress','Discuz','ZFAKA发卡系统','emlog博客系统','ShopXO开源商城','JTBC网站内容管理系统','PHP宝塔IDC分销系统','米拓企业建站系统','新起点网校','帝国CMS','优客365网址导航开源版','影视全搜索网站','HYBBS论坛','星辰短语|密语生成系统','杨小杰工具箱','tipask问答系统','DM企业建站系统','ecshop商城系统','DSMall多店铺B2B2C商城','sentcms网站管理系统','FastAdmin','WDJA网站内容管理系统','DSShop单店铺B2C商城','壹度同城新零售网站','SchoolCMS教务系统','phpcms','迅睿CMS免费开源建站程序','奇乐中介担保交易系统','jizhicms建站系统','蝉知企业门户系统','奇博cms','子枫后台CMS系统','z-BlogPHP','ICMS内容管理系统','奇乐自媒体新闻管理系统','DSCMS内容管理系统','phpok企业站系统','云课网校系统','网钛CMS新闻网站','OmoCms','易优建站系统','苹果cms','drupal','typecho博客系统','bwblog博客系统','PbootCMS企业建站','DESTOON B2B网站管理系统','DBShop商城系统','cmseasy企业建站','赞片CMS','织梦','OpenCart商城','飞飞影视导航','WHMCS','ZKEYS'];
+        });
+        $list = Cache::get('speed_rule_list')?Cache::get('speed_rule_list'):$this->btPanel->GetRuleList();
+        if(!$list){
+            Config('app_debug')?$this->error(__($this->btPanel->_error), ''):$this->error(__('The plug-in is not supported by the current host'), '');
+        }
+        Cache::set('speed_rule_list',$list,0);
+        return $list;
     }
 
     // 文件路径安全检查
