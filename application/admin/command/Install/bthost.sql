@@ -1055,4 +1055,4 @@ CREATE TABLE `bth_api_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='API日志表';
 
 -- 1.4.3+20210204
-INSERT INTO `bth_queue` (`id`, `function`, `createtime`, `updatetime`, `runtime`, `executetime`, `status`, `weigh`, `configgroup`) VALUES (null, 'updatecheck', '1612338301', '1612339415', '1612339412', '86400', 'normal', '7', '[{\"key\":\"ftmsg\",\"value\":\"0\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"0\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
+INSERT INTO `bth_queue` (`id`, `function`, `createtime`, `updatetime`, `runtime`, `executetime`, `status`, `weigh`, `configgroup`) VALUES (null, 'updatecheck', '1612338301', '1612339415', '1612339412', '86400', 'normal', '7', '[{\"key\":\"ftmsg\",\"value\":\"1\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"1\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
