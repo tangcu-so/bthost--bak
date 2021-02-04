@@ -21,6 +21,12 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
             table.bootstrapTable({
                 url: $.fn.bootstrapTable.defaults.extend.index_url,
                 sortName: 'weigh',
+                showToggle: false,
+                showColumns: false,
+                showExport: false,
+                commonSearch: false,
+                searchFormVisible: false,
+                search:false,
                 columns: [
                     [
                         {field: 'state', checkbox: true,},

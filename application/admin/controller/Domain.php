@@ -20,7 +20,8 @@ class Domain extends Backend
      */
     protected $model = null;
 
-    protected $searchFields = ['domain'];
+    protected $relationSearch = true;
+    protected $searchFields = ['id','domain','domainpools.name'];
 
     public function _initialize()
     {

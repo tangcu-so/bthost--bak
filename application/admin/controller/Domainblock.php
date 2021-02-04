@@ -14,7 +14,8 @@ class Domainblock extends Backend
      */
     protected $model = null;
 
-    protected $searchFields = ['domain'];
+    protected $relationSearch = true;
+    protected $searchFields = ['id','domain'];
 
     public function _initialize()
     {

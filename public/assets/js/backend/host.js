@@ -25,7 +25,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                 columns: [
                     [
                         {checkbox: true},
-                        // {field: 'id', title: __('Id')},
+                        {field: 'id', title: __('Id')},
                         {field: 'user.username', title: __('User_id'), operate: 'LIKE'},
                         {
                             field: 'sort_id',

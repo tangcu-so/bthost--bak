@@ -18,6 +18,11 @@ class Plans extends Backend
      */
     protected $model = null;
 
+    protected $relationSearch = true;
+
+    // 通用搜索
+    protected $searchFields = ['id','name'];
+
     public function _initialize()
     {
         parent::_initialize();

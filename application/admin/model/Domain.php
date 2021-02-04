@@ -63,7 +63,7 @@ class Domain extends Model
     }
 
     public function domainpools(){
-        return $this->belongsTo('Domainpools', 'domainpools_id', 'id', [], 'LEFT');
+        return $this->belongsTo('Domainpools', 'domainpools_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
 
 }

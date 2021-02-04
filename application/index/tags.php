@@ -15,4 +15,8 @@ return [
     'app_end'      => [
         'app\\index\\behavior\\HostLog',
     ],
+    // 域名审核通知
+    'action_domain_check_msg'=>[
+        'app\\index\behavior\\DomainCheckTz',
+    ]
 ];

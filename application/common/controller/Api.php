@@ -55,6 +55,12 @@ class Api
     protected $noNeedRight = [];
 
     /**
+     * 跳过签名验证/跨域检测
+     * @var array
+     */
+    protected $noTokenCheck = [];
+
+    /**
      * 权限Auth
      * @var Auth
      */

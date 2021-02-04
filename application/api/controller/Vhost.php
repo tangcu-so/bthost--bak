@@ -20,7 +20,7 @@ class Vhost extends Api
 
     protected $noNeedLogin = '*';
     protected $noNeedRight = '*';
-    // 跳过签名验证的方法
+    // 跳过签名验证/跨域检测
     protected $noTokenCheck = ['host_login'];
 
     public function _initialize()

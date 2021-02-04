@@ -24,7 +24,8 @@ class Host extends Backend
      */
     protected $model = null;
 
-    protected $searchFields = ['bt_name'];
+    protected $relationSearch = true;
+    protected $searchFields = ['id','bt_name','user.username'];
 
     public function _initialize()
     {

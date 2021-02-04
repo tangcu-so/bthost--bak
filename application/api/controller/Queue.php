@@ -10,6 +10,7 @@ use app\common\library\Message;
 use Exception;
 use think\Config;
 use think\Debug;
+use fast\Http;
 
 /**
  * 计划任务监控接口
@@ -101,6 +102,10 @@ class Queue extends Api
                             $s                          = $this->hostClear();
                             $s ? $n[$value['function']] = $s : '';
                             break;
+                        case 'updatecheck':
+                            $s                          = $this->updateCheck();
+                            $s ? $n[$value['function']] = $s : '';
+                            break;
                         default:
                             $n[$value['function']] = 'null';
                             break;
@@ -124,6 +129,47 @@ class Queue extends Api
         $this->success('执行完成', $n);
     }
 
+    // 检查更新
+    public function updateCheck(){
+        $url = Config::get('bty.api_url') . '/bthost_update_check.html';
+        $bt = new Btaction();
+        $ip = $bt->getIp();
+        $data = [
+            'obj' => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'is_beta' => Config::get('bty.is_beta'),
+            'domain' => $ip,
+            'rsa' => 1,
+        ];
+        $curl = http::post($url, $data);
+        $result = json_decode($curl,1);
+        // var_dump($result);exit;
+        if($result  && isset($result ['code']) && $result ['code']==1 && isset($result ['data']) && $result ['data']){
+            $title = '[btHost检测到新版本]';
+            $content = '';
+            $content.= '当前版本：'.$result ['data']['version'];
+            $content.= "\n\n更新版本：".$result ['data']['newversion'];
+            if(isset($result ['data']['upgradetext'])){
+                $upgradetext = str_replace("\n","\n\n",$result ['data']['upgradetext']);
+            }
+            $content.= "\n\n更新内容：\n\n".$upgradetext;
+            $content.= "\n\nTime：".date('Y-m-d H:i:s',time());
+            // 方糖通知
+            if (Config::get('site.ftqq_sckey') && $this->ftmsg) {
+                $this->ft_msg($title,$content);
+            }
+            // 邮件通知
+            if (Config::get('site.email') && $this->email) {
+                $content = str_replace("\n\n","<br>",$content);
+                $content.='<style>.label{display: inline;padding: .2em .6em .3em;font-size: 75%;font-weight: bold;line-height: 1;color: #fff;text-align: center;white-space: nowrap;vertical-align: baseline;border-radius: .25em;}.label-success{background-color: #18bc9c;}.label-warning{background-color: #f39c12;}.label-info{background-color: #3498db;}</style>';
+                $this->email_msg($title,$content);
+            }
+            return $this->is_index ? [] : $this->success('发现更新！', []);
+        }else{
+            return $this->is_index ? '' : $this->success('当前程序没有发布更新');
+        }
+    }
+
     /**
      * 邮件队列
      *
@@ -141,6 +187,7 @@ class Queue extends Api
         $successNum = [];
         $errorNum   = [];
 
+        // 邮件队列暂不开通
         return $this->is_index ? '' : $this->success('无有效任务');
 
         $list = model('Email')->where(['status' => '0'])->limit($this->limit)->select();
@@ -375,6 +422,10 @@ class Queue extends Api
         }
     }
 
+    private function msg_queuq($successNum, $errorNum, $type){
+
+    }
+
     // 站长通知
     private function message($successNum, $errorNum, $type)
     {
@@ -395,28 +446,39 @@ class Queue extends Api
         $content = "执行结果清单如下：<br>\n\n成功:" . arr_to_str($successNum) . "<br>\n\n失败:" . arr_to_str($errorNum) . "<br>\n\nTime:" . date("Y-m-d H:i:s", time());
         // 邮件通知
         if (Config::get('site.email') && $this->email) {
-            $email = new Email();
-            $email->to(Config::get('site.email'))
-                ->subject($title)
-                ->message($content);
-            $message = new Message($email);
-            $result = $message->send();
-            if (!$result) {
-                $this->queuelog(['message' => $message->getError()]);
-            }
+            $this->email_msg($title,$content);
         }
         // 方糖通知
         if (Config::get('site.ftqq_sckey') && $this->ftmsg) {
-            $ft = new Ftmsg(Config::get('site.ftqq_sckey'));
-            $ft->setTitle($title);
-            $ft->setMessage($content);
-            $ft->sslVerify();
-            $message = new Message($ft);
-            $result = $message->send();
-            if (!$result) {
-                $this->queuelog(['message' => $message->getError()]);
-            }
+            $this->ft_msg($title,$content);
         }
+    }
+
+    private function email_msg($title,$content){
+        $email = new Email();
+        $email->to(Config::get('site.email'))
+            ->subject($title)
+            ->message($content);
+        $message = new Message($email);
+        $result = $message->send();
+        if (!$result) {
+            $this->queuelog(['message' => $message->getError()]);
+        }
+        return true;
+    }
+
+    private function ft_msg($title,$content){
+        
+        $ft = new Ftmsg(Config::get('site.ftqq_sckey'));
+        $ft->setTitle($title);
+        $ft->setMessage($content);
+        $ft->sslVerify();
+        $message = new Message($ft);
+        $result = $message->send();
+        if (!$result) {
+            $this->queuelog(['message' => $message->getError()]);
+        }
+        return true;
     }
 
     /**
