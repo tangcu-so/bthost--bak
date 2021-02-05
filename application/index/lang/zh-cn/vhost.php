@@ -100,7 +100,7 @@ return [
     'Sql console' => '数据库管理',
     'Sql server' => '数据库地址',
     'Sql port' => '数据库端口',
-    'Sql database' => '数据库表名',
+    'Sql database' => '数据库名',
     'Sql username' => '数据库用户名',
     'Sql password' => '数据库密码',
     'Sql backup' => '数据库备份',
