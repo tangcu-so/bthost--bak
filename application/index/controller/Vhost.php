@@ -215,6 +215,18 @@ class Vhost extends Frontend
         $site_getround = $this->hostInfo->site_max != 0 ? getround($this->hostInfo->site_max, $this->hostInfo->site_size) : 0;
         $sql_getround = $this->hostInfo->sql_max != 0 ? getround($this->hostInfo->sql_max, $this->hostInfo->sql_size) : 0;
         $flow_getround = $this->hostInfo->flow_max != 0 ? getround($this->hostInfo->flow_max, $this->hostInfo->flow_size) : 0;
+
+        // 转换可用资源单位
+        $site_max = $this->hostInfo->site_max != 0 ? format_megabyte($this->hostInfo->site_max) : __('∞');
+        $sql_max = $this->hostInfo->sql_max != 0 ? format_megabyte($this->hostInfo->sql_max) : __('∞');
+        $flow_max = $this->hostInfo->flow_max != 0 ? format_megabyte($this->hostInfo->flow_max) : __('∞');
+
+        // 转换已用资源单位
+        $site_size = format_megabyte($this->hostInfo->site_size);
+        $sql_size = format_megabyte($this->hostInfo->sql_size);
+        $flow_size = format_megabyte($this->hostInfo->flow_size);
+
+
         // 数据库管理地址
         $this->assign('phpmyadmin', Config('site.phpmyadmin'));
 
@@ -227,6 +239,12 @@ class Vhost extends Frontend
         $this->view->assign('sql_getround', $sql_getround);
         $this->view->assign('flow_getround', $flow_getround);
         $this->view->assign('phpversion_list', $phpversion_list);
+        $this->view->assign('site_max', $site_max);
+        $this->view->assign('sql_max', $sql_max);
+        $this->view->assign('flow_max', $flow_max);
+        $this->view->assign('site_size', $site_size);
+        $this->view->assign('sql_size', $sql_size);
+        $this->view->assign('flow_size', $flow_size);
         return $this->view->fetch();
     }
 
