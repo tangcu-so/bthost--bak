@@ -1251,10 +1251,7 @@ class Vhost extends Frontend
         }
         // 上传文件
         if ($type == 'uploadfile') {
-            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
-            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
-                $this->error(__('Site size exceeded, resources stopped'));
-            }
+            $this->siteSizeCheck();
 
             $path = input('get.path') == '/' ? '' : input('get.path');
 
@@ -1984,16 +1981,7 @@ class Vhost extends Frontend
         // 新版分片上传
         if ($files = request()->file('blob')) {
             header("Content-type: text/html; charset=utf-8");
-            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
-            $this->hostInfo->allowField(true)->save([
-                'site_size' => $websize,
-            ]);
-            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
-                $this->hostInfo->allowField(true)->save([
-                    'status' => 'excess',
-                ]);
-                $this->error(__('Site size exceeded, resources stopped'));
-            }
+            $this->siteSizeCheck();
             $path     = input('get.path') ? preg_replace($this->path_reg, '', input('get.path') . '') : '/';
             $filePath = ROOT_PATH . 'logs' . DS . 'uploads';
 
@@ -2298,16 +2286,9 @@ class Vhost extends Frontend
             if (!$this->path_root_check($WebGetKey . $path, $WebGetKey)) {
                 $this->error(__('Illegal operation'));
             }
-            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
-            $this->hostInfo->allowField(true)->save([
-                'site_size' => $websize,
-            ]);
-            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
-                $this->hostInfo->allowField(true)->save([
-                    'status' => 'excess',
-                ]);
-                $this->error(__('Site size exceeded, resources stopped'));
-            }
+
+            $this->siteSizeCheck();
+            
             $down = $this->btPanel->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
             if ($down && isset($down['status']) && $down['status'] == 'true') {
                 $this->success($down['msg']);
@@ -3847,9 +3828,9 @@ class Vhost extends Frontend
     }
 
     // 资源检查并记录
-    private function check()
+    private function check($refresh = '')
     {
-        if (Cookie('vhost_check_' . $this->vhost_id) < time()) {
+        if (Cookie('vhost_check_' . $this->vhost_id) < time() && !$refresh) {
             $list = $this->btAction->getResourceSize();
             $msg = $excess = '';
             if ($this->hostInfo->flow_max != 0 && $list['total_size'] > $this->hostInfo->flow_max) {
@@ -3915,5 +3896,24 @@ class Vhost extends Frontend
                 break;
         }
         return true;
+    }
+
+    // 站点空间检查并记录
+    private function siteSizeCheck(){
+        $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
+        // 更新使用量
+        $this->hostInfo->allowField(true)->save([
+            'site_size' => $websize,
+        ]);
+        // 记录站点资源日志入库
+        \app\common\model\ResourcesLog::create([
+            'host_id' => $this->hostInfo->id,
+            'site_size' => $websize,
+            'flow_size' => $this->hostInfo->flow_size,
+            'sql_size' => $this->hostInfo->sql_size,
+        ]);
+        if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
+            $this->error(__('Site size exceeded, resources stopped'));
+        }
     }
 }
