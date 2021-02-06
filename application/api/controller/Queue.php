@@ -131,6 +131,17 @@ class Queue extends Api
 
     // 检查更新
     public function updateCheck(){
+        $total = [
+            'user'=>model('User')->count(),
+            'host'=>model('Host')->count(),
+            'sql'=>model('Sql')->count(),
+            'ftp'=>model('Ftp')->count(),
+            'domain'=>model('Domain')->count(),
+            'hostlog'=>model('HostLog')->count(),
+            'apilog'=>model('ApiLog')->count(),
+            'domainlist'=>model('Domainlist')->count(),
+            'hostresetlog'=>model('HostresetLog')->count(),
+        ];
         $url = Config::get('bty.api_url') . '/bthost_update_check.html';
         $bt = new Btaction();
         $ip = $bt->getIp();
@@ -140,10 +151,10 @@ class Queue extends Api
             'is_beta' => Config::get('bty.is_beta'),
             'domain' => $ip,
             'rsa' => 1,
+            'total'=>base64_encode(json_encode($total)),
         ];
         $curl = http::post($url, $data);
         $result = json_decode($curl,1);
-        // var_dump($result);exit;
         if($result  && isset($result ['code']) && $result ['code']==1 && isset($result ['data']) && $result ['data']){
             $title = '[btHost检测到新版本]';
             $content = '';
