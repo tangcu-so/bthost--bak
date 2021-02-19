@@ -106,7 +106,7 @@ CREATE TABLE `bth_auth_group` (
 -- Records of bth_auth_group
 -- ----------------------------
 INSERT INTO `bth_auth_group` VALUES ('1', '0', 'Admin group', '*', '1490883540', '149088354', 'normal');
-INSERT INTO `bth_auth_group` VALUES ('2', '1', '二级管理组', '1,2,4,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,40,41,42,43,44,45,46,47,48,49,50,55,56,57,58,59,60,63,64,65,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,196,197,198,199,200,201,202,203,204,205,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,5', '1490883540', '1600061668', 'normal');
+INSERT INTO `bth_auth_group` VALUES ('2', '1', '二级管理组', '1,2,4,6,7,8,9,10,11,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,40,41,42,43,44,45,46,47,48,49,50,55,56,57,58,59,60,63,64,65,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,196,197,198,199,200,201,202,203,204,205,216,217,218,219,220,221,222,223,224,225,226,227,228,229,230,231,232,233,234,235,236,237,238,239,240,241,242,243,244,245,246,247,248,249,250,251,252,253,254,255,275,276,277,278,279,280,281,282,283,284,285,286,287,288,289,290,291,292,293,294,295,296,297,298,299,300,301,302,303,304,305,306,307,308,309,310,311,312,313,314,5,315,316,317,318', '1490883540', '1600061668', 'normal');
 INSERT INTO `bth_auth_group` VALUES ('3', '2', 'Third group', '1,4,9,10,11,13,14,15,16,17,40,41,42,43,44,45,46,47,48,49,50,55,56,57,58,59,60,63,64,65,5', '1490883540', '1600061668', 'normal');
 INSERT INTO `bth_auth_group` VALUES ('4', '1', 'Second group 2', '1,4,13,14,15,16,17,55,56,57,58,59,60,61,62,63,64,65', '1490883540', '1502205350', 'normal');
 INSERT INTO `bth_auth_group` VALUES ('5', '2', 'Third group 2', '1,2,6,7,8,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34', '1490883540', '1600061668', 'normal');
@@ -776,7 +776,7 @@ CREATE TABLE `bth_user_group` (
 -- ----------------------------
 -- Records of bth_user_group
 -- ----------------------------
-INSERT INTO `bth_user_group` VALUES ('1', '默认组', '13,87,86,84,85,81,83,82,80,79,77,75,76,72,74,73,71,67,70,69,68,66,64,65,62,63,59,61,60,58,55,57,56,48,78,54,53,52,51,50,49,41,38,47,46,45,44,43,40,39,37,36,33,35,34,30,32,31,27,29,28,25,26,22,24,23,18,21,20,19,15,17,16,14,2,4,11,10,9,12,1,3,7,6,5,8', '1515386468', '1598353118', 'normal');
+INSERT INTO `bth_user_group` VALUES ('1', '默认组', '13,90,89,88,87,86,84,85,81,83,82,80,79,77,75,76,72,74,73,71,67,70,69,68,66,64,65,62,63,59,61,60,58,55,57,56,48,78,54,53,52,51,50,49,41,38,47,46,45,44,43,40,39,37,36,33,35,34,30,32,31,27,29,28,25,26,22,24,23,18,21,20,19,15,17,16,14,2,4,11,10,9,12,1,3,7,6,5,8', '1515386468', '1598353118', 'normal');
 
 -- ----------------------------
 -- Table structure for bth_user_rule
@@ -917,7 +917,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`) VALUES (null, 'http', 'server', 'http', '', 'select', 'http://', '{\"http:\\/\\/\":\"http:\\/\\/\",\"https:\\/\\/\":\"https:\\/\\/\"}', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}');
 
 -- 1.1.0+20201020
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '2', 'general/upgrade/index', '在线更新', 'fa fa-cloud-upload', '', '', '1', '1602665512', '1602665872', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('315', 'file', '2', 'general/upgrade/index', '在线更新', 'fa fa-cloud-upload', '', '', '1', '1602665512', '1602665872', '0', 'normal');
 ALTER TABLE `bth_user` ADD COLUMN `email`  varchar(100) NOT NULL COMMENT '电子邮箱' AFTER `password`;
 
 -- 1.1.1+20201024
@@ -934,7 +934,7 @@ ADD COLUMN `sub_bind`  enum('0','1') NOT NULL DEFAULT '1' COMMENT '绑定子目�
 INSERT INTO `bth_product` (`id`, `pid`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`) VALUES (null, '1', 'sub_bind', 'btpanel', '子目录绑定', '是否允许绑定域名到子目录', 'radio', '1', '{\"1\":\"允许\",\"0\":\"不允许\"}', NULL, NULL);
 
 -- 1.3.0+20210107
-INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/hostreset', '站点重置', '站点重置', '1', '1609135243', '1609135406', '88', 'normal');
+INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('88', '13', 'index/vhost/hostreset', '站点重置', '站点重置', '1', '1609135243', '1609135406', '88', 'normal');
 
 DROP TABLE IF EXISTS `bth_hostreset_log`;
 CREATE TABLE `bth_hostreset_log` (
@@ -1002,10 +1002,10 @@ CREATE TABLE `bth_domain_beian` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='未备案域名绑定';
 
 
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', 'Domainbeian tips', '1', '1610513397', '1610513397', '0', 'normal');
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', 'Domainblock tips', '1', '1610700743', '1610700743', '0', 'normal');
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '275', 'user/hostlog', '操作日志', 'fa fa-list-alt', '', 'Hostlog tips', '1', '1610888550', '1610888550', '0', 'normal');
-INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, 'file', '2', 'general/apilog', 'API日志', 'fa fa-list-alt', '', 'Apilog tips', '1', '1611813879', '1611813879', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('316', 'file', '216', 'domainbeian', '备案审查', 'fa fa-circle-o', '', 'Domainbeian tips', '1', '1610513397', '1610513397', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('317', 'file', '216', 'domainblock', '域名过滤', 'fa fa-circle-o', '', 'Domainblock tips', '1', '1610700743', '1610700743', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('318', 'file', '275', 'user/hostlog', '操作日志', 'fa fa-list-alt', '', 'Hostlog tips', '1', '1610888550', '1610888550', '0', 'normal');
+INSERT INTO `bth_auth_rule` (`id`, `type`, `pid`, `name`, `title`, `icon`, `condition`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('319', 'file', '2', 'general/apilog', 'API日志', 'fa fa-list-alt', '', 'Apilog tips', '1', '1611813879', '1611813879', '0', 'normal');
 UPDATE `bth_auth_rule` SET `title`='文件更新' WHERE (`name`='general/upgrade/index') LIMIT 1;
 
 DROP TABLE IF EXISTS `bth_host_log`;
@@ -1057,5 +1057,5 @@ CREATE TABLE `bth_api_log` (
 -- 1.4.3+20210204
 INSERT INTO `bth_queue` (`id`, `function`, `createtime`, `updatetime`, `runtime`, `executetime`, `status`, `weigh`, `configgroup`) VALUES (null, 'updatecheck', '1612338301', '1612339415', '1612339412', '86400', 'normal', '7', '[{\"key\":\"ftmsg\",\"value\":\"1\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"1\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
 
-INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/speed_cache', '缓存加速', '', '1', '1612427864', '1612427864', '89', 'normal');
-INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/speed_cache_list', '缓存规则列表', '', '0', '1612441579', '1612441703', '90', 'normal');
+INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('89', '13', 'index/vhost/speed_cache', '缓存加速', '', '1', '1612427864', '1612427864', '89', 'normal');
+INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES ('90', '13', 'index/vhost/speed_cache_list', '缓存规则列表', '', '0', '1612441579', '1612441703', '90', 'normal');
