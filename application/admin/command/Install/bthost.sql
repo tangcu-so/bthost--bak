@@ -840,7 +840,7 @@ INSERT INTO `bth_user_rule` VALUES ('49', '48', 'index/vhost/tohttps', '强制HT
 INSERT INTO `bth_user_rule` VALUES ('50', '48', 'index/vhost/sslset', 'SSL配置', '', '0', '1598327685', '1598327685', '50', 'normal');
 INSERT INTO `bth_user_rule` VALUES ('51', '48', 'index/vhost/ssloff', 'SSL关闭', '', '0', '1598327697', '1598327697', '51', 'normal');
 INSERT INTO `bth_user_rule` VALUES ('52', '48', 'index/vhost/sslapply', '宝塔SSL', '', '0', '1598327726', '1598327726', '52', 'normal');
-INSERT INTO `bth_user_rule` VALUES ('53', '48', 'index/vhost/sslapplylets', 'Let\'s Encrypt', '', '0', '1598327747', '1598327747', '53', 'normal');
+INSERT INTO `bth_user_rule` VALUES ('53', '48', 'index/vhost/sslapplylets', "Let's Encrypt", '', '0', '1598327747', '1598327747', '53', 'normal');
 INSERT INTO `bth_user_rule` VALUES ('54', '48', 'index/vhost/sslrenewlets', '证书续签', '', '0', '1598327758', '1598327758', '54', 'normal');
 INSERT INTO `bth_user_rule` VALUES ('55', '13', 'index/vhost/protection', '防盗链', '', '1', '1598327770', '1598327770', '55', 'normal');
 INSERT INTO `bth_user_rule` VALUES ('56', '55', 'index/vhost/protectionset', '设置防盗链', '', '0', '1598327782', '1598327782', '56', 'normal');
