@@ -433,10 +433,6 @@ class Queue extends Api
         }
     }
 
-    private function msg_queuq($successNum, $errorNum, $type){
-
-    }
-
     // 站长通知
     private function message($successNum, $errorNum, $type)
     {
