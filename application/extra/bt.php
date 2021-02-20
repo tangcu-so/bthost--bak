@@ -34,8 +34,10 @@ return [
     'getData'                    => '/data?action=getData', //查询数据库数据
     'GetDirSize'                 => '/files?action=GetDirSize', // 面板日志大小
     'AddCrontab'                 => '/crontab?action=AddCrontab', // 添加计划任务
+    'DelCrontab'                 => '/crontab?action=DelCrontab', // 删除计划任务
     'GetCrontab'                 => '/crontab?action=GetCrontab', // 计划任务列表
     'GetLogs'                    => '/crontab?action=GetLogs',// 获取计划任务执行日志
+    'DelLogs'                    => '/crontab?action=DelLogs',// 删除计划任务执行日志
     'CheckInstalled'             => '/ajax?action=CheckInstalled', //检查是否完成程序初始化['nginx','apache','php','pure-ftpd','mysql']
 
     # 网站管理相关接口

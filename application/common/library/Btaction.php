@@ -52,7 +52,7 @@ class Btaction
         // TODO 正式环境下切换到自动获取服务器操作系统类型
         $this->os = 'linux';
         // $this->os = $os ? $os : getOs();
-        
+
     }
 
     // 测试入口
@@ -832,7 +832,7 @@ class Btaction
      */
     public function getFtpInfo($k = '')
     {
-        if(!$this->ftp_name){
+        if (!$this->ftp_name) {
             return false;
         }
         $ftp = $this->btPanel->WebFtpList($this->ftp_name);
@@ -855,7 +855,7 @@ class Btaction
      */
     public function getSqlInfo($k = '')
     {
-        if(!$this->sql_name){
+        if (!$this->sql_name) {
             return false;
         }
         $sql = $this->btPanel->WebSqlList($this->sql_name);
@@ -1568,9 +1568,10 @@ class Btaction
      * 获取指定名称队列任务
      *
      * @param [type] $name      任务名称
+     * @param [type] $id        任务ID
      * @return void
      */
-    public function get_cron($name)
+    public function get_cron($name = '', $id = '')
     {
         $list = $this->btPanel->GetCrontab();
         if (!$list) {
@@ -1578,7 +1579,13 @@ class Btaction
             return false;
         }
         foreach ($list as $key => $value) {
-            if (isset($value['name']) && $value['name'] == $name) {
+            if ($id && $name) {
+                if ((isset($value['name']) && $value['name'] == $name) && (isset($value['id']) && $value['id'] == $id)) {
+                    return $value;
+                }
+            } else if ($name && (isset($value['name']) && $value['name'] == $name)) {
+                return $value;
+            } else if ($id && (isset($value['id']) && $value['id'] == $id)) {
                 return $value;
             }
         }
@@ -1590,7 +1597,8 @@ class Btaction
      *
      * @return array|bool
      */
-    public function get_speed_site_list(){
+    public function get_speed_site_list()
+    {
         $list = $this->btPanel->SiteSpeed();
         if (!$list) {
             $this->_error = $this->btPanel->_error;
@@ -1606,9 +1614,10 @@ class Btaction
      * @param [type] $bt_name   站点名
      * @return array|bool
      */
-    public function get_speed_site($bt_name){
+    public function get_speed_site($bt_name)
+    {
         $info = $this->btPanel->GetSiteSpeed($bt_name);
-        if(!$info){
+        if (!$info) {
             $this->_error = $this->btPanel->_error;
             return false;
         }
@@ -1621,12 +1630,13 @@ class Btaction
      * @param [type] $bt_name   站点名
      * @return void
      */
-    public function get_speed_site_status($bt_name){
+    public function get_speed_site_status($bt_name)
+    {
         $get = $this->get_speed_site($bt_name);
-        if(!$get){
+        if (!$get) {
             return false;
         }
-        return $get['open']??0;
+        return $get['open'] ?? 0;
     }
 
     /**
@@ -1635,9 +1645,10 @@ class Btaction
      * @param [type] $bt_name   站点名
      * @return void
      */
-    public function set_speed_site_status($bt_name){
+    public function set_speed_site_status($bt_name)
+    {
         $set = $this->btPanel->SiteSpeedStatus($bt_name);
-        if(!$set){
+        if (!$set) {
             $this->_error = $this->btPanel->_error;
             return false;
         }
