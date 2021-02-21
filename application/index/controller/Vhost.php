@@ -502,6 +502,12 @@ class Vhost extends Frontend
                 continue;
             }
 
+            // 禁止绑定端口
+            if(strpos($value,":")){
+                $errorArr[] = __('%s domain format is incorrect, please adjust and resubmit', $value);
+                continue;
+            }
+
             // 拆分数组法匹配
             // $isnotall = explode('.',$value);
             // var_dump($isnotall);
