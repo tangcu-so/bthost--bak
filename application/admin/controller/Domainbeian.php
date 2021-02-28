@@ -17,7 +17,7 @@ class Domainbeian extends Backend
     protected $model = null;
 
     protected $relationSearch = true;
-    protected $searchFields = ['id','domain','vhost.bt_name'];
+    protected $searchFields = ['id', 'domain', 'vhost.bt_name'];
 
     public function _initialize()
     {
@@ -101,6 +101,7 @@ class Domainbeian extends Backend
         $hostInfo = [
             'domains' => 'default.notbeian.com',
             'phpver' => '00',
+            'ps' => '备案中转站，请勿删除'
         ];
         $hostSetInfo = $bt->setInfo([], $hostInfo);
         $createHost = $bt->btBuild($hostSetInfo);

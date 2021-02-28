@@ -423,6 +423,7 @@ class Btaction
         $site_max = isset($plans['site_max']) && $plans['site_max'] ? $plans['site_max'] : '无限制';
         $sql_max = isset($plans['sql_max']) && $plans['sql_max'] ? $plans['sql_max'] : '无限制';
         $flow_max = isset($plans['flow_max']) && $plans['flow_max'] ? $plans['flow_max'] : '无限制';
+        $ps = isset($plans['ps']) && $plans['ps'] ? $plans['ps'] : 'Site:' . $site_max . ' Sql:' . $sql_max . ' Flow:' . $flow_max;
 
         $rand_password = Random::alnum(12);
 
@@ -434,7 +435,7 @@ class Btaction
             'type'         => 'PHP',
             'version'      => $phpversion ? $phpversion : '00',
             'port'         => isset($plans['port']) ? $plans['port'] : '80',
-            'ps'           => 'Site:' . $site_max . ' Sql:' . $sql_max . ' Flow:' . $flow_max,
+            'ps'           => $ps,
             'ftp'          => isset($plans['ftp']) && $plans['ftp'] ? 'true' : 'false',
             'ftp_username' => $set_domain,
             'ftp_password' => $rand_password,
