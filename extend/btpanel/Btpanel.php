@@ -211,15 +211,31 @@ class Btpanel
     // 设置面板自动更新
     public function AutoUpdatePanel()
     {
-        $url = $this->BT_PANEL . config("bt.UpdatePanel");
+        $url = $this->BT_PANEL . config("bt.AutoUpdatePanel");
 
         $p_data             = [];
 
         $result = $this->HttpPostCookie($url, $p_data);
 
         $data = json_decode($result, true);
-        return $data;
+        if(isset($data['status'])&&$data['status']==true){
+            return true;
+        }elseif(isset($data['msg'])){
+            $this->_error = $data['msg'];
+            return false;
+        }else{
+            return false;
+        }
     }
+
+    // 关闭面板自动更新
+    public function AutoUpdatePanelOff(){
+        // 删除路径文件
+        $file = '/www/server/panel/data/autoUpdate.pl';
+        $deleteFile = $this->DeleteFile($file);
+        return true;
+    }
+    
 
     /**
      * 检查专业版

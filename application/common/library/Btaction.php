@@ -1668,6 +1668,16 @@ class Btaction
         return false;
     }
 
+    // 检查文件是否存在
+    public function panel_file_exist($file){
+        $get = $this->btPanel->getFileLog($file);
+        if(isset($get['status'])&&$get['status']==true){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
     /**
      * 获取服务器连接时间
      *

@@ -381,6 +381,14 @@
                                             <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}</td>
                                         {/if}
                                     </tr>
+                                    <tr>
+                                        <td>{:__('宝塔面板自动更新')}</td>
+                                        {if $validate_auto_bt_update}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_off">关闭</a></td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_on">开启</a></td>
+                                        {/if}
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

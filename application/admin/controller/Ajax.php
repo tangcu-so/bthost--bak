@@ -651,4 +651,16 @@ class Ajax extends Backend
             return false;
         }
     }
+
+    // 设置面板自动更新状态
+    public function setAutoUpdate(){
+        $bt = new Btaction();
+        
+        if($this->request->post('is')=='on'){
+            $set = $bt->btPanel->AutoUpdatePanel();
+        }else{
+            $set = $bt->btPanel->AutoUpdatePanelOff();
+        }
+        $this->success(__('Success'));
+    }
 }

@@ -308,7 +308,20 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                             }, function(data, ret){
                         });
                         break;
-                
+                    case 'bt_update_on':
+                        Fast.api.ajax({
+                            url: "ajax/setAutoUpdate",
+                            data:{is:'on'},
+                            }, function(data, ret){
+                        });
+                        break;
+                    case 'bt_update_off':
+                        Fast.api.ajax({
+                            url: "ajax/setAutoUpdate",
+                            data:{is:'off'},
+                            }, function(data, ret){
+                        });
+                        break;
                     default:
                         break;
                 }
