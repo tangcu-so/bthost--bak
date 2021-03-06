@@ -229,9 +229,8 @@ class Btpanel
     }
 
     // 关闭面板自动更新
-    public function AutoUpdatePanelOff(){
+    public function AutoUpdatePanelOff($file){
         // 删除路径文件
-        $file = '/www/server/panel/data/autoUpdate.pl';
         $deleteFile = $this->DeleteFile($file);
         return true;
     }

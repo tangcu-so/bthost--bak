@@ -659,7 +659,13 @@ class Ajax extends Backend
         if($this->request->post('is')=='on'){
             $set = $bt->btPanel->AutoUpdatePanel();
         }else{
-            $set = $bt->btPanel->AutoUpdatePanelOff();
+            if($bt->os=='windows'){
+                // TODO windows文件路径待验证
+                $file = 'C:/BtSoft/panel/data/autoUpdate.pl';
+            }else{
+                $file = '/www/server/panel/data/autoUpdate.pl';
+            }
+            $set = $bt->btPanel->AutoUpdatePanelOff($file);
         }
         $this->success(__('Success'));
     }
