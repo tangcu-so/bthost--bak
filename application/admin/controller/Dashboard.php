@@ -253,10 +253,12 @@ class Dashboard extends Backend
 
         $paidVer = $btpanel->paidVer();
 
+        // 公网IP
         $this->view->assign("IP", $btpanel->getIp());
         $this->view->assign("GetDiskInfo", $GetDiskInfo);
         $this->view->assign("GetSystemTotal", $GetSystemTotal);
 
+        // 系统os
         $this->view->assign("isWindows", $isWindows);
 
         $this->view->assign("hostCount", isset($hostCount['data']) ? count($hostCount['data']) : '0');
@@ -273,8 +275,13 @@ class Dashboard extends Backend
         $validate_queuekey = empty(Config::get('site.queue_key')) ? 0 : 1;
         $validate_auto_update = empty(Config::get('site.auto_update')) ? 0 : 1;
         $validate_auto_notice = empty(Config::get('site.auto_notice')) ? 0 : 1;
+        // 检查是否开启面板自动更新
         $file = '/www/server/panel/data/autoUpdate.pl';
         $validate_auto_bt_update = $btpanel->panel_file_exist($file);
+        // 获取回收站主机数量
+        $RecyclebinCount = model('Host')::onlyTrashed()->count();
+        // 获取超量主机数量
+        $ExcesshostCount = model('Host')->where('status','excess')->count();
 
         // 面板操作日志
         $logsList = $btpanel->panelLogs();
@@ -319,6 +326,8 @@ class Dashboard extends Backend
             'validate_auto_bt_update' => $validate_auto_bt_update ?? 0,
             'paidVer' => $paidVer,
             'validate_btpanel_error' => $validate_btpanel_error,
+            'ExcesshostCount'=>$ExcesshostCount,
+            'RecyclebinCount'=>$RecyclebinCount,
         ]);
 
         return $this->view->fetch();

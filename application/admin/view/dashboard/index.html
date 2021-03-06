@@ -1,4 +1,7 @@
 <link rel="stylesheet" href="__CDN____STATIC__/css/admin_dashboard.css?v={$Think.config.site.version}">
+<style>
+    .tatolinfo .value{text-align: center;}
+</style>
 <div class="panel panel-default panel-intro">
     <div class="panel-heading">
         {:build_heading(null, false)}
@@ -226,8 +229,8 @@
                 <div class="col-lg-4">
                     <div class="card sameheight-item stats">
                         <div class="card-block">
-                            <div class="row row-sm stats-container">
-                                <div class="col-xs-6 stat-col">
+                            <div class="row row-sm stats-container tatolinfo">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-users"></i></div>
                                     <div class="stat">
                                         <div class="value"> <a href="{:url('/user/user')}" class="btn-addtabs"
@@ -238,7 +241,7 @@
                                         <div class="progress-bar progress-bar-success" style="width: 30%"></div>
                                     </div>
                                 </div>
-                                <div class="col-xs-6 stat-col">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-globe"></i></div>
                                     <div class="stat">
                                         <div class="value"> <a href="{:url('/domainlist')}" class="btn-addtabs"
@@ -250,7 +253,7 @@
                                         <div class="progress-bar progress-bar-warning" style="width: 30%"></div>
                                     </div>
                                 </div>
-                                <div class="col-xs-6 stat-col">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
                                     <div class="stat">
                                         <div class="value"><a href="{:url('/host')}" class="btn-addtabs"
@@ -261,12 +264,34 @@
                                         <div class="progress-bar progress-bar-success" style="width: 30%"></div>
                                     </div>
                                 </div>
-                                <div class="col-xs-6 stat-col">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
                                     <div class="stat">
                                         <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
                                                 title="{:__('Total endtime')}"> {$endCount}</a></div>
                                         <div class="name"> {:__('Total endtime')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
+                                                title="{:__('Excess host count')}"> {$ExcesshostCount}</a></div>
+                                        <div class="name"> {:__('Excess host count')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
+                                                title="{:__('Recyclebin count')}"> {$RecyclebinCount}</a></div>
+                                        <div class="name"> {:__('Recyclebin count')}</div>
                                     </div>
                                     <div class="progress">
                                         <div class="progress-bar progress-bar-success" style="width: 30%"></div>
