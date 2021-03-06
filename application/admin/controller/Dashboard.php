@@ -253,6 +253,7 @@ class Dashboard extends Backend
 
         $paidVer = $btpanel->paidVer();
 
+        $this->view->assign("IP", $btpanel->getIp());
         $this->view->assign("GetDiskInfo", $GetDiskInfo);
         $this->view->assign("GetSystemTotal", $GetSystemTotal);
 

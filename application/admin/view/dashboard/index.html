@@ -12,7 +12,7 @@
         <div id="myTabContent" class="tab-content">
             <div class="tab-pane fade active in" id="one">
                 <div class="row">
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-blue">
                             <div class="panel-body">
                                 <div class="panel-title">
@@ -26,7 +26,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-teal-gradient">
                             <div class="panel-body">
                                 <div class="panel-title">
@@ -40,12 +40,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-purple-gradient">
                             <div class="panel-body">
                                 <div class="panel-title">
                                     <span class="label label-success pull-right">实时</span>
-                                    <h5>内存使用率</h5>
+                                    <h5>内存使用率(MB)</h5>
                                 </div>
                                 <div class="panel-content">
                                     <h1 class="no-margins" id="mem">Loading……</h1>
@@ -55,7 +55,7 @@
                         </div>
                     </div>
                     {volist name="GetDiskInfo" id="disk"}
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-red-gradient">
                             <div class="panel-body">
                                 <div class="panel-title">
@@ -104,6 +104,7 @@
                                     {default /}
                                 {/switch}
                                 <span>不间断运行：{$GetSystemTotal.time|default="--"}</span>
+                                <span>公网IP：{$IP}</span>
                             </p>
                         </div>
                         <div class="panel-body">
@@ -366,7 +367,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('自动检查更新')}</td>
+                                        <td>{:__('btHost自动检查更新')}</td>
                                         {if $validate_auto_update}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -428,14 +429,6 @@
                                     <tr>
                                         <td>{:__('Software')}</td>
                                         <td>{$Think.server.SERVER_SOFTWARE}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>{:__('Upload mode')}</td>
-                                        <td>{$uploadmode}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>{:__('Upload url')}</td>
-                                        <td>{$config.upload.uploadurl}</td>
                                     </tr>
                                     <tr>
                                         <td>{:__('Timezone')}</td>
