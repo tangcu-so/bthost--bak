@@ -87,9 +87,9 @@ class Queue extends Backend
     // 快速监控
     public function deployment()
     {
-        $url = $this->queUrl;
-        $bt = new Btaction();
 
+        $bt = new Btaction();
+        $type = $this->request->post('type', 'url');
         // 判断任务是否已存在
         $get_cron = $bt->get_cron($this->queName);
 
@@ -97,15 +97,22 @@ class Queue extends Backend
             // 删除任务并重新添加
             $bt->btPanel->DelCrontab($get_cron['id']);
         }
-        $cron = "php " . ROOT_PATH . "think cron";
-        $set = $bt->btPanel->AddCrontab([
+        $data = [
             'name' => $this->queName,
-            'sType' => 'toShell',
             'type' => 'minute-n',
             'where1' => 1,
-            // 'urladdress' => $url,
-            'sBody' => $cron,
-        ]);
+        ];
+        if ($type == 'url') {
+            $url = $this->queUrl;
+            $data['urladdress'] = $url;
+            $data['sType'] = 'toUrl';
+        } elseif ($type == 'cron') {
+            $cron = "php " . ROOT_PATH . "think cron";
+            $data['sBody'] = $cron;
+            $data['sType'] = 'toShell';
+        }
+
+        $set = $bt->btPanel->AddCrontab($data);
         if (!$set) {
             $this->error($bt->btPanel->_error);
         }

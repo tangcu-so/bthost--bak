@@ -85,9 +85,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
                 }); 
             });
 
-            $(document).on("click", ".btn-deployment", function () {
-                Table.api.multi("general/queue/deployment", '', table, this);
-            });
+            // $(document).on("click", ".btn-deployment", function () {
+            //     Table.api.multi("general/queue/deployment", '', table, this);
+            // });
 
             // 一键清空日志
             $('.btn-clear').click(function () { 
@@ -137,6 +137,21 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
         },
         edit: function () {
             Controller.api.bindevent();
+        },
+        queue_url:function(){
+            Controller.api.bindevent();
+            $(document).on("click", "#sizing-addon-cron", function () {
+                Backend.api.ajax({
+                    url: "general/queue/deployment",
+                    data:{type:'cron'}
+                });
+            });
+            $(document).on("click", "#sizing-addon-url", function () {
+                Backend.api.ajax({
+                    url: "general/queue/deployment",
+                    data:{type:'url'}
+                });
+            });
         },
         api: {
             bindevent: function () {
