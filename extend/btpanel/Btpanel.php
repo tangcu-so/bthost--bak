@@ -2872,7 +2872,7 @@ class Btpanel
     public function download($file, $filename)
     {
         error_reporting(0);
-        $p_data = [];
+        $p_data = $this->GetKeyData();
         $url    = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $result = $this->HttpPostCookie($url);
         if ($result && isset($result['status']) && $result['status'] == 'false') {
@@ -2906,7 +2906,7 @@ class Btpanel
     public function images_view($file, $filename)
     {
         error_reporting(0);
-        $p_data = [];
+        $p_data = $this->GetKeyData();
         $url    = $this->BT_PANEL . config("bt.download") . urlencode($file) . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $result = $this->HttpPostCookie($url);
         if ($result && isset($result['status']) && $result['status'] == 'false') {
