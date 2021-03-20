@@ -1057,9 +1057,12 @@ CREATE TABLE `bth_api_log` (
 -- 1.4.3+20210204
 INSERT INTO `bth_queue` (`id`, `function`, `createtime`, `updatetime`, `runtime`, `executetime`, `status`, `weigh`, `configgroup`) VALUES (null, 'updatecheck', '1612338301', '1612339415', '1612339412', '86400', 'normal', '7', '[{\"key\":\"ftmsg\",\"value\":\"1\",\"info\":\"方糖通知任务执行结果，0=不发送;1=发送\"},{\"key\":\"email\",\"value\":\"1\",\"info\":\"邮件通知任务执行结果，0=不发送;1=发送\"}]');
 
--- 新版本待添加
+-- 1.5.0+20210320
 INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/speed_cache', '缓存加速', '', '1', '1612427864', '1612427864', '89', 'normal');
 INSERT INTO `bth_user_rule` (`id`, `pid`, `name`, `title`, `remark`, `ismenu`, `createtime`, `updatetime`, `weigh`, `status`) VALUES (null, '13', 'index/vhost/speed_cache_list', '缓存规则列表', '', '0', '1612441579', '1612441703', '90', 'normal');
 
 ALTER TABLE `bth_host` ADD COLUMN `is_api`  tinyint(1) NOT NULL DEFAULT 0 COMMENT 'API' AFTER `notice`;
 
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'config', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'chinaz_key', 'config', 'chinaz_key', 'http://api.chinaz.com/ApiDetails/Domain', 'string', '', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
+INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'icp_check_api', 'config', 'icp_check_api', '数据同源(Chinaz）没钱的用免费版', 'radio', '0', '[\"大米[免费]\",\"Chinaz[收费]\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');

@@ -115,4 +115,6 @@ return [
     'auto_notice'                 => '自动获取公告',
     'signature_time'              => '签名有效期',
     'ask_beian'                   => '域名备案检测',
+    'chinaz_key'                  => 'Chinaz接口密钥',
+    'icp_check_api'               => '备案查询接口',
 ];

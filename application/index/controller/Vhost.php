@@ -476,7 +476,7 @@ class Vhost extends Frontend
         if ($this->hostInfo->domain_max != 0 && $x_domain_count > $this->hostInfo->domain_max) {
             $this->error(__('Exceed the number of available domain name bindings %s', $this->hostInfo->domain_max));
         }
-        $successArr = $errorArr = $not_beian = $new_domainlist = [];
+        $successArr = $errorArr = $not_beian = $new_domainlist = $is_exit = [];
         foreach ($domain_arr as $key => $value) {
             $status = $domain_pass = 0;
 
@@ -550,6 +550,7 @@ class Vhost extends Frontend
                     $not_beian[] = $value;
                     $errorArr[] = __('%s domain cannot be beian', $value);
                     $status = 3;
+                    $is_icp_exit = Config::get('beian_siteinfo.is_icp_exit')?:0; // 未备案是否允许绑定
                 } else {
                     // 写入备案表
                     model('DomainBeian')::create(
@@ -604,7 +605,7 @@ class Vhost extends Frontend
             $name  = $dirs;
         }
 
-        if ($not_beian) {
+        if ($not_beian&&$is_exit) {
             // 绑定未备案站点
             $not_beian_domain_str = implode(',', $not_beian);
             $this->btAction->bt_id = Config::get('beian_siteinfo.bt_id');
