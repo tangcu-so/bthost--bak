@@ -137,7 +137,7 @@ return [
     # 文件操作
     'UploadFile'                 => '/files?action=UploadFile', //上传文件
     'UploadFiles'                => '/files?action=upload', //上传文件（分片上传）
-    'download'                   => '/download?filename=', //下载备份文件(目前暂停使用)
+    'download'                   => '/download?filename=', //下载备份文件
     'GetDir'                     => '/files?action=GetDir', //文件浏览器
     'DeleteDir'                  => '/files?action=DeleteDir', //删除文件夹
     'DeleteFile'                 => '/files?action=DeleteFile', //删除文件
@@ -270,8 +270,10 @@ return [
     'SiteSpeedStatus'            => '/plugin?action=a&s=set_site_status&name=site_speed',// 站点加速开关
     'GetSiteSpeed'               => '/plugin?action=a&s=get_site_find&name=site_speed',// 站点加速站点详情
     'CreateSpeedRule'            => '/plugin?action=a&s=create_rule&name=site_speed',// 设置缓存目录
-    'SetSpeedRule'               => '/plugin?action=a&s=set_site_rule&name=site_speed',// 添加规则
+    'SetSpeedRule'               => '/plugin?action=a&s=set_site_rule&name=site_speed',// 设置规则
     'GetRuleList'                => '/plugin?action=a&s=get_rule_list&name=site_speed',// 加速规则列表
+    'AddSpeedRule'               => '/plugin?action=a&s=add_site_rule&name=site_speed',// 添加缓存规则
+    'DelSpeedRule'               => '/plugin?action=a&s=remove_site_rule&name=site_speed',// 删除缓存规则
 
 
     # windows

@@ -68,4 +68,8 @@ return array (
   'auto_flow' => '1',
   'auto_update' => '1',
   'auto_notice' => '1',
+  'signature_time' => '10',
+  'ask_beian' => '0',
+  'chinaz_key' => '',
+  'icp_check_api' => '0',
 );
