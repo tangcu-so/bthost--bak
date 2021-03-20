@@ -178,7 +178,7 @@ return [
     'Installed' => '安装量',
     'Empty' => '空',
     'Automatic deployment' => '自动部署',
-    'Apply' => '应用',
+    'Application' => '应用',
     'Execute' => '执行',
     'Automatic deployment will overwrite the original content of the site, please confirm' => '一键部署将覆盖主机原有内容，请确认',
     'Request timed out, please wait to see if the website is deployed' => '请求超时，请稍候查看网站是否部署完成',
@@ -561,5 +561,12 @@ return [
     'After enabling site acceleration, if site acceleration is found, please turn off site acceleration'=>'开启站点加速后，若发现站点异常，请关闭站点加速',
     'After enabling site acceleration, the update frequency of your website page content depends on the [Cache Period] time'=>'开启站点加速后，您的网站页面内容更新频率取决于【缓存周期】时间',
     'Rule error, please try again later'=>'规则错误，请稍候重试',
+    'Url address'=>'URL地址',
+    'Response type'=>'响应类型',
+    'Suffix'=>'后缀名',
+    'Request parameter'=>'请求参数',
+    'Request type'=>'请求方式',
+    'Not cache rule'=>'不缓存规则',
+    'Cache rule'=>'缓存规则',
 ];
  

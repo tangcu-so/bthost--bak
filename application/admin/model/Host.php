@@ -64,7 +64,7 @@ class Host extends Model
             // 新建主机调用方法
         });
 
-        // TODO 主机删除前事件
+        // 主机删除前事件
         self::beforeDelete(function ($row) {
             \app\common\model\Host::host_del($row);
         });

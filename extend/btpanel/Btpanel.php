@@ -4807,7 +4807,43 @@ class Btpanel
      * @return void
      */
     public function SetSpeedRule($siteName,$ruleName){
-        $result = $this->request_get('CreateSpeedRule',['siteName'=>$siteName,'ruleName'=>$ruleName]);
+        $result = $this->request_get('SetSpeedRule',['siteName'=>$siteName,'ruleName'=>$ruleName]);
+        if($result&&isset($result['status'])&&$result['status']==true){
+            return true;
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    /**
+     * 添加缓存规则
+     *
+     * @param [type] $siteName      站点名
+     * @param [type] $ruleKey       规则方式host:域名,ip:IP,args:请求参数,ext:后缀名,type:响应类型,uri:URL地址
+     * @param [type] $ruleValue     规则内容
+     * @param string $ruleRoot      不缓存:ruleRoot,缓存:force
+     * @return void
+     */
+    public function AddSpeedRule($siteName,$ruleKey,$ruleValue,$ruleRoot='force'){
+        $result = $this->request_get('AddSpeedRule',['siteName'=>$siteName,'ruleKey'=>$ruleKey,'ruleValue'=>$ruleValue,'ruleRoot'=>$ruleRoot]);
+        if($result&&isset($result['status'])&&$result['status']==true){
+            return true;
+        } elseif (isset($result['msg'])) {
+            $this->_error = $result['msg'];
+            return false;
+        } else {
+            $this->_error = '请求失败';
+            return false;
+        }
+    }
+
+    // 删除缓存规则
+    public function DelSpeedRule($siteName,$ruleKey,$ruleValue,$ruleRoot='force'){
+        $result = $this->request_get('DelSpeedRule',['siteName'=>$siteName,'ruleKey'=>$ruleKey,'ruleValue'=>$ruleValue,'ruleRoot'=>$ruleRoot]);
         if($result&&isset($result['status'])&&$result['status']==true){
             return true;
         } elseif (isset($result['msg'])) {

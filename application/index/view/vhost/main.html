@@ -272,6 +272,12 @@
                       <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('Proxy')}</span>
                     </a>
                   </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/speed_cache')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('speedCache')}"
+                      data-url="{:url('index/vhost/speed_cache')}">
+                      <i class="mdi mdi-flash"></i> <span style="color:#333333;">{:__('speedCache')}</span>
+                    </a>
+                  </div>
                   <div
                     class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/hostreset')?'':'d-none'}">
                     <a href="#!" class="js-create-tab" data-title="{:__('Host reset')}"
