@@ -25,7 +25,7 @@ class Dashboard extends Backend
         $day = date("H:i:s", time());
         $createlist[$day] = 0;
         $paylist[$day] = 0;
-        
+
         $hooks = config('addons.hooks');
         $uploadmode = isset($hooks['upload_config_init']) && $hooks['upload_config_init'] ? implode(',', $hooks['upload_config_init']) : 'local';
         $addonComposerCfg = ROOT_PATH . '/vendor/karsonzhang/fastadmin-addons/composer.json';
@@ -36,16 +36,16 @@ class Dashboard extends Backend
         // 今日登陆
         $todayusersignup = model('User')->whereTime('logintime', 'today')->count();
         // 待审核域名
-        $auditCount = model('Domainlist')->where('status',0)->count();
+        $auditCount = model('Domainlist')->where('status', 0)->count();
         // 即将到期7天
-        $endtime7Count = Model('Host')->where('endtime','<=',strtotime('-7 day',time()))->count();
+        $endtime7Count = Model('Host')->where('endtime', '<=', strtotime('-7 day', time()))->count();
         // 已到期
-        $endCount = Model('Host')->where('endtime','<=',time())->count();
+        $endCount = Model('Host')->where('endtime', '<=', time())->count();
 
         $validate_btpanel = 1;
         $validate_btpanel_error = '';
         $btpanel = new Btaction();
-        if(!$btpanel->test()){
+        if (!$btpanel->test()) {
             $validate_btpanel = 0;
             $validate_btpanel_error = $btpanel->_error;
             // $this->error($btpanel->_error,'');
@@ -253,9 +253,12 @@ class Dashboard extends Backend
 
         $paidVer = $btpanel->paidVer();
 
+        // 公网IP
+        $this->view->assign("IP", $btpanel->getIp());
         $this->view->assign("GetDiskInfo", $GetDiskInfo);
         $this->view->assign("GetSystemTotal", $GetSystemTotal);
 
+        // 系统os
         $this->view->assign("isWindows", $isWindows);
 
         $this->view->assign("hostCount", isset($hostCount['data']) ? count($hostCount['data']) : '0');
@@ -272,18 +275,25 @@ class Dashboard extends Backend
         $validate_queuekey = empty(Config::get('site.queue_key')) ? 0 : 1;
         $validate_auto_update = empty(Config::get('site.auto_update')) ? 0 : 1;
         $validate_auto_notice = empty(Config::get('site.auto_notice')) ? 0 : 1;
+        // 检查是否开启面板自动更新
+        $file = '/www/server/panel/data/autoUpdate.pl';
+        $validate_auto_bt_update = $btpanel->panel_file_exist($file);
+        // 获取回收站主机数量
+        $RecyclebinCount = model('Host')::onlyTrashed()->count();
+        // 获取超量主机数量
+        $ExcesshostCount = model('Host')->where('status','excess')->count();
 
         // 面板操作日志
         $logsList = $btpanel->panelLogs();
         // $logsList = $btpanel->btPanel->getPanelLogs();
-        
+
         // 获取总数及分页数
         // preg_match('/共(.*?)条/',$logsList['page'],$str);
         // // 总数
         // $logsCount = isset($str[1])?$str[1]:'';
-        
-        $this->view->assign('logsList',$logsList);
-        
+
+        $this->view->assign('logsList', $logsList);
+
         $this->view->assign([
             'totaluser'        => model('User')->count(),
             'totalviews'       => 219390,
@@ -313,15 +323,19 @@ class Dashboard extends Backend
             'validate_btpanel' => $validate_btpanel,
             'validate_auto_update' => $validate_auto_update,
             'validate_auto_notice' => $validate_auto_notice,
+            'validate_auto_bt_update' => $validate_auto_bt_update ?? 0,
             'paidVer' => $paidVer,
             'validate_btpanel_error' => $validate_btpanel_error,
+            'ExcesshostCount'=>$ExcesshostCount,
+            'RecyclebinCount'=>$RecyclebinCount,
         ]);
 
         return $this->view->fetch();
     }
 
     // TODO 软件管理
-    public function soft(){
+    public function soft()
+    {
         $page           = input('get.page') ? input('get.page') : 1;
         $softType       = input('get.softType/d') ? input('get.softType/d') : 5;
 
@@ -334,11 +348,9 @@ class Dashboard extends Backend
     }
 
     // 面板日志
-    public function panelLogs(){
-
-        
+    public function panelLogs()
+    {
         $btpanel = new Btaction();
-        
         return $this->view->fetch();
     }
 

@@ -141,7 +141,7 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                 $('#netDown').html(data.down+'kb');
                 $('#downTotal').html(server.change(data.downTotal));
                 $('#upTotal').html(server.change(data.upTotal));
-                $('#mem').html(data.mem.memRealUsed+'/'+data.mem.memTotal+'(MB)');
+                $('#mem').html(data.mem.memRealUsed+'/'+data.mem.memTotal);
                 $('#cpu0').html(data.cpu['0']+'%');
                 $('#cpu1').html(data.cpu['1']+'核心');
                 Orderdata.column.push((new Date()).toLocaleTimeString().replace(/^\D*/, ''));// 时间
@@ -308,7 +308,20 @@ define(['jquery', 'bootstrap', 'backend', 'addtabs', 'table', 'echarts', 'echart
                             }, function(data, ret){
                         });
                         break;
-                
+                    case 'bt_update_on':
+                        Fast.api.ajax({
+                            url: "ajax/setAutoUpdate",
+                            data:{is:'on'},
+                            }, function(data, ret){
+                        });
+                        break;
+                    case 'bt_update_off':
+                        Fast.api.ajax({
+                            url: "ajax/setAutoUpdate",
+                            data:{is:'off'},
+                            }, function(data, ret){
+                        });
+                        break;
                     default:
                         break;
                 }

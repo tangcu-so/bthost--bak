@@ -50,7 +50,12 @@
                 <button class="btn btn-block btn-primary" id="login_btn">{:__('Login')}</button>
             </div>
         </form>
-        <p class="text-center text-muted mt-3">Copyright © 2020 <a href="{:url('/')}">{$site.name}</a>. All right reserved {notempty name="site.beian"}<a href="https://beian.miit.gov.cn/" target="_blank">{$site.beian}</a>{/notempty}
+        <p class="text-center text-muted mt-3">Copyright © 
+            <script>
+                var date = new Date();
+                document.write(date.getFullYear());
+            </script>
+            <a href="{:url('/')}">{$site.name}</a>. All right reserved {notempty name="site.beian"}<a href="https://beian.miit.gov.cn/" target="_blank">{$site.beian}</a>{/notempty}
         <span class="language" data-lang="{$Think.cookie.think_var}">
             <svg t="1609309685662" class="icon" viewBox="0 0 1966 1024" version="1.1"
                 xmlns="http://www.w3.org/2000/svg" p-id="4606" width="32" height="32">

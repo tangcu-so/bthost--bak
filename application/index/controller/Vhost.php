@@ -66,7 +66,7 @@ class Vhost extends Frontend
     // 错误收集
     private $_error;
 
-    
+
     // 服务器操作系统类型linux windows
     private $server_type = 'linux';
     // 服务器面板配置
@@ -215,6 +215,18 @@ class Vhost extends Frontend
         $site_getround = $this->hostInfo->site_max != 0 ? getround($this->hostInfo->site_max, $this->hostInfo->site_size) : 0;
         $sql_getround = $this->hostInfo->sql_max != 0 ? getround($this->hostInfo->sql_max, $this->hostInfo->sql_size) : 0;
         $flow_getround = $this->hostInfo->flow_max != 0 ? getround($this->hostInfo->flow_max, $this->hostInfo->flow_size) : 0;
+
+        // 转换可用资源单位
+        $site_max = $this->hostInfo->site_max != 0 ? format_megabyte($this->hostInfo->site_max) : __('∞');
+        $sql_max = $this->hostInfo->sql_max != 0 ? format_megabyte($this->hostInfo->sql_max) : __('∞');
+        $flow_max = $this->hostInfo->flow_max != 0 ? format_megabyte($this->hostInfo->flow_max) : __('∞');
+
+        // 转换已用资源单位
+        $site_size = format_megabyte($this->hostInfo->site_size);
+        $sql_size = format_megabyte($this->hostInfo->sql_size);
+        $flow_size = format_megabyte($this->hostInfo->flow_size);
+
+
         // 数据库管理地址
         $this->assign('phpmyadmin', Config('site.phpmyadmin'));
 
@@ -227,6 +239,12 @@ class Vhost extends Frontend
         $this->view->assign('sql_getround', $sql_getround);
         $this->view->assign('flow_getround', $flow_getround);
         $this->view->assign('phpversion_list', $phpversion_list);
+        $this->view->assign('site_max', $site_max);
+        $this->view->assign('sql_max', $sql_max);
+        $this->view->assign('flow_max', $flow_max);
+        $this->view->assign('site_size', $site_size);
+        $this->view->assign('sql_size', $sql_size);
+        $this->view->assign('flow_size', $flow_size);
         return $this->view->fetch();
     }
 
@@ -243,6 +261,10 @@ class Vhost extends Frontend
         // Cache::rm('phpversion_list');
         // 清除服务器配置
         Cache::rm('vhost_config');
+        // 清除加速规则
+        Cache::rm('speed_rule_list');
+        // 清除加速规则列表
+        Cache::rm('speed_rule_name_list');
         // 清除资源使用检测缓存
         Cookie::set('vhost_check_' . $this->vhost_id, null);
 
@@ -446,7 +468,7 @@ class Vhost extends Frontend
 
         $domainCount = model('Domainlist')->where('vhost_id', $this->vhost_id)->count();
 
-        $notbeian_count = model('DomainBeian')->where('vhost_id', $this->vhost_id)->where('status','normal')->count();
+        $notbeian_count = model('DomainBeian')->where('vhost_id', $this->vhost_id)->where('status', 'normal')->count();
 
         // 数据库中已有数 + 准备绑定的域名数 + 未备案的域名
         $x_domain_count = count($domain_arr) + $domainCount + $notbeian_count - 1;
@@ -480,6 +502,12 @@ class Vhost extends Frontend
                 continue;
             }
 
+            // 禁止绑定端口
+            if (strpos($value, ":")) {
+                $errorArr[] = __('%s domain format is incorrect, please adjust and resubmit', $value);
+                continue;
+            }
+
             // 拆分数组法匹配
             // $isnotall = explode('.',$value);
             // var_dump($isnotall);
@@ -505,11 +533,11 @@ class Vhost extends Frontend
                 }
             }
 
-            if($domain_pass){
+            if ($domain_pass) {
                 $status = 1;
-            }elseif($this->hostInfo->is_audit==0){
+            } elseif ($this->hostInfo->is_audit == 0) {
                 $status = 1;
-            }else{
+            } else {
                 $errorArr[] = __('%s please wait for review', $value);
                 $status = 0;
             }
@@ -551,8 +579,8 @@ class Vhost extends Frontend
 
             if ($status !== 1) {
                 // 站长通知
-                $tz_data =['username'=>$this->auth->username,'domain'=>$value,'bt_name'=>$this->hostInfo->bt_name];
-                Hook::listen('action_domain_check_msg',$tz_data);
+                $tz_data = ['username' => $this->auth->username, 'domain' => $value, 'bt_name' => $this->hostInfo->bt_name];
+                Hook::listen('action_domain_check_msg', $tz_data);
                 continue;
             }
             $successArr[] = $value;
@@ -1247,10 +1275,7 @@ class Vhost extends Frontend
         }
         // 上传文件
         if ($type == 'uploadfile') {
-            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
-            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
-                $this->error(__('Site size exceeded, resources stopped'));
-            }
+            $this->siteSizeCheck();
 
             $path = input('get.path') == '/' ? '' : input('get.path');
 
@@ -1980,16 +2005,7 @@ class Vhost extends Frontend
         // 新版分片上传
         if ($files = request()->file('blob')) {
             header("Content-type: text/html; charset=utf-8");
-            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
-            $this->hostInfo->allowField(true)->save([
-                'site_size' => $websize,
-            ]);
-            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
-                $this->hostInfo->allowField(true)->save([
-                    'status' => 'excess',
-                ]);
-                $this->error(__('Site size exceeded, resources stopped'));
-            }
+            $this->siteSizeCheck();
             $path     = input('get.path') ? preg_replace($this->path_reg, '', input('get.path') . '') : '/';
             $filePath = ROOT_PATH . 'logs' . DS . 'uploads';
 
@@ -2108,8 +2124,8 @@ class Vhost extends Frontend
         }
         //查看图片
         if (input('post.type') == 'images') {
-            // XXX 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
-            // XXX WIndows下查看中文图片失败，原因带空格
+            // 中文文件名图片查看错误，本地服务器屏蔽关键词“你”，原因未知
+            // WIndows下查看中文图片失败，原因带空格
             // 经过urlencode编码后双系统使用正常
             $file = input('post.file') ? preg_replace('/([.]){2,}|([\/]){2,}/', '', input('post.file')) : '';
             // var_dump($WebGetKey . $file, $file);
@@ -2294,16 +2310,9 @@ class Vhost extends Frontend
             if (!$this->path_root_check($WebGetKey . $path, $WebGetKey)) {
                 $this->error(__('Illegal operation'));
             }
-            $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
-            $this->hostInfo->allowField(true)->save([
-                'site_size' => $websize,
-            ]);
-            if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
-                $this->hostInfo->allowField(true)->save([
-                    'status' => 'excess',
-                ]);
-                $this->error(__('Site size exceeded, resources stopped'));
-            }
+
+            $this->siteSizeCheck();
+
             $down = $this->btPanel->DownloadFile($WebGetKey . $path, $mUrl, $dfilename);
             if ($down && isset($down['status']) && $down['status'] == 'true') {
                 $this->success($down['msg']);
@@ -2512,11 +2521,11 @@ class Vhost extends Frontend
 
         $this->view->assign('title', __('back'));
         return view('back', [
-            'has_sql'           => $this->hostInfo->sql->username?true:false,
-            'countback_site'    => isset($WebBackupList['data'])?count($WebBackupList['data']):0,
+            'has_sql'           => $this->hostInfo->sql->username ? true : false,
+            'countback_site'    => isset($WebBackupList['data']) ? count($WebBackupList['data']) : 0,
             'WebBackupList'     => $WebBackupList,
             'SqlBackupList'     => $SqlBackupList,
-            'countback_sql'     => isset($SqlBackupList['data'])?count($SqlBackupList['data']):0,
+            'countback_sql'     => isset($SqlBackupList['data']) ? count($SqlBackupList['data']) : 0,
         ]);
     }
 
@@ -2574,7 +2583,7 @@ class Vhost extends Frontend
     public function ftpStatus()
     {
         $ftpId = $this->btAction->getFtpInfo('id');
-        if(!$ftpId){
+        if (!$ftpId) {
             $this->error(__('This service is not currently available'));
         }
         $ftp = $this->request->post('ftp');
@@ -3348,7 +3357,8 @@ class Vhost extends Frontend
         ]);
     }
 
-    private function ProofType(){
+    private function ProofType()
+    {
         $proofType = Cache::remember('getProof', function () {
             return $this->btAction->getProof();
         });
@@ -3380,7 +3390,7 @@ class Vhost extends Frontend
         }
         $this->view->assign('title', __('proof'));
         return $this->view->fetch('proof', [
-            'proof_status'=>$this->btPanel->proofType=='tamper_proof'?(isset($proofInfo['lock'])&&$proofInfo['lock']==2?true:false):(isset($proofInfo['open'])?$proofInfo['open']:0),
+            'proof_status' => $this->btPanel->proofType == 'tamper_proof' ? (isset($proofInfo['lock']) && $proofInfo['lock'] == 2 ? true : false) : (isset($proofInfo['open']) ? $proofInfo['open'] : 0),
             'proofInfo' => $proofInfo,
         ]);
     }
@@ -3390,10 +3400,10 @@ class Vhost extends Frontend
     {
         $this->ProofType();
         if ($this->request->isPost()) {
-            $lock = $this->request->post('lock/d',0);
-            if($this->btPanel->proofType=='tamper_proof'){
-                $SiteProof = $this->btPanel->LockProof($this->siteName,$lock);
-            }else{
+            $lock = $this->request->post('lock/d', 0);
+            if ($this->btPanel->proofType == 'tamper_proof') {
+                $SiteProof = $this->btPanel->LockProof($this->siteName, $lock);
+            } else {
                 $SiteProof = $this->btPanel->SiteProof($this->siteName);
             }
             if ($SiteProof && $SiteProof['status'] == 'true') {
@@ -3491,7 +3501,8 @@ class Vhost extends Frontend
         ]);
     }
 
-    private function getWafType(){
+    private function getWafType()
+    {
         $isWaf = Cache::remember('getWaf', function () {
             return $this->btAction->getWaf();
         });
@@ -3735,6 +3746,122 @@ class Vhost extends Frontend
         }
     }
 
+    // 站点加速
+    public function speed_cache()
+    {
+        $info = $this->btAction->get_speed_site($this->siteName);
+        if (!$info) {
+            Config('app_debug') ? $this->error(__($this->btAction->_error), '') : $this->error(__('The plug-in is not supported by the current host'), '');
+        }
+        // 切换缓存状态
+        if ($this->request->post('status')) {
+            $set = $this->btAction->set_speed_site_status($this->siteName);
+            if (!$set) {
+                Config('app_debug') ? $this->error(__($this->btAction->_error), '') : $this->error(__('The plug-in is not supported by the current host'), '');
+            }
+            $this->success(__('Success'));
+        }
+        // 一键切换内置缓存规则
+        if ($this->request->post('ruleName')) {
+            $ruleName = $this->request->post('ruleName');
+            if (!$ruleName) {
+                $this->error(__('Can not be empty'));
+            }
+            if (!in_array($ruleName, Cache::get('speed_rule_name_list'))) {
+                $this->error(__('Rule error, please try again later'));
+            }
+            $set = $this->btPanel->SetSpeedRule($this->siteName, $ruleName);
+            if (!$set) {
+                Config('app_debug') ? $this->error(__($this->btPanel->_error), '') : $this->error(__('The plug-in is not supported by the current host'), '');
+            }
+            $this->success(__('Success'));
+        }
+
+
+        $this->view->assign('status', $info['open'] ?? 0);
+        $this->view->assign('domainlist', $info['domainlist'] ?? 0);
+        $this->view->assign('cache_expire', $info['expire'] ?? 0);
+        $this->view->assign('request_num_day', $info['total'][2] ?? 0);
+        $today_hit = $info['total'][3] <= 0 ? 0 : round($info['total'][2] / $info['total'][3] * 100, 2);
+        $total_hit = $info['total'][1] <= 0 ? 0 : round($info['total'][0] / $info['total'][1] * 100, 2);
+        $this->view->assign('today_hit', $today_hit);
+        $this->view->assign('total_hit', $total_hit);
+        $this->view->assign('total_hit', $total_hit);
+        $this->view->assign('rule', $info['rule'] ?? '');
+        $this->view->assign('force', $info['force']);
+        $this->view->assign('white', $info['white']);
+
+        $this->view->assign('title', __('speedCache'));
+        return $this->view->fetch();
+    }
+
+    // 添加缓存规则
+    public function speed_cache_add()
+    {
+        if ($this->request->isPost()) {
+            $rule_root = $this->request->post('rule_root');
+            // 规则类型
+            $rule_type = $this->request->post('rule_type');
+            // 规则内容
+            $rule_content = $this->request->post('rule_content');
+            $validate = new Validate([
+                'rule_type' => 'require|in:host,ip,args,ext,type,uri',
+                'rule_content' => 'require|chsDash',
+            ], [
+                'rule_type' => '规则类型错误',
+                'rule_content' => '规则内容不正确',
+            ]);
+            if (!$validate->check($this->request->post())) {
+                $this->error($validate->getError());
+            }
+            $set = $this->btPanel->AddSpeedRule($this->siteName, $rule_type, $rule_content,$rule_root);
+            if (!$set) {
+                $this->error(__($this->btPanel->_error), '');
+            }
+            $this->success(__('Success'));
+        }
+    }
+
+    // 删除缓存规则
+    public function speed_cache_del(){
+        if($this->request->isPost()){
+            $rule_root = $this->request->post('rule_root');
+            // 规则类型
+            $rule_type = $this->request->post('rule_type');
+            // 规则内容
+            $rule_content = $this->request->post('rule_content');
+            $validate = new Validate([
+                'rule_type' => 'require|in:host,ip,args,ext,type,uri,method,cookie',
+                'rule_content' => 'require',
+            ], [
+                'rule_type' => '规则类型错误',
+                'rule_content' => '规则内容不正确',
+            ]);
+            if (!$validate->check($this->request->post())) {
+                $this->error($validate->getError());
+            }
+            $set = $this->btPanel->DelSpeedRule($this->siteName, $rule_type, $rule_content,$rule_root);
+            if (!$set) {
+                $this->error(__($this->btPanel->_error), '');
+            }
+            $this->success(__('Success'));
+        }
+    }
+
+    // 获取内置加速规则
+    public function speed_cache_list()
+    {
+        Cache::remember('speed_rule_name_list', function () {
+            return ['Default', 'WordPress', 'Discuz', 'ZFAKA发卡系统', 'emlog博客系统', 'ShopXO开源商城', 'JTBC网站内容管理系统', 'PHP宝塔IDC分销系统', '米拓企业建站系统', '新起点网校', '帝国CMS', '优客365网址导航开源版', '影视全搜索网站', 'HYBBS论坛', '星辰短语|密语生成系统', '杨小杰工具箱', 'tipask问答系统', 'DM企业建站系统', 'ecshop商城系统', 'DSMall多店铺B2B2C商城', 'sentcms网站管理系统', 'FastAdmin', 'WDJA网站内容管理系统', 'DSShop单店铺B2C商城', '壹度同城新零售网站', 'SchoolCMS教务系统', 'phpcms', '迅睿CMS免费开源建站程序', '奇乐中介担保交易系统', 'jizhicms建站系统', '蝉知企业门户系统', '奇博cms', '子枫后台CMS系统', 'z-BlogPHP', 'ICMS内容管理系统', '奇乐自媒体新闻管理系统', 'DSCMS内容管理系统', 'phpok企业站系统', '云课网校系统', '网钛CMS新闻网站', 'OmoCms', '易优建站系统', '苹果cms', 'drupal', 'typecho博客系统', 'bwblog博客系统', 'PbootCMS企业建站', 'DESTOON B2B网站管理系统', 'DBShop商城系统', 'cmseasy企业建站', '赞片CMS', '织梦', 'OpenCart商城', '飞飞影视导航', 'WHMCS', 'ZKEYS'];
+        });
+        $list = Cache::get('speed_rule_list') ? Cache::get('speed_rule_list') : $this->btPanel->GetRuleList();
+        if (!$list) {
+            Config('app_debug') ? $this->error(__($this->btPanel->_error), '') : $this->error(__('The plug-in is not supported by the current host'), '');
+        }
+        Cache::set('speed_rule_list', $list, 0);
+        return $list;
+    }
+
     // 文件路径安全检查
     private function path_safe_check($path)
     {
@@ -3747,7 +3874,7 @@ class Vhost extends Frontend
         // Windows下不能包含：< > / \ | :  * ?
         // Linux下特殊字符如@、#、￥、&、()、-、空格等最好不要使用
         // 记录排除规则：@#
-        $reg = $this->server_type == 'windows'?'/^[\x7f-\xff\w\s.\/:~,@#-]+$/i':'/^[\x7f-\xff\w\s.\/~,-]+$/i';
+        $reg = $this->server_type == 'windows' ? '/^[\x7f-\xff\w\s.\/:~,@#-]+$/i' : '/^[\x7f-\xff\w\s.\/~,-]+$/i';
 
         if (!preg_match($reg, $path)) {
             return false;
@@ -3785,9 +3912,9 @@ class Vhost extends Frontend
     }
 
     // 资源检查并记录
-    private function check()
+    private function check($refresh = '')
     {
-        if (Cookie('vhost_check_' . $this->vhost_id) < time()) {
+        if (Cookie('vhost_check_' . $this->vhost_id) < time() && !$refresh) {
             $list = $this->btAction->getResourceSize();
             $msg = $excess = '';
             if ($this->hostInfo->flow_max != 0 && $list['total_size'] > $this->hostInfo->flow_max) {
@@ -3853,5 +3980,25 @@ class Vhost extends Frontend
                 break;
         }
         return true;
+    }
+
+    // 站点空间检查并记录
+    private function siteSizeCheck()
+    {
+        $websize = bytes2mb($this->btAction->getWebSizes($this->hostInfo->bt_name));
+        // 更新使用量
+        $this->hostInfo->allowField(true)->save([
+            'site_size' => $websize,
+        ]);
+        // 记录站点资源日志入库
+        \app\common\model\ResourcesLog::create([
+            'host_id' => $this->hostInfo->id,
+            'site_size' => $websize,
+            'flow_size' => $this->hostInfo->flow_size,
+            'sql_size' => $this->hostInfo->sql_size,
+        ]);
+        if ($this->hostInfo->site_max != '0' && $websize > $this->hostInfo->site_max) {
+            $this->error(__('Site size exceeded, resources stopped'));
+        }
     }
 }

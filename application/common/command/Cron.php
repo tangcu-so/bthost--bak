@@ -1,8 +1,11 @@
 <?php
 
-namespace app\api\controller;
+namespace app\common\command;
 
-use app\common\controller\Api;
+use think\console\Command;
+use think\console\Input;
+use think\console\Output;
+
 use app\common\library\Btaction;
 use app\common\library\Email;
 use app\common\library\Ftmsg;
@@ -12,14 +15,9 @@ use think\Config;
 use think\Debug;
 use fast\Http;
 
-/**
- * 计划任务监控接口
- */
-class Queue extends Api
+class Cron extends Command
 {
-    protected $noNeedLogin = ['*'];
-    protected $noNeedRight = ['*'];
-    protected $token       = '';
+
     protected $_error      = '';
     protected $is_index    = '';
 
@@ -32,39 +30,24 @@ class Queue extends Api
     protected $email = 0;
     protected $checkTime = 20;
 
-
-    public function _initialize()
+    protected function configure()
     {
-        parent::_initialize();
-        $this->token = $this->request->request('token');
-        if ($this->token) {
-            if (Config::get('site.queue_key') !== $this->token) {
-                $this->error('接口密钥错误');
-            }
-        } else {
-            $this->error('token为空');
-        }
-        $this->model = model('Queue');
+        $this->setName('cron')
+        ->setDescription('btHost Cron  ')
+        ->addOption('add');
     }
 
-    /**
-     * 计划任务队列
-     *
-     * @ApiTitle    计划任务队列
-     * @ApiSummary  计划任务队列
-     * @ApiMethod   (GET)
-     * @ApiParams   (name="token", type="string", required=true, description="计划任务监控密钥")
-     */
-    public function index()
+    protected function execute(Input $input, Output $output)
     {
-        set_time_limit(0);
-        ini_set('max_execution_time', 300);
+        $starttime = date("Y-m-d H:i:s", time());
+        $output->writeln("[{$starttime}]执行开始");
+
         ini_set('memory_limit', '128M');
         $this->is_index = 1;
         // 列出所有有效任务
-        $queList = $this->model->where(['status' => 'normal'])->order('weigh desc')->select();
+        $queList = model('\app\common\model\Queue')->where(['status' => 'normal'])->order('weigh desc')->select();
         if (!$queList) {
-            $this->error('无有效任务');
+            $output->writeln('无有效任务');
         }
         $n = [];
         // 遍历任务执行
@@ -126,21 +109,25 @@ class Queue extends Api
             $this->queuelog($n);
         }
 
-        $this->success('执行完成', $n);
+        $endtime = date("Y-m-d H:i:s", time());
+        $take = Debug::getRangeTime('begin', 'end');
+        $output->writeln("[{$endtime}]执行完成({$take}s):" . json_encode($n));
     }
 
+
     // 检查更新
-    public function updateCheck(){
+    public function updateCheck()
+    {
         $total = [
-            'user'=>model('User')->count(),
-            'host'=>model('Host')->count(),
-            'sql'=>model('Sql')->count(),
-            'ftp'=>model('Ftp')->count(),
-            'domain'=>model('Domain')->count(),
-            'hostlog'=>model('HostLog')->count(),
-            'apilog'=>model('ApiLog')->count(),
-            'domainlist'=>model('Domainlist')->count(),
-            'hostresetlog'=>model('HostresetLog')->count(),
+            'user' => model('\app\common\model\User')->count(),
+            'host' => model('\app\common\model\Host')->count(),
+            'sql' => model('\app\common\model\Sql')->count(),
+            'ftp' => model('\app\common\model\Ftp')->count(),
+            'domain' => model('\app\common\model\Domain')->count(),
+            'hostlog' => model('\app\common\model\HostLog')->count(),
+            'apilog' => model('\app\common\model\ApiLog')->count(),
+            'domainlist' => model('\app\common\model\Domainlist')->count(),
+            'hostresetlog' => model('\app\common\model\HostresetLog')->count(),
         ];
         $url = Config::get('bty.api_url') . '/bthost_update_check.html';
         $bt = new Btaction();
@@ -151,33 +138,33 @@ class Queue extends Api
             'is_beta' => Config::get('bty.is_beta'),
             'domain' => $ip,
             'rsa' => 1,
-            'total'=>base64_encode(json_encode($total)),
+            'total' => base64_encode(json_encode($total)),
         ];
         $curl = http::post($url, $data);
-        $result = json_decode($curl,1);
-        if($result  && isset($result ['code']) && $result ['code']==1 && isset($result ['data']) && $result ['data']){
+        $result = json_decode($curl, 1);
+        if ($result  && isset($result['code']) && $result['code'] == 1 && isset($result['data']) && $result['data']) {
             $title = '[btHost检测到新版本]';
             $content = '';
-            $content.= '当前版本：'.$result ['data']['version'];
-            $content.= "\n\n更新版本：".$result ['data']['newversion'];
-            if(isset($result ['data']['upgradetext'])){
-                $upgradetext = str_replace("\n","\n\n",$result ['data']['upgradetext']);
+            $content .= '当前版本：' . $result['data']['version'];
+            $content .= "\n\n更新版本：" . $result['data']['newversion'];
+            if (isset($result['data']['upgradetext'])) {
+                $upgradetext = str_replace("\n", "\n\n", $result['data']['upgradetext']);
             }
-            $content.= "\n\n更新内容：\n\n".$upgradetext;
-            $content.= "\n\nTime：".date('Y-m-d H:i:s',time());
+            $content .= "\n\n更新内容：\n\n" . $upgradetext;
+            $content .= "\n\nTime：" . date('Y-m-d H:i:s', time());
             // 方糖通知
             if (Config::get('site.ftqq_sckey') && $this->ftmsg) {
-                $this->ft_msg($title,$content);
+                $this->ft_msg($title, $content);
             }
             // 邮件通知
             if (Config::get('site.email') && $this->email) {
-                $content = str_replace("\n\n","<br>",$content);
-                $content.='<style>.label{display: inline;padding: .2em .6em .3em;font-size: 75%;font-weight: bold;line-height: 1;color: #fff;text-align: center;white-space: nowrap;vertical-align: baseline;border-radius: .25em;}.label-success{background-color: #18bc9c;}.label-warning{background-color: #f39c12;}.label-info{background-color: #3498db;}</style>';
-                $this->email_msg($title,$content);
+                $content = str_replace("\n\n", "<br>", $content);
+                $content .= '<style>.label{display: inline;padding: .2em .6em .3em;font-size: 75%;font-weight: bold;line-height: 1;color: #fff;text-align: center;white-space: nowrap;vertical-align: baseline;border-radius: .25em;}.label-success{background-color: #18bc9c;}.label-warning{background-color: #f39c12;}.label-info{background-color: #3498db;}</style>';
+                $this->email_msg($title, $content);
             }
-            return $this->is_index ? [] : $this->success('发现更新！', []);
-        }else{
-            return $this->is_index ? '' : $this->success('当前程序没有发布更新');
+            return [];
+        } else {
+            return '';
         }
     }
 
@@ -199,9 +186,9 @@ class Queue extends Api
         $errorNum   = [];
 
         // 邮件队列暂不开通
-        return $this->is_index ? '' : $this->success('无有效任务');
+        return '';
 
-        $list = model('Email')->where(['status' => '0'])->limit($this->limit)->select();
+        $list = model('\app\common\model\Email')->where(['status' => '0'])->limit($this->limit)->select();
         if ($list) {
             $obj = \app\common\library\Email::instance();
             foreach ($list as $key => $value) {
@@ -211,18 +198,18 @@ class Queue extends Api
                     ->message($value->content)
                     ->send();
                 if ($result) {
-                    model('Email')->where('id', $value->id)->update(['status' => 1]);
+                    model('\app\common\model\Email')->where('id', $value->id)->update(['status' => 1]);
 
                     $successNum[][$value->email] = '发送成功';
                 } else {
-                    model('Email')->where('id', $value->id)->update(['status' => 2]);
+                    model('\app\common\model\Email')->where('id', $value->id)->update(['status' => 2]);
 
                     $errorNum[][$value->email] = '发送失败' . $obj->getError();
                 }
             }
-            return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
+            return [$successNum, $errorNum];
         } else {
-            return $this->is_index ? '' : $this->success('无有效任务');
+            return '';
         }
     }
 
@@ -246,7 +233,7 @@ class Queue extends Api
         //额定时间分钟数
         $time      = time() - 60 * $checkTime;
 
-        $hostList = model('Host')
+        $hostList = model('\app\common\model\Host')
             ->alias('h')
             ->where('h.check_time', '<', $time)
             ->join('sql s', 's.vhost_id = h.id', 'LEFT')
@@ -325,9 +312,9 @@ class Queue extends Api
                 $this->queuelog(['message' => $th->getMessage()]);
             }
 
-            return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
+            return [$successNum, $errorNum];
         } else {
-            return $this->is_index ? '' : $this->success('无有效任务');
+            return '';
         }
     }
 
@@ -342,7 +329,7 @@ class Queue extends Api
     {
         $successNum = [];
         $errorNum   = [];
-        $hostList = model('Host')->where('endtime', '<=', time())->where('status', '<>', 'expired')->select();
+        $hostList = model('\app\common\model\Host')->where('endtime', '<=', time())->where('status', '<>', 'expired')->select();
         if ($hostList) {
             foreach ($hostList as $key => $value) {
                 $bt            = new Btaction();
@@ -388,9 +375,9 @@ class Queue extends Api
                 $this->queuelog(['message' => $th->getMessage()]);
             }
 
-            return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
+            return [$successNum, $errorNum];
         } else {
-            return $this->is_index ? '' : $this->success('无有效任务');
+            return '';
         }
     }
 
@@ -406,7 +393,7 @@ class Queue extends Api
 
         //达到指定天数后删除站点并清除所有数据
         $time      = time() - 60 * 60  * 24 * Config('site.recycle_delete');
-        $hostList = model('Host')::onlyTrashed()->where('deletetime', '<=', $time)->select();
+        $hostList = model('\app\common\model\Host')::onlyTrashed()->where('deletetime', '<=', $time)->select();
         if ($hostList) {
             foreach ($hostList as $key => $value) {
                 $bt = new Btaction();
@@ -427,9 +414,9 @@ class Queue extends Api
                 $this->queuelog(['message' => $th->getMessage()]);
             }
 
-            return $this->is_index ? [$successNum, $errorNum] : $this->success('请求成功', [$successNum, $errorNum]);
+            return [$successNum, $errorNum];
         } else {
-            return $this->is_index ? '' : $this->success('无有效任务');
+            return '';
         }
     }
 
@@ -453,15 +440,16 @@ class Queue extends Api
         $content = "执行结果清单如下：<br>\n\n成功:" . arr_to_str($successNum) . "<br>\n\n失败:" . arr_to_str($errorNum) . "<br>\n\nTime:" . date("Y-m-d H:i:s", time());
         // 邮件通知
         if (Config::get('site.email') && $this->email) {
-            $this->email_msg($title,$content);
+            $this->email_msg($title, $content);
         }
         // 方糖通知
         if (Config::get('site.ftqq_sckey') && $this->ftmsg) {
-            $this->ft_msg($title,$content);
+            $this->ft_msg($title, $content);
         }
     }
 
-    private function email_msg($title,$content){
+    private function email_msg($title, $content)
+    {
         $email = new Email();
         $email->to(Config::get('site.email'))
             ->subject($title)
@@ -474,8 +462,9 @@ class Queue extends Api
         return true;
     }
 
-    private function ft_msg($title,$content){
-        
+    private function ft_msg($title, $content)
+    {
+
         $ft = new Ftmsg(Config::get('site.ftqq_sckey'));
         $ft->setTitle($title);
         $ft->setMessage($content);
@@ -496,7 +485,7 @@ class Queue extends Api
      */
     private function runtimeUpdate($value)
     {
-        $this->model->update([
+        model('\app\common\model\Queue')->update([
             'runtime' => time(),
             'id'      => $value->id,
         ]);
@@ -513,7 +502,7 @@ class Queue extends Api
         if (!$n) {
             return false;
         }
-        model('queueLog')->data([
+        model('\app\common\model\QueueLog')->data([
             'logs'      => json_encode($n, JSON_UNESCAPED_UNICODE),
             'call_time' => Debug::getRangeTime('begin', 'end'),
         ])->save();

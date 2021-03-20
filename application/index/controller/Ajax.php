@@ -65,9 +65,10 @@ class Ajax extends Frontend
             $where['createtime'] = ['between', [strtotime($querytime), strtotime($querytime) + 60 * 60 * 24]];
         }
         $list = \app\common\model\ResourcesLog::where($where)->order('createtime desc')->limit($limit)->field('id,host_id', true)->select();
-        // var_dump(\app\common\model\ResourcesLog::getLastSql());
-        // exit;
         if ($list) {
+            foreach($list as $value){
+                $value->createtime = is_numeric($value->createtime) ? date('H:i:s', $value->createtime) : '';
+            }
             $list  = array_column(array_reverse($list), null, 'createtime');
         }
         HostLog::setTitle(__('Resources total'));

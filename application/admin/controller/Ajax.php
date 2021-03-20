@@ -481,6 +481,7 @@ class Ajax extends Backend
             if (!is_writable($config_file)) {
                 $this->error('文件不可写，请检查网站目录及文件、权限、网站防篡改、系统加固等问题');
             }
+
             $update                 = new \autoupdate\Autoupdate(ROOT_PATH, true);
             $update->currentVersion = Config::get('bty.version');
             $update->updateUrl      = Config::get('bty.api_url');
@@ -587,12 +588,24 @@ class Ajax extends Backend
     // 版本检测
     public function update_check()
     {
+        $total = [
+            'user'=>model('User')->count(),
+            'host'=>model('Host')->count(),
+            'sql'=>model('Sql')->count(),
+            'ftp'=>model('Ftp')->count(),
+            'domain'=>model('Domain')->count(),
+            'hostlog'=>model('HostLog')->count(),
+            'apilog'=>model('ApiLog')->count(),
+            'domainlist'=>model('Domainlist')->count(),
+            'hostresetlog'=>model('HostresetLog')->count(),
+        ];
         $url = Config::get('bty.api_url') . '/bthost_update_check.html';
         $data = [
             'obj' => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
             'domain' => $this->getIp(),
             'rsa' => 1,
+            'total'=>base64_encode(json_encode($total)),
         ];
         $curl = http::post($url, $data);
         return json_decode($curl, 1);
@@ -637,5 +650,23 @@ class Ajax extends Backend
         } else {
             return false;
         }
+    }
+
+    // 设置面板自动更新状态
+    public function setAutoUpdate(){
+        $bt = new Btaction();
+        
+        if($this->request->post('is')=='on'){
+            $set = $bt->btPanel->AutoUpdatePanel();
+        }else{
+            if($bt->os=='windows'){
+                // TODO windows文件路径待验证
+                $file = 'C:/BtSoft/panel/data/autoUpdate.pl';
+            }else{
+                $file = '/www/server/panel/data/autoUpdate.pl';
+            }
+            $set = $bt->btPanel->AutoUpdatePanelOff($file);
+        }
+        $this->success(__('Success'));
     }
 }

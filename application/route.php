@@ -32,6 +32,8 @@ return [
     'main'=>'index/vhost/main',
     'domain'=>'index/vhost/domain',
     'hostreset' => 'index/vhost/hostreset',
+    'speed_cache' => 'index/vhost/speed_cache',
+    'speed_cache_list' => 'index/vhost/speed_cache_list',
     'pass'=>'index/vhost/pass',
     'speed'=>'index/vhost/speed',
     'Rewrite301'=>'index/vhost/Rewrite301',

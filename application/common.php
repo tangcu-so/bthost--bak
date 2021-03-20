@@ -43,6 +43,24 @@ if (!function_exists('format_bytes')) {
     }
 }
 
+if (!function_exists('format_megabyte')) {
+
+    /**
+     * 将兆字节转换为可读文本
+     * @param int    $size      大小
+     * @param string $delimiter 分隔符
+     * @return string
+     */
+    function format_megabyte($size, $delimiter = '')
+    {
+        $units = array('MB', 'GB', 'TB', 'PB');
+        for ($i = 0; $size >= 1024 && $i < 6; $i++) {
+            $size /= 1024;
+        }
+        return round($size, 2) . $delimiter . $units[$i];
+    }
+}
+
 if (!function_exists('datetime')) {
 
     /**

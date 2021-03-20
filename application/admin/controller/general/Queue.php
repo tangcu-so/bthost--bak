@@ -20,6 +20,8 @@ class Queue extends Backend
 
     public $queUrl = '';
 
+    public $queName = 'btHost计划任务';
+
     public function _initialize()
     {
         parent::_initialize();
@@ -34,7 +36,7 @@ class Queue extends Backend
     {
         $bt = new Btaction();
 
-        $logsInfo = $bt->get_cron('btHost计划任务');
+        $logsInfo = $bt->get_cron($this->queName);
         if (!$logsInfo) {
             $this->error('任务未添加，请先添加任务', null);
         }
@@ -53,7 +55,7 @@ class Queue extends Backend
     public function detail($limit = 30)
     {
         $row = model('queueLog')->order('id desc')->paginate($limit)->each(function ($item, $key) {
-            $item['logs'] = $item->logs."\r\n";
+            $item['logs'] = $item->logs . "\r\n";
             return $item;
         });
         if (!$row) {
@@ -67,38 +69,67 @@ class Queue extends Backend
     // 清空日志
     public function quelogclear()
     {
-        model('QueueLog')->where('id', '>', 1)->delete(true);
+        model('QueueLog')->where('id', '>', 0)->delete(true);
+        try {
+            // 删除计划任务日志
+            $bt = new Btaction();
+            // 判断任务是否已存在
+            $get_cron = $bt->get_cron($this->queName);
+
+            if ($get_cron && isset($get_cron['id'])) {
+                $bt->btPanel->DelLogs($get_cron['id']);
+            }
+        } catch (\Exception $e) {
+        }
         $this->success('已清空');
     }
 
     // 快速监控
     public function deployment()
     {
-        $url = $this->queUrl;
+
         $bt = new Btaction();
-
+        $type = $this->request->post('type', 'url');
         // 判断任务是否已存在
-        $is_exist = $bt->exist_cron('btHost计划任务');
+        $get_cron = $bt->get_cron($this->queName);
 
-        if ($is_exist) {
-            $this->success('已部署');
+        if ($get_cron && isset($get_cron['id'])) {
+            // 删除任务并重新添加
+            $bt->btPanel->DelCrontab($get_cron['id']);
         }
-        $set = $bt->btPanel->AddCrontab([
-            'name' => 'btHost计划任务',
-            'sType' => 'toUrl',
+        $data = [
+            'name' => $this->queName,
             'type' => 'minute-n',
             'where1' => 1,
-            'urladdress' => $url,
-        ]);
+        ];
+        if ($type == 'url') {
+            $url = $this->queUrl;
+            $data['urladdress'] = $url;
+            $data['sType'] = 'toUrl';
+        } elseif ($type == 'cron') {
+            $cron = "php " . ROOT_PATH . "think cron";
+            $data['sBody'] = $cron;
+            $data['sType'] = 'toShell';
+        }
+
+        $set = $bt->btPanel->AddCrontab($data);
         if (!$set) {
             $this->error($bt->btPanel->_error);
         }
         $this->success('部署成功');
     }
 
-    public function edit($ids=null){
+    public function edit($ids = null)
+    {
         //设置过滤方法
         $this->request->filter([]);
         return parent::edit($ids);
+    }
+
+    public function queue_url()
+    {
+        $cron = "*/1 * * * * php " . ROOT_PATH . "think cron";
+        $this->view->assign('cron', $cron);
+        return $this->view->fetch('queue_url');
     }
 }

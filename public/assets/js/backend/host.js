@@ -47,7 +47,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                         // {field: 'analysis_type', title: __('Analysis_type')},
                         // {field: 'web_back_num', title: __('Web_back_num')},
                         // {field: 'sql_back_num', title: __('Sql_back_num')},
-                        {field: 'is_vsftpd', title: __('Is_vsftpd'), searchList: {"0":__('Is_vsftpd 0'),"1":__('Is_vsftpd 1')}, formatter: Table.api.formatter.normal},
                         {field: 'check_time', title: __('Check_time'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {
                             field: 'createtime',
@@ -71,6 +70,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                             addclass: 'datetimerange',
                             formatter: Table.api.formatter.datetime
                         },
+                        {field: 'is_vsftpd', title: __('Is_vsftpd'), searchList: {"0":__('Is_vsftpd 0'),"1":__('Is_vsftpd 1')},custom:{1: 'success', 0:'danger'}, formatter: Table.api.formatter.label},
+                        {field: 'is_api', title: __('Api'), searchList: {"1":__('Yes'),"0":__('No')},custom:{1: 'success', 0:'danger'}, formatter: Table.api.formatter.label},
                         {field: 'status', title: __('Status'), searchList: {"normal":__('Status normal'),"stop":__('Status stop'),"locked":__('Status locked'),"expired":__('Status expired'),"excess":__('Status excess'),"error":__('Status error')}, formatter: Table.api.formatter.status},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate,
                             buttons: [
@@ -224,6 +225,8 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'selectpage'], functi
                             return  str;
                         }},
                         {field: 'endtime', title: __('Endtime'),formatter: Table.api.formatter.datetime},
+                        {field: 'is_vsftpd', title: __('Is_vsftpd'), searchList: {"0":__('Is_vsftpd 0'),"1":__('Is_vsftpd 1')},custom:{1: 'success', 0:'danger'}, formatter: Table.api.formatter.label},
+                        {field: 'is_api', title: __('Api'), searchList: {"1":__('Yes'),"0":__('No')},custom:{1: 'success', 0:'danger'}, formatter: Table.api.formatter.label},
                         {
                             field: 'deletetime',
                             title: __('Deletetime'),

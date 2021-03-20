@@ -51,16 +51,27 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
                 ]
             });
 
-            var clipboard = new Clipboard('.btn-fuzhi');
-            clipboard.on('success', function(e) {
-                Toastr.success('复制成功');
-                console.log(e);
-            });
+            // var clipboard = new Clipboard('.btn-fuzhi');
+            // clipboard.on('success', function(e) {
+            //     Toastr.success('复制成功');
+            //     console.log(e);
+            // });
 
-            clipboard.on('error', function(e) {
-                Toastr.error('复制失败');
-                console.log(e);
-            });
+            // clipboard.on('error', function(e) {
+            //     Toastr.error('复制失败');
+            //     console.log(e);
+            // });
+
+            $('.btn-queue').click(function(){
+                layer.open({
+                    type: 2,
+                    title: '计划任务监控',
+                    shadeClose: true,
+                    shade: 0.8,
+                    area: [$(window).width() > 800 ? '500px' : '95%', $(window).height() > 600 ? '400px' : '95%'],
+                    content: 'queue_url'
+                }); 
+            })
 
             // 计划任务监控帮助文章
             $('.btn-help').click(function () {
@@ -74,9 +85,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
                 }); 
             });
 
-            $(document).on("click", ".btn-deployment", function () {
-                Table.api.multi("general/queue/deployment", '', table, this);
-            });
+            // $(document).on("click", ".btn-deployment", function () {
+            //     Table.api.multi("general/queue/deployment", '', table, this);
+            // });
 
             // 一键清空日志
             $('.btn-clear').click(function () { 
@@ -126,6 +137,21 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'clipboard.min'], fun
         },
         edit: function () {
             Controller.api.bindevent();
+        },
+        queue_url:function(){
+            Controller.api.bindevent();
+            $(document).on("click", "#sizing-addon-cron", function () {
+                Backend.api.ajax({
+                    url: "general/queue/deployment",
+                    data:{type:'cron'}
+                });
+            });
+            $(document).on("click", "#sizing-addon-url", function () {
+                Backend.api.ajax({
+                    url: "general/queue/deployment",
+                    data:{type:'url'}
+                });
+            });
         },
         api: {
             bindevent: function () {

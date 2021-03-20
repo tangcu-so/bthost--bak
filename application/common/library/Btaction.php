@@ -420,6 +420,7 @@ class Btaction
         $site_max = isset($plans['site_max']) && $plans['site_max'] ? $plans['site_max'] : '无限制';
         $sql_max = isset($plans['sql_max']) && $plans['sql_max'] ? $plans['sql_max'] : '无限制';
         $flow_max = isset($plans['flow_max']) && $plans['flow_max'] ? $plans['flow_max'] : '无限制';
+        $ps = isset($plans['ps']) && $plans['ps'] ? $plans['ps'] : 'Site:' . $site_max . ' Sql:' . $sql_max . ' Flow:' . $flow_max;
 
         $rand_password = Random::alnum(12);
 
@@ -431,7 +432,7 @@ class Btaction
             'type'         => 'PHP',
             'version'      => $phpversion ? $phpversion : '00',
             'port'         => isset($plans['port']) ? $plans['port'] : '80',
-            'ps'           => 'Site:' . $site_max . ' Sql:' . $sql_max . ' Flow:' . $flow_max,
+            'ps'           => $ps,
             'ftp'          => isset($plans['ftp']) && $plans['ftp'] ? 'true' : 'false',
             'ftp_username' => $set_domain,
             'ftp_password' => $rand_password,
@@ -829,7 +830,7 @@ class Btaction
      */
     public function getFtpInfo($k = '')
     {
-        if(!$this->ftp_name){
+        if (!$this->ftp_name) {
             return false;
         }
         $ftp = $this->btPanel->WebFtpList($this->ftp_name);
@@ -852,7 +853,7 @@ class Btaction
      */
     public function getSqlInfo($k = '')
     {
-        if(!$this->sql_name){
+        if (!$this->sql_name) {
             return false;
         }
         $sql = $this->btPanel->WebSqlList($this->sql_name);
@@ -1565,23 +1566,91 @@ class Btaction
      * 获取指定名称队列任务
      *
      * @param [type] $name      任务名称
+     * @param [type] $id        任务ID
      * @return void
      */
-    public function get_cron($name)
+    public function get_cron($name = '', $id = '')
     {
         $list = $this->btPanel->GetCrontab();
         if (!$list) {
             $this->_error = $this->btPanel->_error;
             return false;
         }
-        if ($list) {
-            foreach ($list as $key => $value) {
-                if (isset($value['name']) && $value['name'] == $name) {
+        foreach ($list as $key => $value) {
+            if ($id && $name) {
+                if ((isset($value['name']) && $value['name'] == $name) && (isset($value['id']) && $value['id'] == $id)) {
                     return $value;
                 }
+            } else if ($name && (isset($value['name']) && $value['name'] == $name)) {
+                return $value;
+            } else if ($id && (isset($value['id']) && $value['id'] == $id)) {
+                return $value;
             }
         }
         return false;
+    }
+
+    /**
+     * 获取所有加速站点
+     *
+     * @return array|bool
+     */
+    public function get_speed_site_list()
+    {
+        $list = $this->btPanel->SiteSpeed();
+        if (!$list) {
+            $this->_error = $this->btPanel->_error;
+            return false;
+        }
+
+        return $list;
+    }
+
+    /**
+     * 获取站点加速站点信息
+     *
+     * @param [type] $bt_name   站点名
+     * @return array|bool
+     */
+    public function get_speed_site($bt_name)
+    {
+        $info = $this->btPanel->GetSiteSpeed($bt_name);
+        if (!$info) {
+            $this->_error = $this->btPanel->_error;
+            return false;
+        }
+        return $info;
+    }
+
+    /**
+     * 获取站点加速站点状态
+     *
+     * @param [type] $bt_name   站点名
+     * @return void
+     */
+    public function get_speed_site_status($bt_name)
+    {
+        $get = $this->get_speed_site($bt_name);
+        if (!$get) {
+            return false;
+        }
+        return $get['open'] ?? 0;
+    }
+
+    /**
+     * 设置站点加速站点状态开关
+     *
+     * @param [type] $bt_name   站点名
+     * @return void
+     */
+    public function set_speed_site_status($bt_name)
+    {
+        $set = $this->btPanel->SiteSpeedStatus($bt_name);
+        if (!$set) {
+            $this->_error = $this->btPanel->_error;
+            return false;
+        }
+        return $set;
     }
 
     // 清除服务器配置缓存
@@ -1594,6 +1663,16 @@ class Btaction
             $this->setError($config['msg']);
         }
         return false;
+    }
+
+    // 检查文件是否存在
+    public function panel_file_exist($file){
+        $get = $this->btPanel->getFileLog($file);
+        if(isset($get['status'])&&$get['status']==true){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     /**

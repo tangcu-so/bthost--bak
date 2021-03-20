@@ -1,4 +1,7 @@
 <link rel="stylesheet" href="__CDN____STATIC__/css/admin_dashboard.css?v={$Think.config.site.version}">
+<style>
+    .tatolinfo .value{text-align: center;}
+</style>
 <div class="panel panel-default panel-intro">
     <div class="panel-heading">
         {:build_heading(null, false)}
@@ -12,7 +15,7 @@
         <div id="myTabContent" class="tab-content">
             <div class="tab-pane fade active in" id="one">
                 <div class="row">
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-blue">
                             <div class="panel-body">
                                 <div class="panel-title">
@@ -26,7 +29,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-teal-gradient">
                             <div class="panel-body">
                                 <div class="panel-title">
@@ -40,12 +43,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-purple-gradient">
                             <div class="panel-body">
                                 <div class="panel-title">
                                     <span class="label label-success pull-right">实时</span>
-                                    <h5>内存使用率</h5>
+                                    <h5>内存使用率(MB)</h5>
                                 </div>
                                 <div class="panel-content">
                                     <h1 class="no-margins" id="mem">Loading……</h1>
@@ -55,7 +58,7 @@
                         </div>
                     </div>
                     {volist name="GetDiskInfo" id="disk"}
-                    <div class="col-sm-6 col-lg-3">
+                    <div class="col-sm-3 col-lg-3">
                         <div class="panel bg-red-gradient">
                             <div class="panel-body">
                                 <div class="panel-title">
@@ -104,6 +107,7 @@
                                     {default /}
                                 {/switch}
                                 <span>不间断运行：{$GetSystemTotal.time|default="--"}</span>
+                                <span>公网IP：{$IP}</span>
                             </p>
                         </div>
                         <div class="panel-body">
@@ -225,8 +229,8 @@
                 <div class="col-lg-4">
                     <div class="card sameheight-item stats">
                         <div class="card-block">
-                            <div class="row row-sm stats-container">
-                                <div class="col-xs-6 stat-col">
+                            <div class="row row-sm stats-container tatolinfo">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-users"></i></div>
                                     <div class="stat">
                                         <div class="value"> <a href="{:url('/user/user')}" class="btn-addtabs"
@@ -237,7 +241,7 @@
                                         <div class="progress-bar progress-bar-success" style="width: 30%"></div>
                                     </div>
                                 </div>
-                                <div class="col-xs-6 stat-col">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-globe"></i></div>
                                     <div class="stat">
                                         <div class="value"> <a href="{:url('/domainlist')}" class="btn-addtabs"
@@ -249,7 +253,7 @@
                                         <div class="progress-bar progress-bar-warning" style="width: 30%"></div>
                                     </div>
                                 </div>
-                                <div class="col-xs-6 stat-col">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
                                     <div class="stat">
                                         <div class="value"><a href="{:url('/host')}" class="btn-addtabs"
@@ -260,12 +264,34 @@
                                         <div class="progress-bar progress-bar-success" style="width: 30%"></div>
                                     </div>
                                 </div>
-                                <div class="col-xs-6 stat-col">
+                                <div class="col-xs-3 stat-col">
                                     <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
                                     <div class="stat">
                                         <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
                                                 title="{:__('Total endtime')}"> {$endCount}</a></div>
                                         <div class="name"> {:__('Total endtime')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
+                                                title="{:__('Excess host count')}"> {$ExcesshostCount}</a></div>
+                                        <div class="name"> {:__('Excess host count')}</div>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar progress-bar-success" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-3 stat-col">
+                                    <div class="stat-icon"><i class="fa fa-hdd-o"></i></div>
+                                    <div class="stat">
+                                        <div class="value"> <a href="{:url('/host')}" class="btn-addtabs"
+                                                title="{:__('Recyclebin count')}"> {$RecyclebinCount}</a></div>
+                                        <div class="name"> {:__('Recyclebin count')}</div>
                                     </div>
                                     <div class="progress">
                                         <div class="progress-bar progress-bar-success" style="width: 30%"></div>
@@ -308,7 +334,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('服务器密钥配置')}</td>
+                                        <td>{:__('服务器密钥配置')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_apitoken}
                                         <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                         {else /}
@@ -316,7 +342,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('备案引导模块')}</td>
+                                        <td>{:__('备案引导模块')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('用于备案检测及域名访问拦截')}"></i></td>
                                         {if $validate_beian}
                                         <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                         {else /}
@@ -342,7 +368,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('API通信密钥配置')}</td>
+                                        <td>{:__('API通信密钥配置')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_apiaccess_token}
                                         <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                         {else /}
@@ -350,7 +376,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('计划任务部署')}</td>
+                                        <td>{:__('计划任务部署')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_queue}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -358,7 +384,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('计划任务密钥配置')}</td>
+                                        <td>{:__('计划任务密钥配置')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_queuekey}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -366,7 +392,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('自动检查更新')}</td>
+                                        <td>{:__('btHost自动检查更新')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('建议开启')}"></i></td>
                                         {if $validate_auto_update}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -374,11 +400,19 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('自动获取公告')}</td>
+                                        <td>{:__('自动获取公告')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('建议开启')}"></i></td>
                                         {if $validate_auto_notice}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
                                             <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}</td>
+                                        {/if}
+                                    </tr>
+                                    <tr>
+                                        <td>{:__('宝塔面板自动更新')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('自动检查并更新到最新版宝塔面板')}"></i></td>
+                                        {if $validate_auto_bt_update}
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_off"> 关闭</a></td>
+                                            {else /}
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_on"> 开启</a></td>
                                         {/if}
                                     </tr>
                                 </tbody>
@@ -420,14 +454,6 @@
                                     <tr>
                                         <td>{:__('Software')}</td>
                                         <td>{$Think.server.SERVER_SOFTWARE}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>{:__('Upload mode')}</td>
-                                        <td>{$uploadmode}</td>
-                                    </tr>
-                                    <tr>
-                                        <td>{:__('Upload url')}</td>
-                                        <td>{$config.upload.uploadurl}</td>
                                     </tr>
                                     <tr>
                                         <td>{:__('Timezone')}</td>

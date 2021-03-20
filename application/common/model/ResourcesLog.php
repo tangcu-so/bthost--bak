@@ -14,9 +14,4 @@ class ResourcesLog extends Model
     // 定义时间戳字段名
     protected $createTime = 'createtime';
     protected $updateTime = '';
-
-    public function getCreatetimeAttr($value, $data)
-    {
-        return is_numeric($value) ? date('H:i', $value) : '';
-    }
 }

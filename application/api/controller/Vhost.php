@@ -9,6 +9,8 @@ use think\Config;
 use think\Db;
 use think\Cache;
 use app\common\library\Btaction;
+use app\common\library\Ftmsg;
+use app\common\library\Message;
 use think\Cookie;
 use think\exception\ValidateException;
 
@@ -49,7 +51,8 @@ class Vhost extends Api
         $this->hostModel = model('Host');
     }
 
-    public function index(){        
+    public function index()
+    {
         $this->success('请求成功');
     }
 
@@ -70,23 +73,25 @@ class Vhost extends Api
     }
 
     // 云服务器状态及监控
-    public function server_status(){
+    public function server_status()
+    {
         $bt = new Btaction();
         $info = $bt->btPanel->GetNetWork();
-        $this->success('请求成功',$info);
+        $this->success('请求成功', $info);
     }
 
     // 网站分类列表
-    public function sort_list(){
+    public function sort_list()
+    {
         // 调用缓存
         $sortList = Cache::remember('site_type_list', function () {
             $bt   = new Btaction();
             return $sortList = $bt->getsitetype();
         });
-        if(!$sortList){
+        if (!$sortList) {
             $this->error('请求失败');
         }
-        $this->success('请求成功',$sortList);
+        $this->success('请求成功', $sortList);
     }
 
     // 创建网站分类
@@ -157,94 +162,103 @@ class Vhost extends Api
     }
 
     // IP池列表
-    public function ippools_list(){
+    public function ippools_list()
+    {
         $list = model('Ippools')::all();
-        $this->success('请求成功',$list);
+        $this->success('请求成功', $list);
     }
 
     // IP地址列表
-    public function ipaddress_list(){
+    public function ipaddress_list()
+    {
         $ippools_id = $this->request->post('ippools_id/d');
-        if(!$ippools_id){
+        if (!$ippools_id) {
             $this->error('请求错误');
         }
-        $list = model('Ipaddress')::all(['ippools_id'=>$ippools_id]);
-        $this->success('请求成功',$list);
+        $list = model('Ipaddress')::all(['ippools_id' => $ippools_id]);
+        $this->success('请求成功', $list);
     }
 
     // IP地址详情
-    public function ipaddress_info(){
+    public function ipaddress_info()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
         $info = model('Ipaddress')::get($id);
-        $this->success('请求成功',$info);
+        $this->success('请求成功', $info);
     }
 
     // 资源组列表
-    public function plans_list(){
+    public function plans_list()
+    {
         $list = model('Plans')::all();
         foreach ($list as $key => $value) {
-            $list[$key]['value'] = json_decode($value->value,1);
+            $list[$key]['value'] = json_decode($value->value, 1);
         }
-        $this->success('请求成功',$list);
+        $this->success('请求成功', $list);
     }
 
     // 资源组详情
-    public function plans_info(){
+    public function plans_info()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
 
         $info = model('Plans')::get($id);
-        $info->value = json_decode($info->value,1);
-        $this->success('请求成功',$info);
+        $info->value = json_decode($info->value, 1);
+        $this->success('请求成功', $info);
     }
 
     // 域名池列表
-    public function domainpools_list(){
+    public function domainpools_list()
+    {
         $list = model('Domainpools')::all();
-        $this->success('请求成功',$list);
+        $this->success('请求成功', $list);
     }
 
     // 域名列表
-    public function domain_list(){
+    public function domain_list()
+    {
         $domainpools_id = $this->request->post('domainpools_id/d');
-        if(!$domainpools_id){
+        if (!$domainpools_id) {
             $this->error('请求错误');
         }
-        $list = model('Domain')::all(['domainpools_id'=>$domainpools_id]);
-        $this->success('请求成功',$list);
+        $list = model('Domain')::all(['domainpools_id' => $domainpools_id]);
+        $this->success('请求成功', $list);
     }
 
     // 域名详情
-    public function domain_info(){
+    public function domain_info()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
         $info = model('Domain')::get($id);
-        $this->success('请求成功',$info);
+        $this->success('请求成功', $info);
     }
 
     // 用户列表
-    public function user_list(){
+    public function user_list()
+    {
         $group_id = $this->request->param('group_id/d');
-        if($group_id){
-            $list = model('User')::all(['group_id'=>$group_id]);
-        }else{
+        if ($group_id) {
+            $list = model('User')::all(['group_id' => $group_id]);
+        } else {
             $list = model('User')::all();
         }
-        
-        if($list){
+
+        if ($list) {
             foreach ($list as $key => $value) {
-                $value->password = decode($value->password,$value->salt);
-                $value->hidden(['salt','loginip','token']);
+                $value->password = decode($value->password, $value->salt);
+                $value->hidden(['salt', 'loginip', 'token']);
             }
         }
-        $this->success('请求成功',$list);
+        $this->success('请求成功', $list);
     }
 
     // 创建用户
@@ -301,22 +315,24 @@ class Vhost extends Api
     }
 
     // 账号信息
-    public function user_info(){
+    public function user_info()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
         $info = model('User')::get($id);
-        $info->password = decode($info->password,$info->salt);
-        $info->hidden(['salt','loginip','token']);
-        $this->success('请求成功',$info);
+        $info->password = decode($info->password, $info->salt);
+        $info->hidden(['salt', 'loginip', 'token']);
+        $this->success('请求成功', $info);
     }
 
     // 主机转移账户
-    public function host_push(){
+    public function host_push()
+    {
         $host_id = $this->request->post('host_id/d');
         $user_id = $this->request->post('user_id/d');
-        if(!$host_id||!$user_id){
+        if (!$host_id || !$user_id) {
             $this->error('请求错误');
         }
         $hostInfo = $this->getHostInfo($host_id);
@@ -326,88 +342,93 @@ class Vhost extends Api
     }
 
     // 数据库详情
-    public function sql_info(){
+    public function sql_info()
+    {
         $id = $this->request->post('sql_id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $info = model('Sql')::get($id);
         $info->console = $info->console ? $info->console : config('site.phpmyadmin');
-        $this->success('请求成功',$info);
+        $this->success('请求成功', $info);
     }
 
     // 创建数据库
     // TODO 多数据库没出来之前临时停用
-    public function sql_build(){
+    public function sql_build()
+    {
         $this->error('接口停用');
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
-        
-        $username = $this->request->post('username',Random::alnum(8));
+
+        $username = $this->request->post('username', Random::alnum(8));
         $database = $this->request->post('database');
-        $password = $this->request->post('password',Random::alnum(8));
+        $password = $this->request->post('password', Random::alnum(8));
         $console = $this->request->post('console');
-        $type = $this->request->post('type','bt');
+        $type = $this->request->post('type', 'bt');
 
         if (!preg_match("/^[A-Za-z0-9]+$/", $username)) {
             $this->error('账号格式不正确');
         }
 
         $info = $this->getHostInfo($id);
-        
+
         $sqlData = [
             'vhost_id'  => $info->id,
             'username'  => $username,
             'database'  => $database,
             'password'  => $password,
             'console'   => $console,
-            'type'   => $type=='bt'?'bt':'custom',
+            'type'   => $type == 'bt' ? 'bt' : 'custom',
         ];
         $create = model('Sql')::create($sqlData);
         $sqlData['id'] = $create->id;
-        $this->success('创建成功',$sqlData);
+        $this->success('创建成功', $sqlData);
     }
 
     // 数据库密码修改
-    public function sql_pass(){
+    public function sql_pass()
+    {
         $id = $this->request->post('sql_id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
-        $password = $this->request->post('password',Random::alnum(8));
+        $password = $this->request->post('password', Random::alnum(8));
 
         $info = model('Sql')::get($id);
         $info->password = $password;
         $info->save();
-        $this->success('修改成功',$info);
+        $this->success('修改成功', $info);
     }
 
     // FTP详情
-    public function ftp_info(){
+    public function ftp_info()
+    {
         $id = $this->request->post('ftp_id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $info = model('Ftp')::get($id);
-        $this->success('请求成功',$info);
+        $this->success('请求成功', $info);
     }
 
     // FTP密码修改
-    public function ftp_pass(){
+    public function ftp_pass()
+    {
         $id = $this->request->post('ftp_id/d');
-        $password = $this->request->post('password',Random::alnum(8));
-        if(!$id){
+        $password = $this->request->post('password', Random::alnum(8));
+        if (!$id) {
             $this->error('请求错误');
         }
         $info = model('Ftp')::get($id);
-        if(!$info){
+        if (!$info) {
             $this->error('ftp不存在');
         }
         $info->password = $password;
         $info->save();
-        $this->success('修改成功',$info);
+        $this->success('修改成功', $info);
     }
 
     // FTP状态修改
@@ -428,27 +449,29 @@ class Vhost extends Api
     }
 
     // 主机列表
-    public function host_list(){
+    public function host_list()
+    {
         $sortId = $this->request->param('sort_id/d');
         $userId = $this->request->param('user_id/d');
         $where = [];
-        if($sortId){
+        if ($sortId) {
             $where['sort_id'] = $sortId;
         }
-        if($userId){
+        if ($userId) {
             $where['user_id'] = $userId;
         }
         $list = $this->hostModel->where($where)->select();
-        $this->success('请求成功',$list);
+        $this->success('请求成功', $list);
     }
 
     // 创建主机
-    public function host_build(){
+    public function host_build()
+    {
         $plans_id = $this->request->post('plans_id/d');
         // 格式 Y-m-d
         $endtime = $this->request->post('endtime');
-        $user_id = $this->request->post('user_id',1);
-        $sort_id = $this->request->post('sort_id',1);
+        $user_id = $this->request->post('user_id', 1);
+        $sort_id = $this->request->post('sort_id', 1);
         // 自定义站点名前缀
         $username = $this->request->post('username');
 
@@ -460,14 +483,14 @@ class Vhost extends Api
         if (!$bt->test()) {
             $this->error($bt->_error);
         }
-        if($plans_id){
+        if ($plans_id) {
             // 如果传递资源组ID，使用资源组配置构建数据
             // 查询该资源组ID是否正确
             $plansInfo = model('Plans')->getPlanInfo($plans_id);
-            if(!$plansInfo){
+            if (!$plansInfo) {
                 $this->error(model('Plans')->msg);
             }
-        }else{
+        } else {
             // 使用用户传递参数进行构建数据
             $pack_arr = $this->request->post('pack/a');
             $plansInfo = model('Plans')->getPlanInfo('', $pack_arr);
@@ -570,6 +593,7 @@ class Vhost extends Api
             'ip_address'            => $plansInfo['ipArr'] ?? '',
             'endtime'               => $endtime,
             'sub_bind'              => $plansInfo['sub_bind'] ?? 0,
+            'is_api'                => 1,
         ];
         $hostInfo = model('Host')::create($host_data);
 
@@ -610,19 +634,32 @@ class Vhost extends Api
 
         Db::commit();
 
+        // 方糖通知
+        if (Config::get('site.ftqq_sckey')) {
+            $title = '[主机开通提醒]';
+            $content = "\n\n主机名：" . $btName;
+            $content .= "\n\n主机空间：" . $host_data['site_max'];
+            $content .= "\n\n数据库大小：" . $host_data['sql_max'];
+            $content .= "\n\n流量大小：" . $host_data['flow_max'];
+            $content .= "\n\n到期时间：" . $endtime;
+            $content .= "\n\nTime：" . date('Y-m-d H:i:s', time());
+            $this->ft_msg($title, $content);
+        }
+
         $this->success('创建成功', ['site' => $hostInfo, 'domain' => $domainInfo, 'sql' => $sqlInfo, 'ftp' => $ftpInfo]);
     }
 
     // 主机详情
-    public function host_info(){
+    public function host_info()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $info = $this->getHostInfo($id);
         $info->default_analysis = config('site.default_analysis') == 0 ? $info->bt_name : config('site.dnspod_analysis_url');
-        $info->sql = model('Sql')::all(['vhost_id'=>$id,'status'=>'normal']);
-        $info->ftp = model('Ftp')::get(['vhost_id'=>$id,'status'=>'normal']);
+        $info->sql = model('Sql')::all(['vhost_id' => $id, 'status' => 'normal']);
+        $info->ftp = model('Ftp')::get(['vhost_id' => $id, 'status' => 'normal']);
         $info->domain = model('Domainlist')::all(['vhost_id' => $id]);
 
         $this->success('请求成功 ', $info);
@@ -637,23 +674,23 @@ class Vhost extends Api
 
         // 传参验证
         $validate = $this->validate([
-            'account'=>$account,
-            'password'=>$password,
-            'id'=>$id,
-        ],[
-            'account'=>'require|length:3,50',
-            'password'=>'require|length:6,30',
-            'id'=>'number',
-        ],[
+            'account' => $account,
+            'password' => $password,
+            'id' => $id,
+        ], [
+            'account' => 'require|length:3,50',
+            'password' => 'require|length:6,30',
+            'id' => 'number',
+        ], [
             'account.require'  => 'Account can not be empty',
             'account.length'   => 'Account must be 3 to 50 characters',
             'password.require' => 'Password can not be empty',
             'password.length'  => 'Password must be 6 to 30 characters',
-            'id.number'=>'主机ID格式错误',
+            'id.number' => '主机ID格式错误',
         ]);
 
-        if($validate!==true){
-            if ($this->request->isAjax()){
+        if ($validate !== true) {
+            if ($this->request->isAjax()) {
                 $this->error(__($validate), url('/'));
             }
             return redirect('/');
@@ -662,15 +699,15 @@ class Vhost extends Api
         // 登录用户
         $userAuth = new \app\common\library\Auth();
 
-        if($userAuth->login($account, $password)){
+        if ($userAuth->login($account, $password)) {
             if ($this->request->isAjax()) {
                 $this->success(__('Logged in successful'), url('/'));
             } else {
-                if($id){
+                if ($id) {
                     $hostInfo = model('Host')::get($id);
-                    if(!$hostInfo){
+                    if (!$hostInfo) {
                         $this->error('没有找到有效主机', url('/'));
-                    }else{
+                    } else {
                         // cookie切换到主机id
                         Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
                     }
@@ -679,34 +716,36 @@ class Vhost extends Api
                 Cookie::set('token', $userAuth->getToken());
                 // cookie切换到主机id
                 Cookie::set('host_id_' . $hostInfo->user_id, $hostInfo->id);
-        
+
                 // 跳转首页控制台
                 return redirect('/');
             }
-        }else{
+        } else {
             $this->error($userAuth->getError(), null, ['token' => $this->request->token()]);
         }
     }
-    
+
     // 主机回收站（软删除）
-    public function host_recycle(){
+    public function host_recycle()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
         $hostFind = $this->getHostInfo($id);
         $this->hostModel::destroy($id);
         $this->success('已回收');
     }
-    
+
     // 主机回收站恢复
-    public function host_recovery(){
+    public function host_recovery()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
-        $hostFind = $this->hostModel::withTrashed()->where(['id'=>$id])->find();
-        if(!$hostFind){
+        $hostFind = $this->hostModel::withTrashed()->where(['id' => $id])->find();
+        if (!$hostFind) {
             $this->error('主机不存在');
         }
         // 连接宝塔启用站点
@@ -714,7 +753,7 @@ class Vhost extends Api
         $bt->bt_id = $hostFind->bt_id;
         $bt->bt_name = $hostFind->bt_name;
         $set = $bt->webstart();
-        if(!$set){
+        if (!$set) {
             $this->error($bt->_error);
         }
         $hostFind->deletetime = null;
@@ -723,37 +762,39 @@ class Vhost extends Api
     }
 
     // 修改密码
-    public function host_pass(){
+    public function host_pass()
+    {
         $id = $this->request->post('id/d');
-        $type = $this->request->post('type','all');
-        $password = $this->request->post('password',Random::alnum(12));
-        if(!$id){
+        $type = $this->request->post('type', 'all');
+        $password = $this->request->post('password', Random::alnum(12));
+        if (!$id) {
             $this->error('错误的请求');
         }
         $bt = new Btaction();
-        
-        if($type=='ftp'||$type=='all'){
+
+        if ($type == 'ftp' || $type == 'all') {
             $ftpFind = model('Ftp')::get(['vhost_id' => $id]);
             $ftpFind->password = $password;
             $ftpFind->save();
         }
-        if($type=='host'||$type=='all'){
+        if ($type == 'host' || $type == 'all') {
             $hostFind = $this->getHostInfo($id);
             $userInfo = model('User')::get($hostFind->user_id);
-            if(!$userInfo){
+            if (!$userInfo) {
                 $this->error('无此用户');
             }
             $userInfo->password = $password;
             $userInfo->save();
         }
-        
-        $this->success('请求成功',['password'=>$password]);
+
+        $this->success('请求成功', ['password' => $password]);
     }
 
     // 主机停用
-    public function host_stop(){
+    public function host_stop()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
@@ -763,9 +804,10 @@ class Vhost extends Api
     }
 
     // 主机锁定
-    public function host_locked(){
+    public function host_locked()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
@@ -775,9 +817,10 @@ class Vhost extends Api
     }
 
     // 主机启用
-    public function host_start(){
+    public function host_start()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
@@ -787,10 +830,11 @@ class Vhost extends Api
     }
 
     // 主机运行状态
-    public function host_status(){
+    public function host_status()
+    {
         // 获取本地及服务器中站点运行状态
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
@@ -798,27 +842,28 @@ class Vhost extends Api
         $bt->bt_name = $hostFind->bt_name;
         $bt->bt_id = $hostFind->bt_id;
         $hostInfo = $bt->getSiteInfo();
-        if(!$hostInfo){
+        if (!$hostInfo) {
             $this->error($bt->_error);
         }
 
         // normal:正常,stop:停止,locked:锁定,expired:过期,excess:超量,error:异常
-        $this->success('请求成功',['loca'=>$hostFind->status,'server'=>$hostInfo['status']]);
+        $this->success('请求成功', ['loca' => $hostFind->status, 'server' => $hostInfo['status']]);
     }
 
     // 主机同步
-    public function host_sync(){
+    public function host_sync()
+    {
         // 用于同步主机状态、到期时间、宝塔ID
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
-        
+
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
         $hostInfo = $bt->getSiteInfo();
-        if(!$hostInfo){
+        if (!$hostInfo) {
             $this->error($bt->_error);
         }
         $btid   = $hostInfo['id'];
@@ -844,9 +889,9 @@ class Vhost extends Api
 
         // 同步本地到期时间到云端
         $localDate = date('Y-m-d', $hostFind->endtime);
-        if($edate!=$localDate){
-            $set = $bt->setEndtime($btid,$localDate);
-            if(!$set){
+        if ($edate != $localDate) {
+            $set = $bt->setEndtime($btid, $localDate);
+            if (!$set) {
                 $this->error($bt->_error);
             }
         }
@@ -855,21 +900,22 @@ class Vhost extends Api
     }
 
     // 主机资源稽核，超停
-    public function host_resource(){
+    public function host_resource()
+    {
         // 用于返回和同步主机资源：数据库、流量、站点
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
 
-        $sqlFind = model('Sql')::get(['vhost_id'=>$id]);
-        if($sqlFind&&$sqlFind->username){
+        $sqlFind = model('Sql')::get(['vhost_id' => $id]);
+        if ($sqlFind && $sqlFind->username) {
             $sql_name = $sqlFind->username;
-        }else{
+        } else {
             $sql_name = '';
         }
-        
+
         $bt = new Btaction();
         $bt->bt_name = $hostFind->bt_name;
         $bt->bt_id = $hostFind->bt_id;
@@ -885,11 +931,13 @@ class Vhost extends Api
         if ($hostFind->sql_max != 0 && $hostFind->sql_size > $hostFind->sql_max) {
             $overflow = 1;
         }
-        if ($hostFind->site_max != 0 && $hostFind->site_size > $hostFind->site_max
+        if (
+            $hostFind->site_max != 0 && $hostFind->site_size > $hostFind->site_max
         ) {
             $overflow = 1;
         }
-        if ($hostFind->flow_max != 0 && $hostFind->flow_size > $hostFind->flow_max
+        if (
+            $hostFind->flow_max != 0 && $hostFind->flow_size > $hostFind->flow_max
         ) {
             $overflow = 1;
         }
@@ -898,7 +946,8 @@ class Vhost extends Api
             $hostFind->status = 'excess';
         } else {
             // 判断既没有过期，也处于没有超量状态，就恢复主机
-            if ($hostFind->endtime > time() && $hostFind->status == 'excess'
+            if (
+                $hostFind->endtime > time() && $hostFind->status == 'excess'
             ) {
                 $hostFind->status = 'normal';
             }
@@ -908,16 +957,17 @@ class Vhost extends Api
         $hostFind->allowField(true)->save();
 
         $max = [
-            'site'=>$hostFind->site_max,
-            'flow'=>$hostFind->flow_max,
-            'sql'=>$hostFind->sql_max,
+            'site' => $hostFind->site_max,
+            'flow' => $hostFind->flow_max,
+            'sql' => $hostFind->sql_max,
         ];
-        
-        $this->success('请求成功',['size'=>$size,'max'=>$max]);
+
+        $this->success('请求成功', ['size' => $size, 'max' => $max]);
     }
 
     // 主机信息修改
-    public function host_edit(){
+    public function host_edit()
+    {
         $id = $this->request->post('id/d');
         $sort_id = $this->request->post('sort_id/d');
         $is_audit = $this->request->post('is_audit/d');
@@ -931,7 +981,7 @@ class Vhost extends Api
         $sql_back_num = $this->request->post('sql_back_num/d');
         $sub_bind = $this->request->post('sub_bind/d');
         $status = $this->request->post('status');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
         // 修改内容包含：空间大小、数据库大小、流量大小、域名绑定数、网站备份数、数据库备份数
@@ -972,9 +1022,9 @@ class Vhost extends Api
             }
             $hostInfo->endtime = $endtime;
         }
-        
+
         $hostInfo->save();
-        $this->success('更新成功',$hostInfo);
+        $this->success('更新成功', $hostInfo);
     }
 
     // 主机修改套餐
@@ -1013,7 +1063,8 @@ class Vhost extends Api
     }
 
     // 主机域名绑定
-    public function host_domain(){
+    public function host_domain()
+    {
         $id = $this->request->post('id/d');
         $domain = $this->request->post('domain');
         $dirs = $this->request->post('dirs', '/');
@@ -1064,57 +1115,60 @@ class Vhost extends Api
     }
 
     // 主机绑定IP
-    public function host_bindip(){
+    public function host_bindip()
+    {
         $id = $this->request->post('id/d');
         $ip_id = $this->request->post('ip_id/d');
-        if(!$id||!$ip_id){
+        if (!$id || !$ip_id) {
             $this->error('错误的请求');
         }
         $hostInfo = $this->getHostInfo($id);
         $ipInfo = model('Ipaddress')::get($ip_id);
-        if(!$ipInfo){
+        if (!$ipInfo) {
             $this->error('IP不存在');
         }
         // 判断是否已经绑定该IP
-        $ip_list = explode(',',$hostInfo->getData('ip_address'));
-        if(in_array($ip_id,$ip_list)){
+        $ip_list = explode(',', $hostInfo->getData('ip_address'));
+        if (in_array($ip_id, $ip_list)) {
             $this->error('已绑定');
         }
         $ip_list = array_filter($ip_list);
-        array_push($ip_list,[$ip_id]);
-        $ip_str = implode(',',$ip_list);
+        array_push($ip_list, [$ip_id]);
+        $ip_str = implode(',', $ip_list);
         $hostInfo->ip_address = $ip_str;
         $hostInfo->save();
-        $this->success('绑定成功',$hostInfo->ip_address);
+        $this->success('绑定成功', $hostInfo->ip_address);
     }
 
     // 主机解绑IP
-    public function host_unbindip(){
+    public function host_unbindip()
+    {
         $id = $this->request->post('id/d');
         $ip_id = $this->request->post('ip_id/d');
         $hostInfo = $this->getHostInfo($id);
         $ipInfo = model('Ipaddress')::get($ip_id);
-        if(!$ipInfo){
+        if (!$ipInfo) {
             $this->error('IP不存在');
         }
-        $ip_list = explode(',',$hostInfo->getData('ip_address'));
-        if(!in_array($ip_id,$ip_list)){
+        $ip_list = explode(',', $hostInfo->getData('ip_address'));
+        if (!in_array($ip_id, $ip_list)) {
             $this->error('未绑定该IP');
         }
         // 清除空值
         $ip_list = array_filter($ip_list);
-        $key = array_search($ip_id,$ip_list);
-        array_splice($ip_list,$key);
-        $ip_str = implode(',',$ip_list);
+        $key = array_search($ip_id, $ip_list);
+        array_splice($ip_list, $key);
+        $ip_str = implode(',', $ip_list);
         $hostInfo->ip_address = $ip_str;
         $hostInfo->save();
-        $this->success('已解除绑定',$hostInfo->ip_address);
+        $this->success('已解除绑定', $hostInfo->ip_address);
     }
 
     // 到期时间修改
-    public function host_endtime(){
+    public function host_endtime()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('请求错误');
         }
         $endtime = $this->request->post('endtime');
@@ -1126,57 +1180,60 @@ class Vhost extends Api
         $bt = new Btaction();
         $bt->bt_id = $hostInfo->bt_id;
         $set = $bt->setEndtime($endtime);
-        if(!$set){
+        if (!$set) {
             $this->error($this->_error);
         }
         $hostInfo->endtime = strtotime($endtime);
         $hostInfo->save();
-        $this->success('更新成功',$endtime);
+        $this->success('更新成功', $endtime);
     }
 
     // 主机限速设置
-    public function host_speed(){
+    public function host_speed()
+    {
         // 仅支持Nginx环境
         $id = $this->request->post('id/d');
         // 限制当前站点最大并发数
         $perserver = $this->request->post('perserver/d');
         // 限制每个请求的流量上限（单位：KB）
         $limit_rate = $this->request->post('limit_rate/d');
-        if(!$id||!$perserver||!$limit_rate){
+        if (!$id || !$perserver || !$limit_rate) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_id = $hostFind->bt_id;
-        $data = ['perserver'=>$perserver,'limit_rate'=>$limit_rate];
+        $data = ['perserver' => $perserver, 'limit_rate' => $limit_rate];
         $set = $bt->setLimit($data);
-        if(!$set){
+        if (!$set) {
             $this->error($bt->_error);
         }
-        $this->success('设置成功',$data);
+        $this->success('设置成功', $data);
     }
-    
+
     // 主机限速停止
-    public function host_speedoff(){
+    public function host_speedoff()
+    {
         $id = $this->request->post('id/d');
-        if(!$id){
+        if (!$id) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
         $bt = new Btaction();
         $bt->bt_id = $hostFind->bt_id;
         $set = $bt->closeLimit();
-        if(!$set){
+        if (!$set) {
             $this->error($bt->_error);
         }
         $this->success('已关闭限速');
     }
 
     // 主机备注修改
-    public function host_notice(){
+    public function host_notice()
+    {
         $id = $this->request->post('id/d');
         $notice = $this->request->post('text');
-        if(!$id||!$notice){
+        if (!$id || !$notice) {
             $this->error('错误的请求');
         }
         $hostFind = $this->getHostInfo($id);
@@ -1207,9 +1264,10 @@ class Vhost extends Api
         }
         return $hostFind;
     }
-    
+
     // 签名验证
-    private function token_check(){
+    private function token_check()
+    {
         // TODO 上线需要验证签名
         // return true;
 
@@ -1217,7 +1275,7 @@ class Vhost extends Api
         // 时间戳
         $time = $this->request->param('time/d');
         $signature_time = Config::get('site.signature_time') ? Config::get('site.signature_time') : 10;
-        
+
         // 随机数
         $random = $this->request->param('random');
         // 签名
@@ -1237,15 +1295,27 @@ class Vhost extends Api
             'access_token' => $this->access_token,
         ];
 
-        sort($data,SORT_STRING);
+        sort($data, SORT_STRING);
         $str = implode($data);
         $sig_key = md5($str);
         $sig_key = strtoupper($sig_key);
-        
-        if($sig_key===$signature){
+
+        if ($sig_key === $signature) {
             return true;
-        }else{
+        } else {
             throw new \Exception(__('Signature fail'));
         }
+    }
+
+    private function ft_msg($title, $content)
+    {
+
+        $ft = new Ftmsg(Config::get('site.ftqq_sckey'));
+        $ft->setTitle($title);
+        $ft->setMessage($content);
+        $ft->sslVerify();
+        $message = new Message($ft);
+        $result = $message->send();
+        return true;
     }
 }

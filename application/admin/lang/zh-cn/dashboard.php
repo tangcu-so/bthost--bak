@@ -57,4 +57,6 @@ return [
     'System not initialize'   => '请先完成系统初始化配置',
     'Initial detection'       => '系统检测',
     'Please configure the pagoda panel interface key first' => '请先配置宝塔面板接口密钥',
+    'Excess host count'       => '超量主机',
+    'Recyclebin count'        => '已回收主机',
 ];

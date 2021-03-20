@@ -19,9 +19,9 @@
             <div class="flex-box">
               <div>
                 <span><b>{:__('Web size')}</b></span>
-                <p class="text-muted m-b-10">{$hostInfo.site_size}M</p>
+                <p class="text-muted m-b-10">{$site_size}</p>
               </div>
-              <h3 class="text-success">{$hostInfo.site_max!='0'?$hostInfo.site_max.'M':__('∞')}</h3>
+              <h3 class="text-success">{$site_max}</h3>
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-success" role="progressbar" aria-valuenow="80" aria-valuemin="0"
@@ -41,9 +41,9 @@
             <div class="flex-box">
               <div>
                 <span><b>{:__('Sql size')}</b></span>
-                <p class="text-muted m-b-10">{$hostInfo.sql_size}M</p>
+                <p class="text-muted m-b-10">{$sql_size}</p>
               </div>
-              <h3 class="text-danger">{$hostInfo.sql_max!='0'?$hostInfo.sql_max.'M':__('∞')}</h3>
+              <h3 class="text-danger">{$sql_max}</h3>
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="50" aria-valuemin="0"
@@ -63,9 +63,9 @@
             <div class="flex-box">
               <div>
                 <span><b>{:__('Flow size')}</b></span>
-                <p class="text-muted m-b-10">{$hostInfo.flow_size?$hostInfo.flow_size:'0'}M</p>
+                <p class="text-muted m-b-10">{$flow_size}</p>
               </div>
-              <h3 class="text-primary">{$hostInfo.flow_max!='0'?$hostInfo.flow_max.'M':__('∞')}</h3>
+              <h3 class="text-primary">{$flow_max}</h3>
             </div>
             <div class="progress m-b-5" style="height: 5px;">
               <div class="progress-bar bg-primary" role="progressbar" aria-valuenow="25" aria-valuemin="0"
@@ -270,6 +270,12 @@
                     <a href="#!" class="js-create-tab" data-title="{:__('Proxy')}"
                       data-url="{:url('index/vhost/proxy')}">
                       <i class="mdi mdi-harddisk"></i> <span style="color:#333333;">{:__('Proxy')}</span>
+                    </a>
+                  </div>
+                  <div class="col-md-6 col-lg-3 col-xl-3 col-6 div_margin {:$auth->check('vhost/speed_cache')?'':'d-none'}">
+                    <a href="#!" class="js-create-tab" data-title="{:__('speedCache')}"
+                      data-url="{:url('index/vhost/speed_cache')}">
+                      <i class="mdi mdi-flash"></i> <span style="color:#333333;">{:__('speedCache')}</span>
                     </a>
                   </div>
                   <div
