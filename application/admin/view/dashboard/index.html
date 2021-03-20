@@ -334,7 +334,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('服务器密钥配置')}</td>
+                                        <td>{:__('服务器密钥配置')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_apitoken}
                                         <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                         {else /}
@@ -342,7 +342,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('备案引导模块')}</td>
+                                        <td>{:__('备案引导模块')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('用于备案检测及域名访问拦截')}"></i></td>
                                         {if $validate_beian}
                                         <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                         {else /}
@@ -368,7 +368,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('API通信密钥配置')}</td>
+                                        <td>{:__('API通信密钥配置')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_apiaccess_token}
                                         <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                         {else /}
@@ -376,7 +376,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('计划任务部署')}</td>
+                                        <td>{:__('计划任务部署')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_queue}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -384,7 +384,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('计划任务密钥配置')}</td>
+                                        <td>{:__('计划任务密钥配置')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('重要配置')}"></i></td>
                                         {if $validate_queuekey}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -392,7 +392,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('btHost自动检查更新')}</td>
+                                        <td>{:__('btHost自动检查更新')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('建议开启')}"></i></td>
                                         {if $validate_auto_update}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -400,7 +400,7 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('自动获取公告')}</td>
+                                        <td>{:__('自动获取公告')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('建议开启')}"></i></td>
                                         {if $validate_auto_notice}
                                             <td class="text-success"><i class="fa fa-check"></i> {:__('通过')}</td>
                                             {else /}
@@ -408,11 +408,11 @@
                                         {/if}
                                     </tr>
                                     <tr>
-                                        <td>{:__('宝塔面板自动更新')}</td>
+                                        <td>{:__('宝塔面板自动更新')}<i class="fa fa-question-circle" data-toggle="tooltip" data-placement="top" title="{:__('自动检查并更新到最新版宝塔面板')}"></i></td>
                                         {if $validate_auto_bt_update}
-                                            <td class="text-success"><i class="fa fa-check"></i> {:__('开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_off">关闭</a></td>
+                                            <td class="text-success"><i class="fa fa-check"></i> {:__('开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_off"> 关闭</a></td>
                                             {else /}
-                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_on">开启</a></td>
+                                            <td class="text-danger"><i class="fa fa-remove"></i> {:__('未开启')}<a href="javascript:;" class="btn-initssss" data-type="bt_update_on"> 开启</a></td>
                                         {/if}
                                     </tr>
                                 </tbody>
