@@ -112,12 +112,16 @@ class User extends Backend
             $this->error(__("Invalid parameters"));
         }
         $ids = $ids ? $ids : $this->request->post("ids");
-        $row = $this->model->get($ids);
-        $this->modelValidate = true;
-        if (!$row) {
-            $this->error(__('No Results were found'));
+        $list = explode(',', $ids);
+        if ($list) {
+            foreach ($list as $key => $value) {
+                $row = $this->model->get($value);
+                $this->modelValidate = true;
+                if ($row) {
+                    \app\common\library\Auth::instance()->delete($row->id);
+                }
+            }
         }
-        \app\common\library\Auth::instance()->delete($row->id);
         $this->success();
     }
 
