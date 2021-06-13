@@ -274,6 +274,7 @@ return [
     'GetRuleList'                => '/plugin?action=a&s=get_rule_list&name=site_speed',// 加速规则列表
     'AddSpeedRule'               => '/plugin?action=a&s=add_site_rule&name=site_speed',// 添加缓存规则
     'DelSpeedRule'               => '/plugin?action=a&s=remove_site_rule&name=site_speed',// 删除缓存规则
+    'GetSiteSpeedSettings'       => '/plugin?action=a&s=get_settings&name=site_speed',// 获取堡塔网站加速配置
 
 
     # windows
