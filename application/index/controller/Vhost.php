@@ -2503,7 +2503,7 @@ class Vhost extends Frontend
     public function sqlTools()
     {
         if ($this->hostInfo->server_os == 'windows') $this->error(__('The plug-in is not supported by the current host'), '');
-        // dd($this->hostInfo->sql->username, $this->hostInfo->sql->username);
+
         if (!isset($this->hostInfo->sql->username) || !$this->hostInfo->sql->username) {
             $this->error(__('This service is not currently available'), '');
         }
@@ -2904,7 +2904,7 @@ class Vhost extends Frontend
             if (isset($modify_status) && $modify_status['status'] == 'true') {
                 $this->success($modify_status['msg']);
             } else {
-                $this->error(__('Fail') . '��' . $modify_status['msg']);
+                $this->error(__('Fail') . '：' . $modify_status['msg']);
             }
         } else {
             $this->error(__('%s can not be empty', ''));
