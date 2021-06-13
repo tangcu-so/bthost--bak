@@ -383,20 +383,20 @@ if (!function_exists('hsv2rgb')) {
 /**
  * 字符加密，一次一密,可定时解密有效
  * @param string $string 原文
- * @param string $key 密钥
- * @param int $expiry 密文有效期,单位s,0 为永久有效
+ * @param string $key    密钥
+ * @param int    $expiry 密文有效期,单位s,0 为永久有效
  * @return string 加密后的内容
  */
 function encode($string, $key = '', $expiry = 0)
 {
-    $ckeyLength   = 4;
-    $key          = md5($key ? $key : '2pIL1XlNXnOPgZTA');
-    $keya         = md5(substr($key, 0, 16));
-    $keyb         = md5(substr($key, 16, 16));
-    $keyc         = substr(md5(microtime()), -$ckeyLength);
-    $cryptkey     = $keya . md5($keya . $keyc);
-    $keyLength    = strlen($cryptkey);
-    $string       = sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $keyb), 0, 16) . $string;
+    $ckeyLength = 4;
+    $key = md5($key ? $key : '2pIL1XlNXnOPgZTA');
+    $keya = md5(substr($key, 0, 16));
+    $keyb = md5(substr($key, 16, 16));
+    $keyc = substr(md5(microtime()), -$ckeyLength);
+    $cryptkey = $keya . md5($keya . $keyc);
+    $keyLength = strlen($cryptkey);
+    $string = sprintf('%010d', $expiry ? $expiry + time() : 0) . substr(md5($string . $keyb), 0, 16) . $string;
     $stringLength = strlen($string);
 
     $rndkey = array();
@@ -407,17 +407,17 @@ function encode($string, $key = '', $expiry = 0)
     $box = range(0, 255);
     // 打乱密匙簿，增加随机性
     for ($j = $i = 0; $i < 256; $i++) {
-        $j       = ($j + $box[$i] + $rndkey[$i]) % 256;
-        $tmp     = $box[$i];
+        $j = ($j + $box[$i] + $rndkey[$i]) % 256;
+        $tmp = $box[$i];
         $box[$i] = $box[$j];
         $box[$j] = $tmp;
     }
     // 加解密，从密匙簿得出密匙进行异或，再转成字符
     $result = '';
     for ($a = $j = $i = 0; $i < $stringLength; $i++) {
-        $a       = ($a + 1) % 256;
-        $j       = ($j + $box[$a]) % 256;
-        $tmp     = $box[$a];
+        $a = ($a + 1) % 256;
+        $j = ($j + $box[$a]) % 256;
+        $tmp = $box[$a];
         $box[$a] = $box[$j];
         $box[$j] = $tmp;
         $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
@@ -430,7 +430,7 @@ function encode($string, $key = '', $expiry = 0)
 /**
  * 字符解密，一次一密,可定时解密有效
  * @param string $string 密文
- * @param string $key 解密密钥
+ * @param string $key    解密密钥
  * @return string 解密后的内容
  */
 function decode($string, $key = '')
@@ -438,15 +438,15 @@ function decode($string, $key = '')
     if (strpos($string, '$') !== false) {
         return '';
     }
-    $string       = str_replace(array('-', '_', '.'), array('+', '/', '='), $string);
-    $ckeyLength   = 4;
-    $key          = md5($key ? $key : '2pIL1XlNXnOPgZTA');
-    $keya         = md5(substr($key, 0, 16));
-    $keyb         = md5(substr($key, 16, 16));
-    $keyc         = substr($string, 0, $ckeyLength);
-    $cryptkey     = $keya . md5($keya . $keyc);
-    $keyLength    = strlen($cryptkey);
-    $string       = base64_decode(substr($string, $ckeyLength));
+    $string = str_replace(array('-', '_', '.'), array('+', '/', '='), $string);
+    $ckeyLength = 4;
+    $key = md5($key ? $key : '2pIL1XlNXnOPgZTA');
+    $keya = md5(substr($key, 0, 16));
+    $keyb = md5(substr($key, 16, 16));
+    $keyc = substr($string, 0, $ckeyLength);
+    $cryptkey = $keya . md5($keya . $keyc);
+    $keyLength = strlen($cryptkey);
+    $string = base64_decode(substr($string, $ckeyLength));
     $stringLength = strlen($string);
 
     $rndkey = array();
@@ -457,17 +457,17 @@ function decode($string, $key = '')
     $box = range(0, 255);
     // 打乱密匙簿，增加随机性
     for ($j = $i = 0; $i < 256; $i++) {
-        $j       = ($j + $box[$i] + $rndkey[$i]) % 256;
-        $tmp     = $box[$i];
+        $j = ($j + $box[$i] + $rndkey[$i]) % 256;
+        $tmp = $box[$i];
         $box[$i] = $box[$j];
         $box[$j] = $tmp;
     }
     // 加解密，从密匙簿得出密匙进行异或，再转成字符
     $result = '';
     for ($a = $j = $i = 0; $i < $stringLength; $i++) {
-        $a       = ($a + 1) % 256;
-        $j       = ($j + $box[$a]) % 256;
-        $tmp     = $box[$a];
+        $a = ($a + 1) % 256;
+        $j = ($j + $box[$a]) % 256;
+        $tmp = $box[$a];
         $box[$a] = $box[$j];
         $box[$j] = $tmp;
         $result .= chr(ord($string[$i]) ^ ($box[($box[$a] + $box[$j]) % 256]));
@@ -522,7 +522,7 @@ function setconfig($file, $pat, $rep)
      * 原理就是 打开config配置文件 然后使用正则查找替换 然后在保存文件.
      * 传递的参数为2个数组 前面的为配置 后面的为数值.  正则的匹配为单引号  如果你的是分号 请自行修改为分号
      * $pat[0] = 参数前缀;  例:   default_return_type
-    $rep[0] = 要替换的内容;    例:  json
+     * $rep[0] = 要替换的内容;    例:  json
      */
     if (is_array($pat) and is_array($rep)) {
         for ($i = 0; $i < count($pat); $i++) {
@@ -530,8 +530,8 @@ function setconfig($file, $pat, $rep)
             $reps[$i] = "'" . $pat[$i] . "'" . "=>" . "'" . $rep[$i] . "',";
         }
         $fileurl = $file;
-        $string  = file_get_contents($fileurl); //加载配置文件
-        $string  = preg_replace($pats, $reps, $string); // 正则查找然后替换
+        $string = file_get_contents($fileurl); //加载配置文件
+        $string = preg_replace($pats, $reps, $string); // 正则查找然后替换
         file_put_contents($fileurl, $string); // 写入配置文件
         return true;
     } else {
@@ -557,8 +557,8 @@ function ip_range($start, $end)
  * 提示模版
  * @Author   Youngxj
  * @DateTime 2019-05-26
- * @param    string     $msg 自定义消息
- * @param    boolean    $die 是否终止
+ * @param string  $msg 自定义消息
+ * @param boolean $die 是否终止
  * @return   [type]          [description]
  */
 function sysmsg($msg = '未知的异常', $die = true)
@@ -656,23 +656,23 @@ function toBytes($size)
     $size = strtolower($size);
     if (strstr($size, 'tb')) {
         $str = str_replace('tb', '', $size);
-        $s   = $str * 1024 * 1024 * 1024 * 1024;
+        $s = $str * 1024 * 1024 * 1024 * 1024;
     } elseif (strstr($size, 'gb')) {
         $str = str_replace('gb', '', $size);
-        $s   = $str * 1024 * 1024 * 1024;
+        $s = $str * 1024 * 1024 * 1024;
     } elseif (strstr($size, 'mb')) {
         $str = str_replace('mb', '', $size);
-        $s   = $str * 1024 * 1024;
+        $s = $str * 1024 * 1024;
     } elseif (strstr($size, 'kb')) {
         $str = str_replace('kb', '', $size);
-        $s   = $str * 1024;
+        $s = $str * 1024;
     } elseif (strstr($size, 'b')) {
         $str = str_replace('b', '', $size);
-        $s   = $str;
+        $s = $str;
     } else {
         $s = $size;
     }
-    return (string) $s;
+    return (string)$s;
 }
 
 /**
@@ -765,7 +765,7 @@ function downloadTemplate($file_sub_path, $file_name)
  */
 function url_set_value($url, $key, $value)
 {
-    $a     = explode('?', $url);
+    $a = explode('?', $url);
     $url_f = $a[0];
     $query = $a[1];
     parse_str($query, $arr);
@@ -928,7 +928,7 @@ function delFiles($dirname)
  * 获取服务器连接时间
  *
  * @param [type] $url
- * @param string $data
+ * @param string  $data
  * @param integer $timeout
  * @param integer $time
  * @return void
@@ -1009,10 +1009,10 @@ if (!function_exists('arr_to_str')) {
     /**
      * 二维数组转字符串
      *
-     * @param array $arr       二维数组
+     * @param array $arr 二维数组
      * @return void
-     * 0 => ['xxxxxx.cim' => 'success'],
-     * 1 => ['xxxxxx.cim' => 'success'],
+     *                   0 => ['xxxxxx.cim' => 'success'],
+     *                   1 => ['xxxxxx.cim' => 'success'],
      */
     function arr_to_str($arr)
     {
@@ -1027,7 +1027,7 @@ if (!function_exists('arr_to_str')) {
                 $key = join('', $k);
                 $v1 = array_values($v);
                 // 防止二维数组下还有数组类型，强转字符串处理
-                $value = is_array($v1)?arrayToString($v1):join('', $v1);
+                $value = is_array($v1) ? arrayToString($v1) : join('', $v1);
                 $v = $key . ':' . $value;
                 $temp[] = $v;
             }
@@ -1051,4 +1051,20 @@ if (!function_exists('arrayToString')) {
         }
         return $arr;
     }
+}
+
+if (!function_exists('dd')) {
+    /**
+     * dd
+     * @param     $data
+     * @param int $die
+     * @date 2021/6/13
+     */
+    function dd($data, $die = 1)
+    {
+        var_dump($data);
+        die($die);
+    }
+
+
 }
