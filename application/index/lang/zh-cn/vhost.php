@@ -267,7 +267,7 @@ return [
     'Warning' => '警告',
     'The host reset will delete all the website and all data files in the website (including but not limited to host backup, ssl certificate, 301 configuration, pseudo static, running directory, subdirectory, reverse proxy, log) (excluding database), which is a high-risk operation , Please backup and download the source code and data in the host in advance. If there is any loss caused by accident, we will not be responsible' => '主机重置将删除网站及网站内所有数据文件(包括但不限于主机备份、ssl证书、301配置、伪静态、运行目录、子目录、反向代理、日志)(不包含数据库)，属于高危操作，请提前备份并下载主机中的源码及数据，如出现意外情况造成的丢失，概不负责',
     'Site reset will automatically release all manually bound domain information except the gift domain name. If you need to use it, please try to rebind the domain name (including subdirectories)' => '主机重置将自动解除除赠送域名外所有手动绑定的域名信息，如需使用，请尝试重新绑定域名（包括子目录）',
-    'There is a certain chance that the site reset will fail. If it fails, please contact the site for manual reset operation' => '主机重置有一定几率失败，如失败，请联系主机进行手动重置操作',
+    'There is a certain chance that the host will fail to reset. If it fails, please contact the webmaster for manual reset operation' => '主机重置有一定几率失败，如失败，请联系站长进行手动重置操作',
     'After the site is reset, please check whether the site information and functions can be used normally. If you have any questions, please contact the webmaster with a picture' => '主机重置后请查看主机信息及功能是否能够正常使用，如有疑问请带图联系站长',
     'Set http auth' => '设置网站密码访问',
     'Note: This system does not record the password information of this account. Please remember it by yourself. If you forget it, please close it and submit the password again.' => '注意：本系统不记录此账号密码信息，请自行牢记，如果忘记请关闭后重新提交账号密码.',
