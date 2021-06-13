@@ -165,6 +165,7 @@ return [
     'Confirm' => "确定",
     'Cancel' => '取消',
     'The priority is from front to back. Use English, separate' => '优先级由前至后。使用英文,分隔',
+    'One per line, with priority from top to bottom.'=>'每行一个，优先级由上至下。',
     'Default file suffix' => '默认文件后缀',
     'Submit' => '提交',
     'Can not be empty' => '不能为空',
