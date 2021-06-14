@@ -496,7 +496,6 @@ class Host extends Backend
             $hostInfo_new->ftp  = $ftpInfo ? $ftpInfo : '';
             $hostInfo_new->sql  = $sqlInfo ? $sqlInfo : '';
             $bt        = new Btaction();
-            $bt->bt_id = $hostInfo->bt_id;
             $bt->sql_name = isset($hostInfo_new->sql->username) ? $hostInfo_new->sql->username : '';
             $bt->ftp_name = isset($hostInfo_new->ftp->username) ? $hostInfo_new->ftp->username : '';
             $bt->bt_name = $hostInfo->bt_name;
@@ -515,8 +514,7 @@ class Host extends Backend
 
             if (input('param.sync') || $params == 'sync') {
                 // 强制同步
-                $emsg = '';
-                $emsg .= 'Site：' . $hostInfo->bt_name . '<br/>';
+                $emsg = 'Site：' . $hostInfo->bt_name . '<br/>';
                 // 同步云端宝塔ID到本地
                 $hostInfo->bt_id = $btid;
                 $btidUp = $hostInfo->allowField(true)->save();
