@@ -152,6 +152,7 @@ class Backend extends Controller
             }
             // 判断是否需要验证权限
             if (!$this->auth->match($this->noNeedRight)) {
+                $this->auth_check_local();
                 // 判断控制器和方法是否有对应权限
                 if (!$this->auth->check($path)) {
                     Hook::listen('admin_nopermission', $this);
@@ -199,7 +200,7 @@ class Backend extends Controller
         Hook::listen("upload_config_init", $upload);
         // 软件配置
         $bty_config = Config::get('bty');
-        unset($bty_config['AUTH_KEY'],$bty_config['api_url'],$bty_config['api_url2'],$bty_config['COOKIE_EXPIRE']);
+        unset($bty_config['AUTH_KEY'], $bty_config['api_url'], $bty_config['api_url2'], $bty_config['COOKIE_EXPIRE']);
 
         // 配置信息
         $config = [
@@ -595,10 +596,10 @@ class Backend extends Controller
         // 缓存器缓存远端获取的私钥
         $url = Config::get('bty.api_url') . '/bthost_auth_check.html';
         $data = [
-            'obj' => Config::get('bty.APP_NAME'),
+            'obj'     => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
-            'domain' => $ip,
-            'rsa' => 1,
+            'domain'  => $ip,
+            'rsa'     => 1,
         ];
         $json = \fast\Http::post($url, $data);
         return json_decode($json, 1);
@@ -642,12 +643,12 @@ class Backend extends Controller
             if ($curl && isset($curl['code']) && $curl['code'] == 1) {
                 $security_code = $curl['encode'];
             } elseif (isset($curl['msg'])) {
-                $msg = $ip . $curl['msg'];
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+                $msg = $curl['msg'];
             } else {
-                $msg = $ip . __('Authorization check failed');
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+                $msg = __('Authorization check failed');
             }
+            $msg = '本地IP：' . $ip . '【缓存】' . '<hr>授权检测：' . $msg;
+            return $is_ajax ? $this->error($msg) : sysmsg($msg);
         }
 
         if ($security_code) {

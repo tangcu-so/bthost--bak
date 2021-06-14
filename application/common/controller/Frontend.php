@@ -121,7 +121,7 @@ class Frontend extends Controller
         Hook::listen("upload_config_init", $upload);
         // 软件配置
         $bty_config = Config::get('bty');
-        unset($bty_config['AUTH_KEY'],$bty_config['api_url'],$bty_config['api_url2'],$bty_config['COOKIE_EXPIRE']);
+        unset($bty_config['AUTH_KEY'], $bty_config['api_url'], $bty_config['api_url2'], $bty_config['COOKIE_EXPIRE']);
 
         // 配置信息
         $config = [
@@ -143,7 +143,7 @@ class Frontend extends Controller
         $this->view->replace('__CDN__', Config::get('site.cdnurl'));
 
         // 静态资源版本号
-        $static_version = Config::get('app_debug')||Config::get('site.debug')?time():Config::get('bty.version');
+        $static_version = Config::get('app_debug') || Config::get('site.debug') ? time() : Config::get('bty.version');
 
         // 配置信息后
         Hook::listen("config_init", $config);
@@ -152,7 +152,7 @@ class Frontend extends Controller
         $this->assign('auth', $this->auth);
         $this->assign('site', $site);
         $this->assign('config', $config);
-        $this->assign('static_version',$static_version);
+        $this->assign('static_version', $static_version);
     }
 
     /**
@@ -161,7 +161,7 @@ class Frontend extends Controller
      */
     protected function loadlang($name)
     {
-        $name =  Loader::parseName($name);
+        $name = Loader::parseName($name);
         Lang::load(APP_PATH . $this->request->module() . '/lang/' . $this->request->langset() . '/' . str_replace('.', '/', $name) . '.php');
     }
 
@@ -202,10 +202,10 @@ class Frontend extends Controller
         // 缓存器缓存远端获取的私钥
         $url = Config::get('bty.api_url') . '/bthost_auth_check.html';
         $data = [
-            'obj' => Config::get('bty.APP_NAME'),
+            'obj'     => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
-            'domain' => $ip,
-            'rsa' => 1,
+            'domain'  => $ip,
+            'rsa'     => 1,
         ];
         $json = \fast\Http::post($url, $data);
         return json_decode($json, 1);
@@ -249,12 +249,12 @@ class Frontend extends Controller
             if ($curl && isset($curl['code']) && $curl['code'] == 1) {
                 $security_code = $curl['encode'];
             } elseif (isset($curl['msg'])) {
-                $msg = $ip . $curl['msg'];
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+                $msg = $curl['msg'];
             } else {
-                $msg = $ip . __('Authorization check failed');
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+                $msg = __('Authorization check failed');
             }
+            $msg = '本地IP：' . $ip . '【缓存】' . '<hr>授权检测：' . $msg;
+            return $is_ajax ? $this->error($msg) : sysmsg($msg);
         }
 
         if ($security_code) {
