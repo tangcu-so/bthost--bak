@@ -396,13 +396,16 @@ class Api
             $curl = $this->auth_check($ip);
             if ($curl && isset($curl['code']) && $curl['code'] == 1) {
                 $security_code = $curl['encode'];
+                $msg = '';
             } elseif (isset($curl['msg'])) {
                 $msg = $curl['msg'];
             } else {
                 $msg = __('Authorization check failed');
             }
-            $msg = '本地IP：' . $ip . '【缓存】' . '<hr>授权检测：' . $msg;
-            return $is_ajax ? $this->error($msg) : sysmsg($msg);
+            if ($msg) {
+                $msg = '本地IP：' . $ip . '【缓存】' . '<hr>授权检测：' . $msg;
+                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+            }
         }
 
         if ($security_code) {
