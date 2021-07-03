@@ -569,5 +569,14 @@ return [
     'Request type'=>'请求方式',
     'Not cache rule'=>'不缓存规则',
     'Cache rule'=>'缓存规则',
+    'View log'=>'查看日志',
+    'Task name'=>'任务名称',
+    'Task type'=>'任务类型',
+    'Task add'=>'任务添加',
+    'Task list'=>'任务列表',
+    'webshell'=>'木马查杀',
+    'toUrl'=>'访问Url',
+    'Last execution time'=>'上次执行时间',
+    'Task'=>'计划任务',
 ];
  

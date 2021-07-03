@@ -3444,7 +3444,7 @@ class Btpanel
         $p_data['urladdress'] = isset($params['urladdress']) ? $params['urladdress'] : '';
         $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status'] == true) {
-            return true;
+            return $data;
         }
         $this->_error = $data['msg'] ?? __('Fail');
         return false;
@@ -3463,6 +3463,22 @@ class Btpanel
             return $data;
         }
         $this->_error = $data['msg'] ?? __('Fail');
+        return false;
+    }
+    
+    /**
+     * 执行任务
+     * @param $id   任务ID
+     * @return bool
+     * @date 2021/6/13
+     */
+    public function StartTask($id)
+    {
+        $result = $this->request_get('StartTask', ['id' => $id]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
+            return true;
+        }
+        $this->_error = $result['msg'] ?? __('Fail');
         return false;
     }
 
@@ -3514,7 +3530,7 @@ class Btpanel
         $p_data['id'] = $id;
         $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status'] == true) {
-            return isset($data['msg']) ? $data['msg'] : '';
+            return true;
         }
         $this->_error = $data['msg'] ?? __('Fail');
         return false;

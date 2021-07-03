@@ -38,6 +38,7 @@ return [
     'GetCrontab'                 => '/crontab?action=GetCrontab', // 计划任务列表
     'GetLogs'                    => '/crontab?action=GetLogs',// 获取计划任务执行日志
     'DelLogs'                    => '/crontab?action=DelLogs',// 删除计划任务执行日志
+    'StartTask'                  => '/crontab?action=StartTask',// 执行计划任务
     'CheckInstalled'             => '/ajax?action=CheckInstalled', //检查是否完成程序初始化['nginx','apache','php','pure-ftpd','mysql']
 
     # 网站管理相关接口
@@ -283,20 +284,20 @@ return [
     'SetDirUserINI'              => '/site?action=SetDirUserINI', // 设置防跨域
     'SetConfigLocking'           => '/site?action=set_config_locking', //iis锁定站点配置文件
 
-    'GetPatch'                   => '/plugin?action=a&name=btpatch&s=get_list', // CVE漏洞补丁列表
-    'SetPatch'                   => '/plugin?action=a&name=btpatch&s=setup_patch', // 安装CVE漏洞补丁
+    'GetPatch' => '/plugin?action=a&name=btpatch&s=get_list', // CVE漏洞补丁列表
+    'SetPatch' => '/plugin?action=a&name=btpatch&s=setup_patch', // 安装CVE漏洞补丁
 
-    'SetupIisProxy'              => '/ajax?action=setup_iis_proxy', // 安装IIS反向代理
-    'GetIisProxyConfig'          => '/ajax?action=get_iis_proxy_config', // 获取反向代理配置
-    'SetIisProxyConfig'          => '/ajax?action=set_iis_proxy_config', // 修改反向代理配置
+    'SetupIisProxy'     => '/ajax?action=setup_iis_proxy', // 安装IIS反向代理
+    'GetIisProxyConfig' => '/ajax?action=get_iis_proxy_config', // 获取反向代理配置
+    'SetIisProxyConfig' => '/ajax?action=set_iis_proxy_config', // 修改反向代理配置
 
-    'WafIis'                     => '/plugin?action=a&name=waf_iis&s=get_total_all', //获取IIS网站防火墙首页数据及状态
-    'WafIisSetOpen'              => '/plugin?action=a&name=waf_iis&s=set_open', // 打开/关闭IIS防火墙
-    'WafIisGetConfig'            => '/plugin?action=a&name=waf_iis&s=get_config', // 获取配置
-    'WafIisSiteConfig'           => '/plugin?action=a&name=waf_iis&s=get_site_config', // 站点配置列表
-    'WafIisGetLog'               => '/plugin?action=a&name=waf_iis&s=get_logs_list', // 获取站点防火墙日志
-    'WafIisSetSiteOpen'          => '/plugin?action=a&name=waf_iis&s=set_site_obj_open', // 设置站点防火墙几项开关
-    'WafIisSetSiteConfig'        => '/plugin?action=a&name=waf_iis&s=get_site_config_byname', // 获取站点独立配置
-    'get_site_disable_rule'      => '/plugin?action=a&name=waf_iis&s=get_site_disable_rule', // 编辑网站规则
+    'WafIis'                => '/plugin?action=a&name=waf_iis&s=get_total_all', //获取IIS网站防火墙首页数据及状态
+    'WafIisSetOpen'         => '/plugin?action=a&name=waf_iis&s=set_open', // 打开/关闭IIS防火墙
+    'WafIisGetConfig'       => '/plugin?action=a&name=waf_iis&s=get_config', // 获取配置
+    'WafIisSiteConfig'      => '/plugin?action=a&name=waf_iis&s=get_site_config', // 站点配置列表
+    'WafIisGetLog'          => '/plugin?action=a&name=waf_iis&s=get_logs_list', // 获取站点防火墙日志
+    'WafIisSetSiteOpen'     => '/plugin?action=a&name=waf_iis&s=set_site_obj_open', // 设置站点防火墙几项开关
+    'WafIisSetSiteConfig'   => '/plugin?action=a&name=waf_iis&s=get_site_config_byname', // 获取站点独立配置
+    'get_site_disable_rule' => '/plugin?action=a&name=waf_iis&s=get_site_disable_rule', // 编辑网站规则
 
 ];

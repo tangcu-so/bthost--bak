@@ -23,8 +23,8 @@ use think\Hook;
 class Vhost extends Frontend
 {
     protected $layout = 'default';
-    protected $noNeedLogin = ['login', 'register', 'clear_cache'];
-    protected $noNeedRight = ['logout'];
+    protected $noNeedLogin = ['login', 'register'];
+    protected $noNeedRight = ['logout', 'clear_cache'];
 
     /**
      * 宝塔ID
@@ -3712,6 +3712,102 @@ class Vhost extends Frontend
         }
         Cache::set('speed_rule_list', $list, 0);
         return $list;
+    }
+
+    // 计划任务
+    public function tasks()
+    {
+        return false;
+        $task_model_list = Model('Task')->where(['host_id' => $this->vhost_id])->column('task_id');
+
+        $task_all = $this->btPanel->GetCrontab();
+        $task_list = [];
+        if ($task_all && $task_model_list) {
+            foreach ($task_all as $key => $value) {
+                if (in_array($value['id'], $task_model_list)) {
+                    $task_list[] = $value;
+                }
+            }
+        }
+        $this->view->assign('task_type', ['toUrl' => __('toUrl'), 'webshell' => __('webshell')]);
+        $this->view->assign('title', __('Task'));
+        $this->view->assign('task_list', $task_list);
+        return $this->view->fetch();
+    }
+
+    // 添加计划任务
+    public function task_add()
+    {
+        return false;
+        $sType = $this->request->post('sType');
+        $name = $this->request->post('name');
+        if ($sType !== 'webshell' && $sType !== 'toUrl') $this->error(__('任务类型错误，请重新提交'));
+        $name = $sType == 'webshell' ? '木马查杀[' . $this->btAction->bt_name . ']' : $name;
+        if (!$name) $this->error(__('任务名称错误，请重新提交'));
+        $data = [
+            'name'     => $name,
+            'sType'    => $sType,
+            'sName'    => $this->btAction->bt_name,
+            'backupTo' => 'localhost',
+        ];
+        if ($sType == 'webshell') {
+            if (Model('Task')->where(['task_type' => $sType, 'host_id' => $this->vhost_id])->find()) {
+                $this->error(__('任务已存在,请勿重复添加'));
+            }
+            $data['type'] = 'day';
+            $data['hour'] = rand(2, 5);
+            $data['minute'] = rand(10, 40);
+            $data['urladdress'] = 'mail';
+        } else {
+            // TODO 网址监控任务
+            $data['type'] = $this->request->post('type');
+            $data['hour'] = $this->request->post('hour');
+            $data['minute'] = $this->request->post('minute');//30
+            $data['urladdress'] = $this->request->post('urladdress');//http://111123
+        }
+
+
+        $taskInc = $this->btPanel->AddCrontab($data);
+        if (!$taskInc) $this->error($this->btPanel->_error);
+        // 执行一次
+        $this->btPanel->StartTask($taskInc['id']);
+        // 写入数据库
+        Model('Task')::create([
+            'task_name' => $data['name'],
+            'host_id'   => $this->vhost_id,
+            'task_id'   => $taskInc['id'],
+            'task_type' => $data['sType'],
+        ]);
+        $this->success(__('Success'));
+    }
+
+    // 任务删除
+    public function task_del()
+    {
+        return false;
+        $task_id = $this->request->post('id/d');
+        $taskFind = Model('Task')::where(['host_id' => $this->vhost_id, 'task_id' => $task_id])->find();
+        if (!$taskFind) $this->error('任务不存在');
+
+        Model('Task')::startTrans();
+        $taskFind->delete();
+        // 删除任务
+        $delTask = $this->btPanel->DelCrontab($taskFind->task_id);
+        if (!$delTask) $this->error($this->btPanel->_error);
+        Model('Task')::commit();
+        $this->success(__('Success'));
+    }
+
+    // 任务日志
+    public function task_log()
+    {
+        return false;
+        $task_id = $this->request->post('id/d');
+        $taskFind = Model('Task')::where(['host_id' => $this->vhost_id, 'task_id' => $task_id])->find();
+        if (!$taskFind) $this->error('任务不存在');
+        $taskLog = $this->btPanel->GetLogs($taskFind->task_id);
+        if (!$taskLog) $this->error($this->btpanel->_error);
+        $this->success(__('Success'), '', $taskLog);
     }
 
     // 文件路径安全检查
