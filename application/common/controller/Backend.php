@@ -674,6 +674,10 @@ class Backend extends Controller
             // 检查授权是否过期
 
             if ($auth_expiration_time != 0 && time() > $auth_expiration_time) {
+                // 删除授权码文件
+                if (file_exists(APP_PATH . 'extra' . DS . 'auth.php')) {
+                    @unlink(APP_PATH . 'extra' . DS . 'auth.php');
+                }
                 return $is_ajax ? $this->error($ip . __('Authorization expired')) : sysmsg($ip . __('Authorization expired'));
             }
 

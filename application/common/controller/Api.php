@@ -344,7 +344,7 @@ class Api
         return $public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXySnlz6w8w0KOTz+XrzNd3+PmKJKAJRdKI4x5xNU8Q9EzWIYGyX2O1RK/FB1pwYjUVo8uNG6ghD48ZtRcumqPxU7uAHBlxq4S8zPPSGJ3NKgceRJEW/4oOFLw6jeJ1Pw3aHvg7hmxNxwgOLqlRzXDG8wBc7EqVTGa86qbfwZDEQIDAQAB';
     }
 
-    // 远程授权验证
+    // 远程授权方法
     private function auth_check($ip)
     {
         // 缓存器缓存远端获取的私钥
@@ -362,7 +362,7 @@ class Api
     // 授权验证方法
     protected function auth_check_local()
     {
-        $is_ajax = 1;
+        $is_ajax = $this->request->isAjax() ? 1 : 0;
         // 公钥
         $public_key = self::getPublicKey();
 
@@ -420,16 +420,18 @@ class Api
             list($domain, $auth_expiration_time) = $decode_arr;
 
             // 检查授权域名是否为当前域名
-            if (
-                $domain != '9527' && $domain !== $ip
-            ) {
+
+            if ($domain != '9527' && $domain !== $ip) {
                 return $is_ajax ? $this->error($ip . __('Authorization information error, please request authorization again or obtain authorization code')) : sysmsg($ip . __('Authorization information error, please request authorization again or obtain authorization code'));
             }
 
             // 检查授权是否过期
-            if (
-                $auth_expiration_time != 0 && time() > $auth_expiration_time
-            ) {
+
+            if ($auth_expiration_time != 0 && time() > $auth_expiration_time) {
+                // 删除授权码文件
+                if (file_exists(APP_PATH . 'extra' . DS . 'auth.php')) {
+                    @unlink(APP_PATH . 'extra' . DS . 'auth.php');
+                }
                 return $is_ajax ? $this->error($ip . __('Authorization expired')) : sysmsg($ip . __('Authorization expired'));
             }
 
