@@ -115,7 +115,11 @@ class Vhost extends Frontend
         // 主机信息表
         $this->hostInfo = $hostInfo;
         // 验证主机是否过期
-        if (time() > $this->hostInfo->endtime) $this->error(__('Site is %s', __('expired')), '/sites');
+        if (time() > $this->hostInfo->endtime) {
+            // 更新主机状态
+            $this->hostInfo->allowField(true)->save(['status' => 'expired']);
+            $this->error(__('Site is %s', __('expired')), '/sites');
+        }
 
         $this->is_excess_stop = Config('site.excess_panel');
 
