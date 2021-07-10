@@ -12,4 +12,6 @@ return [
     'Or try to delete the directory /runtime/cache and try again!'                                          => '或尝试删除目录/runtime/cache后重试！',
     'The current permissions are insufficient to write the file %s'                                         => '当前权限不足，无法写入文件%s',
     'security_code'                                                                                         => '离线授权码',
+    'Public key acquisition failed. Please check the directory file %s'                                     => '公钥获取失败，请检查目录文件 %s',
+    'Local IP：%s【Caching】<hr>Authorized info：%s'                                                         => '本地IP：%s【缓存】<hr>授权检测：%s',
 ];
