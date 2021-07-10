@@ -1056,15 +1056,15 @@ if (!function_exists('arrayToString')) {
 if (!function_exists('dd')) {
     /**
      * dd
-     * @param     $data
-     * @param int $die
-     * @date 2021/6/13
+     * @param ...$vars
+     * @date 2021/7/10
      */
-    function dd($data, $die = 1)
+    function dd(...$vars)
     {
-        var_dump($data);
-        die($die);
+        foreach ($vars as $v) {
+            var_dump($v);
+        }
+
+        die(1);
     }
-
-
 }
