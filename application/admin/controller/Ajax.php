@@ -25,7 +25,7 @@ class Ajax extends Backend
 
     protected $noNeedLogin = ['lang'];
     protected $noNeedRight = ['*'];
-    protected $layout      = '';
+    protected $layout = '';
 
     public static $filePath = ROOT_PATH . 'Data/';
 
@@ -69,16 +69,16 @@ class Ajax extends Backend
             if (!Config::get('upload.chunking')) {
                 $this->error(__('Chunk file disabled'));
             }
-            $action     = $this->request->post("action");
+            $action = $this->request->post("action");
             $chunkindex = $this->request->post("chunkindex/d");
             $chunkcount = $this->request->post("chunkcount/d");
-            $filename   = $this->request->post("filename");
-            $method     = $this->request->method(true);
+            $filename = $this->request->post("filename");
+            $method = $this->request->method(true);
             if ($action == 'merge') {
                 $attachment = null;
                 //合并分片文件
                 try {
-                    $upload     = new Upload();
+                    $upload = new Upload();
                     $attachment = $upload->merge($chunkid, $chunkcount, $filename);
                 } catch (UploadException $e) {
                     $this->error($e->getMessage());
@@ -110,7 +110,7 @@ class Ajax extends Backend
             //默认普通上传文件
             $file = $this->request->file('file');
             try {
-                $upload     = new Upload($file);
+                $upload = new Upload($file);
                 $attachment = $upload->upload();
             } catch (UploadException $e) {
                 $this->error($e->getMessage());
@@ -141,17 +141,17 @@ class Ajax extends Backend
         //排序的方式
         $orderway = strtolower($this->request->post("orderway", ""));
         $orderway = $orderway == 'asc' ? 'ASC' : 'DESC';
-        $sour     = $weighdata     = [];
-        $ids      = explode(',', $ids);
-        $prikey   = $pk ? $pk : (Db::name($table)->getPk() ?: 'id');
-        $pid      = $this->request->post("pid");
+        $sour = $weighdata = [];
+        $ids = explode(',', $ids);
+        $prikey = $pk ? $pk : (Db::name($table)->getPk() ?: 'id');
+        $pid = $this->request->post("pid");
         //限制更新的字段
         $field = in_array($field, ['weigh']) ? $field : 'weigh';
 
         // 如果设定了pid的值,此时只匹配满足条件的ID,其它忽略
         if ($pid !== '') {
             $hasids = [];
-            $list   = Db::name($table)->where($prikey, 'in', $ids)->where('pid', 'in', $pid)->field("{$prikey},pid")->select();
+            $list = Db::name($table)->where($prikey, 'in', $ids)->where('pid', 'in', $pid)->field("{$prikey},pid")->select();
             foreach ($list as $k => $v) {
                 $hasids[] = $v[$prikey];
             }
@@ -160,14 +160,14 @@ class Ajax extends Backend
 
         $list = Db::name($table)->field("$prikey,$field")->where($prikey, 'in', $ids)->order($field, $orderway)->select();
         foreach ($list as $k => $v) {
-            $sour[]                 = $v[$prikey];
+            $sour[] = $v[$prikey];
             $weighdata[$v[$prikey]] = $v[$field];
         }
         $position = array_search($changeid, $ids);
-        $desc_id  = $sour[$position]; //移动到目标的ID值,取出所处改变前位置的值
-        $sour_id  = $changeid;
+        $desc_id = $sour[$position]; //移动到目标的ID值,取出所处改变前位置的值
+        $sour_id = $changeid;
         $weighids = array();
-        $temp     = array_values(array_diff_assoc($ids, $sour));
+        $temp = array_values(array_diff_assoc($ids, $sour));
         foreach ($temp as $m => $n) {
             if ($n == $sour_id) {
                 $offset = $desc_id;
@@ -229,9 +229,9 @@ class Ajax extends Backend
      */
     public function category()
     {
-        $type         = $this->request->get('type');
-        $pid          = $this->request->get('pid');
-        $where        = ['status' => 'normal'];
+        $type = $this->request->get('type');
+        $pid = $this->request->get('pid');
+        $where = ['status' => 'normal'];
         $categorylist = null;
         if ($pid !== '') {
             if ($type) {
@@ -254,21 +254,21 @@ class Ajax extends Backend
         $params = $this->request->get("row/a");
         if (!empty($params)) {
             $province = isset($params['province']) ? $params['province'] : '';
-            $city     = isset($params['city']) ? $params['city'] : null;
+            $city = isset($params['city']) ? $params['city'] : null;
         } else {
             $province = $this->request->get('province');
-            $city     = $this->request->get('city');
+            $city = $this->request->get('city');
         }
-        $where        = ['pid' => 0, 'level' => 1];
+        $where = ['pid' => 0, 'level' => 1];
         $provincelist = null;
         if ($province !== '') {
             if ($province) {
-                $where['pid']   = $province;
+                $where['pid'] = $province;
                 $where['level'] = 2;
             }
             if ($city !== '') {
                 if ($city) {
-                    $where['pid']   = $city;
+                    $where['pid'] = $city;
                     $where['level'] = 3;
                 }
                 $provincelist = Db::name('area')->where($where)->field('id as value,name')->select();
@@ -292,8 +292,8 @@ class Ajax extends Backend
     public function check_username_available()
     {
         $params = $this->request->post('row/a');
-        $event  = $this->request->post('event');
-        $id     = $this->request->post('id/d');
+        $event = $this->request->post('event');
+        $id = $this->request->post('id/d');
         if (isset($params['username']) && $params['username']) {
 
             $where = ['username' => $params['username']];
@@ -313,11 +313,11 @@ class Ajax extends Backend
     public function deployment()
     {
         // 获取服务器一键部署内容
-        $bt                = new Btaction();
-        $name              = $this->request->post('name');
-        $keyValue          = $this->request->post('keyValue');
-        $search            = $name ? $name : $keyValue;
-        $new_data['list']  = $bt->getdeploymentlist($search);
+        $bt = new Btaction();
+        $name = $this->request->post('name');
+        $keyValue = $this->request->post('keyValue');
+        $search = $name ? $name : $keyValue;
+        $new_data['list'] = $bt->getdeploymentlist($search);
         $new_data['total'] = count($new_data['list']);
         return json($new_data);
     }
@@ -327,7 +327,7 @@ class Ajax extends Backend
     {
         $keyValue = $this->request->post('keyValue');
         // 获取服务器安装的php版本列表(由于官方的存在很大的数据变动)
-        $bt   = new Btaction();
+        $bt = new Btaction();
         $list = $bt->getphplist();
         $new_data = [];
         $new_data['list'] = [];
@@ -372,7 +372,7 @@ class Ajax extends Backend
         if (!Config('site.api_token')) {
             $this->error('请先配置宝塔面板接口密钥');
         }
-        $bt  = new Btaction();
+        $bt = new Btaction();
         if ($bt->os != 'linux') {
             $this->error('当前操作系统不支持自动获取phpMyAdmin地址，请尝试到宝塔面板中手动复制phpMyAdmin地址');
         }
@@ -407,7 +407,7 @@ class Ajax extends Backend
         $keyValue = $this->request->post('keyValue');
         // 获取服务器中的分类列表
         $list = Cache::remember('site_type_list', function () {
-            $bt   = new Btaction();
+            $bt = new Btaction();
             return $list = $bt->getsitetype();
         }, 0);
         if ($list) {
@@ -482,11 +482,11 @@ class Ajax extends Backend
                 $this->error('文件不可写，请检查网站目录及文件、权限、网站防篡改、系统加固等问题');
             }
 
-            $update                 = new \autoupdate\Autoupdate(ROOT_PATH, true);
+            $update = new \autoupdate\Autoupdate(ROOT_PATH, true);
             $update->currentVersion = Config::get('bty.version');
-            $update->updateUrl      = Config::get('bty.api_url');
-            $data                   = http_build_query(['version' => Config::get('bty.version'), 'domain' => $this->getIP(), 'obj' => Config::get('bty.APP_NAME'), 'rsa' => 1], '', '&');
-            $update->updateIni      = '/bthost_update_check.html?' . $data;
+            $update->updateUrl = Config::get('bty.api_url');
+            $data = http_build_query(['version' => Config::get('bty.version'), 'domain' => $this->getIP(), 'obj' => Config::get('bty.APP_NAME'), 'rsa' => 1], '', '&');
+            $update->updateIni = '/bthost_update_check.html?' . $data;
 
             try {
                 $latest = $update->checkUpdate();
@@ -508,12 +508,12 @@ class Ajax extends Backend
 
                             $stream_opts = [
                                 "ssl" => [
-                                    "verify_peer" => false,
+                                    "verify_peer"      => false,
                                     "verify_peer_name" => false,
                                 ]
                             ];
                             $sql = file($update->sql_file, false, stream_context_create($stream_opts));
-                            $query  = '';
+                            $query = '';
                             $prefix = Config::get("database.prefix");
                             if ($sql) {
                                 foreach ($sql as $value) {
@@ -563,11 +563,11 @@ class Ajax extends Backend
                 // 升级错误记录
                 $desc = $update->currentVersion . "->" . $update->latestVersion . "，用时：" . Debug::getRangeTime('begin', 'end') . 's';
                 Db::name('version')->insert([
-                    'version' => $update->latestVersion,
+                    'version'      => $update->latestVersion,
                     'last_version' => $update->currentVersion,
-                    'desc' => $desc,
-                    'updatetime' => time(),
-                    'error_msg' => $e->getMessage(),
+                    'desc'         => $desc,
+                    'updatetime'   => time(),
+                    'error_msg'    => $e->getMessage(),
                 ]);
                 $this->error($e->getMessage());
             }
@@ -589,28 +589,28 @@ class Ajax extends Backend
     public function update_check()
     {
         $total = [
-            'user'=>model('User')->count(),
-            'host'=>model('Host')->count(),
-            'sql'=>model('Sql')->count(),
-            'ftp'=>model('Ftp')->count(),
-            'domain'=>model('Domain')->count(),
-            'hostlog'=>model('HostLog')->count(),
-            'apilog'=>model('ApiLog')->count(),
-            'domainlist'=>model('Domainlist')->count(),
-            'hostresetlog'=>model('HostresetLog')->count(),
+            'user'         => model('User')->count(),
+            'host'         => model('Host')->count(),
+            'sql'          => model('Sql')->count(),
+            'ftp'          => model('Ftp')->count(),
+            'domain'       => model('Domain')->count(),
+            'hostlog'      => model('HostLog')->count(),
+            'apilog'       => model('ApiLog')->count(),
+            'domainlist'   => model('Domainlist')->count(),
+            'hostresetlog' => model('HostresetLog')->count(),
         ];
         $url = Config::get('bty.api_url') . '/bthost_update_check.html';
         $data = [
-            'obj' => Config::get('bty.APP_NAME'),
+            'obj'     => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
-            'domain' => $this->getIp(),
-            'rsa' => 1,
-            'total'=>base64_encode(json_encode($total)),
+            'domain'  => $this->getIp(),
+            'rsa'     => 1,
+            'total'   => base64_encode(json_encode($total)),
         ];
         $curl = http::post($url, $data);
         return json_decode($curl, 1);
     }
-    
+
 
     // TODO 获取任务队列开发中
     public function getTask()
@@ -622,16 +622,14 @@ class Ajax extends Backend
     public function getNotice()
     {
         // 缓存器
-        $curl = Cache::remember('notice', function () {
-            $url = Config::get('bty.api_url') . '/bthost_get_notice.html';
-            $data = [
-                'obj' => Config::get('bty.APP_NAME'),
-                'version' => Config::get('bty.version'),
-                'domain' => $this->getIp(),
-                'rsa' => 1,
-            ];
-            return http::post($url, $data);
-        }, 3600);
+        $url = Config::get('bty.api_url') . '/bthost_get_notice.html';
+        $data = [
+            'obj'     => Config::get('bty.APP_NAME'),
+            'version' => Config::get('bty.version'),
+            'domain'  => $this->getIp(),
+            'rsa'     => 1,
+        ];
+        $curl = http::post($url, $data);
 
         return json_decode($curl, 1);
     }
@@ -653,16 +651,17 @@ class Ajax extends Backend
     }
 
     // 设置面板自动更新状态
-    public function setAutoUpdate(){
+    public function setAutoUpdate()
+    {
         $bt = new Btaction();
-        
-        if($this->request->post('is')=='on'){
+
+        if ($this->request->post('is') == 'on') {
             $set = $bt->btPanel->AutoUpdatePanel();
-        }else{
-            if($bt->os=='windows'){
+        } else {
+            if ($bt->os == 'windows') {
                 // TODO windows文件路径待验证
                 $file = 'C:/BtSoft/panel/data/autoUpdate.pl';
-            }else{
+            } else {
                 $file = '/www/server/panel/data/autoUpdate.pl';
             }
             $set = $bt->btPanel->AutoUpdatePanelOff($file);
