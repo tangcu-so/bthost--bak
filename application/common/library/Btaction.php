@@ -63,11 +63,6 @@ class Btaction
             return $server_config = $this->clear_config();
         }, 3600 * 24);
         return $this->tests();
-        if ($this->os == 'windows') {
-            return $this->tests_win();
-        } else {
-            return $this->tests();
-        }
     }
 
     /**
@@ -84,9 +79,7 @@ class Btaction
             return false;
         }
 
-        if (!$time) {
-            return false;
-        }
+        if (!$time) return false;
         return $time . 'ms';
     }
 
@@ -99,40 +92,19 @@ class Btaction
             $this->serverConfig = $config;
             return true;
         } else if (isset($config['msg'])) {
-            $this->setError($config['msg'] . $this->getRequestTime());
-            return false;
-        } else {
-            $this->setError('服务器连接测试失败' . $this->getRequestTime());
-            return false;
+            $msg = $config['msg'];
         }
-    }
-
-    // windows版测试连接
-    public function tests_win()
-    {
-        $config = $this->getServerConfig();
-        if ($config && isset($config['status']) && $config['status'] === 0) {
-            $this->serverConfig = $config;
-            return true;
-        } else if (isset($config['status']) && $config['status'] === false && isset($config['msg'])) {
-
-            $this->setError($config['msg'] . $this->getRequestTime());
-            return false;
-        } else {
-            $this->setError('服务器连接失败' . $this->getRequestTime());
-            return false;
-        }
+        $msg = $msg ?? '服务器连接测试失败';
+        $this->setError($msg . $this->getRequestTime());
+        return false;
     }
 
     // 获取网站全部分类
     public function getsitetype()
     {
         $list = $this->btPanel->Webtypes();
-        if ($list) {
-            return $list;
-        } else {
-            return false;
-        }
+        if (!$list) return false;
+        return $list;
     }
 
     // 站点初始化
@@ -235,7 +207,7 @@ class Btaction
         $websize = bytes2mb($this->getWebSizes($this->bt_name));
         // 数据库
         $sqlsize = $this->sql_name ? bytes2mb($this->getSqlSizes($this->sql_name)) : 0;
-        return ['sqlsize' => $sqlsize, 'websize' => $websize, 'total_size' => $total_size];
+        return compact('sqlsize', 'websize', 'total_size');
     }
 
     /**
@@ -256,12 +228,11 @@ class Btaction
         if (isset($reset['status']) && $reset['status'] == true) {
             return true;
         } elseif (isset($reset['status']) && isset($reset['msg'])) {
-            $this->setError($reset['msg']);
-            return false;
-        } else {
-            $this->setError('error');
-            return false;
+            $msg = $this->setError($reset['msg']);
         }
+        $msg = $msg ?? 'error';
+        $this->setError($msg);
+        return false;
     }
 
     /**
@@ -282,12 +253,11 @@ class Btaction
         if (isset($reset['status']) && $reset['status'] == true) {
             return true;
         } elseif (isset($reset['status']) && isset($reset['msg'])) {
-            $this->setError($reset['msg']);
-            return false;
-        } else {
-            $this->setError('error');
-            return false;
+            $msg = $this->setError($reset['msg']);
         }
+        $msg = $msg ?? 'error';
+        $this->setError($msg);
+        return false;
     }
 
     /**
@@ -306,18 +276,17 @@ class Btaction
         if (isset($del['status']) && $del['status'] == true) {
             return true;
         } elseif (isset($del['msg'])) {
-            $this->setError($del['msg']);
-            return false;
-        } else {
-            $this->setError('请求失败');
-            return false;
+            $msg = $this->setError($del['msg']);
         }
+        $msg = $msg ?? 'error';
+        $this->setError($msg);
+        return false;
     }
 
     /**
      * FTP状态变更
      *
-     * @param integer $status       0=停用;1=启用
+     * @param integer $status 0=停用;1=启用
      * @return void
      */
     public function FtpStatus($status = 0)
@@ -331,12 +300,11 @@ class Btaction
         if (isset($s['status']) && $s['status'] == true) {
             return true;
         } elseif (isset($s['msg'])) {
-            $this->setError($s['msg']);
-            return false;
-        } else {
-            $this->setError('请求失败');
-            return false;
+            $msg = $this->setError($s['msg']);
         }
+        $msg = $msg ?? 'error';
+        $this->setError($msg);
+        return false;
     }
 
     /**
@@ -413,9 +381,9 @@ class Btaction
         // 拼接默认域名 6.8.18+版官方强转小写 2019-03-09
         $defaultDomain = isset($plans['domains']) ? $plans['domains'] : strtolower($set_domain . '.' . $plans['domain']);
         // php版本
-        $phpversion    = isset($plans['phpver']) && is_numeric($plans['phpver']) ? $plans['phpver'] : '00';
+        $phpversion = isset($plans['phpver']) && is_numeric($plans['phpver']) ? $plans['phpver'] : '00';
         // mysql
-        $sqlType    = isset($plans['sql']) ? $plans['sql'] : 'none';
+        $sqlType = isset($plans['sql']) ? $plans['sql'] : 'none';
 
         $site_max = isset($plans['site_max']) && $plans['site_max'] ? $plans['site_max'] : '无限制';
         $sql_max = isset($plans['sql_max']) && $plans['sql_max'] ? $plans['sql_max'] : '无限制';
@@ -473,7 +441,7 @@ class Btaction
      *
      * @param [type] $btid  宝塔ID
      * @param [type] $data  并发限制参数
-     * @param string $os    环境linux/windows
+     * @param string $os 环境linux/windows
      * @return void
      */
     public function setLimit($data)
@@ -595,20 +563,20 @@ class Btaction
         $url = config('bty.api_url') . '/bthost_get_ip.html';
         $domain = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'null';
         $data = [
-            'obj' => Config::get('bty.APP_NAME'),
+            'obj'     => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
-            'domain' => $domain,
-            'rsa' => 1,
+            'domain'  => $domain,
+            'rsa'     => 1,
         ];
         $post = \fast\Http::post($url, $data);
         $post = json_decode($post, 1);
         if ($post && isset($post['data']['ip'])) {
             return $post['data']['ip'];
         } elseif (isset($post['msg'])) {
-            $this->_error = $post['msg'];
-        } else {
-            $this->_error = '请求失败';
+            $msg = $post['msg'];
         }
+        $msg = $msg ?? '请求失败';
+        $this->_error = $msg;
         return false;
     }
 
@@ -892,7 +860,7 @@ class Btaction
      * @param    [type]     $domain_str 域名数组
      * @param    [type]     $btId       宝塔ID
      * @param    [type]     $siteName   站点名（为目录是填写目录名）
-     * @param    integer    $is_dir     是否为目录
+     * @param integer $is_dir 是否为目录
      */
     public function addDomain($domain_str, $siteName, $is_dir = 0)
     {
@@ -981,7 +949,7 @@ class Btaction
     /**
      * 获取安装的php列表
      *
-     * @param integer $is_all   是否显示全部php
+     * @param integer $is_all 是否显示全部php
      * @return array
      */
     public function getphplist($is_all = 0)
@@ -1144,7 +1112,7 @@ class Btaction
      */
     public function getNetNumber_month($domain)
     {
-        $size             = 0;
+        $size = 0;
         $SiteNetworkTotal = $this->btPanel->SiteNetworkTotal($domain);
         if (isset($SiteNetworkTotal['status']) && $SiteNetworkTotal['status'] == false) {
             return $SiteNetworkTotal;
@@ -1153,7 +1121,7 @@ class Btaction
             // 月初时间戳
             $beginThismonth = mktime(0, 0, 0, date('m'), 1, date('Y'));
             // 月末时间戳
-            $endThismonth   = mktime(23, 59, 59, date('m'), date('t'), date('Y'));
+            $endThismonth = mktime(23, 59, 59, date('m'), date('t'), date('Y'));
             //var_dump($beginThismonth);var_dump($endThismonth);exit();
             $SiteNetworkTotal['month_total'] = 0;
             $SiteNetworkTotal = array_diff_key($SiteNetworkTotal, ['total_request' => "xy", "total_size" => "xy"]);
@@ -1522,7 +1490,7 @@ class Btaction
      * @param [type] $username      数据库用户名
      * @param [type] $database      数据库名
      * @param [type] $password      数据库密码
-     * @param string $type          数据库类型MySQL、SQLServer
+     * @param string $type 数据库类型MySQL、SQLServer
      * @return void
      */
     public function buildSql($username, $database, $password, $type = 'MySQL')
@@ -1623,6 +1591,16 @@ class Btaction
     }
 
     /**
+     * 获取站点加速总开关状态
+     * @return bool
+     * @date 2021/6/13
+     */
+    public function get_speed_open()
+    {
+        return $this->btPanel->GetSiteSpeedSettings();
+    }
+
+    /**
      * 获取站点加速站点状态
      *
      * @param [type] $bt_name   站点名
@@ -1666,11 +1644,12 @@ class Btaction
     }
 
     // 检查文件是否存在
-    public function panel_file_exist($file){
+    public function panel_file_exist($file)
+    {
         $get = $this->btPanel->getFileLog($file);
-        if(isset($get['status'])&&$get['status']==true){
+        if (isset($get['status']) && $get['status'] == true) {
             return true;
-        }else{
+        } else {
             return false;
         }
     }
@@ -1679,7 +1658,7 @@ class Btaction
      * 获取服务器连接时间
      *
      * @param [type] $url
-     * @param string $data
+     * @param string  $data
      * @param integer $timeout
      * @param integer $time
      * @return void

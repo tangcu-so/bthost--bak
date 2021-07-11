@@ -25,7 +25,7 @@ class Host extends Backend
     protected $model = null;
 
     protected $relationSearch = true;
-    protected $searchFields = ['id','bt_name','user.username'];
+    protected $searchFields = ['id', 'bt_name', 'user.username'];
 
     public function _initialize()
     {
@@ -119,7 +119,6 @@ class Host extends Backend
                 }
 
 
-
                 $hostSetInfo = $bt->setInfo($params, $plansInfo);
                 if (!$hostSetInfo) {
                     throw new \think\Exception('站点信息构建失败，请重试|' . json_encode($plansInfo));
@@ -147,8 +146,6 @@ class Host extends Backend
                 $btName = $hostSetInfo['bt_name'];
 
                 Db::startTrans();
-
-
 
 
                 // 修改到期时间
@@ -203,23 +200,23 @@ class Host extends Backend
 
                 // 获取信息后存入数据库
                 $host_data = [
-                    'user_id'               => $params['user_id'],
-                    'sort_id'               => $params['sort_id'],
-                    'bt_id'                 => $btId,
-                    'bt_name'               => $btName,
-                    'site_max'              => $plansInfo['site_max'],
-                    'sql_max'               => $plansInfo['sql_max'],
-                    'flow_max'              => $plansInfo['flow_max'],
-                    'is_audit'              => $plansInfo['domain_audit'],
-                    'is_vsftpd'             => $plansInfo['vsftpd'],
-                    'domain_max'            => $plansInfo['domain_num'],
-                    'web_back_num'          => $plansInfo['web_back_num'],
-                    'sql_back_num'          => $plansInfo['sql_back_num'],
-                    'ip_address'            => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
-                    'endtime'               => $params['endtime'],
-                    'perserver'             => $plansInfo['perserver'] ?? 0,
-                    'limit_rate'            => $plansInfo['limit_rate'] ?? 0,
-                    'sub_bind'              => $plansInfo['sub_bind'] ?? 0,
+                    'user_id'      => $params['user_id'],
+                    'sort_id'      => $params['sort_id'],
+                    'bt_id'        => $btId,
+                    'bt_name'      => $btName,
+                    'site_max'     => $plansInfo['site_max'],
+                    'sql_max'      => $plansInfo['sql_max'],
+                    'flow_max'     => $plansInfo['flow_max'],
+                    'is_audit'     => $plansInfo['domain_audit'],
+                    'is_vsftpd'    => $plansInfo['vsftpd'],
+                    'domain_max'   => $plansInfo['domain_num'],
+                    'web_back_num' => $plansInfo['web_back_num'],
+                    'sql_back_num' => $plansInfo['sql_back_num'],
+                    'ip_address'   => isset($plansInfo['ipArr']) ? $plansInfo['ipArr'] : '',
+                    'endtime'      => $params['endtime'],
+                    'perserver'    => $plansInfo['perserver'] ?? 0,
+                    'limit_rate'   => $plansInfo['limit_rate'] ?? 0,
+                    'sub_bind'     => $plansInfo['sub_bind'] ?? 0,
                 ];
                 $inc = model('Host')::create($host_data);
 
@@ -231,28 +228,28 @@ class Host extends Backend
                 if ($btInfo['ftpStatus'] == true) {
                     // 存储ftp
                     $ftp = model('Ftp')::create(['vhost_id' => $vhost_id,
-                        'username' => $btInfo['ftpUser'],
-                        'password' => $btInfo['ftpPass'],
+                                                 'username' => $btInfo['ftpUser'],
+                                                 'password' => $btInfo['ftpPass'],
                     ]);
                 }
 
                 if ($btInfo['databaseStatus'] == true) {
                     // 存储sql
                     $sql = model('Sql')::create(['vhost_id' => $vhost_id,
-                        'database' => $btInfo['databaseUser'],
-                        'username' => $btInfo['databaseUser'],
-                        'password' => $btInfo['databasePass'],
+                                                 'database' => $btInfo['databaseUser'],
+                                                 'username' => $btInfo['databaseUser'],
+                                                 'password' => $btInfo['databasePass'],
                     ]);
                 }
 
                 // 存入域名信息
-                model('Domainlist')::create(['domain' => $btName,
-                    'vhost_id' => $vhost_id,
-                    'domain_id' => $plansInfo['domainlist_id'],
-                    'dnspod_record' => $dnspod_record,
-                    'dnspod_record_id' => $dnspod_record_id,
-                    'dnspod_domain_id' => $dnspod_domain_id,
-                    'dir' => '/',
+                model('Domainlist')::create(['domain'           => $btName,
+                                             'vhost_id'         => $vhost_id,
+                                             'domain_id'        => $plansInfo['domainlist_id'],
+                                             'dnspod_record'    => $dnspod_record,
+                                             'dnspod_record_id' => $dnspod_record_id,
+                                             'dnspod_domain_id' => $dnspod_domain_id,
+                                             'dir'              => '/',
                 ]);
 
                 Db::commit();
@@ -383,28 +380,28 @@ class Host extends Backend
             }
             // var_dump($hostInfo,$ftpInfo,$sqlInfo);exit;
             // 都查找完毕后存入数据库
-            $hostInc = model('Host')::create(['user_id' => $user_id,
-                'sort_id' => $sort_id,
-                'bt_id' => $hostInfo['id'],
-                'bt_name' => $hostInfo['name'],
-                'domain_max' => 0,
-                'web_back_num' => 0,
-                'sql_back_num' => 0,
-                'notice' => $notice,
-                'endtime' => $endtime ? $endtime : $hostInfo['edate'],
+            $hostInc = model('Host')::create(['user_id'      => $user_id,
+                                              'sort_id'      => $sort_id,
+                                              'bt_id'        => $hostInfo['id'],
+                                              'bt_name'      => $hostInfo['name'],
+                                              'domain_max'   => 0,
+                                              'web_back_num' => 0,
+                                              'sql_back_num' => 0,
+                                              'notice'       => $notice,
+                                              'endtime'      => $endtime ? $endtime : $hostInfo['edate'],
             ]);
             $host_id = $hostInc->id;
             if ($ftp_name) {
                 model('Ftp')::create(['vhost_id' => $host_id,
-                    'username' => $ftpInfo['name'],
-                    'password' => $ftpInfo['password'],
+                                      'username' => $ftpInfo['name'],
+                                      'password' => $ftpInfo['password'],
                 ]);
             }
             if ($sql_name) {
                 model('Sql')::create(['vhost_id' => $host_id,
-                    'username' => $sqlInfo['username'],
-                    'database' => $sqlInfo['name'],
-                    'password' => $sqlInfo['password'],
+                                      'username' => $sqlInfo['username'],
+                                      'database' => $sqlInfo['name'],
+                                      'password' => $sqlInfo['password'],
                 ]);
             }
             // 都入库了就成功了
@@ -493,10 +490,9 @@ class Host extends Backend
             $ftpInfo = model('Ftp')::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
             $sqlInfo = model('Sql')::get(['vhost_id' => $hostInfo->id, 'status' => 'normal']);
             $hostInfo_new = $hostInfo;
-            $hostInfo_new->ftp  = $ftpInfo ? $ftpInfo : '';
-            $hostInfo_new->sql  = $sqlInfo ? $sqlInfo : '';
-            $bt        = new Btaction();
-            $bt->bt_id = $hostInfo->bt_id;
+            $hostInfo_new->ftp = $ftpInfo ? $ftpInfo : '';
+            $hostInfo_new->sql = $sqlInfo ? $sqlInfo : '';
+            $bt = new Btaction();
             $bt->sql_name = isset($hostInfo_new->sql->username) ? $hostInfo_new->sql->username : '';
             $bt->ftp_name = isset($hostInfo_new->ftp->username) ? $hostInfo_new->ftp->username : '';
             $bt->bt_name = $hostInfo->bt_name;
@@ -509,14 +505,16 @@ class Host extends Backend
             if (!$Websites) {
                 $this->error('Site：' . $hostInfo->bt_name . '<br/>' . $bt->getError());
             }
-            $btid   = $Websites['id'];
-            $edate  = $Websites['edate'];
+            $btid = $Websites['id'];
+            $edate = $Websites['edate'];
             $status = $Websites['status'];
+
+            // 使用获取到的btid使用
+            $bt->bt_id = $btid;
 
             if (input('param.sync') || $params == 'sync') {
                 // 强制同步
-                $emsg = '';
-                $emsg .= 'Site：' . $hostInfo->bt_name . '<br/>';
+                $emsg = 'Site：' . $hostInfo->bt_name . '<br/>';
                 // 同步云端宝塔ID到本地
                 $hostInfo->bt_id = $btid;
                 $btidUp = $hostInfo->allowField(true)->save();
@@ -601,8 +599,8 @@ class Host extends Backend
                 }
             } elseif (input('param.speed')) {
                 // 设置限速
-                $perserver  = input('param.perserver/d') ? input('param.perserver/d') : 0;
-                $perip      = input('param.perip/d') ? input('param.perip/d') : 0;
+                $perserver = input('param.perserver/d') ? input('param.perserver/d') : 0;
+                $perip = input('param.perip/d') ? input('param.perip/d') : 0;
                 $limit_rate = input('param.limit_rate/d') ? input('param.limit_rate/d') : 0;
                 // 区分linux和windows
                 $modify_status = $bt->btPanel->SetLimitNet($btid, $perserver, $perip, $limit_rate);
@@ -670,20 +668,20 @@ class Host extends Backend
             } else {
                 $vhostStatus = $hostInfo->status == 'normal' ? 1 : 0;
                 return $this->success('请求成功', '', [
-                    'btid'   => [
+                    'btid'         => [
                         $hostInfo->bt_id,
                         $btid,
                     ],
-                    'edate'  => [
+                    'edate'        => [
                         date("Y-m-d", $hostInfo->getData('endtime')),
                         $Websites['edate'],
                     ],
-                    'status' => [
+                    'status'       => [
                         $vhostStatus, //判断状态，非normal都为0
                         $status, // 只有0和1
                     ],
                     'collback_url' => $this->request->url(true),
-                    'ids' => $ids,
+                    'ids'          => $ids,
                 ]);
             }
         }

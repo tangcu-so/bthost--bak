@@ -24,6 +24,8 @@ class Vhost extends Api
     protected $noNeedRight = '*';
     // 跳过签名验证/跨域检测
     protected $noTokenCheck = ['host_login'];
+    // 跳过IP验证
+    protected $noIpCheck = ['host_login'];
 
     public function _initialize()
     {
@@ -41,7 +43,7 @@ class Vhost extends Api
         // IP白名单效验
         $ip = request()->ip();
         $forbiddenip = Config::get('site.api_returnip');
-        if ($forbiddenip != '') {
+        if ($forbiddenip != '' && !in_array($this->request->action(), $this->noIpCheck)) {
             $black_arr = explode("\r\n", $forbiddenip);
             if (!in_array($ip, $black_arr)) {
                 $this->error('非白名单IP不允许请求');
@@ -85,7 +87,7 @@ class Vhost extends Api
     {
         // 调用缓存
         $sortList = Cache::remember('site_type_list', function () {
-            $bt   = new Btaction();
+            $bt = new Btaction();
             return $sortList = $bt->getsitetype();
         });
         if (!$sortList) {
@@ -110,7 +112,7 @@ class Vhost extends Api
         Cache::rm('site_type_list');
         // 重新获取网站分类并缓存
         Cache::remember('site_type_list', function () {
-            $bt   = new Btaction();
+            $bt = new Btaction();
             return $list = $bt->getsitetype();
         });
         $this->success('创建成功');
@@ -133,7 +135,7 @@ class Vhost extends Api
         Cache::rm('site_type_list');
         // 重新获取网站分类并缓存
         Cache::remember('site_type_list', function () {
-            $bt   = new Btaction();
+            $bt = new Btaction();
             return $list = $bt->getsitetype();
         });
         $this->success('修改成功');
@@ -155,7 +157,7 @@ class Vhost extends Api
         Cache::rm('site_type_list');
         // 重新获取网站分类并缓存
         Cache::remember('site_type_list', function () {
-            $bt   = new Btaction();
+            $bt = new Btaction();
             return $list = $bt->getsitetype();
         });
         $this->success('删除成功');
@@ -376,12 +378,12 @@ class Vhost extends Api
         $info = $this->getHostInfo($id);
 
         $sqlData = [
-            'vhost_id'  => $info->id,
-            'username'  => $username,
-            'database'  => $database,
-            'password'  => $password,
-            'console'   => $console,
-            'type'   => $type == 'bt' ? 'bt' : 'custom',
+            'vhost_id' => $info->id,
+            'username' => $username,
+            'database' => $database,
+            'password' => $password,
+            'console'  => $console,
+            'type'     => $type == 'bt' ? 'bt' : 'custom',
         ];
         $create = model('Sql')::create($sqlData);
         $sqlData['id'] = $create->id;
@@ -578,22 +580,22 @@ class Vhost extends Api
 
         // 获取信息后存入数据库
         $host_data = [
-            'user_id'               => $user_id,
-            'sort_id'               => $sort_id,
-            'bt_id'                 => $btId,
-            'bt_name'               => $btName,
-            'site_max'              => $plansInfo['site_max'] ?? 0,
-            'sql_max'               => $plansInfo['sql_max'] ?? 0,
-            'flow_max'              => $plansInfo['flow_max'] ?? 0,
-            'is_audit'              => $plansInfo['domain_audit'] ?? 0,
-            'is_vsftpd'             => $plansInfo['vsftpd'] ?? 0,
-            'domain_max'            => $plansInfo['domain_num'] ?? 0,
-            'web_back_num'          => $plansInfo['web_back_num'] ?? 0,
-            'sql_back_num'          => $plansInfo['sql_back_num'] ?? 0,
-            'ip_address'            => $plansInfo['ipArr'] ?? '',
-            'endtime'               => $endtime,
-            'sub_bind'              => $plansInfo['sub_bind'] ?? 0,
-            'is_api'                => 1,
+            'user_id'      => $user_id,
+            'sort_id'      => $sort_id,
+            'bt_id'        => $btId,
+            'bt_name'      => $btName,
+            'site_max'     => $plansInfo['site_max'] ?? 0,
+            'sql_max'      => $plansInfo['sql_max'] ?? 0,
+            'flow_max'     => $plansInfo['flow_max'] ?? 0,
+            'is_audit'     => $plansInfo['domain_audit'] ?? 0,
+            'is_vsftpd'    => $plansInfo['vsftpd'] ?? 0,
+            'domain_max'   => $plansInfo['domain_num'] ?? 0,
+            'web_back_num' => $plansInfo['web_back_num'] ?? 0,
+            'sql_back_num' => $plansInfo['sql_back_num'] ?? 0,
+            'ip_address'   => $plansInfo['ipArr'] ?? '',
+            'endtime'      => $endtime,
+            'sub_bind'     => $plansInfo['sub_bind'] ?? 0,
+            'is_api'       => 1,
         ];
         $hostInfo = model('Host')::create($host_data);
 
@@ -623,13 +625,13 @@ class Vhost extends Api
 
         // 存入域名信息
         $domainInfo = model('Domainlist')::create([
-            'domain' => $btName,
-            'vhost_id' => $vhost_id,
-            'domain_id' => $plansInfo['domainlist_id'] ?? 0,
-            'dnspod_record' => $dnspod_record,
+            'domain'           => $btName,
+            'vhost_id'         => $vhost_id,
+            'domain_id'        => $plansInfo['domainlist_id'] ?? 0,
+            'dnspod_record'    => $dnspod_record,
             'dnspod_record_id' => $dnspod_record_id,
             'dnspod_domain_id' => $dnspod_domain_id,
-            'dir' => '/',
+            'dir'              => '/',
         ]);
 
         Db::commit();
@@ -674,19 +676,19 @@ class Vhost extends Api
 
         // 传参验证
         $validate = $this->validate([
-            'account' => $account,
+            'account'  => $account,
             'password' => $password,
-            'id' => $id,
+            'id'       => $id,
         ], [
-            'account' => 'require|length:3,50',
+            'account'  => 'require|length:3,50',
             'password' => 'require|length:6,30',
-            'id' => 'number',
+            'id'       => 'number',
         ], [
             'account.require'  => 'Account can not be empty',
             'account.length'   => 'Account must be 3 to 50 characters',
             'password.require' => 'Password can not be empty',
             'password.length'  => 'Password must be 6 to 30 characters',
-            'id.number' => '主机ID格式错误',
+            'id.number'        => '主机ID格式错误',
         ]);
 
         if ($validate !== true) {
@@ -866,8 +868,8 @@ class Vhost extends Api
         if (!$hostInfo) {
             $this->error($bt->_error);
         }
-        $btid   = $hostInfo['id'];
-        $edate  = $hostInfo['edate'];
+        $btid = $hostInfo['id'];
+        $edate = $hostInfo['edate'];
         $status = $hostInfo['status'];
 
         $bt->bt_id = $btid;
@@ -959,7 +961,7 @@ class Vhost extends Api
         $max = [
             'site' => $hostFind->site_max,
             'flow' => $hostFind->flow_max,
-            'sql' => $hostFind->sql_max,
+            'sql'  => $hostFind->sql_max,
         ];
 
         $this->success('请求成功', ['size' => $size, 'max' => $max]);
@@ -1077,10 +1079,10 @@ class Vhost extends Api
             $this->error('没有找到有效主机');
         }
         $data = [
-            'vhost_id'    => $id,
-            'domain'      => $domain,
-            'dir'         => $dirs,
-            'status'      => $is_audit ? 0 : 1,
+            'vhost_id' => $id,
+            'domain'   => $domain,
+            'dir'      => $dirs,
+            'status'   => $is_audit ? 0 : 1,
         ];
 
         $sub_bind = isset($hostInfo->sub_bind) && $hostInfo->sub_bind ? 1 : 0;
@@ -1094,10 +1096,10 @@ class Vhost extends Api
                 $hostInfo = model('Host')::get($data->vhost_id);
                 if ($data->dir == '/') {
                     $isdir = 0;
-                    $name  = $hostInfo->bt_name;
+                    $name = $hostInfo->bt_name;
                 } else {
                     $isdir = 1;
-                    $name  = $data->dir;
+                    $name = $data->dir;
                 }
 
                 // 连接宝塔绑定域名
@@ -1290,8 +1292,8 @@ class Vhost extends Api
         }
 
         $data = [
-            'time' => $time,
-            'random' => $random,
+            'time'         => $time,
+            'random'       => $random,
             'access_token' => $this->access_token,
         ];
 

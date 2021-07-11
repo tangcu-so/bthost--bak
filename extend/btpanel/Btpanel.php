@@ -2,18 +2,21 @@
 // +----------------------------------------------------------------------
 // | 宝塔接口类库
 // +----------------------------------------------------------------------
-// | Copyright (c) 2019-2020 rights reserved.
+// | Copyright (c) 2019-2021 rights reserved.
 // +----------------------------------------------------------------------
 // | Author: Youngxj
 // +----------------------------------------------------------------------
-// | Date: 2019/9/21 15:18
+// | Date: 2021年6月13日 16:41:23
 // +----------------------------------------------------------------------
 namespace btpanel;
 
+use think\Config;
+use think\Log;
+
 class Btpanel
 {
-    private $BT_KEY   = ""; // 接口密钥
     private $BT_PANEL = ""; // 面板地址
+    private $BT_KEY = ""; // 接口密钥
 
     public $_error = ''; // 错误内容收集
 
@@ -21,24 +24,19 @@ class Btpanel
 
     public function __construct($bt_panel = null, $bt_key = null)
     {
-        if ($bt_panel) {
-            $this->BT_PANEL = $bt_panel;
-        } else {
+        if (!$bt_panel || !$bt_key) {
+            $this->_error = '面板地址|密钥不能为空';
             return false;
         }
-
-        if ($bt_key) {
-            $this->BT_KEY = $bt_key;
-        } else {
-            return false;
-        }
+        $this->BT_PANEL = $bt_panel;
+        $this->BT_KEY = $bt_key;
     }
 
     /**
      * API请求
      *
      * @param [type] $api   API名
-     * @param array $p_data   传递数据
+     * @param array $p_data 传递数据
      * @return void
      */
     // TODO 使用该方法进行API请求封装
@@ -46,25 +44,16 @@ class Btpanel
     {
         $url = $this->BT_PANEL . config("bt." . $api);
 
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
-     * 获取服务器配置
+     * 获取服务器配置（缓存）
      */
     public function GetConfig()
     {
         $url = $this->BT_PANEL . config("bt.GetConfig");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -73,13 +62,7 @@ class Btpanel
     public function getConcifInfo()
     {
         $url = $this->BT_PANEL . config("bt.getConcifInfo");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -88,13 +71,7 @@ class Btpanel
     public function GetSystemTotal()
     {
         $url = $this->BT_PANEL . config("bt.GetSystemTotal");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -104,13 +81,8 @@ class Btpanel
     public function GetWebSize($path)
     {
         $url = $this->BT_PANEL . config("bt.GetWebSize");
-
-        $p_data         = [];
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -120,13 +92,8 @@ class Btpanel
     public function GetSqlSize($db_name)
     {
         $url = $this->BT_PANEL . config("bt.GetSqlSize");
-
-        $p_data            = [];
         $p_data['db_name'] = $db_name;
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -135,13 +102,7 @@ class Btpanel
     public function GetDiskInfo()
     {
         $url = $this->BT_PANEL . config("bt.GetDiskInfo");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -151,13 +112,7 @@ class Btpanel
     public function GetNetWork()
     {
         $url = $this->BT_PANEL . config("bt.GetNetWork");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -166,10 +121,7 @@ class Btpanel
     public function GetTaskCount()
     {
         $url = $this->BT_PANEL . config("bt.GetTaskCount");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
+        $result = $this->HttpPostCookie($url);
 
         $data = $result;
         return $data;
@@ -181,15 +133,10 @@ class Btpanel
     public function UpdatePanel($check = false, $force = false)
     {
         $url = $this->BT_PANEL . config("bt.UpdatePanel");
-
-        $p_data          = [];
         $p_data['check'] = $check;
         $p_data['force'] = $force;
 
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -198,43 +145,30 @@ class Btpanel
     public function UpdatePanels($toUpdate = true)
     {
         $url = $this->BT_PANEL . config("bt.UpdatePanel");
-
-        $p_data             = [];
         $p_data['toUpdate'] = $toUpdate;
 
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     // 设置面板自动更新
     public function AutoUpdatePanel()
     {
         $url = $this->BT_PANEL . config("bt.AutoUpdatePanel");
-
-        $p_data             = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        if(isset($data['status'])&&$data['status']==true){
+        $data = $this->http_post($url)->result_decode();
+        if (isset($data['status']) && $data['status'] == true) {
             return true;
-        }elseif(isset($data['msg'])){
-            $this->_error = $data['msg'];
-            return false;
-        }else{
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     // 关闭面板自动更新
-    public function AutoUpdatePanelOff($file){
+    public function AutoUpdatePanelOff($file)
+    {
         // 删除路径文件
         $deleteFile = $this->DeleteFile($file);
         return true;
     }
-    
 
     /**
      * 检查专业版
@@ -243,11 +177,9 @@ class Btpanel
      */
     public function IsPro()
     {
-        $url    = $this->BT_PANEL . config("bt.IsPro");
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-        $data   = json_decode($result, true);
-        return $data;
+        $url = $this->BT_PANEL . config("bt.IsPro");
+
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -258,12 +190,10 @@ class Btpanel
      */
     public function RepPanel($action = 'RepPanel')
     {
-        $url              = $this->BT_PANEL . config("bt.RepPanel");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.RepPanel");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -274,12 +204,10 @@ class Btpanel
      */
     public function ReWeb($action = 'ReWeb')
     {
-        $url              = $this->BT_PANEL . config("bt.ReWeb");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.ReWeb");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -291,13 +219,11 @@ class Btpanel
      */
     public function ServiceAdmin($name, $type = 'stop')
     {
-        $url            = $this->BT_PANEL . config("bt.ServiceAdmin");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.ServiceAdmin");
+
         $p_data['name'] = $name;
         $p_data['type'] = $type;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -308,37 +234,31 @@ class Btpanel
      */
     public function RestartServer($action = 'RestartServer')
     {
-        $url              = $this->BT_PANEL . config("bt.RestartServer");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.RestartServer");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 获取网站列表
-     * @param string $page 当前分页
-     * @param string $limit 取出的数据行数
-     * @param string $type 分类标识 -1: 分部分类 0: 默认分类
-     * @param string $order 排序规则 使用 id 降序：id desc 使用名称升序：name desc
-     * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
+     * @param string $page   当前分页
+     * @param string $limit  取出的数据行数
+     * @param string $type   分类标识 -1: 分部分类 0: 默认分类
+     * @param string $order  排序规则 使用 id 降序：id desc 使用名称升序：name desc
+     * @param string $tojs   分页 JS 回调,若不传则构造 URI 分页连接
      * @param string $search 搜索内容
      */
     public function Websites($search = '', $page = '1', $limit = '15', $type = '-1', $order = 'id desc', $tojs = '')
     {
         $url = $this->BT_PANEL . config("bt.Websites");
-
-        $p_data           = [];
-        $p_data['p']      = $page;
-        $p_data['limit']  = $limit;
-        $p_data['type']   = $type;
-        $p_data['order']  = $order;
-        $p_data['tojs']   = $tojs;
+        $p_data['p'] = $page;
+        $p_data['limit'] = $limit;
+        $p_data['type'] = $type;
+        $p_data['order'] = $order;
+        $p_data['tojs'] = $tojs;
         $p_data['search'] = $search;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -352,14 +272,10 @@ class Btpanel
     public function Websitess($search, $table, $list = 'True')
     {
         $url = $this->BT_PANEL . config("bt.Websitess");
-
-        $p_data           = [];
-        $p_data['table']  = $table;
-        $p_data['list']   = $list;
+        $p_data['table'] = $table;
+        $p_data['list'] = $list;
         $p_data['search'] = $search;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -371,13 +287,8 @@ class Btpanel
     public function GetRedirectList($sitename)
     {
         $url = $this->BT_PANEL . config("bt.GetRedirectList");
-
-        $p_data             = [];
         $p_data['sitename'] = $sitename;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -396,21 +307,16 @@ class Btpanel
     public function CreateRedirect($sitename, $redirecttype, $domainorpath, $redirectdomain, $redirectpath, $tourl, $type = 1, $holdpath)
     {
         $url = $this->BT_PANEL . config("bt.CreateRedirect");
-
-        $p_data                   = [];
-        $p_data['sitename']       = $sitename;
-        $p_data['redirecttype']   = $redirecttype;
-        $p_data['domainorpath']   = $domainorpath;
-        $p_data['redirectdomain'] = (string) $redirectdomain;
-        $p_data['redirectpath']   = $redirectpath;
-        $p_data['tourl']          = $tourl;
-        $p_data['type']           = $type;
-        $p_data['holdpath']       = $holdpath;
-        $p_data['redirectname']   = time();
-        $result                   = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['sitename'] = $sitename;
+        $p_data['redirecttype'] = $redirecttype;
+        $p_data['domainorpath'] = $domainorpath;
+        $p_data['redirectdomain'] = (string)$redirectdomain;
+        $p_data['redirectpath'] = $redirectpath;
+        $p_data['tourl'] = $tourl;
+        $p_data['type'] = $type;
+        $p_data['holdpath'] = $holdpath;
+        $p_data['redirectname'] = time();
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -423,14 +329,9 @@ class Btpanel
     public function DeleteRedirect($sitename, $redirectname)
     {
         $url = $this->BT_PANEL . config("bt.DeleteRedirect");
-
-        $p_data                 = [];
-        $p_data['sitename']     = $sitename;
+        $p_data['sitename'] = $sitename;
         $p_data['redirectname'] = $redirectname;
-        $result                 = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -450,73 +351,58 @@ class Btpanel
     public function ModifyRedirect($sitename, $redirectname, $redirecttype, $domainorpath, $redirectdomain, $redirectpath, $tourl, $type = 1, $holdpath)
     {
         $url = $this->BT_PANEL . config("bt.ModifyRedirect");
-
-        $p_data                   = [];
-        $p_data['sitename']       = $sitename;
-        $p_data['redirecttype']   = $redirecttype;
-        $p_data['domainorpath']   = $domainorpath;
-        $p_data['redirectdomain'] = (string) $redirectdomain;
-        $p_data['redirectpath']   = $redirectpath;
-        $p_data['tourl']          = $tourl;
-        $p_data['type']           = $type;
-        $p_data['holdpath']       = $holdpath;
-        $p_data['redirectname']   = $redirectname;
-        $result                   = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['sitename'] = $sitename;
+        $p_data['redirecttype'] = $redirecttype;
+        $p_data['domainorpath'] = $domainorpath;
+        $p_data['redirectdomain'] = (string)$redirectdomain;
+        $p_data['redirectpath'] = $redirectpath;
+        $p_data['tourl'] = $tourl;
+        $p_data['type'] = $type;
+        $p_data['holdpath'] = $holdpath;
+        $p_data['redirectname'] = $redirectname;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 获取网站FTP列表
-     * @param string $page 当前分页
-     * @param string $limit 取出的数据行数
-     * @param string $type 分类标识 -1: 分部分类 0: 默认分类
-     * @param string $order 排序规则 使用 id 降序：id desc 使用名称升序：name desc
-     * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
+     * @param string $page   当前分页
+     * @param string $limit  取出的数据行数
+     * @param string $type   分类标识 -1: 分部分类 0: 默认分类
+     * @param string $order  排序规则 使用 id 降序：id desc 使用名称升序：name desc
+     * @param string $tojs   分页 JS 回调,若不传则构造 URI 分页连接
      * @param string $search 搜索内容
      */
     public function WebFtpList($search = '', $page = '1', $limit = '15', $order = 'id desc', $tojs = '')
     {
         $url = $this->BT_PANEL . config("bt.WebFtpList");
-
-        $p_data           = [];
-        $p_data['p']      = $page;
-        $p_data['limit']  = $limit;
-        $p_data['order']  = $order;
-        $p_data['tojs']   = $tojs;
+        $p_data['p'] = $page;
+        $p_data['limit'] = $limit;
+        $p_data['order'] = $order;
+        $p_data['tojs'] = $tojs;
         $p_data['search'] = $search;
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 获取网站数据库列表
-     * @param string $page 当前分页
-     * @param string $limit 取出的数据行数
-     * @param string $type 分类标识 -1: 分部分类 0: 默认分类
-     * @param string $order 排序规则 使用 id 降序：id desc 使用名称升序：name desc
-     * @param string $tojs 分页 JS 回调,若不传则构造 URI 分页连接
+     * @param string $page   当前分页
+     * @param string $limit  取出的数据行数
+     * @param string $type   分类标识 -1: 分部分类 0: 默认分类
+     * @param string $order  排序规则 使用 id 降序：id desc 使用名称升序：name desc
+     * @param string $tojs   分页 JS 回调,若不传则构造 URI 分页连接
      * @param string $search 搜索内容
      */
     public function WebSqlList($search = '', $page = '1', $limit = '15', $type = '-1', $order = 'id desc', $tojs = '')
     {
         $url = $this->BT_PANEL . config("bt.WebSqlList");
-
-        $p_data           = [];
-        $p_data['p']      = $page;
-        $p_data['limit']  = $limit;
-        $p_data['type']   = $type;
-        $p_data['order']  = $order;
-        $p_data['tojs']   = $tojs;
+        $p_data['p'] = $page;
+        $p_data['limit'] = $limit;
+        $p_data['type'] = $type;
+        $p_data['order'] = $order;
+        $p_data['tojs'] = $tojs;
         $p_data['search'] = $search;
 
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -525,13 +411,7 @@ class Btpanel
     public function Webtypes()
     {
         $url = $this->BT_PANEL . config("bt.Webtypes");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -544,23 +424,15 @@ class Btpanel
     public function set_site_type($site_ids, $id)
     {
         $url = $this->BT_PANEL . config("bt.set_site_type");
-
-        $p_data             = [];
         $p_data['site_ids'] = $site_ids;
-        $p_data['id']       = $id;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $p_data['id'] = $id;
+        $data = $this->http_post($url, $p_data)->result_decode();
 
         if ($data && isset($data['status']) && $data['status'] == true) {
             return true;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -572,20 +444,13 @@ class Btpanel
     public function add_site_type($name)
     {
         $url = $this->BT_PANEL . config("bt.add_site_type");
-
-        $p_data             = [];
         $p_data['name'] = $name;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status']) {
             return true;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -598,21 +463,14 @@ class Btpanel
     public function edit_site_type($id, $name)
     {
         $url = $this->BT_PANEL . config("bt.edit_site_type");
-
-        $p_data             = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status']) {
             return true;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -624,20 +482,13 @@ class Btpanel
     public function delete_site_type($id)
     {
         $url = $this->BT_PANEL . config("bt.delete_site_type");
-
-        $p_data             = [];
         $p_data['id'] = $id;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status']) {
             return true;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -647,17 +498,8 @@ class Btpanel
     {
         //拼接URL地址
         $url = $this->BT_PANEL . config("bt.GetPHPVersion");
-
-        //准备POST数据
-        $p_data = []; //取签名
-
         //请求面板接口
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        //解析JSON数据
-        $data = json_decode($result, true);
-
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -667,16 +509,10 @@ class Btpanel
      */
     public function SetPHPVersion($site, $php)
     {
-
         $url = $this->BT_PANEL . config("bt.SetPHPVersion");
-
-        $p_data             = [];
         $p_data['siteName'] = $site;
-        $p_data['version']  = $php;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['version'] = $php;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -686,13 +522,8 @@ class Btpanel
     public function GetSitePHPVersion($siteName)
     {
         $url = $this->BT_PANEL . config("bt.GetSitePHPVersion");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -717,29 +548,24 @@ class Btpanel
         $url = $this->BT_PANEL . config("bt.WebAddSite");
 
         //准备POST数据
-        $p_data                 = []; //取签名
-        $p_data['webname']      = $infoArr['webname'];
-        $p_data['path']         = $infoArr['path'];
-        $p_data['type_id']      = $infoArr['type_id'];
-        $p_data['type']         = $infoArr['type'];
-        $p_data['version']      = $infoArr['version'];
-        $p_data['port']         = $infoArr['port'];
-        $p_data['ps']           = $infoArr['ps'];
-        $p_data['ftp']          = $infoArr['ftp'];
+        //取签名
+        $p_data['webname'] = $infoArr['webname'];
+        $p_data['path'] = $infoArr['path'];
+        $p_data['type_id'] = $infoArr['type_id'];
+        $p_data['type'] = $infoArr['type'];
+        $p_data['version'] = $infoArr['version'];
+        $p_data['port'] = $infoArr['port'];
+        $p_data['ps'] = $infoArr['ps'];
+        $p_data['ftp'] = $infoArr['ftp'];
         $p_data['ftp_username'] = $infoArr['ftp_username'];
         $p_data['ftp_password'] = $infoArr['ftp_password'];
-        $p_data['sql']          = $infoArr['sql'];
-        $p_data['codeing']      = $infoArr['codeing'];
-        $p_data['datauser']     = $infoArr['datauser'];
+        $p_data['sql'] = $infoArr['sql'];
+        $p_data['codeing'] = $infoArr['codeing'];
+        $p_data['datauser'] = $infoArr['datauser'];
         $p_data['datapassword'] = $infoArr['datapassword'];
-        $p_data['check_dir']    = $infoArr['check_dir'];
+        $p_data['check_dir'] = $infoArr['check_dir'];
 
-        // var_dump($url, $p_data);
-        //请求面板接口
-        $result = $this->HttpPostCookie($url, $p_data);
-        //解析JSON数据
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -754,18 +580,13 @@ class Btpanel
     public function WebDeleteSite($id, $webname, $ftp = 1, $database = 1, $path = 1)
     {
         $url = $this->BT_PANEL . config("bt.WebDeleteSite");
-
-        $p_data             = [];
-        $p_data['id']       = $id;
-        $p_data['webname']  = $webname;
-        $p_data['ftp']      = $ftp;
+        $p_data['id'] = $id;
+        $p_data['webname'] = $webname;
+        $p_data['ftp'] = $ftp;
         $p_data['database'] = $database;
-        $p_data['path']     = $path;
+        $p_data['path'] = $path;
 
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -776,14 +597,9 @@ class Btpanel
     public function WebSiteStop($id, $name)
     {
         $url = $this->BT_PANEL . config("bt.WebSiteStop");
-
-        $p_data         = [];
-        $p_data['id']   = $id;
+        $p_data['id'] = $id;
         $p_data['name'] = $name;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -794,14 +610,9 @@ class Btpanel
     public function WebSiteStart($id, $name)
     {
         $url = $this->BT_PANEL . config("bt.WebSiteStart");
-
-        $p_data         = [];
-        $p_data['id']   = $id;
+        $p_data['id'] = $id;
         $p_data['name'] = $name;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -812,14 +623,9 @@ class Btpanel
     public function WebSetEdate($id, $edate)
     {
         $url = $this->BT_PANEL . config("bt.WebSetEdate");
-
-        $p_data          = [];
-        $p_data['id']    = $id;
+        $p_data['id'] = $id;
         $p_data['edate'] = $edate;
-        $result          = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -830,38 +636,28 @@ class Btpanel
     public function WebSetPs($id, $ps)
     {
         $url = $this->BT_PANEL . config("bt.WebSetPs");
-
-        $p_data       = [];
         $p_data['id'] = $id;
         $p_data['ps'] = $ps;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 获取网站备份列表
      * @param [type] $id    网站ID
-     * @param string $page 当前分页
+     * @param string $page  当前分页
      * @param string $limit 每页取出的数据行数
-     * @param string $type 备份类型 目前固定为0
-     * @param string $tojs 分页js回调若不传则构造 URI 分页连接 get_site_backup
+     * @param string $type  备份类型 目前固定为0
+     * @param string $tojs  分页js回调若不传则构造 URI 分页连接 get_site_backup
      */
     public function WebBackupList($id, $page = '1', $limit = '5', $type = '0', $tojs = '')
     {
         $url = $this->BT_PANEL . config("bt.WebBackupList");
-
-        $p_data           = [];
-        $p_data['p']      = $page;
-        $p_data['limit']  = $limit;
-        $p_data['type']   = $type;
-        $p_data['tojs']   = $tojs;
+        $p_data['p'] = $page;
+        $p_data['limit'] = $limit;
+        $p_data['type'] = $type;
+        $p_data['tojs'] = $tojs;
         $p_data['search'] = $id;
-        $result           = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -871,13 +667,8 @@ class Btpanel
     public function WebToBackup($id)
     {
         $url = $this->BT_PANEL . config("bt.WebToBackup");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -887,13 +678,8 @@ class Btpanel
     public function WebDelBackup($id)
     {
         $url = $this->BT_PANEL . config("bt.WebDelBackup");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -903,13 +689,8 @@ class Btpanel
     public function SQLDelBackup($id)
     {
         $url = $this->BT_PANEL . config("bt.SQLDelBackup");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -919,13 +700,8 @@ class Btpanel
     public function SQLToBackup($id)
     {
         $url = $this->BT_PANEL . config("bt.SQLToBackup");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -936,14 +712,9 @@ class Btpanel
     public function SQLInputSql($file, $name)
     {
         $url = $this->BT_PANEL . config("bt.InputSql");
-
-        $p_data         = [];
         $p_data['file'] = '/www/backup/database/' . $file;
         $p_data['name'] = $name;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -954,14 +725,9 @@ class Btpanel
     public function SQLInputSqlFile($file, $name)
     {
         $url = $this->BT_PANEL . config("bt.InputSql");
-
-        $p_data         = [];
         $p_data['file'] = $file;
         $p_data['name'] = $name;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -970,18 +736,16 @@ class Btpanel
      * @param [type] $name          数据库名称
      * @param [type] $db_user       数据库账号
      * @param [type] $password      数据库密码
-     * @param string $dtype         数据库类型MySQL、SQLServer
-     * @param string $codeing       数据库编码utf-8、utf8mb4、gbk、big5
-     * @param string $dataAccess    数据库认证：内部=127.0.0.1,开放所有=%,指定IP='ip'
-     * @param string $address       数据库访问权限：内部=127.0.0.1,开放所有=%,指定IP=ip地址
-     * @param string $ps            数据库备注
+     * @param string $dtype      数据库类型MySQL、SQLServer
+     * @param string $codeing    数据库编码utf-8、utf8mb4、gbk、big5
+     * @param string $dataAccess 数据库认证：内部=127.0.0.1,开放所有=%,指定IP='ip'
+     * @param string $address    数据库访问权限：内部=127.0.0.1,开放所有=%,指定IP=ip地址
+     * @param string $ps         数据库备注
      * @return void
      */
     public function AddDatabase($name, $db_user, $password, $dtype = 'MySQL', $codeing = 'utf8', $dataAccess = '127.0.0.1', $address = '127.0.0.1', $ps = '')
     {
         $url = $this->BT_PANEL . config("bt.AddDatabase");
-
-        $p_data         = [];
         $p_data['name'] = $name;
         $p_data['codeing'] = $codeing;
         $p_data['db_user'] = $db_user;
@@ -990,10 +754,7 @@ class Btpanel
         $p_data['dataAccess'] = $dataAccess;
         $p_data['address'] = $address;
         $p_data['ps'] = $ps ? $ps : $name;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1006,14 +767,9 @@ class Btpanel
     public function DeleteDatabase($id, $name)
     {
         $url = $this->BT_PANEL . config("bt.DeleteDatabase");
-
-        $p_data         = [];
-        $p_data['id']   = $id;
+        $p_data['id'] = $id;
         $p_data['name'] = $name;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1024,15 +780,10 @@ class Btpanel
     public function WebDoaminList($id, $list = true)
     {
         $url = $this->BT_PANEL . config("bt.WebDoaminList");
-
-        $p_data           = [];
-        $p_data['table']  = 'domain';
+        $p_data['table'] = 'domain';
         $p_data['search'] = $id;
-        $p_data['list']   = $list;
-        $result           = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['list'] = $list;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1044,15 +795,10 @@ class Btpanel
     public function WebAddDomain($id, $webname, $domain)
     {
         $url = $this->BT_PANEL . config("bt.WebAddDomain");
-
-        $p_data            = [];
-        $p_data['id']      = $id;
+        $p_data['id'] = $id;
         $p_data['webname'] = $webname;
-        $p_data['domain']  = $domain;
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['domain'] = $domain;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1064,17 +810,12 @@ class Btpanel
      */
     public function WebDelDomain($id, $webname, $domain, $port = '80')
     {
-        $url = $this->BT_PANEL . config("bt.WebDelDomain");
-
-        $p_data            = [];
-        $p_data['id']      = $id;
-        $p_data['webname'] = $webname;
-        $p_data['domain']  = $domain;
-        $p_data['port']    = $port;
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $result = $this->request_get('WebDelDomain', compact('id', 'webname', 'domain', 'port'));
+        if ($result && isset($result['status']) && $result['status'] == true) {
+            return $result;
+        }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -1084,13 +825,8 @@ class Btpanel
     public function GetRewriteList($siteName)
     {
         $url = $this->BT_PANEL . config("bt.GetRewriteList");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1100,8 +836,8 @@ class Btpanel
      */
     public function GetFileBody($path, $type = 0)
     {
-        $url      = $this->BT_PANEL . config("bt.GetFileBody");
-        $p_data   = [];
+        $url = $this->BT_PANEL . config("bt.GetFileBody");
+
         $path_dir = $type ? 'vhost/rewrite' : 'rewrite/nginx';
 
         //获取当前站点伪静态规则
@@ -1112,11 +848,7 @@ class Btpanel
         ///www/server/panel/vhost/rewrite/user_hvVBT_1.test.com.conf
         ///www/server/panel/rewrite/nginx/typecho.conf
         $p_data['path'] = '/www/server/panel/' . $path_dir . '/' . $path . '.conf';
-        //var_dump($p_data['path']);
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1126,9 +858,7 @@ class Btpanel
      */
     public function GetFileBody_win($path, $type = 'nginx')
     {
-        $url    = $this->BT_PANEL . config("bt.GetFileBody");
-        $p_data = [];
-
+        $url = $this->BT_PANEL . config("bt.GetFileBody");
         $path_dir = 'rewrite/' . $type;
 
         //获取当前站点伪静态规则
@@ -1140,11 +870,7 @@ class Btpanel
         ///www/server/panel/rewrite/nginx/typecho.conf
         // C:/BtSoft/panel/rewrite/iis/discuz2.conf
         $p_data['path'] = 'C:/BtSoft/panel/' . $path_dir . '/' . $path . '.conf';
-        // var_dump($p_data);exit;
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1152,7 +878,7 @@ class Btpanel
      * @param [type] $path     规则名
      * @param [type] $data     规则内容
      * @param string $encoding 规则编码强转utf-8
-     * @param number $type 0->系统默认路径；1->自定义全路径
+     * @param number $type     0->系统默认路径；1->自定义全路径
      */
     public function SaveFileBody($path, $data, $encoding = 'utf-8', $type = 0)
     {
@@ -1162,14 +888,11 @@ class Btpanel
         } else {
             $path_dir = '/www/server/panel/vhost/rewrite/' . $path . '.conf';
         }
-        $p_data             = [];
-        $p_data['path']     = $path_dir;
-        $p_data['data']     = $data;
-        $p_data['encoding'] = $encoding;
-        $result             = $this->HttpPostCookie($url, $p_data);
 
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['path'] = $path_dir;
+        $p_data['data'] = $data;
+        $p_data['encoding'] = $encoding;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1183,15 +906,10 @@ class Btpanel
     public function SaveFileBodys($data, $path, $encoding = 'utf-8')
     {
         $url = $this->BT_PANEL . config("bt.SaveFileBody");
-
-        $p_data             = [];
-        $p_data['path']     = $path;
-        $p_data['data']     = $data;
+        $p_data['path'] = $path;
+        $p_data['data'] = $data;
         $p_data['encoding'] = $encoding;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1203,15 +921,10 @@ class Btpanel
     public function SetHasPwd($id, $username, $password)
     {
         $url = $this->BT_PANEL . config("bt.SetHasPwd");
-
-        $p_data             = [];
-        $p_data['id']       = $id;
+        $p_data['id'] = $id;
         $p_data['username'] = $username;
         $p_data['password'] = $password;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1221,13 +934,8 @@ class Btpanel
     public function CloseHasPwd($id)
     {
         $url = $this->BT_PANEL . config("bt.CloseHasPwd");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1237,13 +945,8 @@ class Btpanel
     public function GetSiteLogs($site)
     {
         $url = $this->BT_PANEL . config("bt.GetSiteLogs");
-
-        $p_data             = [];
         $p_data['siteName'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1254,14 +957,9 @@ class Btpanel
     public function GetSecurity($id, $site)
     {
         $url = $this->BT_PANEL . config("bt.GetSecurity");
-
-        $p_data         = [];
-        $p_data['id']   = $id;
+        $p_data['id'] = $id;
         $p_data['name'] = $site;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1277,18 +975,13 @@ class Btpanel
     public function SetSecurity($id, $site, $fix, $domains, $status = 'true', $return_rule = '404')
     {
         $url = $this->BT_PANEL . config("bt.SetSecurity");
-
-        $p_data            = [];
-        $p_data['id']      = $id;
-        $p_data['name']    = $site;
-        $p_data['fix']     = $fix;
+        $p_data['id'] = $id;
+        $p_data['name'] = $site;
+        $p_data['fix'] = $fix;
         $p_data['domains'] = $domains;
         $p_data['return_rule'] = $return_rule;
-        $p_data['status']  = $status ? $status : 'false'; // 必须传字符型
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['status'] = $status ? $status : 'false'; // 必须传字符型
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1299,14 +992,9 @@ class Btpanel
     public function GetDirUserINI($id, $path)
     {
         $url = $this->BT_PANEL . config("bt.GetDirUserINI");
-
-        $p_data         = [];
-        $p_data['id']   = $id;
+        $p_data['id'] = $id;
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1316,13 +1004,8 @@ class Btpanel
     public function HttpToHttps($site)
     {
         $url = $this->BT_PANEL . config("bt.HttpToHttps");
-
-        $p_data             = [];
         $p_data['siteName'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1332,13 +1015,8 @@ class Btpanel
     public function CloseToHttps($site)
     {
         $url = $this->BT_PANEL . config("bt.CloseToHttps");
-
-        $p_data             = [];
         $p_data['siteName'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1351,16 +1029,11 @@ class Btpanel
     public function SetSSL($type, $site, $key, $csr)
     {
         $url = $this->BT_PANEL . config("bt.SetSSL");
-
-        $p_data             = [];
-        $p_data['type']     = $type;
+        $p_data['type'] = $type;
         $p_data['siteName'] = $site;
-        $p_data['key']      = $key;
-        $p_data['csr']      = $csr;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['key'] = $key;
+        $p_data['csr'] = $csr;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1371,14 +1044,9 @@ class Btpanel
     public function CloseSSLConf($updateOf, $site)
     {
         $url = $this->BT_PANEL . config("bt.CloseSSLConf");
-
-        $p_data             = [];
         $p_data['updateOf'] = $updateOf;
         $p_data['siteName'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1388,13 +1056,8 @@ class Btpanel
     public function GetSSL($site)
     {
         $url = $this->BT_PANEL . config("bt.GetSSL");
-
-        $p_data             = [];
         $p_data['siteName'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1407,14 +1070,7 @@ class Btpanel
     public function GetDVSSL($domain, $path)
     {
         $url = $this->BT_PANEL . config("bt.GetDVSSL");
-
-        $p_data           = [];
-        $p_data['domain'] = $domain;
-        $p_data['path']   = $path;
-        $result           = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, compact('domain', 'path'))->result_decode();
     }
 
     /**
@@ -1427,14 +1083,7 @@ class Btpanel
     public function Completed($siteName, $partnerOrderId)
     {
         $url = $this->BT_PANEL . config("bt.Completed");
-
-        $p_data                   = [];
-        $p_data['siteName']       = $siteName;
-        $p_data['partnerOrderId'] = $partnerOrderId;
-        $result                   = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, compact('siteName', 'partnerOrderId'))->result_decode();
     }
 
     /**
@@ -1447,14 +1096,7 @@ class Btpanel
     public function GetSSLInfo($siteName, $partnerOrderId)
     {
         $url = $this->BT_PANEL . config("bt.GetSSLInfo");
-
-        $p_data                   = [];
-        $p_data['siteName']       = $siteName;
-        $p_data['partnerOrderId'] = $partnerOrderId;
-        $result                   = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, compact('siteName', 'partnerOrderId'))->result_decode();
     }
 
     /**
@@ -1464,13 +1106,8 @@ class Btpanel
     public function WebGetIndex($id)
     {
         $url = $this->BT_PANEL . config("bt.WebGetIndex");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1481,14 +1118,9 @@ class Btpanel
     public function WebSetIndex($id, $index)
     {
         $url = $this->BT_PANEL . config("bt.WebSetIndex");
-
-        $p_data          = [];
-        $p_data['id']    = $id;
+        $p_data['id'] = $id;
         $p_data['Index'] = $index;
-        $result          = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1498,13 +1130,8 @@ class Btpanel
     public function GetLimitNet($id)
     {
         $url = $this->BT_PANEL . config("bt.GetLimitNet");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1517,16 +1144,7 @@ class Btpanel
     public function SetLimitNet($id, $perserver, $perip, $limit_rate)
     {
         $url = $this->BT_PANEL . config("bt.SetLimitNet");
-
-        $p_data               = [];
-        $p_data['id']         = $id;
-        $p_data['perserver']  = $perserver;
-        $p_data['perip']      = $perip;
-        $p_data['limit_rate'] = $limit_rate;
-        $result               = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, compact('id', 'perserver', 'perip', 'limit_rate'))->result_decode();
     }
 
     /**
@@ -1539,16 +1157,7 @@ class Btpanel
     public function SetLimitNet_win($id, $perserver, $timeout, $limit_rate)
     {
         $url = $this->BT_PANEL . config("bt.SetLimitNet");
-
-        $p_data               = [];
-        $p_data['id']         = $id;
-        $p_data['perserver']  = $perserver;
-        $p_data['timeout']    = $timeout;
-        $p_data['limit_rate'] = $limit_rate;
-        $result               = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, compact('id', 'perserver', 'timeout', 'limit_rate'))->result_decode();
     }
 
     /**
@@ -1558,13 +1167,8 @@ class Btpanel
     public function CloseLimitNet($id)
     {
         $url = $this->BT_PANEL . config("bt.CloseLimitNet");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1574,13 +1178,8 @@ class Btpanel
     public function Get301Status($site)
     {
         $url = $this->BT_PANEL . config("bt.Get301Status");
-
-        $p_data             = [];
         $p_data['siteName'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1593,16 +1192,11 @@ class Btpanel
     public function Set301Status($site, $toDomain, $srcDomain, $type)
     {
         $url = $this->BT_PANEL . config("bt.Set301Status");
-
-        $p_data              = [];
-        $p_data['siteName']  = $site;
-        $p_data['toDomain']  = $toDomain;
+        $p_data['siteName'] = $site;
+        $p_data['toDomain'] = $toDomain;
         $p_data['srcDomain'] = $srcDomain;
-        $p_data['type']      = $type;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['type'] = $type;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1612,13 +1206,8 @@ class Btpanel
     public function GetProxyList($site)
     {
         $url = $this->BT_PANEL . config("bt.GetProxyList");
-
-        $p_data             = [];
         $p_data['sitename'] = $site;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1637,22 +1226,7 @@ class Btpanel
     public function CreateProxy($cache, $proxyname, $cachetime, $proxydir, $proxysite, $todomain, $advanced, $sitename, $subfilter, $type)
     {
         $url = $this->BT_PANEL . config("bt.CreateProxy");
-
-        $p_data              = [];
-        $p_data['cache']     = $cache;
-        $p_data['proxyname'] = $proxyname;
-        $p_data['cachetime'] = $cachetime;
-        $p_data['proxydir']  = $proxydir;
-        $p_data['proxysite'] = $proxysite;
-        $p_data['todomain']  = $todomain;
-        $p_data['advanced']  = $advanced;
-        $p_data['sitename']  = $sitename;
-        $p_data['subfilter'] = $subfilter;
-        $p_data['type']      = $type;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, compact('cache', 'proxyname', 'cachetime', 'proxydir', 'proxysite', 'todomain', 'advanced', 'sitename', 'subfilter', 'type'))->result_decode();
     }
 
     /**
@@ -1664,23 +1238,8 @@ class Btpanel
     public function CreateProxy_win($data)
     {
         $url = $this->BT_PANEL . config("bt.CreateProxy");
-
-        $p_data                 = [];
-        $p_data['cache_open']   = $data['cache_open'];
-        $p_data['path_open']    = $data['path_open'];
-        $p_data['proxyname']    = $data['proxyname'];
-        $p_data['root_path']    = $data['root_path'];
-        $p_data['proxydomains'] = $data['proxydomains'];
-        $p_data['tourl']        = $data['tourl'];
-        $p_data['to_domian']    = $data['to_domian'];
-        $p_data['sitename']     = $data['sitename'];
-        $p_data['sub1']         = $data['sub1'];
-        $p_data['sub2']         = $data['sub2'];
-        $p_data['open']         = $data['open'];
-        $result                 = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data = $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1699,22 +1258,17 @@ class Btpanel
     public function ModifyProxy($cache, $proxyname, $cachetime, $proxydir, $proxysite, $todomain, $advanced, $sitename, $subfilter, $type)
     {
         $url = $this->BT_PANEL . config("bt.ModifyProxy");
-
-        $p_data              = [];
-        $p_data['cache']     = $cache;
+        $p_data['cache'] = $cache;
         $p_data['proxyname'] = $proxyname;
         $p_data['cachetime'] = $cachetime;
-        $p_data['proxydir']  = $proxydir;
+        $p_data['proxydir'] = $proxydir;
         $p_data['proxysite'] = $proxysite;
-        $p_data['todomain']  = $todomain;
-        $p_data['advanced']  = $advanced;
-        $p_data['sitename']  = $sitename;
+        $p_data['todomain'] = $todomain;
+        $p_data['advanced'] = $advanced;
+        $p_data['sitename'] = $sitename;
         $p_data['subfilter'] = $subfilter;
-        $p_data['type']      = $type;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['type'] = $type;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1727,14 +1281,9 @@ class Btpanel
     public function RemoveProxy($sitename, $proxyname)
     {
         $url = $this->BT_PANEL . config("bt.RemoveProxy");
-
-        $p_data              = [];
-        $p_data['sitename']  = $sitename;
+        $p_data['sitename'] = $sitename;
         $p_data['proxyname'] = $proxyname;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1744,13 +1293,8 @@ class Btpanel
     public function GetDirBinding($id)
     {
         $url = $this->BT_PANEL . config("bt.GetDirBinding");
-
-        $p_data       = [];
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1762,15 +1306,10 @@ class Btpanel
     public function AddDirBinding($id, $domain, $dirName)
     {
         $url = $this->BT_PANEL . config("bt.AddDirBinding");
-
-        $p_data            = [];
-        $p_data['id']      = $id;
-        $p_data['domain']  = $domain;
+        $p_data['id'] = $id;
+        $p_data['domain'] = $domain;
         $p_data['dirName'] = $dirName;
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1780,13 +1319,8 @@ class Btpanel
     public function DelDirBinding($dirid)
     {
         $url = $this->BT_PANEL . config("bt.DelDirBinding");
-
-        $p_data       = [];
         $p_data['id'] = $dirid;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1796,16 +1330,11 @@ class Btpanel
     public function GetDirRewrite($dirid, $type = 0)
     {
         $url = $this->BT_PANEL . config("bt.GetDirRewrite");
-
-        $p_data       = [];
         $p_data['id'] = $dirid;
         if ($type) {
             $p_data['add'] = 1;
         }
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1817,15 +1346,10 @@ class Btpanel
     public function SetUserPassword($id, $ftp_username, $new_password)
     {
         $url = $this->BT_PANEL . config("bt.SetUserPassword");
-
-        $p_data                 = [];
-        $p_data['id']           = $id;
+        $p_data['id'] = $id;
         $p_data['ftp_username'] = $ftp_username;
         $p_data['new_password'] = $new_password;
-        $result                 = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1837,15 +1361,10 @@ class Btpanel
     public function ResDatabasePass($id, $name, $password)
     {
         $url = $this->BT_PANEL . config("bt.ResDatabasePass");
-
-        $p_data             = [];
-        $p_data['id']       = $id;
-        $p_data['name']     = $name;
+        $p_data['id'] = $id;
+        $p_data['name'] = $name;
         $p_data['password'] = $password;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1857,15 +1376,10 @@ class Btpanel
     public function SetStatus($id, $username, $status)
     {
         $url = $this->BT_PANEL . config("bt.SetStatus");
-
-        $p_data             = [];
-        $p_data['id']       = $id;
+        $p_data['id'] = $id;
         $p_data['username'] = $username;
-        $p_data['status']   = $status;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['status'] = $status;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1878,14 +1392,9 @@ class Btpanel
     public function DeleteUser($id, $username)
     {
         $url = $this->BT_PANEL . config("bt.DeleteUser");
-
-        $p_data             = [];
-        $p_data['id']       = $id;
+        $p_data['id'] = $id;
         $p_data['username'] = $username;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -1900,12 +1409,7 @@ class Btpanel
         } else {
             $url = $this->BT_PANEL . config("bt.deployment");
         }
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -1917,44 +1421,35 @@ class Btpanel
     public function SetupPackage($dname, $site_name, $php_version)
     {
         $url = $this->BT_PANEL . config("bt.SetupPackage");
-
-        $p_data                = [];
-        $p_data['dname']       = $dname;
-        $p_data['site_name']   = $site_name;
+        $p_data['dname'] = $dname;
+        $p_data['site_name'] = $site_name;
         $p_data['php_version'] = $php_version;
-        $result                = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 获取软件管理列表
      * @param [type]  $query 查找
-     * @param integer $p 页面
-     * @param integer $type 类别
-     * @param string  $tojs soft.get_list
+     * @param integer $p     页面
+     * @param integer $type  类别
+     * @param string  $tojs  soft.get_list
      * @param integer $force 未知
      */
     public function GetSoftList($query = '', $p = 1, $type = 0, $tojs = 'soft.get_list', $force = 0)
     {
         $url = $this->BT_PANEL . config("bt.GetSoftList");
-
-        $p_data          = [];
         $p_data['query'] = $query;
-        $p_data['p']     = $p;
-        $p_data['type']  = $type;
-        $p_data['tojs']  = $tojs;
+        $p_data['p'] = $p;
+        $p_data['type'] = $type;
+        $p_data['tojs'] = $tojs;
         $p_data['force'] = $force;
-        $p_data['type']  = $type;
-        $result          = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['type'] = $type;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     // 获取防火墙类型
-    private function GetProofType(){
+    private function GetProofType()
+    {
         return $this->proofType;
     }
 
@@ -1964,12 +1459,8 @@ class Btpanel
      */
     public function GetProof()
     {
-        $url = $this->BT_PANEL . config("bt.GetProof").'&name='.$this->GetProofType();
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-        $data = json_decode($result, true);
-        return $data;
+        $url = $this->BT_PANEL . config("bt.GetProof") . '&name=' . $this->GetProofType();
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -1978,34 +1469,24 @@ class Btpanel
      */
     public function SiteProof($siteName)
     {
-        $url = $this->BT_PANEL . config("bt.SiteProof").'&name='.$this->GetProofType();
-
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.SiteProof") . '&name=' . $this->GetProofType();
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 网站防篡改站点锁定/解锁
      *
      * @param [type] $siteName      站点名
-     * @param integer $lock         状态0:关闭;1:开启
+     * @param integer $lock 状态0:关闭;1:开启
      * @return void
      */
-    public function LockProof($siteName,$lock=1)
+    public function LockProof($siteName, $lock = 1)
     {
-        $url = $this->BT_PANEL . config("bt.LockProof").'&name='.$this->GetProofType();
-
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.LockProof") . '&name=' . $this->GetProofType();
         $p_data['siteName'] = $siteName;
-        $p_data['lock']     = $lock;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['lock'] = $lock;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2014,14 +1495,9 @@ class Btpanel
      */
     public function ServiceProof($serviceStatus)
     {
-        $url = $this->BT_PANEL . config("bt.ServiceProof").'&name='.$this->GetProofType();
-
-        $p_data                  = [];
+        $url = $this->BT_PANEL . config("bt.ServiceProof") . '&name=' . $this->GetProofType();
         $p_data['serviceStatus'] = $serviceStatus;
-        $result                  = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2030,14 +1506,9 @@ class Btpanel
      */
     public function LogProof($siteName)
     {
-        $url = $this->BT_PANEL . config("bt.LogProof").'&name='.$this->GetProofType();
-
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.LogProof") . '&name=' . $this->GetProofType();
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2046,14 +1517,9 @@ class Btpanel
      */
     public function GetgzProof($siteName)
     {
-        $url = $this->BT_PANEL . config("bt.GetgzProof").'&name='.$this->GetProofType();
-
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.GetgzProof") . '&name=' . $this->GetProofType();
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2063,15 +1529,10 @@ class Btpanel
      */
     public function AddprotectProof($siteName, $protectExt)
     {
-        $url = $this->BT_PANEL . config("bt.AddprotectProof").'&name='.$this->GetProofType();
-
-        $p_data               = [];
-        $p_data['siteName']   = $siteName;
+        $url = $this->BT_PANEL . config("bt.AddprotectProof") . '&name=' . $this->GetProofType();
+        $p_data['siteName'] = $siteName;
         $p_data['protectExt'] = $protectExt;
-        $result               = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2081,15 +1542,10 @@ class Btpanel
      */
     public function AddexcloudProof($siteName, $excludePath)
     {
-        $url = $this->BT_PANEL . config("bt.AddexcloudProof").'&name='.$this->GetProofType();
-
-        $p_data                = [];
-        $p_data['siteName']    = $siteName;
+        $url = $this->BT_PANEL . config("bt.AddexcloudProof") . '&name=' . $this->GetProofType();
+        $p_data['siteName'] = $siteName;
         $p_data['excludePath'] = $excludePath;
-        $result                = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2099,15 +1555,10 @@ class Btpanel
      */
     public function DelprotectProof($siteName, $protectExt)
     {
-        $url = $this->BT_PANEL . config("bt.DelprotectProof").'&name='.$this->GetProofType();
-
-        $p_data               = [];
-        $p_data['siteName']   = $siteName;
+        $url = $this->BT_PANEL . config("bt.DelprotectProof") . '&name=' . $this->GetProofType();
+        $p_data['siteName'] = $siteName;
         $p_data['protectExt'] = $protectExt;
-        $result               = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2117,15 +1568,10 @@ class Btpanel
      */
     public function DelexcloudProof($siteName, $excludePath)
     {
-        $url = $this->BT_PANEL . config("bt.DelexcloudProof").'&name='.$this->GetProofType();
-
-        $p_data                = [];
-        $p_data['siteName']    = $siteName;
+        $url = $this->BT_PANEL . config("bt.DelexcloudProof") . '&name=' . $this->GetProofType();
+        $p_data['siteName'] = $siteName;
         $p_data['excludePath'] = $excludePath;
-        $result                = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2134,12 +1580,7 @@ class Btpanel
     public function GetTotal()
     {
         $url = $this->BT_PANEL . config("bt.GetTotal");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2148,13 +1589,7 @@ class Btpanel
     public function StatusTotal()
     {
         $url = $this->BT_PANEL . config("bt.StatusTotal");
-
-        $p_data = [];
-
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2166,15 +1601,10 @@ class Btpanel
     public function SetTotal($siteName, $s_key, $s_value)
     {
         $url = $this->BT_PANEL . config("bt.SetTotal");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $p_data['s_key']    = $s_key;
-        $p_data['s_value']  = $s_value;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['s_key'] = $s_key;
+        $p_data['s_value'] = $s_value;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2185,14 +1615,9 @@ class Btpanel
     public function SiteTotal($siteName, $today)
     {
         $url = $this->BT_PANEL . config("bt.SiteTotal");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $p_data['today']    = $today;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['today'] = $today;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2202,13 +1627,8 @@ class Btpanel
     public function SiteNetworkTotal($siteName)
     {
         $url = $this->BT_PANEL . config("bt.SiteNetworkTotal");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2218,13 +1638,8 @@ class Btpanel
     public function SiteSpiderTotal($siteName)
     {
         $url = $this->BT_PANEL . config("bt.SiteSpiderTotal");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2234,13 +1649,8 @@ class Btpanel
     public function SiteErrorLogTotal($siteName)
     {
         $url = $this->BT_PANEL . config("bt.SiteErrorLogTotal");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2253,16 +1663,11 @@ class Btpanel
     public function SiteLogTotal($siteName, $s_status, $error_log, $p = 1)
     {
         $url = $this->BT_PANEL . config("bt.SiteLogTotal");
-
-        $p_data              = [];
-        $p_data['siteName']  = $siteName;
-        $p_data['s_status']  = $s_status;
+        $p_data['siteName'] = $siteName;
+        $p_data['s_status'] = $s_status;
         $p_data['error_log'] = $error_log;
-        $p_data['p']         = $p;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['p'] = $p;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2272,13 +1677,8 @@ class Btpanel
     public function Siteclient($siteName)
     {
         $url = $this->BT_PANEL . config("bt.Siteclient");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2290,12 +1690,7 @@ class Btpanel
     public function Getwaf($wafType)
     {
         $url = $this->BT_PANEL . config("bt.Getwaf") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2304,12 +1699,7 @@ class Btpanel
     public function Setwaf($wafType)
     {
         $url = $this->BT_PANEL . config("bt.Setwaf") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2319,13 +1709,8 @@ class Btpanel
     public function Sitewaf($wafType, $siteName)
     {
         $url = $this->BT_PANEL . config("bt.Sitewaf") . '&name=' . $wafType;
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2336,14 +1721,9 @@ class Btpanel
     public function SitewafStatus($wafType, $siteName, $obj = 'open')
     {
         $url = $this->BT_PANEL . config("bt.SitewafStatus") . '&name=' . $wafType;
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $p_data['obj']      = $obj;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['obj'] = $obj;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2357,26 +1737,21 @@ class Btpanel
      * @param [type] $increase_wu_heng      浏览器验证
      * @param [type] $is_open_global        未知
      * @param [type] $cc_increase_type      增强模式下 验证方式js、code
-     * 
+     *
      */
     public function Setwafcc($wafType, $siteName, $cycle, $limit, $endtime, $increase = 0, $cc_mode = 1, $cc_increase_type = 'js', $increase_wu_heng = 0, $is_open_global = 0)
     {
         $url = $this->BT_PANEL . config("bt.Setwafcc") . '&name=' . $wafType;
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $p_data['cycle']    = $cycle;
-        $p_data['limit']    = $limit;
-        $p_data['endtime']  = $endtime;
+        $p_data['cycle'] = $cycle;
+        $p_data['limit'] = $limit;
+        $p_data['endtime'] = $endtime;
         $p_data['increase'] = $increase;
-        $p_data['cc_mode']  = $cc_mode;
-        $p_data['is_open_global']   = $is_open_global;
+        $p_data['cc_mode'] = $cc_mode;
+        $p_data['is_open_global'] = $is_open_global;
         $p_data['increase_wu_heng'] = $increase_wu_heng;
         $p_data['cc_increase_type'] = $cc_increase_type;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2389,16 +1764,11 @@ class Btpanel
     public function SetwafRetry($wafType, $siteName, $retry, $retry_time, $retry_cycle)
     {
         $url = $this->BT_PANEL . config("bt.SetwafRetry") . '&name=' . $wafType;
-
-        $p_data                = [];
-        $p_data['siteName']    = $siteName;
-        $p_data['retry']       = $retry;
-        $p_data['retry_time']  = $retry_time;
+        $p_data['siteName'] = $siteName;
+        $p_data['retry'] = $retry;
+        $p_data['retry_time'] = $retry_time;
         $p_data['retry_cycle'] = $retry_cycle;
-        $result                = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2409,14 +1779,9 @@ class Btpanel
     public function Addwafcnip($wafType, $start_ip, $end_ip)
     {
         $url = $this->BT_PANEL . config("bt.Addwafcnip") . '&name=' . $wafType;
-
-        $p_data             = [];
         $p_data['start_ip'] = $start_ip;
-        $p_data['end_ip']   = $end_ip;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['end_ip'] = $end_ip;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2426,13 +1791,8 @@ class Btpanel
     public function Getwafcnip($wafType, $ruleName = 'cn')
     {
         $url = $this->BT_PANEL . config("bt.Getwafcnip") . '&name=' . $wafType;
-
-        $p_data             = [];
         $p_data['ruleName'] = $ruleName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2441,12 +1801,7 @@ class Btpanel
     public function GetwafCms($wafType)
     {
         $url = $this->BT_PANEL . config("bt.GetwafCms") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2458,15 +1813,10 @@ class Btpanel
     public function GetwafLog($wafType, $siteName, $toDate, $p = '1')
     {
         $url = $this->BT_PANEL . config("bt.GetwafLog") . '&name=' . $wafType;
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $p_data['toDate']   = $toDate;
-        $p_data['p']        = $p;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['toDate'] = $toDate;
+        $p_data['p'] = $p;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2475,12 +1825,7 @@ class Btpanel
     public function SitewafConfig($wafType)
     {
         $url = $this->BT_PANEL . config("bt.SitewafConfig") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2489,12 +1834,7 @@ class Btpanel
     public function SetIPStopStop($wafType)
     {
         $url = $this->BT_PANEL . config("bt.SetIPStopStop") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2503,12 +1843,7 @@ class Btpanel
     public function SetIPStop($wafType)
     {
         $url = $this->BT_PANEL . config("bt.SetIPStop") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2517,12 +1852,7 @@ class Btpanel
     public function GetIPStop($wafType)
     {
         $url = $this->BT_PANEL . config("bt.GetIPStop") . '&name=' . $wafType;
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -2530,21 +1860,16 @@ class Btpanel
      * @Author   Youngxj
      * @DateTime 2019-04-24
      * @param    [type]     $btid  站点ID
-     * @param string $key path
+     * @param string $key   path
      * @param string $table sites
      */
     public function WebGetKey($btid, $key = 'path', $table = 'sites')
     {
         $url = $this->BT_PANEL . config("bt.WebGetKey");
-
-        $p_data          = [];
-        $p_data['id']    = $btid;
-        $p_data['key']   = $key;
+        $p_data['id'] = $btid;
+        $p_data['key'] = $key;
         $p_data['table'] = $table;
-        $result          = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2557,34 +1882,27 @@ class Btpanel
     public function SetSiteRunPath($id, $path)
     {
         $url = $this->BT_PANEL . config("bt.SetSiteRunPath");
-
-        $p_data            = [];
-        $p_data['id']      = $id;
+        $p_data['id'] = $id;
         $p_data['runPath'] = $path;
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 获取文件列表
      *
      * @param [type] $path          网站根目录
-     * @param string $p             翻页
-     * @param string $search        搜索
-     * @param string $sort          排序
-     * @param string $reverse       正序，倒叙
-     * @param string $all           包含子目录
-     * @param string $tojs          默认
-     * @param string $showRow       显示文件条数
+     * @param string $p       翻页
+     * @param string $search  搜索
+     * @param string $sort    排序
+     * @param string $reverse 正序，倒叙
+     * @param string $all     包含子目录
+     * @param string $tojs    默认
+     * @param string $showRow 显示文件条数
      * @return array|bool
      */
     public function GetDir($path, $p = '1', $search = '', $all = '', $sort = '', $reverse = '', $tojs = 'GetFiles', $showRow = '200')
     {
         $url = $this->BT_PANEL . config("bt.GetDir") . '&tojs=' . $tojs . '&p=' . $p . '&showRow=' . $showRow;
-
-        $p_data         = [];
         if ($search) {
             $p_data['search'] = $search;
         }
@@ -2599,10 +1917,7 @@ class Btpanel
         }
 
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2615,14 +1930,12 @@ class Btpanel
      */
     public function UploadFile($path, $data, $codeing = 'byte')
     {
-        $p_data          = [];
-        $url             = $this->BT_PANEL . config("bt.UploadFile");
+
+        $url = $this->BT_PANEL . config("bt.UploadFile");
         // $data            = array_merge($data, $this->GetKeyData());
-        $data['path']    = $path;
+        $data['path'] = $path;
         $data['codeing'] = $codeing;
-        $result          = $this->HttpPostCookie($url, $data);
-        $data            = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $data)->result_decode();
     }
 
     /**
@@ -2639,20 +1952,17 @@ class Btpanel
      */
     public function UploadFiles($path, $name, $f_size, $f_start, $blob, $m = 'coll_upload', $f = 'upload')
     {
-        $p_data          = [];
-        $url             = $this->BT_PANEL . config("bt.UploadFiles");
-        $data            = [];
-        $data['f_path']  = $path;
-        $data['f_name']  = $name;
-        $data['f_size']  = $f_size;
+
+        $url = $this->BT_PANEL . config("bt.UploadFiles");
+        $data['f_path'] = $path;
+        $data['f_name'] = $name;
+        $data['f_size'] = $f_size;
         $data['f_start'] = $f_start;
-        $data['blob']    = $blob;
-        $data['m']       = $m;
-        $data['f']       = $f;
-        // var_dump($data);exit;
-        $result          = $this->HttpPostCookie($url, $data);
-        $data            = json_decode($result, true);
-        return $data;
+        $data['blob'] = $blob;
+        $data['m'] = $m;
+        $data['f'] = $f;
+
+        return $this->http_post($url, $data)->result_decode();
     }
 
     /**
@@ -2663,12 +1973,10 @@ class Btpanel
      */
     public function DeleteDir($path)
     {
-        $url            = $this->BT_PANEL . config("bt.DeleteDir");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.DeleteDir");
+
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2679,12 +1987,10 @@ class Btpanel
      */
     public function DeleteFile($path)
     {
-        $url            = $this->BT_PANEL . config("bt.DeleteFile");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.DeleteFile");
+
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2697,14 +2003,12 @@ class Btpanel
      */
     public function MvFile($sfile, $dfile, $rename = 'true')
     {
-        $url              = $this->BT_PANEL . config("bt.MvFile");
-        $p_data           = [];
-        $p_data['sfile']  = $sfile;
-        $p_data['dfile']  = $dfile;
+        $url = $this->BT_PANEL . config("bt.MvFile");
+
+        $p_data['sfile'] = $sfile;
+        $p_data['dfile'] = $dfile;
         $p_data['rename'] = $rename;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2719,16 +2023,14 @@ class Btpanel
      */
     public function UnZip($sfile, $dfile, $password = '', $type, $coding = 'UTF-8')
     {
-        $url                = $this->BT_PANEL . config("bt.UnZip");
-        $p_data             = [];
-        $p_data['sfile']    = $sfile;
-        $p_data['dfile']    = $dfile;
+        $url = $this->BT_PANEL . config("bt.UnZip");
+
+        $p_data['sfile'] = $sfile;
+        $p_data['dfile'] = $dfile;
         $p_data['password'] = $password;
-        $p_data['type']     = $type;
-        $p_data['coding']   = $coding;
-        $result             = $this->HttpPostCookie($url, $p_data);
-        $data               = json_decode($result, true);
-        return $data;
+        $p_data['type'] = $type;
+        $p_data['coding'] = $coding;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2743,15 +2045,13 @@ class Btpanel
      */
     public function fileZip($sfile, $dfile, $z_type, $path)
     {
-        $url              = $this->BT_PANEL . config("bt.fileZip");
-        $p_data           = [];
-        $p_data['sfile']  = $sfile;
-        $p_data['dfile']  = $dfile;
+        $url = $this->BT_PANEL . config("bt.fileZip");
+
+        $p_data['sfile'] = $sfile;
+        $p_data['dfile'] = $dfile;
         $p_data['z_type'] = $z_type;
-        $p_data['path']   = $path;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        $p_data['path'] = $path;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2762,12 +2062,10 @@ class Btpanel
      */
     public function GetFileAccess($filename)
     {
-        $url                = $this->BT_PANEL . config("bt.GetFileAccess");
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.GetFileAccess");
+
         $p_data['filename'] = $filename;
-        $result             = $this->HttpPostCookie($url, $p_data);
-        $data               = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2780,14 +2078,12 @@ class Btpanel
      */
     public function SetFileAccess($filename, $user, $access)
     {
-        $url                = $this->BT_PANEL . config("bt.SetFileAccess");
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.SetFileAccess");
+
         $p_data['filename'] = $filename;
-        $p_data['user']     = $user;
-        $p_data['access']   = $access;
-        $result             = $this->HttpPostCookie($url, $p_data);
-        $data               = json_decode($result, true);
-        return $data;
+        $p_data['user'] = $user;
+        $p_data['access'] = $access;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2798,12 +2094,10 @@ class Btpanel
      */
     public function GetFileBodys($path)
     {
-        $url            = $this->BT_PANEL . config("bt.GetFileBody");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.GetFileBody");
+
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2815,13 +2109,11 @@ class Btpanel
      */
     public function CopyFile($sfile, $dfile)
     {
-        $url             = $this->BT_PANEL . config("bt.CopyFile");
-        $p_data          = [];
+        $url = $this->BT_PANEL . config("bt.CopyFile");
+
         $p_data['sfile'] = $sfile;
         $p_data['dfile'] = $dfile;
-        $result          = $this->HttpPostCookie($url, $p_data);
-        $data            = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2834,14 +2126,12 @@ class Btpanel
      */
     public function SetBatchData($path, $type, $data)
     {
-        $url            = $this->BT_PANEL . config("bt.SetBatchData");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.SetBatchData");
+
         $p_data['path'] = $path;
         $p_data['type'] = $type;
         $p_data['data'] = $data;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2853,34 +2143,28 @@ class Btpanel
      */
     public function BatchPaste($path, $type)
     {
-        $url            = $this->BT_PANEL . config("bt.BatchPaste");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.BatchPaste");
+
         $p_data['path'] = $path;
         $p_data['type'] = $type;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 宝塔内置下载
      * @Author   Youngxj
      * @DateTime 2019-06-04
-     * @param    [type]     $filename 文件路径及文件名
-     * @return   [type]               [description]
+     * @param $file
+     * @param $filename
+     * @return void [type]               [description]
      */
     public function download($file, $filename)
     {
         error_reporting(0);
         $p_data = $this->GetKeyData();
-        $url    = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
-        $result = $this->HttpPostCookie($url);
-        if ($result && isset($result['status']) && $result['status'] == 'false') {
-            $data = json_decode($result, true);
-            return $data;
-        }
+        $url = $this->BT_PANEL . config("bt.download") . $file . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $downUrl = $url;
-        $file    = @fopen($downUrl, "r");
+        $file = @fopen($downUrl, "r");
         if (!$file) {
             exit('文件找不到');
         } else {
@@ -2901,18 +2185,13 @@ class Btpanel
      *
      * @param [type] $file
      * @param [type] $filename
-     * @return void
+     * @return string
      */
     public function images_view($file, $filename)
     {
         error_reporting(0);
         $p_data = $this->GetKeyData();
-        $url    = $this->BT_PANEL . config("bt.download") . urlencode($file) . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
-        $result = $this->HttpPostCookie($url);
-        if ($result && isset($result['status']) && $result['status'] == 'false') {
-            $data = json_decode($result, true);
-            return $data;
-        }
+        $url = $this->BT_PANEL . config("bt.download") . urlencode($file) . '&request_token=' . $p_data['request_token'] . '&request_time=' . $p_data['request_time'];
         $downUrl = $url;
         $base64 = "" . chunk_split(base64_encode(\fast\Http::get($downUrl)));
         // return 'data:' . $imageInfo['mime'] . ';base64,' . chunk_split(base64_encode(file_get_contents($downUrl)));
@@ -2929,14 +2208,12 @@ class Btpanel
      */
     public function DownloadFile($path, $urls, $filename)
     {
-        $url                = $this->BT_PANEL . config("bt.DownloadFile");
-        $p_data             = [];
-        $p_data['path']     = $path;
-        $p_data['url']      = $urls;
+        $url = $this->BT_PANEL . config("bt.DownloadFile");
+
+        $p_data['path'] = $path;
+        $p_data['url'] = $urls;
         $p_data['filename'] = $filename;
-        $result             = $this->HttpPostCookie($url, $p_data);
-        $data               = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2947,12 +2224,10 @@ class Btpanel
      */
     public function CreateDir($path)
     {
-        $url            = $this->BT_PANEL . config("bt.CreateDir");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.CreateDir");
+
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2963,12 +2238,10 @@ class Btpanel
      */
     public function CreateFile($path)
     {
-        $url            = $this->BT_PANEL . config("bt.CreateFile");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.CreateFile");
+
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2979,12 +2252,10 @@ class Btpanel
      */
     public function GetSoftFind($sName)
     {
-        $url             = $this->BT_PANEL . config("bt.GetSoftFind");
-        $p_data          = [];
+        $url = $this->BT_PANEL . config("bt.GetSoftFind");
+
         $p_data['sName'] = $sName;
-        $result          = $this->HttpPostCookie($url, $p_data);
-        $data            = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -2993,22 +2264,20 @@ class Btpanel
      * @DateTime 2019-07-14
      * @param    [type]     $sName   软件名
      * @param    [type]     $version 版本号
-     * @param integer $type 类型
+     * @param integer $type    类型
      * @param integer $upgrade 升级时填1
      */
     public function InstallPlugin($sName, $version = 1, $type = 0, $upgrade = '')
     {
-        $url               = $this->BT_PANEL . config("bt.InstallPlugin");
-        $p_data            = [];
-        $p_data['sName']   = $sName;
+        $url = $this->BT_PANEL . config("bt.InstallPlugin");
+
+        $p_data['sName'] = $sName;
         $p_data['version'] = $version;
-        $p_data['type']    = $type;
+        $p_data['type'] = $type;
         if ($upgrade) {
             $p_data['upgrade'] = $upgrade;
         }
-        $result = $this->HttpPostCookie($url, $p_data);
-        $data   = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3020,13 +2289,11 @@ class Btpanel
      */
     public function UnInstallPlugin($sName, $version)
     {
-        $url               = $this->BT_PANEL . config("bt.UnInstallPlugin");
-        $p_data            = [];
-        $p_data['sName']   = $sName;
+        $url = $this->BT_PANEL . config("bt.UnInstallPlugin");
+
+        $p_data['sName'] = $sName;
         $p_data['version'] = $version;
-        $result            = $this->HttpPostCookie($url, $p_data);
-        $data              = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3037,12 +2304,10 @@ class Btpanel
      */
     public function CloseLogs($action = 'CloseLogs')
     {
-        $url              = $this->BT_PANEL . config("bt.CloseLogs");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.CloseLogs");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3053,12 +2318,10 @@ class Btpanel
      */
     public function GetRecyclebin($action = 'Get_Recycle_bin')
     {
-        $url              = $this->BT_PANEL . config("bt.GetRecyclebin");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.GetRecyclebin");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3069,12 +2332,10 @@ class Btpanel
      */
     public function Close_Recycle_bin($action = 'Close_Recycle_bin')
     {
-        $url              = $this->BT_PANEL . config("bt.Close_Recycle_bin");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.Close_Recycle_bin");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3085,12 +2346,10 @@ class Btpanel
      */
     public function GetSiteDomains($id)
     {
-        $url          = $this->BT_PANEL . config("bt.GetSiteDomains");
-        $p_data       = [];
+        $url = $this->BT_PANEL . config("bt.GetSiteDomains");
+
         $p_data['id'] = $id;
-        $result       = $this->HttpPostCookie($url, $p_data);
-        $data         = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3101,20 +2360,18 @@ class Btpanel
      * @param    [type]     $domains  域名["test.yum7.cn","tests.yum7.cn"]
      * @param    [type]     $email    管理员邮箱
      * @param integer $updateOf 1
-     * @param string  $force 'true'
+     * @param string  $force    'true'
      */
     public function CreateLet($siteName, $domains, $email, $updateOf = 1, $force = 'true')
     {
-        $url                = $this->BT_PANEL . config("bt.CreateLet");
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.CreateLet");
+
         $p_data['siteName'] = $siteName;
-        $p_data['domains']  = $domains;
-        $p_data['email']    = $email;
+        $p_data['domains'] = $domains;
+        $p_data['email'] = $email;
         $p_data['updateOf'] = $updateOf;
-        $p_data['force']    = $force;
-        $result             = $this->HttpPostCookie($url, $p_data);
-        $data               = json_decode($result, true);
-        return $data;
+        $p_data['force'] = $force;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3125,12 +2382,10 @@ class Btpanel
      */
     public function RenewLets($action = 'renew_lets_ssl')
     {
-        $url              = $this->BT_PANEL . config("bt.RenewLets");
-        $p_data           = [];
+        $url = $this->BT_PANEL . config("bt.RenewLets");
+
         $p_data['action'] = $action;
-        $result           = $this->HttpPostCookie($url, $p_data);
-        $data             = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3138,39 +2393,35 @@ class Btpanel
      * @Author   Youngxj
      * @DateTime 2019-12-07
      * @param    [type]     $filename 文件全路径
-     * @param    integer    $num      行数
+     * @param integer $num 行数
      * @return   [type]               [description]
      */
     public function getFileLog($filename, $num = 10)
     {
-        $url                = $this->BT_PANEL . config("bt.getFileLog");
-        $p_data             = [];
+        $url = $this->BT_PANEL . config("bt.getFileLog");
+
         $p_data['filename'] = $filename;
-        $p_data['num']      = $num;
-        $result             = $this->HttpPostCookie($url, $p_data);
-        $data               = json_decode($result, true);
-        return $data;
+        $p_data['num'] = $num;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * 一键部署（新版）
      * @Author   Youngxj
      * @DateTime 2019-12-07
-     * @param    string     $search 搜索
-     * @param    integer    $type 分类id
+     * @param string  $search 搜索
+     * @param integer $type   分类id
      */
     public function GetList($search = '', $type = 0)
     {
-        $url            = $this->BT_PANEL . config("bt.GetList");
-        $p_data         = [];
+        $url = $this->BT_PANEL . config("bt.GetList");
+
         $p_data['type'] = $type;
         if ($search) {
             $p_data['search'] = $search;
         }
 
-        $result         = $this->HttpPostCookie($url, $p_data);
-        $data           = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3182,15 +2433,10 @@ class Btpanel
     public function SetupPackageNew($dname, $site_name, $php_version)
     {
         $url = $this->BT_PANEL . config("bt.SetupPackageNew");
-
-        $p_data                = [];
-        $p_data['dname']       = $dname;
-        $p_data['site_name']   = $site_name;
+        $p_data['dname'] = $dname;
+        $p_data['site_name'] = $site_name;
         $p_data['php_version'] = $php_version;
-        $result                = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3208,19 +2454,14 @@ class Btpanel
     public function AddPackage($name, $title, $php, $enable_functions, $version, $ps, $dep_zip)
     {
         $url = $this->BT_PANEL . config("bt.AddPackage");
-
-        $p_data                     = [];
-        $p_data['name']             = $name;
-        $p_data['title']            = $title;
-        $p_data['php']              = $php;
+        $p_data['name'] = $name;
+        $p_data['title'] = $title;
+        $p_data['php'] = $php;
         $p_data['enable_functions'] = $enable_functions;
-        $p_data['version']          = $version;
-        $p_data['ps']               = $ps;
-        $p_data['dep_zip']          = $dep_zip;
-        $result                     = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['version'] = $version;
+        $p_data['ps'] = $ps;
+        $p_data['dep_zip'] = $dep_zip;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3232,13 +2473,8 @@ class Btpanel
     public function GetSiteRewrite($siteName)
     {
         $url = $this->BT_PANEL . config("bt.GetSiteRewrite");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3251,14 +2487,9 @@ class Btpanel
     public function SetSiteRewrite($siteName, $data)
     {
         $url = $this->BT_PANEL . config("bt.SetSiteRewrite");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $p_data['data']     = $data;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['data'] = $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3270,13 +2501,8 @@ class Btpanel
     public function SetDirUserINI($path)
     {
         $url = $this->BT_PANEL . config("bt.SetDirUserINI");
-
-        $p_data         = [];
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3288,13 +2514,8 @@ class Btpanel
     public function SetConfigLocking($siteName)
     {
         $url = $this->BT_PANEL . config("bt.SetConfigLocking");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3305,12 +2526,7 @@ class Btpanel
     public function GetPatch()
     {
         $url = $this->BT_PANEL . config("bt.GetPatch");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3323,14 +2539,9 @@ class Btpanel
     public function SetPatch($url, $patch)
     {
         $url = $this->BT_PANEL . config("bt.SetPatch");
-
-        $p_data          = [];
-        $p_data['url']   = $url;
+        $p_data['url'] = $url;
         $p_data['patch'] = $patch;
-        $result          = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3341,12 +2552,7 @@ class Btpanel
     public function SetupIisProxy()
     {
         $url = $this->BT_PANEL . config("bt.SetupIisProxy");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3357,12 +2563,7 @@ class Btpanel
     public function GetIisProxyConfig()
     {
         $url = $this->BT_PANEL . config("bt.GetIisProxyConfig");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3374,9 +2575,6 @@ class Btpanel
     public function SetIisProxyConfig($data)
     {
         $url = $this->BT_PANEL . config("bt.SetIisProxyConfig");
-
-        $p_data = [];
-
         // 反向代理启用状态
         $p_data['enabled'] = $data['enabled'];
         // HTTP协议版本。
@@ -3404,10 +2602,7 @@ class Btpanel
         // 缓存时间(以秒为单位，最大86400)
         $p_data['cache_validationInterval'] = $data['cache_validationInterval'];
 
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3418,12 +2613,7 @@ class Btpanel
     public function WafIis()
     {
         $url = $this->BT_PANEL . config("bt.WafIis");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3434,12 +2624,7 @@ class Btpanel
     public function WafIisSetOpen()
     {
         $url = $this->BT_PANEL . config("bt.WafIisSetOpen");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3450,12 +2635,7 @@ class Btpanel
     public function WafIisGetConfig()
     {
         $url = $this->BT_PANEL . config("bt.WafIisGetConfig");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3466,12 +2646,7 @@ class Btpanel
     public function WafIisSiteConfig()
     {
         $url = $this->BT_PANEL . config("bt.WafIisSiteConfig");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3483,13 +2658,8 @@ class Btpanel
     public function WafIisGetLog($siteName)
     {
         $url = $this->BT_PANEL . config("bt.WafIisGetLog");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3502,14 +2672,9 @@ class Btpanel
     public function WafIisSetSiteOpen($obj, $siteName)
     {
         $url = $this->BT_PANEL . config("bt.WafIisSetSiteOpen");
-
-        $p_data             = [];
-        $p_data['obj']      = $obj;
+        $p_data['obj'] = $obj;
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3521,13 +2686,8 @@ class Btpanel
     public function WafIisSetSiteConfig($siteName)
     {
         $url = $this->BT_PANEL . config("bt.WafIisSetSiteConfig");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3541,14 +2701,9 @@ class Btpanel
     public function get_site_disable_rule($ruleName, $siteName)
     {
         $url = $this->BT_PANEL . config("bt.get_site_disable_rule");
-
-        $p_data             = [];
         $p_data['siteName'] = $siteName;
         $p_data['ruleName'] = $ruleName;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3560,12 +2715,7 @@ class Btpanel
     public function get_speed()
     {
         $url = $this->BT_PANEL . config("bt.get_speed");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3577,12 +2727,7 @@ class Btpanel
     public function get_panel_api()
     {
         $url = $this->BT_PANEL . config("bt.get_panel_api");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3595,13 +2740,8 @@ class Btpanel
     public function set_panel_api($api_info)
     {
         $url = $this->BT_PANEL . config("bt.set_panel_api");
-
-        $p_data             = [];
         $p_data['api_info'] = $api_info;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3615,14 +2755,9 @@ class Btpanel
     public function chekc_surroundings($panel, $api_token)
     {
         $url = $this->BT_PANEL . config("bt.chekc_surroundings");
-
-        $p_data              = [];
-        $p_data['panel']     = $panel;
+        $p_data['panel'] = $panel;
         $p_data['api_token'] = $api_token;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3636,14 +2771,9 @@ class Btpanel
     public function get_site_info($panel, $api_token)
     {
         $url = $this->BT_PANEL . config("bt.get_site_info");
-
-        $p_data              = [];
-        $p_data['panel']     = $panel;
+        $p_data['panel'] = $panel;
         $p_data['api_token'] = $api_token;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3655,13 +2785,8 @@ class Btpanel
     public function set_sync_info($sync_info)
     {
         $url = $this->BT_PANEL . config("bt.set_sync_info");
-
-        $p_data              = [];
         $p_data['sync_info'] = $sync_info;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3673,12 +2798,7 @@ class Btpanel
     public function get_sync_info()
     {
         $url = $this->BT_PANEL . config("bt.get_sync_info");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3690,12 +2810,7 @@ class Btpanel
     public function return_log()
     {
         $url = $this->BT_PANEL . config("bt.return_log");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3708,13 +2823,8 @@ class Btpanel
     public function log_remove_file($data)
     {
         $url = $this->BT_PANEL . config("bt.log_remove_file");
-
-        $p_data         = [];
         $p_data['data'] = $data;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3726,12 +2836,7 @@ class Btpanel
     public function log_status()
     {
         $url = $this->BT_PANEL . config("bt.log_status");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3743,12 +2848,7 @@ class Btpanel
     public function get_config_back()
     {
         $url = $this->BT_PANEL . config("bt.get_config_back");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3759,12 +2859,7 @@ class Btpanel
     public function set_config_back()
     {
         $url = $this->BT_PANEL . config("bt.set_config_back");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3778,14 +2873,9 @@ class Btpanel
     public function import_config_back($path, $type = 'local')
     {
         $url = $this->BT_PANEL . config("bt.import_config_back");
-
-        $p_data         = [];
         $p_data['path'] = $path;
         $p_data['type'] = $type;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3793,18 +2883,13 @@ class Btpanel
      * 需要提前上传备份文件到/www/server/panel/backup/Disposable目录才能调用
      * @Author   Youngxj
      * @DateTime 2019-12-14
-     * @param    string     $type [description]
+     * @param string $type [description]
      */
     public function Decompression($type = 'decompress')
     {
         $url = $this->BT_PANEL . config("bt.Decompression");
-
-        $p_data         = [];
         $p_data['type'] = $type;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3817,13 +2902,8 @@ class Btpanel
     public function del_config_back($filename)
     {
         $url = $this->BT_PANEL . config("bt.del_config_back");
-
-        $p_data             = [];
         $p_data['filename'] = $filename;
-        $result             = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3831,20 +2911,15 @@ class Btpanel
      * @Author   Youngxj
      * @DateTime 2019-12-14
      * @param    [type]     $dk 端口
-     * @param    string     $ip IP（IPv4）
+     * @param string $ip IP（IPv4）
      * @return   [type]         [description]
      */
     public function port_blast($dk, $ip = '127.0.0.1')
     {
         $url = $this->BT_PANEL . config("bt.port_blast");
-
-        $p_data       = [];
         $p_data['dk'] = $dk;
         $p_data['ip'] = $ip;
-        $result       = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3856,12 +2931,7 @@ class Btpanel
     public function get_host_config()
     {
         $url = $this->BT_PANEL . config("bt.get_host_config");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3874,14 +2944,9 @@ class Btpanel
     public function add_host_config($domain, $ip)
     {
         $url = $this->BT_PANEL . config("bt.add_host_config");
-
-        $p_data           = [];
         $p_data['domain'] = $domain;
-        $p_data['ip']     = $ip;
-        $result           = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['ip'] = $ip;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3894,13 +2959,8 @@ class Btpanel
     public function del_host_config($domain)
     {
         $url = $this->BT_PANEL . config("bt.del_host_config");
-
-        $p_data           = [];
         $p_data['domain'] = $domain;
-        $result           = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3915,15 +2975,10 @@ class Btpanel
     public function edit_host_config($olddomain, $newdomain, $ip)
     {
         $url = $this->BT_PANEL . config("bt.edit_host_config");
-
-        $p_data              = [];
         $p_data['olddomain'] = $olddomain;
         $p_data['newdomain'] = $newdomain;
-        $p_data['ip']        = $ip;
-        $result              = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['ip'] = $ip;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3936,12 +2991,7 @@ class Btpanel
     public function pw404_site_list()
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_list");
-
-        $p_data = [];
-        $result = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -3954,13 +3004,8 @@ class Btpanel
     public function pw404_site_info($site = 'all')
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_info");
-
-        $p_data         = [];
         $p_data['site'] = $site;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3975,15 +3020,10 @@ class Btpanel
     public function pw404_site_install($site, $demourl, $demoid)
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_install");
-
-        $p_data            = [];
-        $p_data['site']    = $site;
+        $p_data['site'] = $site;
         $p_data['demourl'] = $demourl;
-        $p_data['demoid']  = $demoid;
-        $result            = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        $p_data['demoid'] = $demoid;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -3996,13 +3036,8 @@ class Btpanel
     public function pw404_site_uninstall($site)
     {
         $url = $this->BT_PANEL . config("bt.pw404_site_uninstall");
-
-        $p_data         = [];
         $p_data['site'] = $site;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4014,13 +3049,8 @@ class Btpanel
     public function get_dir_auth($id)
     {
         $url = $this->BT_PANEL . config("bt.get_dir_auth");
-
-        $p_data         = [];
         $p_data['id'] = $id;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4036,18 +3066,13 @@ class Btpanel
     public function set_dir_auth($id, $name, $site_dir, $username, $password)
     {
         $url = $this->BT_PANEL . config("bt.set_dir_auth");
-
-        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
         $p_data['site_dir'] = $site_dir;
         $p_data['username'] = $username;
         $p_data['password'] = $password;
 
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4062,17 +3087,12 @@ class Btpanel
     public function modify_dir_auth_pass($id, $name, $username, $password)
     {
         $url = $this->BT_PANEL . config("bt.modify_dir_auth_pass");
-
-        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
         $p_data['username'] = $username;
         $p_data['password'] = $password;
 
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4085,15 +3105,10 @@ class Btpanel
     public function delete_dir_auth($id, $name)
     {
         $url = $this->BT_PANEL . config("bt.delete_dir_auth");
-
-        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['name'] = $name;
 
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4110,8 +3125,6 @@ class Btpanel
     public function AddVsftpdUser($username, $password, $homepath, $disksize = 0, $speed = 0, $powerlevel = 'download_upload_mkdir_other')
     {
         $url = $this->BT_PANEL . config("bt.AddVsftpdUser");
-
-        $p_data         = [];
         $p_data['username'] = $username;
         $p_data['password'] = $password;
         $p_data['homepath'] = $homepath;
@@ -4119,10 +3132,7 @@ class Btpanel
         $p_data['speed'] = $speed;
         $p_data['disksize'] = $disksize;
 
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4134,12 +3144,7 @@ class Btpanel
     public function GetTotalData()
     {
         $url = $this->BT_PANEL . config("bt.GetTotalData");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4151,12 +3156,7 @@ class Btpanel
     public function GetGlobalData()
     {
         $url = $this->BT_PANEL . config("bt.GetGlobalData");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4168,12 +3168,7 @@ class Btpanel
     public function GetVsftpdUserList()
     {
         $url = $this->BT_PANEL . config("bt.GetVsftpdUserList");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4185,12 +3180,7 @@ class Btpanel
     public function GetLogText()
     {
         $url = $this->BT_PANEL . config("bt.GetLogText");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4201,12 +3191,7 @@ class Btpanel
     public function DelVsftpdLog()
     {
         $url = $this->BT_PANEL . config("bt.DelVsftpdLog");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4218,33 +3203,23 @@ class Btpanel
     public function free_waf_san_dir($path)
     {
         $url = $this->BT_PANEL . config("bt.free_waf_san_dir");
-
-        $p_data         = [];
         $p_data['path'] = $path;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * Nginx免费防火墙 - 指定功能开关
      * {"status": true, "msg": "\u8bbe\u7f6e\u6210\u529f!"}
      * @param [type] $siteName  站点名
-     * @param string $obj   open/get/post/user-agent/cc/cdn/drop_abroad（禁国外）
+     * @param string $obj open/get/post/user-agent/cc/cdn/drop_abroad（禁国外）
      * @return void
      */
     public function free_waf_set_site_obj_open($siteName, $obj = 'open')
     {
         $url = $this->BT_PANEL . config("bt.free_waf_san_dir");
-
-        $p_data         = [];
         $p_data['siteName'] = $siteName;
         $p_data['obj'] = $obj;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4256,13 +3231,8 @@ class Btpanel
     public function free_waf_get_logs_list($siteName)
     {
         $url = $this->BT_PANEL . config("bt.free_waf_get_logs_list");
-
-        $p_data         = [];
         $p_data['siteName'] = $siteName;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4279,18 +3249,13 @@ class Btpanel
     public function free_waf_set_site_cc_conf($siteName, $cycle, $limit, $endtime, $is_open_global = 0, $increase = 0)
     {
         $url = $this->BT_PANEL . config("bt.free_waf_set_site_cc_conf");
-
-        $p_data         = [];
         $p_data['siteName'] = $siteName;
         $p_data['cycle'] = $cycle;
         $p_data['limit'] = $limit;
         $p_data['endtime'] = $endtime;
         $p_data['is_open_global'] = $is_open_global;
         $p_data['increase'] = $increase;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4301,12 +3266,7 @@ class Btpanel
     public function free_waf_total()
     {
         $url = $this->BT_PANEL . config("bt.free_waf_total");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4317,12 +3277,7 @@ class Btpanel
     public function free_waf_set_open()
     {
         $url = $this->BT_PANEL . config("bt.free_waf_set_open");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4333,12 +3288,7 @@ class Btpanel
     public function free_waf_site_config()
     {
         $url = $this->BT_PANEL . config("bt.free_waf_site_config");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4350,13 +3300,8 @@ class Btpanel
     public function webshellCheck($filename)
     {
         $url = $this->BT_PANEL . config("bt.webshellCheck");
-
-        $p_data         = [];
         $p_data['filename'] = $filename;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4369,18 +3314,13 @@ class Btpanel
     public function getPanelLogs($limit = 10, $p = 1)
     {
         $url = $this->BT_PANEL . config("bt.getData");
-
-        $p_data         = [];
         $p_data['tojs'] = 'firewall.get_log_list';
         $p_data['table'] = 'logs';
         $p_data['limit'] = $limit;
         $p_data['p'] = $p;
         $p_data['search'] = '';
         $p_data['order'] = 'id desc';
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4391,75 +3331,55 @@ class Btpanel
     public function GetDirSize()
     {
         $url = $this->BT_PANEL . config("bt.GetDirSize");
-
-        $p_data         = [];
         $p_data['path'] = '/www/wwwlogs';
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * Mysql工具箱 - 修复
      *
      * @param [type] $db_name       数据库名
-     * @param array $tables         表：["admin"]
+     * @param array $tables 表：["admin"]
      * @return void
      */
     public function ReTable($db_name, $tables = [])
     {
         $url = $this->BT_PANEL . config("bt.ReTable");
-
-        $p_data         = [];
         $p_data['db_name'] = $db_name;
         $p_data['tables'] = $tables;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * Mysql工具箱 - 优化
      *
      * @param [type] $db_name       数据库名
-     * @param array $tables         表：["admin"]
+     * @param array $tables 表：["admin"]
      * @return void
      */
     public function OpTable($db_name, $tables = [])
     {
         $url = $this->BT_PANEL . config("bt.OpTable");
-
-        $p_data         = [];
         $p_data['db_name'] = $db_name;
         $p_data['tables'] = $tables;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
      * Mysql工具箱 - 类型转换
      *
      * @param [type] $db_name       数据库名
-     * @param array $tables         表：["admin"]
-     * @param string $table_type    InnoDB/MyISAM
+     * @param array  $tables     表：["admin"]
+     * @param string $table_type InnoDB/MyISAM
      * @return void
      */
     public function AlTable($db_name, $tables = [], $table_type)
     {
         $url = $this->BT_PANEL . config("bt.AlTable");
-
-        $p_data         = [];
         $p_data['db_name'] = $db_name;
         $p_data['tables'] = $tables;
         $p_data['table_type'] = $table_type;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url, $p_data)->result_decode();
     }
 
     /**
@@ -4471,12 +3391,8 @@ class Btpanel
     public function get_php_session_path($id)
     {
         $url = $this->BT_PANEL . config("bt.get_php_session_path");
-
-        $p_data         = [];
         $p_data['id'] = $id;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data == true) {
             return true;
         } else {
@@ -4494,21 +3410,13 @@ class Btpanel
     public function set_php_session_path($id, $act = 1)
     {
         $url = $this->BT_PANEL . config("bt.set_php_session_path");
-
-        $p_data         = [];
         $p_data['id'] = $id;
         $p_data['act'] = $act;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if (isset($data['status']) && $data['status'] == true) {
             return true;
-        } elseif (isset($data['msg'])) {
-            $msg = $data['msg'];
-        } else {
-            $msg = '请求失败';
         }
-        $this->_error = $msg;
+        $this->_error = $data['msg'] ?? __('Fail');
         return false;
     }
 
@@ -4522,8 +3430,6 @@ class Btpanel
     public function AddCrontab($params = [])
     {
         $url = $this->BT_PANEL . config("bt.AddCrontab");
-
-        $p_data         = [];
         $p_data['name'] = isset($params['name']) ? $params['name'] : '';
         $p_data['type'] = isset($params['type']) ? $params['type'] : '';
         $p_data['where1'] = isset($params['where1']) ? $params['where1'] : '';
@@ -4536,18 +3442,12 @@ class Btpanel
         $p_data['backupTo'] = isset($params['backupTo']) ? $params['backupTo'] : 'localhost';
         $p_data['save'] = isset($params['save']) ? $params['save'] : '';
         $p_data['urladdress'] = isset($params['urladdress']) ? $params['urladdress'] : '';
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status'] == true) {
-            return true;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
+            return $data;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4558,20 +3458,28 @@ class Btpanel
     public function GetCrontab()
     {
         $url = $this->BT_PANEL . config("bt.GetCrontab");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url)->result_decode();
         if ($data && !isset($data['msg'])) {
             return $data;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
+    }
+    
+    /**
+     * 执行任务
+     * @param $id   任务ID
+     * @return bool
+     * @date 2021/6/13
+     */
+    public function StartTask($id)
+    {
+        $result = $this->request_get('StartTask', ['id' => $id]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
+            return true;
+        }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4583,21 +3491,13 @@ class Btpanel
     public function GetLogs($id)
     {
         $url = $this->BT_PANEL . config("bt.GetLogs");
-
-        $p_data         = [];
         $p_data['id'] = $id;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status'] == true) {
             return isset($data['msg']) ? $data['msg'] : '';
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4609,21 +3509,13 @@ class Btpanel
     public function DelLogs($id)
     {
         $url = $this->BT_PANEL . config("bt.DelLogs");
-
-        $p_data         = [];
         $p_data['id'] = $id;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status'] == true) {
             return isset($data['msg']) ? $data['msg'] : '';
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4635,21 +3527,13 @@ class Btpanel
     public function DelCrontab($id)
     {
         $url = $this->BT_PANEL . config("bt.DelCrontab");
-
-        $p_data         = [];
         $p_data['id'] = $id;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
+        $data = $this->http_post($url, $p_data)->result_decode();
         if ($data && isset($data['status']) && $data['status'] == true) {
-            return isset($data['msg']) ? $data['msg'] : '';
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
+            return true;
         }
+        $this->_error = $data['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4661,12 +3545,7 @@ class Btpanel
     public function GetProductList()
     {
         $url = $this->BT_PANEL . config("bt.GetProductList");
-
-        $p_data         = [];
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        return $data;
+        return $this->http_post($url)->result_decode();
     }
 
     /**
@@ -4679,47 +3558,31 @@ class Btpanel
     public function ApplyOrderPay($array)
     {
         $url = $this->BT_PANEL . config("bt.ApplyOrderPay");
-
-        $p_data         = [];
         $p_data['pdata'] = json_encode($array);
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        if ($data && isset($data['status']) && $data['status'] == true) {
-            return $data;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
+        $result = $this->http_post($url, $p_data)->result_decode();
+        if ($result && isset($result['status']) && $result['status'] == true) {
+            return $result;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
      * 文件查重
      * @param $dfile string   目录
      * @return false|mixed|array
-     * [{"filename": "about-rtl.css", "size": 27151, "mtime": "1605648844"}, {"filename": "php", "size": 0, "mtime": "1610427550"}]
+     *               [{"filename": "about-rtl.css", "size": 27151, "mtime": "1605648844"}, {"filename": "php", "size": 0, "mtime": "1610427550"}]
      */
     public function CheckExistsFiles($dfile)
     {
         $url = $this->BT_PANEL . config("bt.CheckExistsFiles");
-
-        $p_data         = [];
         $p_data['dfile'] = $dfile;
-        $result         = $this->HttpPostCookie($url, $p_data);
-
-        $data = json_decode($result, true);
-        if ($data) {
-            return $data;
-        } elseif (isset($data['msg'])) {
-            $this->_error = $data['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
+        $result = $this->http_post($url, $p_data)->result_decode();
+        if ($result) {
+            return $result;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4727,17 +3590,14 @@ class Btpanel
      *
      * @return array|bool
      */
-    public function SiteSpeed(){
+    public function SiteSpeed()
+    {
         $result = $this->request_get('SiteSpeed');
-        if($result&&isset($result['data'])){
+        if ($result && isset($result['data'])) {
             return $result['data'];
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4746,17 +3606,29 @@ class Btpanel
      * @param [type] $siteName  站点名
      * @return array|bool
      */
-    public function SiteSpeedStatus($siteName){
-        $result = $this->request_get('SiteSpeedStatus',['siteName'=>$siteName]);
-        if($result&&isset($result['status'])&&$result['status']==true){
+    public function SiteSpeedStatus($siteName)
+    {
+        $result = $this->request_get('SiteSpeedStatus', ['siteName' => $siteName]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
             return true;
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
+    }
+
+    /**
+     * 站点加速总开关
+     * @return bool
+     * @date 2021/6/13
+     */
+    public function GetSiteSpeedSettings()
+    {
+        $result = $this->request_get('GetSiteSpeedSettings');
+        if ($result && isset($result['open']) && $result['open'] == true) {
+            return true;
+        }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4765,17 +3637,14 @@ class Btpanel
      * @param [type] $siteName  站点名
      * @return array|bool
      */
-    public function GetSiteSpeed($siteName){
-        $result = $this->request_get('GetSiteSpeed',['siteName'=>$siteName]);
-        if($result&&isset($result['open'])){
+    public function GetSiteSpeed($siteName)
+    {
+        $result = $this->request_get('GetSiteSpeed', ['siteName' => $siteName]);
+        if ($result && isset($result['open'])) {
             return $result;
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4785,18 +3654,15 @@ class Btpanel
      * @param [type] $rules     缓存目录  {"white":{"not_uri":["/"]}}
      * @return void
      */
-    public function CreateSpeedRule($siteName,$path){
-        $rules = json_encode(['not_uri'=>$path]);
-        $result = $this->request_get('CreateSpeedRule',['siteName'=>$siteName,'rules'=>$rules]);
-        if($result&&isset($result['status'])&&$result['status']==true){
+    public function CreateSpeedRule($siteName, $path)
+    {
+        $rules = json_encode(['not_uri' => $path]);
+        $result = $this->request_get('CreateSpeedRule', ['siteName' => $siteName, 'rules' => $rules]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
             return true;
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4806,17 +3672,14 @@ class Btpanel
      * @param [type] $ruleName      规则名
      * @return void
      */
-    public function SetSpeedRule($siteName,$ruleName){
-        $result = $this->request_get('SetSpeedRule',['siteName'=>$siteName,'ruleName'=>$ruleName]);
-        if($result&&isset($result['status'])&&$result['status']==true){
+    public function SetSpeedRule($siteName, $ruleName)
+    {
+        $result = $this->request_get('SetSpeedRule', ['siteName' => $siteName, 'ruleName' => $ruleName]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
             return true;
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4825,34 +3688,28 @@ class Btpanel
      * @param [type] $siteName      站点名
      * @param [type] $ruleKey       规则方式host:域名,ip:IP,args:请求参数,ext:后缀名,type:响应类型,uri:URL地址
      * @param [type] $ruleValue     规则内容
-     * @param string $ruleRoot      不缓存:ruleRoot,缓存:force
+     * @param string $ruleRoot 不缓存:ruleRoot,缓存:force
      * @return void
      */
-    public function AddSpeedRule($siteName,$ruleKey,$ruleValue,$ruleRoot='force'){
-        $result = $this->request_get('AddSpeedRule',['siteName'=>$siteName,'ruleKey'=>$ruleKey,'ruleValue'=>$ruleValue,'ruleRoot'=>$ruleRoot]);
-        if($result&&isset($result['status'])&&$result['status']==true){
+    public function AddSpeedRule($siteName, $ruleKey, $ruleValue, $ruleRoot = 'force')
+    {
+        $result = $this->request_get('AddSpeedRule', ['siteName' => $siteName, 'ruleKey' => $ruleKey, 'ruleValue' => $ruleValue, 'ruleRoot' => $ruleRoot]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
             return true;
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     // 删除缓存规则
-    public function DelSpeedRule($siteName,$ruleKey,$ruleValue,$ruleRoot='force'){
-        $result = $this->request_get('DelSpeedRule',['siteName'=>$siteName,'ruleKey'=>$ruleKey,'ruleValue'=>$ruleValue,'ruleRoot'=>$ruleRoot]);
-        if($result&&isset($result['status'])&&$result['status']==true){
+    public function DelSpeedRule($siteName, $ruleKey, $ruleValue, $ruleRoot = 'force')
+    {
+        $result = $this->request_get('DelSpeedRule', ['siteName' => $siteName, 'ruleKey' => $ruleKey, 'ruleValue' => $ruleValue, 'ruleRoot' => $ruleRoot]);
+        if ($result && isset($result['status']) && $result['status'] == true) {
             return true;
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
 
     /**
@@ -4860,19 +3717,15 @@ class Btpanel
      *
      * @return array|bool
      */
-    public function GetRuleList(){
+    public function GetRuleList()
+    {
         $result = $this->request_get('GetRuleList');
-        if($result&&isset($result['rule_list'])){
+        if ($result && isset($result['rule_list'])) {
             return $result['rule_list'];
-        } elseif (isset($result['msg'])) {
-            $this->_error = $result['msg'];
-            return false;
-        } else {
-            $this->_error = '请求失败';
-            return false;
         }
+        $this->_error = $result['msg'] ?? __('Fail');
+        return false;
     }
-
 
     /**
      * 构造带有签名的关联数组
@@ -4883,27 +3736,23 @@ class Btpanel
     public function GetKeyData()
     {
         $now_time = time();
-        $p_data   = array(
+        return array(
             'request_token' => md5($now_time . '' . md5($this->BT_KEY)),
             'request_time'  => $now_time,
         );
-        return $p_data;
     }
 
     /**
      * 发起POST请求
-     * @param String       $url 目标网填，带http://
+     * @param String       $url  目标网填，带http://
      * @param Array|String $data 欲提交的数据
      * @return string
      */
     private function HttpPostCookie($url, $data = [], $timeout = 120)
     {
-        $path = ROOT_PATH . 'logs/';
-        if (!is_dir($path)) {
-            mkdir($path, 0777, true);
-        }
         // 拼接api验证信息
         $data = array_merge($data, $this->GetKeyData());
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
@@ -4914,7 +3763,37 @@ class Btpanel
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $output = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
+        if ($httpCode != 200) {
+            Config::set('log.type', 'File');
+            Log::write('API请求失败:' . $url . '请求参数:' . json_encode($data), 'error');
+        }
         return $output;
     }
+
+    /**
+     * http_post
+     * @param       $url
+     * @param array $data
+     * @param int   $timeout
+     * @return $this|Btpanel
+     * @date 2021/6/13
+     */
+    private function http_post($url, $data = [], $timeout = 120)
+    {
+        $this->result = $this->HttpPostCookie($url, $data, $timeout);
+        return $this;
+    }
+
+    /**
+     * json解码
+     * @return mixed|array
+     * @date 2021/6/13
+     */
+    private function result_decode()
+    {
+        return json_decode($this->result, true);
+    }
+
 }

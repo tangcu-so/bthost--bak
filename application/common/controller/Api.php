@@ -5,6 +5,7 @@ namespace app\common\controller;
 use app\common\library\Auth;
 use app\common\library\Btaction;
 use think\Config;
+use think\Exception;
 use think\exception\HttpResponseException;
 use think\exception\ValidateException;
 use think\Hook;
@@ -339,21 +340,27 @@ class Api
         $this->request->token();
     }
 
+    // 获取公钥证书
     private static function getPublicKey()
     {
-        return $public_key = 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCXySnlz6w8w0KOTz+XrzNd3+PmKJKAJRdKI4x5xNU8Q9EzWIYGyX2O1RK/FB1pwYjUVo8uNG6ghD48ZtRcumqPxU7uAHBlxq4S8zPPSGJ3NKgceRJEW/4oOFLw6jeJ1Pw3aHvg7hmxNxwgOLqlRzXDG8wBc7EqVTGa86qbfwZDEQIDAQAB';
+        $pem_file = ROOT_PATH . 'public_key.pem';
+        if (file_exists($pem_file) && is_writable($pem_file)) {
+            return $public_key = file_get_contents($pem_file);
+        } else {
+            throw new Exception(__('Public key acquisition failed. Please check the directory file %s', $pem_file));
+        }
     }
 
-    // 远程授权验证
+    // 远程授权方法
     private function auth_check($ip)
     {
         // 缓存器缓存远端获取的私钥
         $url = Config::get('bty.api_url') . '/bthost_auth_check.html';
         $data = [
-            'obj' => Config::get('bty.APP_NAME'),
+            'obj'     => Config::get('bty.APP_NAME'),
             'version' => Config::get('bty.version'),
-            'domain' => $ip,
-            'rsa' => 1,
+            'domain'  => $ip,
+            'rsa'     => 1,
         ];
         $json = \fast\Http::post($url, $data);
         return json_decode($json, 1);
@@ -362,76 +369,78 @@ class Api
     // 授权验证方法
     protected function auth_check_local()
     {
-        $is_ajax = 1;
-        // 公钥
-        $public_key = self::getPublicKey();
+        $is_ajax = $this->request->isAjax() ? 1 : 0;
+        $security_code = '';
+        try {
+            // 公钥
+            $public_key = self::getPublicKey();
 
-        $rsa = new \fast\Rsa($public_key);
+            $rsa = new \fast\Rsa($public_key);
 
-        if (!Cache::get('auth_check_ip')) {
-            $bt = new Btaction();
-            $ipInfo = $bt->getIp();
-            $ip = $ipInfo;
-            if (!$ip) {
-                $msg = __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct');
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
-            }
-            // ip需要密文加密
-            $ip_encode = encode($ipInfo, 'ZD4wNqBVN0Gn');
-            Cache::remember('auth_check_ip', $ip_encode, 0);
-        } else {
-            $ip_encode = Cache::get('auth_check_ip');
-            $ip = decode($ip_encode, 'ZD4wNqBVN0Gn');
-            if (!$ip) {
-                $msg = __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct') . '，' . __('Or try to delete the directory /runtime/cache and try again!');
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
-            }
-        }
-
-        // 离线授权
-        if (Config::get('auth.code')) {
-            $security_code = Config::get('auth.code');
-        } else {
-            // 线上授权
-            $curl = $this->auth_check($ip);
-            if ($curl && isset($curl['code']) && $curl['code'] == 1) {
-                $security_code = $curl['encode'];
-            } elseif (isset($curl['msg'])) {
-                $msg = $ip . $curl['msg'];
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+            if (!Cache::get('auth_check_ip')) {
+                $bt = new Btaction();
+                $ipInfo = $bt->getIp();
+                $ip = $ipInfo;
+                if (!$ip) {
+                    $msg = __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct');
+                    throw new Exception($msg);
+                }
+                // ip需要密文加密
+                $ip_encode = encode($ipInfo, 'ZD4wNqBVN0Gn');
+                Cache::remember('auth_check_ip', $ip_encode, 0);
             } else {
-                $msg = $ip . __('Authorization check failed');
-                return $is_ajax ? $this->error($msg) : sysmsg($msg);
+                $ip_encode = Cache::get('auth_check_ip');
+                $ip = decode($ip_encode, 'ZD4wNqBVN0Gn');
+                if (!$ip) {
+                    $msg = __('The current server public network IP acquisition failed, please make sure that your panel has public network capability, and check whether the server communication and key are correct') . '，' . __('Or try to delete the directory /runtime/cache and try again!');
+                    throw new Exception($msg);
+                }
             }
-        }
 
-        if ($security_code) {
-            // 解密信息获取域名及有效期
+            // 离线授权
+            if (Config::get('auth.code')) {
+                $security_code = Config::get('auth.code');
+            } else {
+                // 线上授权
+                $curl = $this->auth_check($ip);
+                if ($curl && isset($curl['code']) && $curl['code'] == 1) {
+                    $security_code = $curl['encode'];
+                    $msg = '';
+                } elseif (isset($curl['msg'])) {
+                    $msg = $curl['msg'];
+                } else {
+                    $msg = __('Authorization check failed');
+                }
+                if ($msg) {
+                    $msg = __('Local IP：%s【Caching】<hr>Authorized info：%s', $ip, $msg);
+                    throw new Exception($msg);
+                }
+            }
+
+            if (!$security_code) throw new Exception($ip . __('Authorization check failed'));
+
+            // 解密信息获取IP及有效期
             // 公钥解密
             $decode = $rsa->pubDecrypt($security_code);
-            if (!$decode) {
-                return $is_ajax ? $this->error(__('security_code error')) : sysmsg(__('security_code error'));
-            }
+            if (!$decode) throw new Exception(__('security_code error'));
             $decode_arr = explode('|', $decode);
 
             list($domain, $auth_expiration_time) = $decode_arr;
 
-            // 检查授权域名是否为当前域名
-            if (
-                $domain != '9527' && $domain !== $ip
-            ) {
-                return $is_ajax ? $this->error($ip . __('Authorization information error, please request authorization again or obtain authorization code')) : sysmsg($ip . __('Authorization information error, please request authorization again or obtain authorization code'));
-            }
+            // 检查授权IP是否为当前IP
+            if ($domain != '9527' && $domain !== $ip) throw new Exception($ip . __('Authorization information error, please request authorization again or obtain authorization code'));
 
             // 检查授权是否过期
-            if (
-                $auth_expiration_time != 0 && time() > $auth_expiration_time
-            ) {
-                return $is_ajax ? $this->error($ip . __('Authorization expired')) : sysmsg($ip . __('Authorization expired'));
+            if ($auth_expiration_time != 0 && time() > $auth_expiration_time) {
+                // 删除授权码文件
+                if (file_exists(APP_PATH . 'extra' . DS . 'auth.php')) {
+                    @unlink(APP_PATH . 'extra' . DS . 'auth.php');
+                }
+                throw new Exception($ip . __('Authorization expired'));
             }
 
             // 记录离线授权码
-            if ($security_code && !Config::get('auth.code')) {
+            if (!Config::get('auth.code')) {
                 $auth_file = APP_PATH . 'extra' . DS . 'auth.php';
                 // 判断文件是否存在
                 if (!file_exists($auth_file)) {
@@ -440,18 +449,17 @@ class Api
                     $content = "<?php return ['code' => '',];";
                     @fputs($createfile, $content);
                     @fclose($createfile);
-                    if (!$createfile) {
-                        $msg = __('The current permissions are insufficient to write the file %s', $auth_file);
-                        return $is_ajax ? $this->error($msg) : sysmsg($msg);
-                    }
+                    if (!$createfile) throw new Exception(__('The current permissions are insufficient to write the file %s', $auth_file));
                 }
                 // 写入code
                 $config = include $auth_file;
                 $config['code'] = $security_code;
                 file_put_contents($auth_file, '<?php' . "\n\nreturn " . var_export($config, true) . ";");
             }
-        } else {
-            return $is_ajax ? $this->error($ip . __('Authorization check failed')) : sysmsg($ip . __('Authorization check failed'));
+
+        } catch (Exception $e) {
+            return $is_ajax ? $this->error($e->getMessage()) : sysmsg($e->getMessage());
         }
+        return true;
     }
 }
