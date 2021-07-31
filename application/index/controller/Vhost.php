@@ -390,7 +390,10 @@ class Vhost extends Frontend
         //获取子目录绑定信息
         $dirList = $this->btAction->getSiteDirBinding();
 
-        $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
+        $sub_bind = 0;
+        if (Config::get('vhost.sub_bind')) {
+            $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
+        }
 
         // 剩余可绑定数
 
@@ -415,8 +418,10 @@ class Vhost extends Frontend
         $dirs = $this->request->post('dirs', '/');
 
         // 限制绑定子目录
-        $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
-
+        $sub_bind = 0;
+        if (Config::get('vhost.sub_bind')) {
+            $sub_bind = isset($this->hostInfo->sub_bind) && $this->hostInfo->sub_bind ? 1 : 0;
+        }
         // 限制绑定根目录
         if ($sub_bind != 1 && $dirs != '/') $this->error(__('Bind directory error'));
 

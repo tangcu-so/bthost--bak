@@ -108,14 +108,14 @@
         <label class="control-label col-xs-12 col-sm-2">{:__('Sub bind')}:</label>
         <div class="col-xs-12 col-sm-8">
             {:build_radios('row[sub_bind]', ['1'=>__('启用'), '0'=>__('禁用')],$row.sub_bind)}
-            <small class="text-danger">绑定子目录容易产生很多主机错误，如非特殊情况，请禁止使用</small>
+            <small class="text-danger">高危功能，请谨慎开启</small>
         </div>
     </div>
-    
+
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Is_vsftpd')}:</label>
         <div class="col-xs-12 col-sm-8">
-                        
+
             <select  id="c-is_vsftpd" data-rule="required" class="form-control selectpicker" name="row[is_vsftpd]" disabled>
                 {foreach name="isVsftpdList" item="vo"}
                     <option value="{$key}" {in name="key" value="$row.is_vsftpd"}selected{/in}>{$vo}</option>
@@ -133,10 +133,10 @@
     <div class="form-group">
         <label class="control-label col-xs-12 col-sm-2">{:__('Status')}:</label>
         <div class="col-xs-12 col-sm-8">
-            
+
             <div class="radio">
             {foreach name="statusList" item="vo"}
-            <label for="row[status]-{$key}"><input id="row[status]-{$key}" name="row[status]" type="radio" value="{$key}" {in name="key" value="$row.status"}checked{/in} /> {$vo}</label> 
+            <label for="row[status]-{$key}"><input id="row[status]-{$key}" name="row[status]" type="radio" value="{$key}" {in name="key" value="$row.status"}checked{/in} /> {$vo}</label>
             {/foreach}
             </div>
 

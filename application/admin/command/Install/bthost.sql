@@ -1066,3 +1066,6 @@ ALTER TABLE `bth_host` ADD COLUMN `is_api`  tinyint(1) NOT NULL DEFAULT 0 COMMEN
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'ask_beian', 'config', 'ask_beian', '绑定域名时是否检测域名备案', 'radio', '0', '[\"关\",\"开\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'chinaz_key', 'config', 'chinaz_key', 'http://api.chinaz.com/ApiDetails/Domain', 'string', '', '', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
 INSERT INTO `bth_config` (`id`, `name`, `group`, `title`, `tip`, `type`, `value`, `content`, `rule`, `extend`, `setting`, `weigh`) VALUES (null, 'icp_check_api', 'config', 'icp_check_api', '数据同源(Chinaz）没钱的用免费版', 'radio', '0', '[\"大米[免费]\",\"Chinaz[收费]\"]', '', '', '{\"table\":\"\",\"conditions\":\"\",\"key\":\"\",\"value\":\"\"}', '0');
+
+-- 1.6.1+20210731
+UPDATE `bth_product` SET `tip` = '是否允许绑定域名到子目录。警告：该功能存在高危漏洞，该配置已转移到全局配置中，如需使用该功能，请查看文档' WHERE `name` = 'sub_bind';
