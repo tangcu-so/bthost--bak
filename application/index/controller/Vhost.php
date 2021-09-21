@@ -1802,6 +1802,7 @@ class Vhost extends Frontend
             $path = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
             $oldFileName = input('post.oldName') ? preg_replace($this->path_reg, '/', input('post.oldName')) : '/';
             $newFileName = input('post.newName') ? preg_replace($this->path_reg, '/', input('post.newName')) : '/';
+            $newFileName = trim($newFileName);
             if (!$oldFileName || !$newFileName) {
                 $this->error(__('Can not be empty'));
             }
@@ -1904,6 +1905,7 @@ class Vhost extends Frontend
         // 新文件夹
         if ($type == 'newdir') {
             $newdir = input('post.newdir') ? preg_replace('/([.])+|([\/])+/', '', input('post.newdir')) : '';
+            $newdir = trim($newdir);
             $path = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
             if (!$this->path_root_check($WebGetKey . $path . $newdir, $WebGetKey)) {
                 $this->error(__('Illegal operation'));
@@ -1918,6 +1920,7 @@ class Vhost extends Frontend
         // 新文件
         if ($type == 'newfile') {
             $newfile = input('post.newfile') ? preg_replace('/([.]){2,}|([\/])+/', '', input('post.newfile')) : '';
+            $newfile = trim($newfile);
             $path = input('post.path') ? preg_replace($this->path_reg, '/', input('post.path')) : '/';
             if (!$this->path_root_check($WebGetKey . $path . $newfile, $WebGetKey)) {
                 $this->error(__('Illegal operation'));
