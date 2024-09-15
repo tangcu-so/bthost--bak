@@ -100,7 +100,7 @@ class Frontend extends Controller
             error_reporting(E_ALL ^ E_NOTICE);
         }
 
-        $this->auth_check_local();
+        // $this->auth_check_local();
 
         // 已登录用户信息
         $this->view->assign('vhost', $this->auth->getUser());
