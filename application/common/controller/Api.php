@@ -116,7 +116,7 @@ class Api
         $controllername = Loader::parseName($this->request->controller());
         $actionname = strtolower($this->request->action());
 
-        $this->auth_check_local();
+        // $this->auth_check_local();
 
         // token
         $token = $this->request->server('HTTP_TOKEN', $this->request->request('token', \think\Cookie::get('token')));
